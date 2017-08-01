@@ -29,7 +29,8 @@
     <description>Provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.</description>
     <modules>
         <module>nifi-registry-properties</module>
-        <module>nifi-registry-flow-data-model</module>
+        <module>nifi-registry-utils</module>
+	<module>nifi-registry-flow-data-model</module>
         <module>nifi-registry-jetty</module>
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
@@ -37,7 +38,8 @@
         <module>nifi-registry-service-api</module>
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
-        <module>nifi-registry-assembly</module>
+        <module>nifi-registry-bootstrap</module>
+	<module>nifi-registry-assembly</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
@@ -242,7 +244,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.4</version>
+                <version>3.5</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

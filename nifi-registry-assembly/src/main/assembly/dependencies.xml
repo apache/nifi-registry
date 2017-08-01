@@ -24,6 +24,35 @@
     <baseDirectory>nifi-registry-${project.version}</baseDirectory>
 
     <dependencySets>
+        <!-- Write out the dependencies shared between bootstrap and the main app to lib/shared -->
+        <dependencySet>
+            <scope>runtime</scope>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>lib/shared</outputDirectory>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0660</fileMode>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <includes>
+                <include>nifi-registry-utils</include>
+                <include>commons-lang3</include>
+            </includes>
+        </dependencySet>
+
+        <!-- Write out the bootstrap lib component to its own dir -->
+        <dependencySet>
+            <scope>runtime</scope>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>lib/bootstrap</outputDirectory>
+            <directoryMode>0770</directoryMode>
+            <fileMode>0660</fileMode>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <includes>
+                <include>nifi-registry-bootstrap</include>
+                <include>slf4j-api</include>
+                <include>logback-classic</include>
+            </includes>
+        </dependencySet>
+
         <!-- Write out all dependency artifacts to lib directory -->
         <dependencySet>
             <scope>runtime</scope>
@@ -34,6 +63,8 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
                 <exclude>nifi-registry-resources</exclude>
+                <exclude>nifi-registry-bootstrap</exclude>
+                <exclude>nifi-registry-utils</exclude>
             </excludes>
         </dependencySet>
         
@@ -77,4 +108,29 @@
             </unpackOptions>
         </dependencySet>
     </dependencySets>
+
+    <files>
+        <file>
+            <source>./README.md</source>
+            <outputDirectory>./</outputDirectory>
+            <destName>README</destName>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>./LICENSE</source>
+            <outputDirectory>./</outputDirectory>
+            <destName>LICENSE</destName>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>./NOTICE</source>
+            <outputDirectory>./</outputDirectory>
+            <destName>NOTICE</destName>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </file>
+    </files>
+
 </assembly>
