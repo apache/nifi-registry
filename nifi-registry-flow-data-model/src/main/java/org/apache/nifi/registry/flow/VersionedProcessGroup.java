@@ -20,7 +20,7 @@ package org.apache.nifi.registry.flow;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 
 public class VersionedProcessGroup extends VersionedComponent {

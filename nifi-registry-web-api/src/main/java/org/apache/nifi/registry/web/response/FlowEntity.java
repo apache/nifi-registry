@@ -14,45 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.nifi.registry.web.response;
 
-package org.apache.nifi.registry.flow;
-
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("The position of a component on the graph")
-public class Position {
-    private double x;
-    private double y;
+import javax.xml.bind.annotation.XmlRootElement;
 
-    public Position() {
+@XmlRootElement(name = "flowEntity")
+public class FlowEntity {
+
+    private String identifier;
+    private String name;
+    private String description;
+
+    @ApiModelProperty("The identifier for this flow.")
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public Position(double x, double y) {
-        this.x = x;
-        this.y = y;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
-    @ApiModelProperty("The x coordinate.")
-    public double getX() {
-        return x;
+    @ApiModelProperty("The name of the flow.")
+    public String getName() {
+        return name;
     }
 
-    public void setX(double x) {
-        this.x = x;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    @ApiModelProperty("The y coordinate.")
-    public double getY() {
-        return y;
+    @ApiModelProperty("A description of the flow set by the user when they create the initial version.")
+    public String getDescription() {
+        return description;
     }
 
-    public void setY(double y) {
-        this.y = y;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    @Override
-    public String toString() {
-        return "[x=" + x + ", y=" + y + "]";
-    }
 }
