@@ -35,15 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Main entry point for NiFiRegistry.
@@ -61,17 +53,6 @@ public class NiFiRegistry {
 
     public NiFiRegistry(final NiFiRegistryProperties properties)
             throws ClassNotFoundException, IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-
-        // There can only be one krb5.conf for the overall Java process so set this globally during
-        // start up so that processors and our Kerberos authentication code don't have to set this
-
-        // TODO enable if we support Kerberos
-//        final File kerberosConfigFile = properties.getKerberosConfigurationFile();
-//        if (kerberosConfigFile != null) {
-//            final String kerberosConfigFilePath = kerberosConfigFile.getAbsolutePath();
-//            LOGGER.info("Setting java.security.krb5.conf to {}", new Object[]{kerberosConfigFilePath});
-//            System.setProperty("java.security.krb5.conf", kerberosConfigFilePath);
-//        }
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
@@ -118,8 +99,6 @@ public class NiFiRegistry {
         FileUtils.deleteFilesInDirectory(webWorkingDir, null, LOGGER, true, true);
         FileUtils.deleteFile(webWorkingDir, LOGGER, 3);
 
-        detectTimingIssues();
-
         // redirect JUL log events
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
@@ -157,60 +136,6 @@ public class NiFiRegistry {
         } catch (final Throwable t) {
             LOGGER.warn("Problem occurred ensuring Jetty web server was properly terminated due to " + t);
         }
-    }
-
-    /**
-     * Determine if the machine we're running on has timing issues.
-     */
-    private void detectTimingIssues() {
-        final int minRequiredOccurrences = 25;
-        final int maxOccurrencesOutOfRange = 15;
-        final AtomicLong lastTriggerMillis = new AtomicLong(System.currentTimeMillis());
-
-        final ScheduledExecutorService service = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-            private final ThreadFactory defaultFactory = Executors.defaultThreadFactory();
-
-            @Override
-            public Thread newThread(final Runnable r) {
-                final Thread t = defaultFactory.newThread(r);
-                t.setDaemon(true);
-                t.setName("Detect Timing Issues");
-                return t;
-            }
-        });
-
-        final AtomicInteger occurrencesOutOfRange = new AtomicInteger(0);
-        final AtomicInteger occurrences = new AtomicInteger(0);
-        final Runnable command = new Runnable() {
-            @Override
-            public void run() {
-                final long curMillis = System.currentTimeMillis();
-                final long difference = curMillis - lastTriggerMillis.get();
-                final long millisOff = Math.abs(difference - 2000L);
-                occurrences.incrementAndGet();
-                if (millisOff > 500L) {
-                    occurrencesOutOfRange.incrementAndGet();
-                }
-                lastTriggerMillis.set(curMillis);
-            }
-        };
-
-        final ScheduledFuture<?> future = service.scheduleWithFixedDelay(command, 2000L, 2000L, TimeUnit.MILLISECONDS);
-
-        final TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                future.cancel(true);
-                service.shutdownNow();
-
-                if (occurrences.get() < minRequiredOccurrences || occurrencesOutOfRange.get() > maxOccurrencesOutOfRange) {
-                    LOGGER.warn("NiFi Registry has detected that this box is not responding within the expected timing interval, which may cause "
-                            + "Processors to be scheduled erratically. Please see the NiFi documentation for more information.");
-                }
-            }
-        };
-        final Timer timer = new Timer(true);
-        timer.schedule(timerTask, 60000L);
     }
 
     /**
