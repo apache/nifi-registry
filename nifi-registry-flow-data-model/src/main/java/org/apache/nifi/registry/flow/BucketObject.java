@@ -14,45 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("The position of a component on the graph")
-public class Position {
-    private double x;
-    private double y;
+@ApiModel("bucketObject")
+public abstract class BucketObject {
 
-    public Position() {
+    private String identifier;
+
+    @ApiModelProperty("An ID to uniquely identify this object.")
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public Position(double x, double y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    @ApiModelProperty("The x coordinate.")
-    public double getX() {
-        return x;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    @ApiModelProperty("The y coordinate.")
-    public double getY() {
-        return y;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    @Override
-    public String toString() {
-        return "[x=" + x + ", y=" + y + "]";
+    public void setIdentifier(String id) {
+        this.identifier = id;
     }
 }

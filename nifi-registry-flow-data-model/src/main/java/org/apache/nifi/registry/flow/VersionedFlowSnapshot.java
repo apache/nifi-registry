@@ -17,7 +17,8 @@
 
 package org.apache.nifi.registry.flow;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * <p>
@@ -27,6 +28,7 @@ import com.wordnik.swagger.annotations.ApiModelProperty;
  * version of the flow, the timestamp when it was saved, the contents of the flow, etc.
  * </p>
  */
+@ApiModel(value = "versionedFlowSnapshot")
 public class VersionedFlowSnapshot {
     private String identifier;
     private int version;
@@ -44,7 +46,7 @@ public class VersionedFlowSnapshot {
         this.identifier = identifier;
     }
 
-    @ApiModelProperty("The version of for this snapshot of the flow")
+    @ApiModelProperty("The version of this snapshot of the flow")
     public int getVersion() {
         return version;
     }
