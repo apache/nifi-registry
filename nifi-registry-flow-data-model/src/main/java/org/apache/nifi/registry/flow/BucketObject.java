@@ -14,44 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.response;
+package org.apache.nifi.registry.flow;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
-@XmlRootElement(name = "flowEntity")
-public class FlowEntity {
+@ApiModel("bucketObject")
+public abstract class BucketObject {
 
     private String identifier;
-    private String name;
-    private String description;
 
-    @ApiModelProperty("The identifier for this flow.")
+    @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
         return identifier;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setIdentifier(String id) {
+        this.identifier = id;
     }
-
-    @ApiModelProperty("The name of the flow.")
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @ApiModelProperty("A description of the flow set by the user when they create the initial version.")
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
 }

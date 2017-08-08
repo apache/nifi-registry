@@ -17,9 +17,8 @@
 
 package org.apache.nifi.registry.flow;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * <p>
@@ -29,7 +28,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * version of the flow, the timestamp when it was saved, the contents of the flow, etc.
  * </p>
  */
-@XmlRootElement(name = "versionedFlowSnapshot")
+@ApiModel(value = "versionedFlowSnapshot")
 public class VersionedFlowSnapshot {
     private String identifier;
     private int version;

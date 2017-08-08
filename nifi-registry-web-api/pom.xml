@@ -49,7 +49,7 @@
                                     <schemes>http,https</schemes>
                                     <basePath>/nifi-registry-api</basePath>
                                     <info>
-                                        <title>NiFi Registry Rest Api</title>
+                                        <title>NiFi Registry REST API</title>
                                         <version>${project.version}</version>
                                         <description>
                                             The Rest Api provides an interface to a registry with operations for saving, versioning, reading NiFi flows
