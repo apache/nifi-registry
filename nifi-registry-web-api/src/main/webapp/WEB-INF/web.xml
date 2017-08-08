@@ -23,14 +23,6 @@
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>org.apache.nifi.registry.web.NiFiRegistryResourceConfig</param-value>
         </init-param>
-        <!--<init-param>-->
-        <!--<param-name>com.sun.jersey.config.property.packages</param-name>-->
-        <!--<param-value>org.codehaus.jackson.jaxrs</param-value>-->
-        <!--&lt;!&ndash;             NOTE: The last element above, org.codehaus.jackson.jaxrs, replaces the default-->
-                       <!--JAX-RS processor with the Codehaus Jackson JAX-RS implementation. The default-->
-                       <!--JAX-RS processor returns top-level arrays encapsulated as child elements of a-->
-                       <!--single JSON object, whereas the Jackson JAX-RS implementation return an array.&ndash;&gt;-->
-        <!--</init-param>-->
     </servlet>
     <servlet-mapping>
         <servlet-name>api</servlet-name>
