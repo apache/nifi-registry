@@ -28,9 +28,8 @@ import javax.ws.rs.core.Response;
 
 @Path("/buckets/{bucketId}/flows")
 @Api(
-        value = "buckets > flows",
-        description = "Create named buckets in the registry to store NiFI objects such flows and extensions. " +
-                "Search for and retrieve existing buckets."
+        value = "bucket >> flows",
+        description = "Create flows scoped to an existing bucket in the registry."
 )
 public class BucketFlowResource {
 
