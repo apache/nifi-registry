@@ -17,7 +17,7 @@
 
 package org.apache.nifi.registry.flow;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 public class VersionedPort extends VersionedComponent {
     private PortType type;

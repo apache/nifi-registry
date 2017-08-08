@@ -19,7 +19,7 @@ package org.apache.nifi.registry.flow;
 
 import java.util.Objects;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 public class Bundle {
     private String group;

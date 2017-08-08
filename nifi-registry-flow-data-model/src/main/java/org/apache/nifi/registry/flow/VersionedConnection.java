@@ -20,7 +20,7 @@ package org.apache.nifi.registry.flow;
 import java.util.List;
 import java.util.Set;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiModelProperty;
 
 public class VersionedConnection extends VersionedComponent {
     private ConnectableComponent source;
