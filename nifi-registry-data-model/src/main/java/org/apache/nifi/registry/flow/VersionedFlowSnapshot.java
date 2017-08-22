@@ -20,6 +20,9 @@ package org.apache.nifi.registry.flow;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 
 /**
@@ -30,11 +33,18 @@ import java.util.Objects;
  * version of the flow, the timestamp when it was saved, the contents of the flow, etc.
  * </p>
  */
+@XmlRootElement
 @ApiModel(value = "versionedFlowSnapshot")
 public class VersionedFlowSnapshot {
 
+    @Valid
+    @NotNull
     private VersionedFlowSnapshotMetadata snapshotMetadata;
+
+    @Valid
+    @NotNull
     private VersionedProcessGroup flowContents;
+
 
     @ApiModelProperty("The metadata for this snapshot")
     public VersionedFlowSnapshotMetadata getSnapshotMetadata() {

@@ -19,17 +19,36 @@ package org.apache.nifi.registry.bucket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @ApiModel("bucketItem")
-public class BucketItem {
+public abstract class BucketItem {
 
+    @NotBlank
     private String identifier;
+
+    @NotBlank
     private String name;
+
+    @NotBlank
     private String bucketIdentifier;
+
+    @Min(1)
     private long createdTimestamp;
+
+    @Min(1)
     private long modifiedTimestamp;
-    private BucketItemType type;
+
+    @NotNull
+    private final BucketItemType type;
+
+    public BucketItem(final BucketItemType type) {
+        this.type = type;
+    }
+
 
     @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
@@ -79,10 +98,6 @@ public class BucketItem {
     @ApiModelProperty("The type of item.")
     public BucketItemType getType() {
         return type;
-    }
-
-    public void setType(BucketItemType type) {
-        this.type = type;
     }
 
     @Override

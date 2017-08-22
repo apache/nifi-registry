@@ -111,15 +111,15 @@ public class TestFileSystemMetadataProvider {
         assertEquals(2, metadataProvider.getBuckets().size());
         assertEquals(1, metadataProvider.getFlows().size());
 
-        final BucketMetadata bucket1 = metadataProvider.getBucket("bucket1");
+        final BucketMetadata bucket1 = metadataProvider.getBucketById("bucket1");
         assertNotNull(bucket1);
         assertEquals("bucket1", bucket1.getIdentifier());
 
-        final BucketMetadata bucket2 = metadataProvider.getBucket("bucket2");
+        final BucketMetadata bucket2 = metadataProvider.getBucketById("bucket2");
         assertNotNull(bucket2);
         assertEquals("bucket2", bucket2.getIdentifier());
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow1");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow1");
         assertNotNull(flowMetadata);
         assertEquals("flow1", flowMetadata.getIdentifier());
     }
@@ -150,11 +150,11 @@ public class TestFileSystemMetadataProvider {
     }
 
     @Test
-    public void testGetBucketExists() {
+    public void testGetBucketByIdExists() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
         assertEquals(2, metadataProvider.getBuckets().size());
 
-        final BucketMetadata bucket1 = metadataProvider.getBucket("bucket1");
+        final BucketMetadata bucket1 = metadataProvider.getBucketById("bucket1");
         assertNotNull(bucket1);
         assertEquals("bucket1", bucket1.getIdentifier());
         assertEquals("Bryan's Bucket", bucket1.getName());
@@ -163,11 +163,46 @@ public class TestFileSystemMetadataProvider {
     }
 
     @Test
-    public void testGetBucketDoesNotExist() {
+    public void testGetBucketByIdDoesNotExist() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
         assertEquals(2, metadataProvider.getBuckets().size());
 
-        final BucketMetadata bucket1 = metadataProvider.getBucket("bucket-does-not-exist");
+        final BucketMetadata bucket1 = metadataProvider.getBucketById("bucket-does-not-exist");
+        assertNull(bucket1);
+    }
+
+    @Test
+    public void testGetBucketByNameExists() {
+        metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
+        assertEquals(2, metadataProvider.getBuckets().size());
+
+        final BucketMetadata bucket1 = metadataProvider.getBucketByName("Bryan's Bucket");
+        assertNotNull(bucket1);
+        assertEquals("bucket1", bucket1.getIdentifier());
+        assertEquals("Bryan's Bucket", bucket1.getName());
+        assertEquals("The description for Bryan's Bucket.", bucket1.getDescription());
+        assertEquals(111111111, bucket1.getCreatedTimestamp());
+    }
+
+    @Test
+    public void testGetBucketByNameCaseInsensitive() {
+        metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
+        assertEquals(2, metadataProvider.getBuckets().size());
+
+        final BucketMetadata bucket1 = metadataProvider.getBucketByName("bryan's bucket");
+        assertNotNull(bucket1);
+        assertEquals("bucket1", bucket1.getIdentifier());
+        assertEquals("Bryan's Bucket", bucket1.getName());
+        assertEquals("The description for Bryan's Bucket.", bucket1.getDescription());
+        assertEquals(111111111, bucket1.getCreatedTimestamp());
+    }
+
+    @Test
+    public void testGetBucketByNameDoesNotExist() {
+        metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
+        assertEquals(2, metadataProvider.getBuckets().size());
+
+        final BucketMetadata bucket1 = metadataProvider.getBucketByName("bucket-does-not-exist");
         assertNull(bucket1);
     }
 
@@ -176,7 +211,7 @@ public class TestFileSystemMetadataProvider {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
         assertEquals(2, metadataProvider.getBuckets().size());
 
-        final BucketMetadata bucket = metadataProvider.getBucket("bucket1");
+        final BucketMetadata bucket = metadataProvider.getBucketById("bucket1");
         assertNotNull(bucket);
 
         final BucketMetadata updatedBucket = new StandardBucketMetadata.Builder(bucket)
@@ -212,14 +247,14 @@ public class TestFileSystemMetadataProvider {
         assertEquals(2, metadataProvider.getBuckets().size());
 
         final String bucketId = "bucket1";
-        assertNotNull(metadataProvider.getBucket(bucketId));
+        assertNotNull(metadataProvider.getBucketById(bucketId));
 
         final Set<FlowMetadata> bucketFlows = metadataProvider.getFlows(bucketId);
         assertNotNull(bucketFlows);
         assertEquals(1, bucketFlows.size());
 
         metadataProvider.deleteBucket(bucketId);
-        assertNull(metadataProvider.getBucket(bucketId));
+        assertNull(metadataProvider.getBucketById(bucketId));
 
         final Set<FlowMetadata> bucketFlows2 = metadataProvider.getFlows(bucketId);
         assertNotNull(bucketFlows2);
@@ -243,7 +278,7 @@ public class TestFileSystemMetadataProvider {
         assertEquals(2, metadataProvider.getBuckets().size());
 
         // verify bucket2 exists and has no flows
-        final BucketMetadata bucket2 = metadataProvider.getBucket("bucket2");
+        final BucketMetadata bucket2 = metadataProvider.getBucketById("bucket2");
         assertNotNull(bucket2);
         assertEquals(0, metadataProvider.getFlows(bucket2.getIdentifier()).size());
 
@@ -268,10 +303,10 @@ public class TestFileSystemMetadataProvider {
     }
 
     @Test
-    public void testGetFlowExists() {
+    public void testGetFlowByIdExists() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow1");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow1");
         assertNotNull(flowMetadata);
         assertEquals("flow1", flowMetadata.getIdentifier());
         assertEquals("Bryan's Flow", flowMetadata.getName());
@@ -283,10 +318,46 @@ public class TestFileSystemMetadataProvider {
     }
 
     @Test
-    public void testGetFlowDoesNotExist() {
+    public void testGetFlowByIdDoesNotExist() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow-does-not-exist");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow-does-not-exist");
+        assertNull(flowMetadata);
+    }
+
+    @Test
+    public void testGetFlowByNameExists() {
+        metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
+
+        final FlowMetadata flowMetadata = metadataProvider.getFlowByName("Bryan's Flow");
+        assertNotNull(flowMetadata);
+        assertEquals("flow1", flowMetadata.getIdentifier());
+        assertEquals("Bryan's Flow", flowMetadata.getName());
+        assertEquals("The description for Bryan's Flow.", flowMetadata.getDescription());
+        assertEquals(333333333, flowMetadata.getCreatedTimestamp());
+        assertEquals(444444444, flowMetadata.getModifiedTimestamp());
+        assertEquals(3, flowMetadata.getSnapshotMetadata().size());
+    }
+
+    @Test
+    public void testGetFlowByNameCaseInsensitive() {
+        metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
+
+        final FlowMetadata flowMetadata = metadataProvider.getFlowByName("bryan's flow");
+        assertNotNull(flowMetadata);
+        assertEquals("flow1", flowMetadata.getIdentifier());
+        assertEquals("Bryan's Flow", flowMetadata.getName());
+        assertEquals("The description for Bryan's Flow.", flowMetadata.getDescription());
+        assertEquals(333333333, flowMetadata.getCreatedTimestamp());
+        assertEquals(444444444, flowMetadata.getModifiedTimestamp());
+        assertEquals(3, flowMetadata.getSnapshotMetadata().size());
+    }
+
+    @Test
+    public void testGetFlowByNameDoesNotExist() {
+        metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
+
+        final FlowMetadata flowMetadata = metadataProvider.getFlowByName("flow-does-not-exist");
         assertNull(flowMetadata);
     }
 
@@ -294,7 +365,7 @@ public class TestFileSystemMetadataProvider {
     public void testUpdateFlowExists() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow1");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow1");
         assertNotNull(flowMetadata);
 
         final String newFlowName = "New Flow Name";
@@ -334,14 +405,14 @@ public class TestFileSystemMetadataProvider {
     public void testDeleteFlowWithSnapshots() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow1");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow1");
         assertNotNull(flowMetadata);
         assertNotNull(flowMetadata.getSnapshotMetadata());
         assertTrue(flowMetadata.getSnapshotMetadata().size() > 0);
 
         metadataProvider.deleteFlow(flowMetadata.getIdentifier());
 
-        final FlowMetadata deletedFlow = metadataProvider.getFlow("flow1");
+        final FlowMetadata deletedFlow = metadataProvider.getFlowById("flow1");
         assertNull(deletedFlow);
     }
 
@@ -358,7 +429,7 @@ public class TestFileSystemMetadataProvider {
     public void testCreateFlowSnapshot() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata versionedFlow = metadataProvider.getFlow("flow1");
+        final FlowMetadata versionedFlow = metadataProvider.getFlowById("flow1");
         assertNotNull(versionedFlow);
         assertNotNull(versionedFlow.getSnapshotMetadata());
 
@@ -384,7 +455,7 @@ public class TestFileSystemMetadataProvider {
         assertEquals(nextSnapshot.getComments(), createdSnapshot.getComments());
         assertEquals(nextSnapshot.getCreatedTimestamp(), createdSnapshot.getCreatedTimestamp());
 
-        final FlowMetadata updatedFlow = metadataProvider.getFlow("flow1");
+        final FlowMetadata updatedFlow = metadataProvider.getFlowById("flow1");
         assertNotNull(updatedFlow);
         assertNotNull(updatedFlow.getSnapshotMetadata());
         assertEquals(updatedFlow.getSnapshotMetadata().size(), versionedFlow.getSnapshotMetadata().size() + 1);
@@ -439,7 +510,7 @@ public class TestFileSystemMetadataProvider {
     public void testDeleteSnapshotExists() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow1");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow1");
         assertNotNull(flowMetadata);
         assertNotNull(flowMetadata.getSnapshotMetadata());
         assertEquals(3, flowMetadata.getSnapshotMetadata().size());
@@ -449,7 +520,7 @@ public class TestFileSystemMetadataProvider {
 
         metadataProvider.deleteFlowSnapshot(flowMetadata.getIdentifier(), firstSnapshot.getVersion());
 
-        final FlowMetadata updatedFlow = metadataProvider.getFlow("flow1");
+        final FlowMetadata updatedFlow = metadataProvider.getFlowById("flow1");
         assertNotNull(updatedFlow);
         assertNotNull(updatedFlow.getSnapshotMetadata());
         assertEquals(2, updatedFlow.getSnapshotMetadata().size());
@@ -463,14 +534,14 @@ public class TestFileSystemMetadataProvider {
     public void testDeleteSnapshotDoesNotExist() {
         metadataProvider.onConfigured(createConfigContext(METADATA_DEST_EXISTING));
 
-        final FlowMetadata flowMetadata = metadataProvider.getFlow("flow1");
+        final FlowMetadata flowMetadata = metadataProvider.getFlowById("flow1");
         assertNotNull(flowMetadata);
         assertNotNull(flowMetadata.getSnapshotMetadata());
         assertEquals(3, flowMetadata.getSnapshotMetadata().size());
 
         metadataProvider.deleteFlowSnapshot(flowMetadata.getIdentifier(), Integer.MAX_VALUE);
 
-        final FlowMetadata updatedFlow = metadataProvider.getFlow("flow1");
+        final FlowMetadata updatedFlow = metadataProvider.getFlowById("flow1");
         assertNotNull(updatedFlow);
         assertNotNull(updatedFlow.getSnapshotMetadata());
         assertEquals(3, updatedFlow.getSnapshotMetadata().size());

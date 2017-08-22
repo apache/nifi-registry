@@ -20,8 +20,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +38,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Set;
+import java.util.SortedSet;
 
 @Path("/flows")
 @Api(
@@ -45,6 +50,12 @@ public class FlowResource {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowResource.class);
 
+    private final RegistryService registryService;
+
+    public FlowResource(final RegistryService registryService) {
+        this.registryService = registryService;
+    }
+
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
@@ -54,9 +65,8 @@ public class FlowResource {
             responseContainer = "List"
     )
     public Response getFlows() {
-        // TODO implement getFlows
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+        final Set<VersionedFlow> flows = registryService.getFlows();
+        return Response.status(Response.Status.OK).entity(flows).build();
     }
 
     @GET
@@ -72,11 +82,9 @@ public class FlowResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response getFlow(
-            @PathParam("flowId") String flowId) {
-        // TODO implement getFlow
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response getFlow(@PathParam("flowId") final String flowId) {
+        final VersionedFlow flow = registryService.getFlow(flowId);
+        return Response.status(Response.Status.OK).entity(flow).build();
     }
 
     @PUT
@@ -92,11 +100,25 @@ public class FlowResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response updateFlow(
-            @PathParam("flowId") String flowId) {
-        // TODO implement updateFlow
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response updateFlow(@PathParam("flowId") final String flowId, final VersionedFlow flow) {
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Id cannot be blank");
+        }
+
+        if (flow == null) {
+            throw new IllegalArgumentException("Flow cannot be null");
+        }
+
+        if (flow.getIdentifier() != null && !flowId.equals(flow.getIdentifier())) {
+            throw new IllegalArgumentException("Flow id in path param must match flow id in body");
+        }
+
+        if (flow.getIdentifier() == null) {
+            flow.setIdentifier(flowId);
+        }
+
+        final VersionedFlow updatedFlow = registryService.updateFlow(flow);
+        return Response.status(Response.Status.OK).entity(updatedFlow).build();
     }
 
     @DELETE
@@ -112,11 +134,9 @@ public class FlowResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response deleteFlow(
-            @PathParam("flowId") String flowId) {
-        // TODO implement deleteFlow
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response deleteFlow(@PathParam("flowId") final String flowId) {
+        final VersionedFlow deletedFlow = registryService.deleteFlow(flowId);
+        return Response.status(Response.Status.OK).entity(deletedFlow).build();
     }
 
     @POST
@@ -128,11 +148,26 @@ public class FlowResource {
             "The version number is created by the server and a location URI for the created version resource is returned.",
             response = VersionedFlowSnapshot.class
     )
-    public Response createFlowVersion(
-            @PathParam("flowId") String flowId) {
-        // TODO implement createFlowVersion
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response createFlowVersion(@PathParam("flowId") final String flowId, final VersionedFlowSnapshot snapshot) {
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Id cannot be blank");
+        }
+
+        if (snapshot == null) {
+            throw new IllegalArgumentException("VersionedFlowSnapshot cannot be null");
+        }
+
+        if (snapshot.getSnapshotMetadata() != null && snapshot.getSnapshotMetadata().getFlowIdentifier() != null
+                && !flowId.equals(snapshot.getSnapshotMetadata().getFlowIdentifier())) {
+            throw new IllegalArgumentException("Flow id in path param must match flow id in body");
+        }
+
+        if (snapshot.getSnapshotMetadata() != null && snapshot.getSnapshotMetadata().getFlowIdentifier() != null) {
+            snapshot.getSnapshotMetadata().setFlowIdentifier(flowId);
+        }
+
+        final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
+        return Response.status(Response.Status.OK).entity(createdSnapshot).build();
     }
 
     @GET
@@ -141,9 +176,7 @@ public class FlowResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Get summary of all versions of a flow for a given flow ID.",
-            response = VersionedFlowSnapshot.class, /* TODO, add a JSON serialization view for VersionedFlowSnapshot
-                                                       for this endpoint that  hides the flowContents property when
-                                                       this object is returned as part of a collection. */
+            response = VersionedFlowSnapshotMetadata.class,
             responseContainer = "List"
     )
     @ApiResponses(
@@ -151,11 +184,9 @@ public class FlowResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response getFlowVersions(
-            @PathParam("flowId") String flowId) {
-        // TODO implement getFlowVersions
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response getFlowVersions(@PathParam("flowId") final String flowId) {
+        final VersionedFlow flow = registryService.getFlow(flowId);
+        return Response.status(Response.Status.OK).entity(flow.getSnapshotMetadata()).build();
     }
 
     @GET
@@ -171,11 +202,20 @@ public class FlowResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response getLatestFlowVersion(
-            @PathParam("flowId") String flowId) {
-        // TODO implement getLatestFlowVersion
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response getLatestFlowVersion(@PathParam("flowId") final String flowId) {
+        final VersionedFlow flow = registryService.getFlow(flowId);
+
+        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = flow.getSnapshotMetadata();
+        if (snapshots == null || snapshots.size() == 0) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        final VersionedFlowSnapshotMetadata lastSnapshotMetadata = snapshots.last();
+
+        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(
+                lastSnapshotMetadata.getFlowIdentifier(), lastSnapshotMetadata.getVersion());
+
+        return Response.status(Response.Status.OK).entity(lastSnapshot).build();
     }
 
     @GET
@@ -192,11 +232,10 @@ public class FlowResource {
             }
     )
     public Response getFlowVersion(
-            @PathParam("flowId") String flowId,
-            @PathParam("versionNumber") Integer versionNumber) {
-        // TODO implement getFlowVersion
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+            @PathParam("flowId") final String flowId,
+            @PathParam("versionNumber") final Integer versionNumber) {
+        final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(flowId, versionNumber);
+        return Response.status(Response.Status.OK).entity(snapshot).build();
     }
 
 }

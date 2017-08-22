@@ -42,8 +42,15 @@ public interface MetadataProvider extends Provider {
      * @param bucketIdentifier the id of the bucket to retrieve
      * @return the bucket with the given id, or null if it does not exist
      */
-    BucketMetadata getBucket(String bucketIdentifier);
+    BucketMetadata getBucketById(String bucketIdentifier);
 
+    /**
+     * Retrieves the bucket with the given name. The name comparison must be case-insensitive.
+     *
+     * @param name the name of the bucket to retrieve
+     * @return the bucket with the given name, or null if it does not exist
+     */
+    BucketMetadata getBucketByName(String name);
     /**
      * Updates the given bucket, only the name and description should be allowed to be updated.
      *
@@ -53,7 +60,7 @@ public interface MetadataProvider extends Provider {
     BucketMetadata updateBucket(BucketMetadata bucket);
 
     /**
-     * Deletes the bucket with the given identifier if one exists.
+     * Deletes the bucket with the given identifier, as well as any objects that reference the bucket.
      *
      * @param bucketIdentifier the id of the bucket to delete
      */
@@ -82,7 +89,15 @@ public interface MetadataProvider extends Provider {
      * @param flowIdentifier the identifier of the flow to retrieve
      * @return the versioned flow with the given id, or null if no flow with the given id exists
      */
-    FlowMetadata getFlow(String flowIdentifier);
+    FlowMetadata getFlowById(String flowIdentifier);
+
+    /**
+     * Retrieves the versioned flow with the given name. The name comparison must be case-insensitive.
+     *
+     * @param name the name of the flow to retrieve
+     * @return the versioned flow with the given name, or null if no flow with the given name exists
+     */
+    FlowMetadata getFlowByName(String name);
 
     /**
      * Updates the given versioned flow, only the name and description should be allowed to be updated.

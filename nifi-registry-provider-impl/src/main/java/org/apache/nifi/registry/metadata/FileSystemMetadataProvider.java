@@ -62,7 +62,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
         try {
             return JAXBContext.newInstance(JAXB_GENERATED_PATH, FileSystemMetadataProvider.class.getClassLoader());
         } catch (JAXBException e) {
-            throw new RuntimeException("Unable to create JAXBContext.");
+            throw new RuntimeException("Unable to create JAXBContext.", e);
         }
     }
 
@@ -156,23 +156,33 @@ public class FileSystemMetadataProvider implements MetadataProvider {
         metadata.getBuckets().getBucket().add(jaxbBucket);
 
         saveAndRefresh(metadata);
-        return metadataHolder.get().getBucketsBydId().get(bucket.getIdentifier());
+        return metadataHolder.get().getBucketsById().get(bucket.getIdentifier());
     }
 
     @Override
-    public BucketMetadata getBucket(final String bucketIdentifier) {
+    public BucketMetadata getBucketById(final String bucketIdentifier) {
         if (bucketIdentifier == null) {
             throw new IllegalArgumentException("Bucket Identifier cannot be null");
         }
 
         final MetadataHolder holder = metadataHolder.get();
-        return holder.getBucketsBydId().get(bucketIdentifier);
+        return holder.getBucketsById().get(bucketIdentifier);
+    }
+
+    @Override
+    public BucketMetadata getBucketByName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Bucket Name cannot be null");
+        }
+
+        final MetadataHolder holder = metadataHolder.get();
+        return holder.getBucketsByName().get(name.toLowerCase());
     }
 
     @Override
     public Set<BucketMetadata> getBuckets() {
         final MetadataHolder holder = metadataHolder.get();
-        final Map<String,BucketMetadata> bucketsBydId = holder.getBucketsBydId();
+        final Map<String,BucketMetadata> bucketsBydId = holder.getBucketsById();
         return new HashSet<>(bucketsBydId.values());
     }
 
@@ -198,7 +208,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
         jaxbBucket.setDescription(bucket.getDescription());
 
         saveAndRefresh(holder.getMetadata());
-        return metadataHolder.get().getBucketsBydId().get(bucket.getIdentifier());
+        return metadataHolder.get().getBucketsById().get(bucket.getIdentifier());
     }
 
     @Override
@@ -251,7 +261,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
 
         final MetadataHolder holder = metadataHolder.get();
 
-        final BucketMetadata bucket = holder.getBucketsBydId().get(bucketIdentifier);
+        final BucketMetadata bucket = holder.getBucketsById().get(bucketIdentifier);
         if (bucket == null) {
             throw new IllegalStateException("Unable to create Versioned Flow because Bucket does not exist with id " + bucketIdentifier);
         }
@@ -272,7 +282,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public FlowMetadata getFlow(final String flowIdentifier) {
+    public FlowMetadata getFlowById(final String flowIdentifier) {
         if (flowIdentifier == null) {
             throw new IllegalArgumentException("Flow Identifier cannot be null");
         }
@@ -280,6 +290,17 @@ public class FileSystemMetadataProvider implements MetadataProvider {
         final MetadataHolder holder = metadataHolder.get();
         return holder.getFlowsById().get(flowIdentifier);
     }
+
+    @Override
+    public FlowMetadata getFlowByName(final String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("Flow Name cannot be null");
+        }
+
+        final MetadataHolder holder = metadataHolder.get();
+        return holder.getFlowsByName().get(name.toLowerCase());
+    }
+
 
     @Override
     public Set<FlowMetadata> getFlows() {

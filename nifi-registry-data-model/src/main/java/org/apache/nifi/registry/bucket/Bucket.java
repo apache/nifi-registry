@@ -20,17 +20,31 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.flow.VersionedFlow;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 import java.util.Set;
 
+@XmlRootElement
 @ApiModel(value = "bucket")
 public class Bucket {
 
+    @NotBlank
     private String identifier;
+
+    @NotBlank
     private String name;
+
+    @Min(1)
     private long createdTimestamp;
+
     private String description;
+
+    @Valid
     private Set<VersionedFlow> versionedFlows;
+
 
     @ApiModelProperty("The id of the bucket. This is set by the server at creation time.")
     public String getIdentifier() {
@@ -68,7 +82,7 @@ public class Bucket {
         this.description = description;
     }
 
-    @ApiModelProperty("The versioned flows in the bucket.")
+    @ApiModelProperty(value = "The versioned flows in the bucket.", readOnly = true)
     public Set<VersionedFlow> getVersionedFlows() {
         return versionedFlows;
     }
