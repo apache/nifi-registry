@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.metadata;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
@@ -25,7 +26,6 @@ import org.apache.nifi.registry.metadata.generated.Flows;
 import org.apache.nifi.registry.metadata.generated.Metadata;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
-import org.apache.nifi.registry.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
