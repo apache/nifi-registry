@@ -58,7 +58,7 @@ public class StandardProviderFactory implements ProviderFactory {
         try {
             return JAXBContext.newInstance(JAXB_GENERATED_PATH, StandardProviderFactory.class.getClassLoader());
         } catch (JAXBException e) {
-            throw new RuntimeException("Unable to create JAXBContext.");
+            throw new RuntimeException("Unable to create JAXBContext.", e);
         }
     }
 

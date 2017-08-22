@@ -20,7 +20,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.Set;
 
 @Path("/buckets")
 @Api(
@@ -50,6 +53,12 @@ public class BucketResource {
     @Context
     UriInfo uriInfo;
 
+    private final RegistryService registryService;
+
+    public BucketResource(final RegistryService registryService) {
+        this.registryService = registryService;
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -57,10 +66,9 @@ public class BucketResource {
             value = "Create a named bucket capable of storing NiFi bucket objects such as flows and extension bundles.",
             response = Bucket.class
     )
-    public Response createBucket(Bucket bucket) {
-        // TODO implement createBucket
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response createBucket(final Bucket bucket) {
+        final Bucket createdBucket = registryService.createBucket(bucket);
+        return Response.status(Response.Status.OK).entity(createdBucket).build();
     }
 
     @GET
@@ -72,9 +80,8 @@ public class BucketResource {
             responseContainer = "List"
     )
     public Response getBuckets() {
-        // TODO implement getBuckets
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+        final Set<Bucket> buckets = registryService.getBuckets();
+        return Response.status(Response.Status.OK).entity(buckets).build();
     }
 
     @GET
@@ -90,10 +97,9 @@ public class BucketResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response getBucket(@PathParam("bucketId") String bucketId) {
-        // TODO implement getBucket
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response getBucket(@PathParam("bucketId") final String bucketId) {
+        final Bucket bucket = registryService.getBucket(bucketId);
+        return Response.status(Response.Status.OK).entity(bucket).build();
     }
 
     @PUT
@@ -109,10 +115,25 @@ public class BucketResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response updateBucket(@PathParam("bucketId") String bucketId) {
-        // TODO implement updateBucket
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response updateBucket(@PathParam("bucketId") final String bucketId, final Bucket bucket) {
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalArgumentException("Bucket Id cannot be blank");
+        }
+
+        if (bucket == null) {
+            throw new IllegalArgumentException("Bucket cannot be null");
+        }
+
+        if (bucket.getIdentifier() != null && !bucketId.equals(bucket.getIdentifier())) {
+            throw new IllegalArgumentException("Bucket id in path param must match bucket id in body");
+        }
+
+        if (bucket.getIdentifier() == null) {
+            bucket.setIdentifier(bucketId);
+        }
+
+        final Bucket updatedBucket = registryService.updateBucket(bucket);
+        return Response.status(Response.Status.OK).entity(updatedBucket).build();
     }
 
     @DELETE
@@ -128,10 +149,9 @@ public class BucketResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response deleteBucket(@PathParam("bucketId") String bucketId) {
-        // TODO implement deleteBucket
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response deleteBucket(@PathParam("bucketId") final String bucketId) {
+        final Bucket deletedBucket = registryService.deleteBucket(bucketId);
+        return Response.status(Response.Status.OK).entity(deletedBucket).build();
     }
 
 }

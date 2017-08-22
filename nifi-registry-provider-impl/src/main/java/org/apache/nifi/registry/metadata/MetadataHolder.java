@@ -36,13 +36,17 @@ public class MetadataHolder {
     private final Metadata metadata;
     private final Map<String,Set<FlowMetadata>> flowsByBucket;
     private final Map<String,FlowMetadata> flowsById;
+    private final Map<String,FlowMetadata> flowsByName;
     private final Map<String,BucketMetadata> bucketsById;
+    private final Map<String,BucketMetadata> bucketsByName;
 
     public MetadataHolder(final Metadata metadata) {
         this.metadata = metadata;
         this.flowsByBucket = Collections.unmodifiableMap(createFlowsByBucket(metadata));
+        this.flowsByName = Collections.unmodifiableMap(createFlowsByName(flowsByBucket));
         this.flowsById = Collections.unmodifiableMap(createFlowsById(flowsByBucket));
         this.bucketsById = Collections.unmodifiableMap(createBucketsBydId(metadata, flowsByBucket));
+        this.bucketsByName = Collections.unmodifiableMap(createBucketsByName(bucketsById));
     }
 
     private Map<String,BucketMetadata> createBucketsBydId(final Metadata metadata, final Map<String,Set<FlowMetadata>> flowsByBucket) {
@@ -58,6 +62,12 @@ public class MetadataHolder {
         }
 
         return bucketsById;
+    }
+
+    private Map<String,BucketMetadata> createBucketsByName(Map<String,BucketMetadata> bucketsById) {
+        final Map<String,BucketMetadata> bucketsByName = new HashMap<>();
+        bucketsById.values().stream().forEach(b -> bucketsByName.put(b.getName().toLowerCase(), b));
+        return bucketsByName;
     }
 
     private BucketMetadata createBucketMetadata(final Bucket jaxbBucket, final Set<FlowMetadata> bucketFlows) {
@@ -116,27 +126,47 @@ public class MetadataHolder {
     }
 
     private Map<String,FlowMetadata> createFlowsById(final Map<String,Set<FlowMetadata>> flowsByBucket) {
-        final Map<String,FlowMetadata> flowsBdId = new HashMap<>();
+        final Map<String,FlowMetadata> flowsById = new HashMap<>();
 
         for (final Map.Entry<String,Set<FlowMetadata>> entry : flowsByBucket.entrySet()) {
             for (final FlowMetadata flowMetadata : entry.getValue()) {
-                flowsBdId.put(flowMetadata.getIdentifier(), flowMetadata);
+                flowsById.put(flowMetadata.getIdentifier(), flowMetadata);
             }
         }
 
-        return flowsBdId;
+        return flowsById;
+    }
+
+    private Map<String,FlowMetadata> createFlowsByName(final Map<String,Set<FlowMetadata>> flowsByBucket) {
+        final Map<String,FlowMetadata> flowsByName = new HashMap<>();
+
+        for (final Map.Entry<String,Set<FlowMetadata>> entry : flowsByBucket.entrySet()) {
+            for (final FlowMetadata flow : entry.getValue()) {
+                flowsByName.put(flow.getName().toLowerCase(), flow);
+            }
+        }
+
+        return flowsByName;
     }
 
     public Metadata getMetadata() {
         return metadata;
     }
 
-    public Map<String,BucketMetadata> getBucketsBydId() {
+    public Map<String,BucketMetadata> getBucketsById() {
         return bucketsById;
+    }
+
+    public Map<String,BucketMetadata> getBucketsByName() {
+        return bucketsByName;
     }
 
     public Map<String,FlowMetadata> getFlowsById() {
         return flowsById;
+    }
+
+    public Map<String,FlowMetadata> getFlowsByName() {
+        return flowsByName;
     }
 
     public Map<String,Set<FlowMetadata>> getFlowsByBucket() {

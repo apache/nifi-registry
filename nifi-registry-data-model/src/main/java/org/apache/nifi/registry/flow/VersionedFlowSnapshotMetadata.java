@@ -19,6 +19,8 @@ package org.apache.nifi.registry.flow;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 /**
@@ -28,12 +30,23 @@ import java.util.Objects;
 @ApiModel(value = "versionedFlowSnapshot")
 public class VersionedFlowSnapshotMetadata implements Comparable<VersionedFlowSnapshotMetadata> {
 
+    @NotBlank
     private String bucketIdentifier;
+
+    @NotBlank
     private String flowIdentifier;
+
+    @NotBlank
     private String flowName;
+
+    @Min(1)
     private int version;
+
+    @Min(1)
     private long timestamp;
+
     private String comments;
+
 
     @ApiModelProperty("The identifier of the bucket this snapshot belongs to.")
     public String getBucketIdentifier() {

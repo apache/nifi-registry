@@ -43,7 +43,12 @@ public class MockMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public BucketMetadata getBucket(String bucketIdentifier) {
+    public BucketMetadata getBucketById(String bucketIdentifier) {
+        return null;
+    }
+
+    @Override
+    public BucketMetadata getBucketByName(String name) {
         return null;
     }
 
@@ -68,7 +73,12 @@ public class MockMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public FlowMetadata getFlow(String flowIdentifier) {
+    public FlowMetadata getFlowById(String flowIdentifier) {
+        return null;
+    }
+
+    @Override
+    public FlowMetadata getFlowByName(String name) {
         return null;
     }
 
