@@ -17,10 +17,10 @@
 package org.apache.nifi.registry.flow;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
-import org.apache.nifi.registry.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
