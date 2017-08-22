@@ -45,9 +45,12 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_NEED_CLIENT_AUTH = "nifi.registry.security.needClientAuth";
     public static final String SECURITY_AUTHORIZED_USERS = "nifi.registry.security.authorized.users";
 
+    public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
+
     // Defaults
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
     public static final String DEFAULT_WAR_DIR = "./lib";
+    public static final String DEFAULT_PROVIDERS_CONFIGURATION_FILE = "./conf/providers.xml";
 
     public int getWebThreads() {
         int webThreads = 200;
@@ -144,4 +147,12 @@ public class NiFiRegistryProperties extends Properties {
         return new File(authorizedUsersFile);
     }
 
+    public File getProvidersConfigurationFile() {
+        final String value = getProperty(PROVIDERS_CONFIGURATION_FILE);
+        if (StringUtils.isBlank(value)) {
+            return new File(DEFAULT_PROVIDERS_CONFIGURATION_FILE);
+        } else {
+            return new File(value);
+        }
+    }
 }

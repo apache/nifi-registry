@@ -30,16 +30,18 @@
     <modules>
         <module>nifi-registry-properties</module>
         <module>nifi-registry-utils</module>
-	<module>nifi-registry-flow-data-model</module>
+	    <module>nifi-registry-data-model</module>
         <module>nifi-registry-jetty</module>
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
         <module>nifi-registry-security</module>
-        <module>nifi-registry-service-api</module>
+        <module>nifi-registry-framework</module>
+	    <module>nifi-registry-provider-api</module>
+	    <module>nifi-registry-provider-impl</module>
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
         <module>nifi-registry-bootstrap</module>
-	<module>nifi-registry-assembly</module>
+	    <module>nifi-registry-assembly</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
@@ -245,6 +247,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.5</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.5</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

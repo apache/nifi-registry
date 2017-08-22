@@ -16,6 +16,8 @@
  */
 package org.apache.nifi.registry.web.api;
 
+import org.apache.nifi.registry.flow.FlowPersistenceProvider;
+import org.apache.nifi.registry.metadata.MetadataProvider;
 import org.apache.nifi.registry.web.response.TestEntity;
 
 import javax.ws.rs.GET;
@@ -26,6 +28,23 @@ import javax.ws.rs.core.Response;
 
 @Path("/test")
 public class TestResource {
+
+    private final MetadataProvider metadataProvider;
+
+    private final FlowPersistenceProvider flowPersistenceProvider;
+
+    public TestResource(final MetadataProvider metadataProvider, final FlowPersistenceProvider flowPersistenceProvider) {
+        this.metadataProvider = metadataProvider;
+        this.flowPersistenceProvider = flowPersistenceProvider;
+
+        if (this.metadataProvider == null) {
+            throw new IllegalStateException("MetadataProvider cannot be null");
+        }
+
+        if (this.flowPersistenceProvider == null) {
+            throw new IllegalStateException("FlowPersistenceProvider cannot be null");
+        }
+    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

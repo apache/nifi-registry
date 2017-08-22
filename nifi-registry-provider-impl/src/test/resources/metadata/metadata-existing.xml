@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<metadata>
+    <buckets>
+        <bucket identifier="bucket1" name="Bryan's Bucket" createdTimestamp="111111111">
+            <description>The description for Bryan's Bucket.</description>
+        </bucket>
+        <bucket identifier="bucket2" name="Matt's Bucket" createdTimestamp="222222222" />
+    </buckets>
+    <flows>
+        <flow identifier="flow1" name="Bryan's Flow" createdTimestamp="333333333" modifiedTimestamp="444444444" bucketIdentifier="bucket1">
+            <description>The description for Bryan's Flow.</description>
+            <snapshot version="1" createdTimestamp="555555555">
+                <comments>These are the comments for snapshot #1.</comments>
+            </snapshot>
+            <snapshot version="2" createdTimestamp="666666666" />
+            <snapshot version="3" createdTimestamp="777777777">
+                <comments>These are the comments for snapshot #3.</comments>
+            </snapshot>
+        </flow>
+    </flows>
+</metadata>

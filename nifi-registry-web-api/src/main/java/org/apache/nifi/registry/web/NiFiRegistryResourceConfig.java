@@ -16,6 +16,11 @@
  */
 package org.apache.nifi.registry.web;
 
+import org.apache.nifi.registry.flow.FlowPersistenceProvider;
+import org.apache.nifi.registry.metadata.MetadataProvider;
+import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.provider.ProviderFactory;
+import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.web.api.TestResource;
 import org.apache.nifi.registry.web.mapper.IllegalArgumentExceptionMapper;
 import org.apache.nifi.registry.web.mapper.ThrowableMapper;
@@ -32,6 +37,12 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistryResourceConfig.class);
 
     public NiFiRegistryResourceConfig(@Context ServletContext servletContext) {
+        final NiFiRegistryProperties properties = (NiFiRegistryProperties) servletContext.getAttribute("nifi-registry.properties");
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(properties);
+        final MetadataProvider metadataProvider = providerFactory.getMetadataProvider();
+        final FlowPersistenceProvider flowPersistenceProvider = providerFactory.getFlowPersistenceProvider();
+
         register(HttpMethodOverrideFilter.class);
 
         // register the exception mappers
@@ -39,6 +50,6 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(new ThrowableMapper());
 
         // register endpoints
-        register(new TestResource());
+        register(new TestResource(metadataProvider, flowPersistenceProvider));
     }
 }
