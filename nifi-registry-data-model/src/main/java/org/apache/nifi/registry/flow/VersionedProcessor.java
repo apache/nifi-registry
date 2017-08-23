@@ -27,6 +27,7 @@ public class VersionedProcessor extends VersionedComponent {
     private Bundle bundle;
     private Map<String, String> style;
 
+    private String type;
     private Map<String, String> properties;
     private String annotationData;
 
@@ -57,6 +58,15 @@ public class VersionedProcessor extends VersionedComponent {
 
     public void setSchedulingStrategy(String schedulingStrategy) {
         this.schedulingStrategy = schedulingStrategy;
+    }
+
+    @ApiModelProperty("The type of Processor")
+    public String getType() {
+        return type;
+    }
+
+    public void setType(final String type) {
+        this.type = type;
     }
 
     @ApiModelProperty("Indicates the node where the process will execute.")

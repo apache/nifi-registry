@@ -27,8 +27,6 @@ public class VersionedLabel extends VersionedComponent {
     private Double width;
     private Double height;
 
-    // font-size = 12px
-    // background-color = #eee
     private Map<String, String> style;
 
 

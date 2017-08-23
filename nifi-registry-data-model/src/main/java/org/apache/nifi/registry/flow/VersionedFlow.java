@@ -24,6 +24,8 @@ import org.apache.nifi.registry.bucket.BucketItemType;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import java.util.Collections;
 import java.util.SortedSet;
 
 /**
@@ -43,7 +45,7 @@ public class VersionedFlow extends BucketItem {
     private long versionCount;
 
     @Valid
-    private SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata;
+    private SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata = Collections.emptySortedSet();
 
     public VersionedFlow() {
         super(BucketItemType.FLOW);

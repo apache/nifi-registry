@@ -34,6 +34,7 @@
         <module>nifi-registry-properties</module>
         <module>nifi-registry-utils</module>
         <module>nifi-registry-data-model</module>
+        <module>nifi-registry-flow-diff</module>
         <module>nifi-registry-jetty</module>
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
