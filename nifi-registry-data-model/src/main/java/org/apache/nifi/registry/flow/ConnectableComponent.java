@@ -18,6 +18,8 @@
 package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.util.Objects;
+
 
 public class ConnectableComponent {
     private String id;
@@ -69,5 +71,25 @@ public class ConnectableComponent {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, groupId, name, type, comments);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof ConnectableComponent)) {
+            return false;
+        }
+        final ConnectableComponent other = (ConnectableComponent) obj;
+        return Objects.equals(id, other.id);
     }
 }

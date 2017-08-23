@@ -82,4 +82,9 @@ public class VersionedFlowSnapshot {
         return Objects.equals(this.snapshotMetadata, other.snapshotMetadata);
     }
 
+    @Override
+    public String toString() {
+        return "VersionedFlowSnapshot[flowId=" + snapshotMetadata.getFlowIdentifier() + ", flowName=" + snapshotMetadata.getFlowName()
+            + ", version=" + snapshotMetadata.getVersion() + ", comments=" + snapshotMetadata.getComments() + "]";
+    }
 }

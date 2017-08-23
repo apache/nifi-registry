@@ -275,7 +275,7 @@ public class TestJerseyNiFiRegistryClient {
         snapshot.setSnapshotMetadata(snapshotMetadata);
         snapshot.setFlowContents(snapshotContents);
 
-        return client.create(flow.getBucketIdentifier(), flow.getIdentifier(), snapshot);
+        return client.create(snapshot);
     }
 
 }

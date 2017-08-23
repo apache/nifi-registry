@@ -24,11 +24,10 @@ import io.swagger.annotations.ApiModelProperty;
 public class VersionedRemoteProcessGroup extends VersionedComponent {
     private String targetUri;
     private String targetUris;
-    private Boolean targetSecure;
 
     private String communicationsTimeout;
     private String yieldDuration;
-    private SiteToSiteTransportProtocol transportProtocol;
+    private String transportProtocol;
     private String localNetworkInterface;
     private String proxyHost;
     private Integer proxyPort;
@@ -47,16 +46,15 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
         " If target uri is not set, but uris are set, then returns the first url in the urls." +
         " If neither target uri nor uris are set, then returns null.")
     public String getTargetUri() {
-        if (targetUri == null || targetUri.length() == 0) {
-            if (targetUri == null || targetUri.length() == 0) {
-                if (targetUris != null && targetUris.length() > 0) {
-                    if (targetUris.indexOf(',') > -1) {
-                        targetUri = targetUris.substring(0, targetUris.indexOf(','));
-                    } else {
-                        targetUri = targetUris;
-                    }
-                }
-            }
+        if (targetUri != null && targetUri.length() > 0) {
+            return targetUri;
+        }
+        if (targetUris == null || targetUris.length() == 0) {
+            return null;
+        }
+
+        if (targetUris.contains(",")) {
+            return targetUris.substring(0, targetUris.indexOf(','));
         }
 
         return this.targetUri;
@@ -69,27 +67,16 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
 
     @ApiModelProperty("The target URI of the remote process group." +
         " If target uris is not set but target uri is set," +
-        " then returns a collection containing the single target uri." +
-        " If neither target uris nor uris are set, then returns null.")
+        " then returns the single target uri." +
+        " If neither target uris nor target uri is set, then returns null.")
     public String getTargetUris() {
         if (targetUris == null || targetUris.length() == 0) {
-            if (targetUris == null || targetUris.length() == 0) {
-                targetUris = targetUri;
-            }
+            return targetUri;
         }
 
         return this.targetUris;
     }
 
-
-    @ApiModelProperty("Whether the target is running securely.")
-    public Boolean isTargetSecure() {
-        return targetSecure;
-    }
-
-    public void setTargetSecure(Boolean targetSecure) {
-        this.targetSecure = targetSecure;
-    }
 
     @ApiModelProperty("The time period used for the timeout when communicating with the target.")
     public String getCommunicationsTimeout() {
@@ -109,12 +96,12 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
         this.yieldDuration = yieldDuration;
     }
 
-
-    public SiteToSiteTransportProtocol getTransportProtocol() {
+    @ApiModelProperty(value = "The Transport Protocol that is used for Site-to-Site communications", allowableValues = "RAW, HTTP")
+    public String getTransportProtocol() {
         return transportProtocol;
     }
 
-    public void setTransportProtocol(SiteToSiteTransportProtocol transportProtocol) {
+    public void setTransportProtocol(String transportProtocol) {
         this.transportProtocol = transportProtocol;
     }
 

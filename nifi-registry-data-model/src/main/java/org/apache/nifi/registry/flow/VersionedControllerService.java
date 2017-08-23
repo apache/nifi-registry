@@ -19,7 +19,6 @@ package org.apache.nifi.registry.flow;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import io.swagger.annotations.ApiModelProperty;
 
@@ -76,29 +75,6 @@ public class VersionedControllerService extends VersionedComponent {
 
     public void setAnnotationData(String annotationData) {
         this.annotationData = annotationData;
-    }
-
-    @Override
-    public int hashCode() {
-        final String id = getIdentifier();
-        return 37 + 3 * ((id == null) ? 0 : id.hashCode());
-    }
-
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-
-        if (obj.getClass() != VersionedControllerService.class) {
-            return false;
-        }
-
-        final VersionedControllerService other = (VersionedControllerService) obj;
-        return Objects.equals(getIdentifier(), other.getIdentifier());
     }
 
     @Override

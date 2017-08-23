@@ -17,14 +17,15 @@
 
 package org.apache.nifi.registry.flow;
 
+import java.util.Objects;
+
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 
 public abstract class VersionedComponent {
 
     private String identifier;
+    private String groupId;
     private String name;
     private String comments;
     private Position position;
@@ -36,6 +37,15 @@ public abstract class VersionedComponent {
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    @ApiModelProperty("The ID of the Process Group that this component belongs to")
+    public String getGroupIdentifier() {
+        return groupId;
+    }
+
+    public void setGroupIdentifier(String groupId) {
+        this.groupId = groupId;
     }
 
     @ApiModelProperty("The component's name")
@@ -72,28 +82,22 @@ public abstract class VersionedComponent {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-
-        if (o == null || getClass() != o.getClass()) return false;
-
-        VersionedComponent that = (VersionedComponent) o;
-
-        return new EqualsBuilder()
-                .append(identifier, that.identifier)
-                .append(name, that.name)
-                .append(comments, that.comments)
-                .append(position, that.position)
-                .isEquals();
+    public int hashCode() {
+        return Objects.hash(identifier);
     }
 
     @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(identifier)
-                .append(name)
-                .append(comments)
-                .append(position)
-                .toHashCode();
+    public boolean equals(final Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof VersionedComponent)) {
+            return false;
+        }
+        final VersionedComponent other = (VersionedComponent) obj;
+        return Objects.equals(identifier, other.identifier);
     }
 }

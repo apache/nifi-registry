@@ -27,6 +27,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -123,7 +124,7 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
     @Override
     public List<Bucket> getAll() throws NiFiRegistryException, IOException {
         return executeAction("Error retrieving all buckets", () -> {
-            return bucketsTarget.request().get(List.class);
+            return Arrays.asList(bucketsTarget.request().get(Bucket[].class));
         });
     }
 
@@ -139,7 +140,7 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
                 target = target.queryParam("sort", sortParam.toString());
             }
 
-            return target.request().get(List.class);
+            return Arrays.asList(target.request().get(Bucket[].class));
         });
     }
 }
