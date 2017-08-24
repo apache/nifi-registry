@@ -32,56 +32,17 @@ import java.util.Objects;
  */
 @ApiModel(value = "versionedFlowSnapshot")
 public class VersionedFlowSnapshot {
-    private String flowIdentifier;
-    private String flowName;
-    private int version;
-    private long timestamp;
-    private String comments;
+
+    private VersionedFlowSnapshotMetadata snapshotMetadata;
     private VersionedProcessGroup flowContents;
 
-    @ApiModelProperty("The identifier of the flow this snapshot belongs to")
-    public String getFlowIdentifier() {
-        return flowIdentifier;
+    @ApiModelProperty("The metadata for this snapshot")
+    public VersionedFlowSnapshotMetadata getSnapshotMetadata() {
+        return snapshotMetadata;
     }
 
-    public void setFlowIdentifier(String flowIdentifier) {
-        this.flowIdentifier = flowIdentifier;
-    }
-
-    @ApiModelProperty("The name of the flow this snapshot belongs to")
-    public String getFlowName() {
-        return flowName;
-    }
-
-    public void setFlowName(String flowName) {
-        this.flowName = flowName;
-    }
-
-    @ApiModelProperty("The version of this snapshot of the flow")
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    @ApiModelProperty("The timestamp when the flow was saved")
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    @ApiModelProperty("The comments provided by the user when creating the snapshot")
-    public String getComments() {
-        return comments;
-    }
-
-    public void setComments(String comments) {
-        this.comments = comments;
+    public void setSnapshotMetadata(VersionedFlowSnapshotMetadata snapshotMetadata) {
+        this.snapshotMetadata = snapshotMetadata;
     }
 
     @ApiModelProperty("The contents of the versioned flow")
@@ -95,7 +56,7 @@ public class VersionedFlowSnapshot {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.flowIdentifier, Integer.valueOf(this.version));
+        return Objects.hash(this.snapshotMetadata);
     }
 
     @Override
@@ -108,6 +69,7 @@ public class VersionedFlowSnapshot {
         }
 
         final VersionedFlowSnapshot other = (VersionedFlowSnapshot) obj;
-        return Objects.equals(this.flowIdentifier, other.flowIdentifier) && Objects.equals(this.version, other.version);
+        return Objects.equals(this.snapshotMetadata, other.snapshotMetadata);
     }
+
 }
