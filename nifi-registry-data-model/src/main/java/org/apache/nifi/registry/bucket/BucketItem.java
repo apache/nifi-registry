@@ -18,21 +18,20 @@ package org.apache.nifi.registry.bucket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.nifi.registry.flow.VersionedFlow;
 
 import java.util.Objects;
-import java.util.Set;
 
-@ApiModel(value = "bucket")
-public class Bucket {
+@ApiModel("bucketItem")
+public class BucketItem {
 
     private String identifier;
     private String name;
+    private String bucketIdentifier;
     private long createdTimestamp;
-    private String description;
-    private Set<VersionedFlow> versionedFlows;
+    private long modifiedTimestamp;
+    private BucketItemType type;
 
-    @ApiModelProperty("The id of the bucket. This is set by the server at creation time.")
+    @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
         return identifier;
     }
@@ -41,7 +40,7 @@ public class Bucket {
         this.identifier = identifier;
     }
 
-    @ApiModelProperty("The name of the bucket.")
+    @ApiModelProperty("The name of the item.")
     public String getName() {
         return name;
     }
@@ -50,7 +49,16 @@ public class Bucket {
         this.name = name;
     }
 
-    @ApiModelProperty("The timestamp of when the bucket was first created. This is set by the server at creation time.")
+    @ApiModelProperty("The identifier of the bucket this items belongs to.")
+    public String getBucketIdentifier() {
+        return bucketIdentifier;
+    }
+
+    public void setBucketIdentifier(String bucketIdentifier) {
+        this.bucketIdentifier = bucketIdentifier;
+    }
+
+    @ApiModelProperty("The timestamp of when the item was created.")
     public long getCreatedTimestamp() {
         return createdTimestamp;
     }
@@ -59,22 +67,22 @@ public class Bucket {
         this.createdTimestamp = createdTimestamp;
     }
 
-    @ApiModelProperty("A description of the bucket.")
-    public String getDescription() {
-        return description;
+    @ApiModelProperty("The timestamp of when the item was last modified.")
+    public long getModifiedTimestamp() {
+        return modifiedTimestamp;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setModifiedTimestamp(long modifiedTimestamp) {
+        this.modifiedTimestamp = modifiedTimestamp;
     }
 
-    @ApiModelProperty("The versioned flows in the bucket.")
-    public Set<VersionedFlow> getVersionedFlows() {
-        return versionedFlows;
+    @ApiModelProperty("The type of item.")
+    public BucketItemType getType() {
+        return type;
     }
 
-    public void setVersionedFlows(Set<VersionedFlow> versionedFlows) {
-        this.versionedFlows = versionedFlows;
+    public void setType(BucketItemType type) {
+        this.type = type;
     }
 
     @Override
@@ -91,8 +99,7 @@ public class Bucket {
             return false;
         }
 
-        final Bucket other = (Bucket) obj;
+        final BucketItem other = (BucketItem) obj;
         return Objects.equals(this.identifier, other.identifier);
     }
-
 }

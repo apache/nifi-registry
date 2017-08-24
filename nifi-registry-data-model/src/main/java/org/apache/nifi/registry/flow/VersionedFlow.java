@@ -18,12 +18,9 @@ package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.nifi.registry.bucket.BucketObject;
+import org.apache.nifi.registry.bucket.BucketItem;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.SortedSet;
 
 /**
  * <p>
@@ -35,42 +32,10 @@ import java.util.Map;
  * @see VersionedFlowSnapshot
  */
 @ApiModel(value = "versionedFlow")
-public class VersionedFlow extends BucketObject {
+public class VersionedFlow extends BucketItem {
 
-    private String name;
-    private long createdTimestamp;
-    private long modifiedTimestamp;
     private String description;
-    private int currentMaxVersion = 0;
-    private ArrayList<VersionedFlowSnapshot> snapshots = new ArrayList<>();
-    private Map<Integer, VersionedFlowSnapshot> snapshotsByVersion = new HashMap<>(); // TODO, could use a third-party collection type that supports primitive keys.
-
-    @ApiModelProperty("The name of the flow.")
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @ApiModelProperty("The timestamp of when the flow was first created.")
-    public long getCreatedTimestamp() {
-        return createdTimestamp;
-    }
-
-    public void setCreatedTimestamp(long timestamp) {
-        this.createdTimestamp = timestamp;
-    }
-
-    @ApiModelProperty("The timestamp of when the flow was last modified, e.g., when a new version was saved.")
-    public long getModifiedTimestamp() {
-        return modifiedTimestamp;
-    }
-
-    public void setModifiedTimestamp(long modifiedTimestamp) {
-        this.modifiedTimestamp = modifiedTimestamp;
-    }
+    private SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata;
 
     @ApiModelProperty("A description of the flow.")
     public String getDescription() {
@@ -81,40 +46,13 @@ public class VersionedFlow extends BucketObject {
         this.description = description;
     }
 
-    public List<VersionedFlowSnapshot> getSnapshots() {
-        return snapshots;
+    @ApiModelProperty("The metadata for each snapshot of this flow.")
+    public SortedSet<VersionedFlowSnapshotMetadata> getSnapshotMetadata() {
+        return snapshotMetadata;
     }
 
-    public VersionedFlowSnapshot getSnapshot(int version) {
-        return snapshotsByVersion.get(Integer.valueOf(version));
-    }
-
-    /**
-     * Add a new snapshot version to this VersionedFlow.
-     *
-     * Note that this method has potential side effects.
-     * If a snapshot version number is not a positive integer,
-     * a new version number will be set as the current max version number + 1.
-     *
-     * @param snapshot  The snapshot to add to this versionedFlow
-     */
-    public void addVersionedFlowSnapshot(VersionedFlowSnapshot snapshot) {
-        if (snapshot == null) {
-            return;
-        }
-
-        int snapshotVersion = snapshot.getVersion();
-        if (snapshotVersion < 1) {
-            snapshotVersion = ++currentMaxVersion;
-            snapshot.setVersion(snapshotVersion);
-        } else if (snapshotsByVersion.containsKey(Integer.valueOf(snapshotVersion))) {
-            throw new IllegalStateException("Unable to add snapshot to VersionedFlow with duplicate version number '" + snapshotVersion + "'.");
-        } else {
-            currentMaxVersion = (snapshotVersion > currentMaxVersion) ? snapshotVersion : currentMaxVersion;
-        }
-
-        snapshots.add(snapshot);
-        snapshotsByVersion.put(Integer.valueOf(snapshotVersion), snapshot);
+    public void setSnapshotMetadata(SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata) {
+        this.snapshotMetadata = snapshotMetadata;
     }
 
 }

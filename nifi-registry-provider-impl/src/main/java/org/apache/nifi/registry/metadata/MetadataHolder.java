@@ -16,9 +16,7 @@
  */
 package org.apache.nifi.registry.metadata;
 
-import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.metadata.generated.Bucket;
 import org.apache.nifi.registry.metadata.generated.Buckets;
 import org.apache.nifi.registry.metadata.generated.Flow;
 import org.apache.nifi.registry.metadata.generated.Flows;
@@ -36,86 +34,93 @@ import java.util.Set;
 public class MetadataHolder {
 
     private final Metadata metadata;
-    private final Map<String,Bucket> bucketsById;
-    private final Map<String,VersionedFlow> flowsById;
-    private final Map<String,Set<VersionedFlow>> flowsByBucket;
+    private final Map<String,Set<FlowMetadata>> flowsByBucket;
+    private final Map<String,FlowMetadata> flowsById;
+    private final Map<String,BucketMetadata> bucketsById;
 
     public MetadataHolder(final Metadata metadata) {
         this.metadata = metadata;
-        this.bucketsById = Collections.unmodifiableMap(createBucketsBydId(metadata));
         this.flowsByBucket = Collections.unmodifiableMap(createFlowsByBucket(metadata));
         this.flowsById = Collections.unmodifiableMap(createFlowsById(flowsByBucket));
+        this.bucketsById = Collections.unmodifiableMap(createBucketsBydId(metadata, flowsByBucket));
     }
 
-    private Map<String,Bucket> createBucketsBydId(final Metadata metadata) {
-        final Map<String,Bucket> bucketsById = new HashMap<>();
+    private Map<String,BucketMetadata> createBucketsBydId(final Metadata metadata, final Map<String,Set<FlowMetadata>> flowsByBucket) {
+        final Map<String,BucketMetadata> bucketsById = new HashMap<>();
 
         final Buckets buckets = metadata.getBuckets();
         if (buckets != null) {
-            buckets.getBucket().stream().forEach(b -> bucketsById.put(b.getIdentifier(), createBucket(b)));
+            buckets.getBucket().stream().forEach(b -> {
+                    final Set<FlowMetadata> bucketFlows = flowsByBucket.get(b.getIdentifier());
+                    final BucketMetadata bucketMetadata = createBucketMetadata(b, bucketFlows);
+                    bucketsById.put(b.getIdentifier(), bucketMetadata);
+            });
         }
 
         return bucketsById;
     }
 
-    private Bucket createBucket(final org.apache.nifi.registry.metadata.generated.Bucket jaxbBucket) {
-        final Bucket bucket = new Bucket();
-        bucket.setIdentifier(jaxbBucket.getIdentifier());
-        bucket.setName(jaxbBucket.getName());
-        bucket.setDescription(jaxbBucket.getDescription());
-        bucket.setCreatedTimestamp(jaxbBucket.getCreatedTimestamp());
-        return bucket;
+    private BucketMetadata createBucketMetadata(final Bucket jaxbBucket, final Set<FlowMetadata> bucketFlows) {
+        return new StandardBucketMetadata.Builder()
+                .identifier(jaxbBucket.getIdentifier())
+                .name(jaxbBucket.getName())
+                .description(jaxbBucket.getDescription())
+                .created(jaxbBucket.getCreatedTimestamp())
+                .addFlows(bucketFlows)
+                .build();
     }
 
-    private Map<String,Set<VersionedFlow>> createFlowsByBucket(final Metadata metadata) {
-        final Map<String,Set<VersionedFlow>> flowsByBucket = new HashMap<>();
+    private Map<String,Set<FlowMetadata>> createFlowsByBucket(final Metadata metadata) {
+        final Map<String,Set<FlowMetadata>> flowsByBucket = new HashMap<>();
 
         final Flows flows = metadata.getFlows();
         if (flows != null) {
             flows.getFlow().stream().forEach(f -> {
-                Set<VersionedFlow> bucketFLows = flowsByBucket.get(f.getBucketIdentifier());
+                Set<FlowMetadata> bucketFLows = flowsByBucket.get(f.getBucketIdentifier());
                 if (bucketFLows == null) {
                     bucketFLows = new HashSet<>();
                     flowsByBucket.put(f.getBucketIdentifier(), bucketFLows);
                 }
-                bucketFLows.add(createFlow(f));
+                bucketFLows.add(createFlowMetadata(f));
             });
         }
 
         return flowsByBucket;
     }
 
-    private VersionedFlow createFlow(final Flow flow) {
-        final VersionedFlow versionedFlow = new VersionedFlow();
-        versionedFlow.setIdentifier(flow.getIdentifier());
-        versionedFlow.setName(flow.getName());
-        versionedFlow.setDescription(flow.getDescription());
-        versionedFlow.setCreatedTimestamp(flow.getCreatedTimestamp());
-        versionedFlow.setModifiedTimestamp(flow.getModifiedTimestamp());
+    private FlowMetadata createFlowMetadata(final Flow jaxbFlow) {
+        final StandardFlowMetadata.Builder builder = new StandardFlowMetadata.Builder()
+                .identifier(jaxbFlow.getIdentifier())
+                .name(jaxbFlow.getName())
+                .bucketIdentifier(jaxbFlow.getBucketIdentifier())
+                .description(jaxbFlow.getDescription())
+                .created(jaxbFlow.getCreatedTimestamp())
+                .modified(jaxbFlow.getModifiedTimestamp());
 
-        if (flow.getSnapshot() != null) {
-            flow.getSnapshot().stream().forEach(s -> versionedFlow.addVersionedFlowSnapshot(createSnapshot(flow, s)));
+        if (jaxbFlow.getSnapshot() != null) {
+            jaxbFlow.getSnapshot().stream().forEach(s -> builder.addSnapshot(createSnapshotMetadata(jaxbFlow, s)));
         }
 
-        return versionedFlow;
+        return builder.build();
     }
 
-    private VersionedFlowSnapshot createSnapshot(final Flow flow, final Flow.Snapshot snapshot) {
-        final VersionedFlowSnapshot versionedFlowSnapshot = new VersionedFlowSnapshot();
-        versionedFlowSnapshot.setFlowIdentifier(flow.getIdentifier());
-        versionedFlowSnapshot.setFlowName(flow.getName());
-        versionedFlowSnapshot.setVersion(snapshot.getVersion());
-        versionedFlowSnapshot.setComments(snapshot.getComments());
-        versionedFlowSnapshot.setTimestamp(snapshot.getCreatedTimestamp());
-        return versionedFlowSnapshot;
+    private FlowSnapshotMetadata createSnapshotMetadata(final Flow jaxbFlow, final Flow.Snapshot jaxbSnapshot) {
+        return new StandardFlowSnapshotMetadata.Builder()
+                .bucketIdentifier(jaxbFlow.getBucketIdentifier())
+                .flowIdentifier(jaxbFlow.getIdentifier())
+                .flowName(jaxbFlow.getName())
+                .version(jaxbSnapshot.getVersion())
+                .comments(jaxbSnapshot.getComments())
+                .created(jaxbSnapshot.getCreatedTimestamp())
+                .build();
     }
 
-    private Map<String,VersionedFlow> createFlowsById(final Map<String,Set<VersionedFlow>> flowsByBucket) {
-        final Map<String,VersionedFlow> flowsBdId = new HashMap<>();
+    private Map<String,FlowMetadata> createFlowsById(final Map<String,Set<FlowMetadata>> flowsByBucket) {
+        final Map<String,FlowMetadata> flowsBdId = new HashMap<>();
 
-        for (final Map.Entry<String,Set<VersionedFlow>> entry : flowsByBucket.entrySet()) {
-            for (final VersionedFlow flow : entry.getValue()) {
-                flowsBdId.put(flow.getIdentifier(), flow);
+        for (final Map.Entry<String,Set<FlowMetadata>> entry : flowsByBucket.entrySet()) {
+            for (final FlowMetadata flowMetadata : entry.getValue()) {
+                flowsBdId.put(flowMetadata.getIdentifier(), flowMetadata);
             }
         }
 
@@ -126,15 +131,15 @@ public class MetadataHolder {
         return metadata;
     }
 
-    public Map<String,Bucket> getBucketsBydId() {
+    public Map<String,BucketMetadata> getBucketsBydId() {
         return bucketsById;
     }
 
-    public Map<String,VersionedFlow> getFlowsById() {
+    public Map<String,FlowMetadata> getFlowsById() {
         return flowsById;
     }
 
-    public Map<String,Set<VersionedFlow>> getFlowsByBucket() {
+    public Map<String,Set<FlowMetadata>> getFlowsByBucket() {
         return flowsByBucket;
     }
 
