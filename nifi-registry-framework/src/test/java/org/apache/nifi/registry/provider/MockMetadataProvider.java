@@ -16,9 +16,9 @@
  */
 package org.apache.nifi.registry.provider;
 
-import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.metadata.BucketMetadata;
+import org.apache.nifi.registry.metadata.FlowMetadata;
+import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.metadata.MetadataProvider;
 
 import java.util.Map;
@@ -38,22 +38,17 @@ public class MockMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public Bucket createBucket(Bucket bucket) {
+    public BucketMetadata createBucket(BucketMetadata bucket) {
         return null;
     }
 
     @Override
-    public Bucket getBucket(String bucketIdentifier) {
+    public BucketMetadata getBucket(String bucketIdentifier) {
         return null;
     }
 
     @Override
-    public Set<Bucket> getBuckets() {
-        return null;
-    }
-
-    @Override
-    public Bucket updateBucket(Bucket bucket) {
+    public BucketMetadata updateBucket(BucketMetadata bucket) {
         return null;
     }
 
@@ -63,27 +58,22 @@ public class MockMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public VersionedFlow createFlow(String bucketIdentifier, VersionedFlow flow) {
+    public Set<BucketMetadata> getBuckets() {
         return null;
     }
 
     @Override
-    public VersionedFlow getFlow(String flowIdentifier) {
+    public FlowMetadata createFlow(String bucketIdentifier, FlowMetadata flow) {
         return null;
     }
 
     @Override
-    public Set<VersionedFlow> getFlows() {
+    public FlowMetadata getFlow(String flowIdentifier) {
         return null;
     }
 
     @Override
-    public Set<VersionedFlow> getFlows(String bucketId) {
-        return null;
-    }
-
-    @Override
-    public VersionedFlow updateFlow(VersionedFlow versionedFlow) {
+    public FlowMetadata updateFlow(FlowMetadata versionedFlow) {
         return null;
     }
 
@@ -93,12 +83,22 @@ public class MockMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public VersionedFlowSnapshot createFlowSnapshot(VersionedFlowSnapshot flowSnapshot) {
+    public Set<FlowMetadata> getFlows() {
         return null;
     }
 
     @Override
-    public VersionedFlowSnapshot getFlowSnapshot(String flowIdentifier, Integer version) {
+    public Set<FlowMetadata> getFlows(String bucketId) {
+        return null;
+    }
+
+    @Override
+    public FlowSnapshotMetadata createFlowSnapshot(FlowSnapshotMetadata flowSnapshot) {
+        return null;
+    }
+
+    @Override
+    public FlowSnapshotMetadata getFlowSnapshot(String flowIdentifier, Integer version) {
         return null;
     }
 

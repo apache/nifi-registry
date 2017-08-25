@@ -17,9 +17,6 @@
 package org.apache.nifi.registry.metadata;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.metadata.generated.Buckets;
 import org.apache.nifi.registry.metadata.generated.Flow;
 import org.apache.nifi.registry.metadata.generated.Flows;
@@ -142,7 +139,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public synchronized Bucket createBucket(final Bucket bucket) {
+    public synchronized BucketMetadata createBucket(final BucketMetadata bucket) {
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
         }
@@ -163,7 +160,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public Bucket getBucket(final String bucketIdentifier) {
+    public BucketMetadata getBucket(final String bucketIdentifier) {
         if (bucketIdentifier == null) {
             throw new IllegalArgumentException("Bucket Identifier cannot be null");
         }
@@ -173,14 +170,14 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public Set<Bucket> getBuckets() {
+    public Set<BucketMetadata> getBuckets() {
         final MetadataHolder holder = metadataHolder.get();
-        final Map<String,Bucket> bucketsBydId = holder.getBucketsBydId();
+        final Map<String,BucketMetadata> bucketsBydId = holder.getBucketsBydId();
         return new HashSet<>(bucketsBydId.values());
     }
 
     @Override
-    public synchronized Bucket updateBucket(final Bucket bucket) {
+    public synchronized BucketMetadata updateBucket(final BucketMetadata bucket) {
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
         }
@@ -243,7 +240,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public synchronized VersionedFlow createFlow(final String bucketIdentifier, final VersionedFlow versionedFlow) {
+    public synchronized FlowMetadata createFlow(final String bucketIdentifier, final FlowMetadata versionedFlow) {
         if (bucketIdentifier == null) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
@@ -254,7 +251,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
 
         final MetadataHolder holder = metadataHolder.get();
 
-        final Bucket bucket = holder.getBucketsBydId().get(bucketIdentifier);
+        final BucketMetadata bucket = holder.getBucketsBydId().get(bucketIdentifier);
         if (bucket == null) {
             throw new IllegalStateException("Unable to create Versioned Flow because Bucket does not exist with id " + bucketIdentifier);
         }
@@ -275,7 +272,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public VersionedFlow getFlow(final String flowIdentifier) {
+    public FlowMetadata getFlow(final String flowIdentifier) {
         if (flowIdentifier == null) {
             throw new IllegalArgumentException("Flow Identifier cannot be null");
         }
@@ -285,17 +282,17 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public Set<VersionedFlow> getFlows() {
+    public Set<FlowMetadata> getFlows() {
         final MetadataHolder holder = metadataHolder.get();
-        final Map<String,VersionedFlow> flowsById = holder.getFlowsById();
+        final Map<String,FlowMetadata> flowsById = holder.getFlowsById();
         return new HashSet<>(flowsById.values());
     }
 
     @Override
-    public Set<VersionedFlow> getFlows(String bucketId) {
+    public Set<FlowMetadata> getFlows(String bucketId) {
         final MetadataHolder holder = metadataHolder.get();
 
-        final Map<String,Set<VersionedFlow>> flowsByBucket = holder.getFlowsByBucket();
+        final Map<String,Set<FlowMetadata>> flowsByBucket = holder.getFlowsByBucket();
         if (flowsByBucket.containsKey(bucketId)) {
             return new HashSet<>(flowsByBucket.get(bucketId));
         } else {
@@ -304,7 +301,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public synchronized VersionedFlow updateFlow(final VersionedFlow versionedFlow) {
+    public synchronized FlowMetadata updateFlow(final FlowMetadata versionedFlow) {
         if (versionedFlow == null) {
             throw new IllegalArgumentException("Versioned Flow cannot be null");
         }
@@ -357,7 +354,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
     }
 
     @Override
-    public synchronized VersionedFlowSnapshot createFlowSnapshot(final VersionedFlowSnapshot flowSnapshot) {
+    public synchronized FlowSnapshotMetadata createFlowSnapshot(final FlowSnapshotMetadata flowSnapshot) {
         if (flowSnapshot == null) {
             throw new IllegalArgumentException("Versioned Flow Snapshot cannot be null");
         }
@@ -380,17 +377,17 @@ public class FileSystemMetadataProvider implements MetadataProvider {
         final Flow.Snapshot jaxbSnapshot = new Flow.Snapshot();
         jaxbSnapshot.setVersion(flowSnapshot.getVersion());
         jaxbSnapshot.setComments(flowSnapshot.getComments());
-        jaxbSnapshot.setCreatedTimestamp(flowSnapshot.getTimestamp());
+        jaxbSnapshot.setCreatedTimestamp(flowSnapshot.getCreatedTimestamp());
 
         jaxbFlow.getSnapshot().add(jaxbSnapshot);
         saveAndRefresh(holder.getMetadata());
 
-        final VersionedFlow versionedFlow = metadataHolder.get().getFlowsById().get(flowIdentifier);
+        final FlowMetadata versionedFlow = metadataHolder.get().getFlowsById().get(flowIdentifier);
         return versionedFlow.getSnapshot(snapshotVersion);
     }
 
     @Override
-    public VersionedFlowSnapshot getFlowSnapshot(final String flowIdentifier, final Integer version) {
+    public FlowSnapshotMetadata getFlowSnapshot(final String flowIdentifier, final Integer version) {
         if (flowIdentifier == null) {
             throw new IllegalArgumentException("Flow Identifier cannot be null");
         }
@@ -401,7 +398,7 @@ public class FileSystemMetadataProvider implements MetadataProvider {
 
         final MetadataHolder holder = metadataHolder.get();
 
-        final VersionedFlow versionedFlow = holder.getFlowsById().get(flowIdentifier);
+        final FlowMetadata versionedFlow = holder.getFlowsById().get(flowIdentifier);
         if (versionedFlow == null) {
             return null;
         }

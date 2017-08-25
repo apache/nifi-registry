@@ -16,9 +16,6 @@
  */
 package org.apache.nifi.registry.metadata;
 
-import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.provider.Provider;
 
 import java.util.Set;
@@ -37,7 +34,7 @@ public interface MetadataProvider extends Provider {
      * @param bucket the bucket to create
      * @return the created bucket
      */
-    Bucket createBucket(Bucket bucket);
+    BucketMetadata createBucket(BucketMetadata bucket);
 
     /**
      * Retrieves the bucket with the given id.
@@ -45,7 +42,7 @@ public interface MetadataProvider extends Provider {
      * @param bucketIdentifier the id of the bucket to retrieve
      * @return the bucket with the given id, or null if it does not exist
      */
-    Bucket getBucket(String bucketIdentifier);
+    BucketMetadata getBucket(String bucketIdentifier);
 
     /**
      * Updates the given bucket, only the name and description should be allowed to be updated.
@@ -53,7 +50,7 @@ public interface MetadataProvider extends Provider {
      * @param bucket the updated bucket to save
      * @return the updated bucket, or null if no bucket with the given id exists
      */
-    Bucket updateBucket(Bucket bucket);
+    BucketMetadata updateBucket(BucketMetadata bucket);
 
     /**
      * Deletes the bucket with the given identifier if one exists.
@@ -67,7 +64,7 @@ public interface MetadataProvider extends Provider {
      *
      * @return the set of all buckets
      */
-    Set<Bucket> getBuckets();
+    Set<BucketMetadata> getBuckets();
 
     /**
      * Creates a versioned flow in the given bucket.
@@ -77,7 +74,7 @@ public interface MetadataProvider extends Provider {
      * @return the created versioned flow
      * @throws IllegalStateException if no bucket with the given identifier exists
      */
-    VersionedFlow createFlow(String bucketIdentifier, VersionedFlow flow);
+    FlowMetadata createFlow(String bucketIdentifier, FlowMetadata flow);
 
     /**
      * Retrieves the versioned flow with the given id.
@@ -85,7 +82,7 @@ public interface MetadataProvider extends Provider {
      * @param flowIdentifier the identifier of the flow to retrieve
      * @return the versioned flow with the given id, or null if no flow with the given id exists
      */
-    VersionedFlow getFlow(String flowIdentifier);
+    FlowMetadata getFlow(String flowIdentifier);
 
     /**
      * Updates the given versioned flow, only the name and description should be allowed to be updated.
@@ -93,7 +90,7 @@ public interface MetadataProvider extends Provider {
      * @param versionedFlow the updated versioned flow to save
      * @return the updated versioned flow
      */
-    VersionedFlow updateFlow(VersionedFlow versionedFlow);
+    FlowMetadata updateFlow(FlowMetadata versionedFlow);
 
     /**
      * Deletes the versioned flow with the given identifier if one exists.
@@ -107,7 +104,7 @@ public interface MetadataProvider extends Provider {
      *
      * @return the set of all versioned flows
      */
-    Set<VersionedFlow> getFlows();
+    Set<FlowMetadata> getFlows();
 
     /**
      * Retrieves all the versioned flows for the given bucket.
@@ -115,7 +112,7 @@ public interface MetadataProvider extends Provider {
      * @param bucketId the id of the bucket to retrieve flow for
      * @return the set of versioned flows for the given bucket, or an empty set if none exist
      */
-    Set<VersionedFlow> getFlows(String bucketId);
+    Set<FlowMetadata> getFlows(String bucketId);
 
     /**
      * Creates a versioned flow snapshot.
@@ -124,7 +121,7 @@ public interface MetadataProvider extends Provider {
      * @return the created snapshot
      * @throws IllegalStateException if the versioned flow specified by flowSnapshot.getFlowIdentifier() does not exist
      */
-    VersionedFlowSnapshot createFlowSnapshot(VersionedFlowSnapshot flowSnapshot);
+    FlowSnapshotMetadata createFlowSnapshot(FlowSnapshotMetadata flowSnapshot);
 
     /**
      * Retrieves the snapshot for the given flow identifier and snapshot version.
@@ -133,7 +130,7 @@ public interface MetadataProvider extends Provider {
      * @param version the version of the snapshot
      * @return the versioned flow snapshot for the given flow identifier and version, or null if none exists
      */
-    VersionedFlowSnapshot getFlowSnapshot(String flowIdentifier, Integer version);
+    FlowSnapshotMetadata getFlowSnapshot(String flowIdentifier, Integer version);
 
     /**
      * Deletes the snapshot for the given flow identifier and version.
