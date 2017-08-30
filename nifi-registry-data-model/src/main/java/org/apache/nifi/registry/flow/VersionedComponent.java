@@ -64,4 +64,8 @@ public abstract class VersionedComponent {
     }
 
     public abstract ComponentType getComponentType();
+
+    public void setComponentType(ComponentType type) {
+        // purposely do nothing here, this just to allow unmarshalling
+    }
 }

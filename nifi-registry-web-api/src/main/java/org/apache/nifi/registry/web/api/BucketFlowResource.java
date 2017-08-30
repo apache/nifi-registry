@@ -19,6 +19,7 @@ package org.apache.nifi.registry.web.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.nifi.registry.flow.VersionedFlow;
+import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,12 @@ public class BucketFlowResource {
 
     private static final Logger logger = LoggerFactory.getLogger(BucketFlowResource.class);
 
+    private final RegistryService registryService;
+
+    public BucketFlowResource(final RegistryService registryService) {
+        this.registryService = registryService;
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -47,10 +54,9 @@ public class BucketFlowResource {
                     "The flow id is created by the server and a location URI for the created flow resource is returned.",
             response = VersionedFlow.class
     )
-    public Response createFlow(@PathParam("bucketId") String bucketId) {
-        // TODO implement createFlow
-        logger.error("This API functionality has not yet been implemented.");
-        return Response.status(Response.Status.NOT_IMPLEMENTED).build();
+    public Response createFlow(@PathParam("bucketId") final String bucketId, final VersionedFlow flow) {
+        final VersionedFlow createdFlow = registryService.createFlow(bucketId, flow);
+        return Response.status(Response.Status.OK).entity(createdFlow).build();
     }
 
     /* TODO, add redirection URIs so that GET, PUT, DELETE operations for a given flow id (once created)

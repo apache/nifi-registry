@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.flow;
 
 import org.apache.commons.lang3.Validate;
+import org.apache.nifi.registry.bucket.Bucket;
 
 /**
  * Standard implementation of FlowSnapshotContext.
@@ -95,6 +96,20 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         private int version;
         private String comments;
         private long snapshotTimestamp;
+
+        public Builder() {
+
+        }
+
+        public Builder(final Bucket bucket, final VersionedFlowSnapshotMetadata snapshotMetadata) {
+            bucketId(bucket.getIdentifier());
+            bucketName(bucket.getName());
+            flowId(snapshotMetadata.getFlowIdentifier());
+            flowName(snapshotMetadata.getFlowName());
+            version(snapshotMetadata.getVersion());
+            comments(snapshotMetadata.getComments());
+            snapshotTimestamp(snapshotMetadata.getTimestamp());
+        }
 
         public Builder bucketId(final String bucketId) {
             this.bucketId = bucketId;

@@ -19,7 +19,10 @@ package org.apache.nifi.registry.flow;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.bucket.BucketItemType;
 
+import javax.validation.Valid;
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.SortedSet;
 
 /**
@@ -31,11 +34,18 @@ import java.util.SortedSet;
  *
  * @see VersionedFlowSnapshot
  */
+@XmlRootElement
 @ApiModel(value = "versionedFlow")
 public class VersionedFlow extends BucketItem {
 
     private String description;
+
+    @Valid
     private SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata;
+
+    public VersionedFlow() {
+        super(BucketItemType.FLOW);
+    }
 
     @ApiModelProperty("A description of the flow.")
     public String getDescription() {
@@ -46,7 +56,7 @@ public class VersionedFlow extends BucketItem {
         this.description = description;
     }
 
-    @ApiModelProperty("The metadata for each snapshot of this flow.")
+    @ApiModelProperty(value = "The metadata for each snapshot of this flow.", readOnly = true)
     public SortedSet<VersionedFlowSnapshotMetadata> getSnapshotMetadata() {
         return snapshotMetadata;
     }
