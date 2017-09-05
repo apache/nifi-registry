@@ -16,17 +16,38 @@
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>nifi-registry</display-name>
 
-    <!-- servlet to map to search page -->
+    <!-- servlet to map to fluid design system page -->
     <servlet>
-        <servlet-name>index</servlet-name>
+        <servlet-name>FluidDesignSystem</servlet-name>
         <jsp-file>/WEB-INF/pages/index.jsp</jsp-file>
     </servlet>
     <servlet-mapping>
-        <servlet-name>index</servlet-name>
-        <url-pattern>/index</url-pattern>
+        <servlet-name>FluidDesignSystem</servlet-name>
+        <url-pattern>/fluid-design-system</url-pattern>
+    </servlet-mapping>
+
+    <!-- servlet to map to administration page -->
+    <servlet>
+        <servlet-name>Administration</servlet-name>
+        <jsp-file>/WEB-INF/pages/index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Administration</servlet-name>
+        <url-pattern>/administration/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- servlet to map to explorer page -->
+    <servlet>
+        <servlet-name>Explorer</servlet-name>
+        <jsp-file>/WEB-INF/pages/index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Explorer</servlet-name>
+        <url-pattern>/explorer/*</url-pattern>
     </servlet-mapping>
 
     <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
         <welcome-file>/WEB-INF/pages/index.jsp</welcome-file>
     </welcome-file-list>
 </web-app>

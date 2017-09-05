@@ -15,8 +15,30 @@
  * limitations under the License.
  */
 
-/* general */
+#nf-registry-droplet-filter-clear-grouping-button-container {
+    height: 36px;
+    line-height: 36px;
+}
 
-body {
-    font-family: Open Sans;
+#nf-registry-droplet-filter-clear-grouping-button-container i{
+    color: $red2;
+}
+
+#droplet-sort-by-field {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    //width: 85px;
+    text-align: end;
+}
+
+#nifi-registry-explorer-grid-list-viewer-droplet-container-details {
+    position: relative;
+}
+
+#nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log {
+    position: relative;
+    left: 0px;
+    max-height: 230px;
+    overflow: auto;
 }

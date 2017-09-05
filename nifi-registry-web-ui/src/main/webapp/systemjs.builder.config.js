@@ -1,0 +1,137 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+(function (global) {
+    System.config({
+        baseURL: "./webapp/",
+        paths: {
+            // paths serve as alias
+            'npm:': './node_modules/'
+        },
+        // map tells the System loader where to look for things
+        map: {
+            'text': 'npm:systemjs-plugin-text/text.js',
+            'app': 'webapp/',
+
+            // jquery
+            'jquery': 'npm:jquery/dist/jquery.min.js',
+
+            // Angular
+            '@angular/core': 'npm:@angular/core/bundles/core.umd.js',
+            '@angular/common': 'npm:@angular/common/bundles/common.umd.js',
+            '@angular/platform-browser': 'npm:@angular/platform-browser/bundles/platform-browser.umd.js',
+            '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
+            '@angular/http': 'npm:@angular/http/bundles/http.umd.js',
+            '@angular/router': 'npm:@angular/router/bundles/router.umd.js',
+            '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.js',
+            '@angular/flex-layout': 'npm:@angular/flex-layout/bundles/flex-layout.umd.js',
+            '@angular/material': 'npm:@angular/material/bundles/material.umd.js',
+            '@angular/platform-browser/animations': 'npm:@angular/platform-browser/bundles/platform-browser-animations.umd.js',
+            '@angular/cdk': 'npm:@angular/cdk/bundles/cdk.umd.js',
+            '@angular/cdk/a11y': 'npm:@angular/cdk/bundles/cdk-a11y.umd.js',
+            '@angular/cdk/collections': 'npm:@angular/cdk/bundles/cdk-collections.umd.js',
+            '@angular/cdk/observers': 'npm:@angular/cdk/bundles/cdk-observers.umd.js',
+            '@angular/cdk/overlay': 'npm:@angular/cdk/bundles/cdk-overlay.umd.js',
+            '@angular/cdk/platform': 'npm:@angular/cdk/bundles/cdk-platform.umd.js',
+            '@angular/cdk/portal': 'npm:@angular/cdk/bundles/cdk-portal.umd.js',
+            '@angular/cdk/keycodes': 'npm:@angular/cdk/bundles/cdk-keycodes.umd.js',
+            '@angular/cdk/bidi': 'npm:@angular/cdk/bundles/cdk-bidi.umd.js',
+            '@angular/cdk/coercion': 'npm:@angular/cdk/bundles/cdk-coercion.umd.js',
+            '@angular/cdk/table': 'npm:@angular/cdk/bundles/cdk-table.umd.js',
+            '@angular/cdk/rxjs': 'npm:@angular/cdk/bundles/cdk-rxjs.umd.js',
+            '@angular/cdk/scrolling': 'npm:@angular/cdk/bundles/cdk-scrolling.umd.js',
+            '@angular/animations': 'npm:@angular/animations/bundles/animations.umd.js',
+            '@angular/animations/browser': 'npm:@angular/animations/bundles/animations-browser.umd.js',
+            '@angular/compiler': 'npm:@angular/compiler/bundles/compiler.umd.js',
+
+            // needed to support gestures for angular material
+            'hammerjs': 'npm:hammerjs/hammer.min.js',
+
+            // Covalent
+            '@covalent/core': 'npm:@covalent/core/core.umd.js',
+
+            // other libraries
+            'rxjs': 'npm:rxjs',
+            'moment': 'npm:moment',
+            'angular2-moment': 'npm:angular2-moment',
+            'switchMap': 'npm:rxjs/add/operator/switchMap',
+            'zone.js': 'npm:zone.js/dist/zone.js',
+            'core-js': 'npm:core-js/client/shim.min.js',
+
+            // Fluid Design System
+            '@fluid-design-system/core': 'npm:@fluid-design-system/dist/platform/core/fluid-design-system.module.js',
+            '@fluid-design-system/dialogs': 'npm:@fluid-design-system/dist/platform/core/dialogs/fds-dialogs.module.js',
+            '@fluid-design-system/dialog-component': 'npm:@fluid-design-system/dist/platform/core/dialogs/fds-dialog.component.js',
+            '@fluid-design-system/dialog-service': 'npm:@fluid-design-system/dist/platform/core/dialogs/services/dialog.service.js',
+            '@fluid-design-system/confirm-dialog-component': 'npm:@fluid-design-system/dist/platform/core/dialogs/confirm-dialog/confirm-dialog.component.js',
+
+            // Nifi Registry
+            'nifi-registry/nf-registry.module.js': 'nf-registry.module.js',
+            'nifi-registry/nf-registry.animations.js': 'nf-registry.animations.js',
+            'nifi-registry/nf-registry.routes.js': 'nf-registry.routes.js',
+            'nifi-registry/components/fluid-design-system/fds-demo.js': 'components/fluid-design-system/fds-demo.js',
+            'nifi-registry/nf-registry.js': 'nf-registry.js',
+            'nifi-registry/services/nf-registry.service.js': 'services/nf-registry.service.js',
+            'nifi-registry/components/page-not-found/nf-registry-page-not-found.js': 'components/page-not-found/nf-registry-page-not-found.js',
+            'nifi-registry/components/explorer/nf-registry-explorer.js': 'components/explorer/nf-registry-explorer.js',
+            'nifi-registry/components/explorer/list/nf-registry-explorer-list-viewer.js': 'components/explorer/list/nf-registry-explorer-list-viewer.js',
+            'nifi-registry/components/explorer/grid-list/nf-registry-explorer-grid-list-viewer.js': 'components/explorer/grid-list/nf-registry-explorer-grid-list-viewer.js',
+            'nifi-registry/components/administration/nf-registry-administration.js': 'components/administration/nf-registry-administration.js',
+            'nifi-registry/components/administration/general/nf-registry-general-administration.js': 'components/administration/general/nf-registry-general-administration.js',
+            'nifi-registry/components/administration/users/nf-registry-users-administration.js': 'components/administration/users/nf-registry-users-administration.js',
+            'nifi-registry/components/administration/users/add/nf-registry-add-user.js': 'components/administration/users/add/nf-registry-add-user.js',
+            'nifi-registry/components/administration/users/details/nf-registry-user-details.js': 'components/administration/users/details/nf-registry-user-details.js',
+            'nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js': 'components/administration/users/permissions/nf-registry-user-permissions.js',
+            'nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js': 'components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js',
+            'nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js': 'components/administration/workflow/nf-registry-workflow-administration.js',
+            'nifi-registry/components/explorer/list/registry/nf-registry-list-viewer.js': 'components/explorer/list/registry/nf-registry-list-viewer.js',
+            'nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js': 'components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js',
+            'nifi-registry/components/explorer/list/registry/bucket/nf-registry-bucket-list-viewer.js': 'components/explorer/list/registry/bucket/nf-registry-bucket-list-viewer.js',
+            'nifi-registry/components/explorer/grid-list/registry/bucket/nf-registry-bucket-grid-list-viewer.js': 'components/explorer/grid-list/registry/bucket/nf-registry-bucket-grid-list-viewer.js',
+            'nifi-registry/components/explorer/list/registry/bucket/droplet/nf-registry-droplet-list-viewer.js': 'components/explorer/list/registry/bucket/droplet/nf-registry-droplet-list-viewer.js',
+            'nifi-registry/components/explorer/grid-list/registry/bucket/droplet/nf-registry-droplet-grid-list-viewer.js': 'components/explorer/grid-list/registry/bucket/droplet/nf-registry-droplet-grid-list-viewer.js',
+            'nifi-registry/components/explorer/list/registry/nf-registry-details-viewer.js': 'components/explorer/list/registry/nf-registry-details-viewer.js',
+            'nifi-registry/components/explorer/list/registry/bucket/nf-registry-bucket-details-viewer.js': 'components/explorer/list/registry/bucket/nf-registry-bucket-details-viewer.js',
+            'nifi-registry/components/explorer/list/registry/bucket/droplet/nf-registry-droplet-details-viewer.js': 'components/explorer/list/registry/bucket/droplet/nf-registry-droplet-details-viewer.js'
+        },
+        // packages tells the System loader how to load when no filename and/or no extension
+        packages: {
+            'app': {
+                defaultExtension: 'js',
+                meta: {
+                    './*.js': {
+                        loader: 'systemjs-angular-loader.js'
+                    }
+                }
+            },
+            'systemjs-angular-loader.js': {
+                loader: false
+            },
+            'rxjs': {
+                defaultExtension: 'js'
+            },
+            'moment': {
+                main: './moment.js',
+                defaultExtension: 'js'
+            },
+            'angular2-moment': {
+                main: './index.js',
+                defaultExtension: 'js'
+            }
+        }
+    });
+})(this);
