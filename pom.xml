@@ -14,34 +14,37 @@
   limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
         <version>17</version>
-        <relativePath />
+        <relativePath/>
     </parent>
     <groupId>org.apache.nifi.registry</groupId>
     <artifactId>nifi-registry</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <description>Provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.</description>
+    <description>Provides a central location for storage and management of shared resources across one or more instances
+        of NiFi and/or MiNiFi.
+    </description>
     <modules>
         <module>nifi-registry-properties</module>
         <module>nifi-registry-utils</module>
-	    <module>nifi-registry-data-model</module>
+        <module>nifi-registry-data-model</module>
         <module>nifi-registry-jetty</module>
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
         <module>nifi-registry-security</module>
         <module>nifi-registry-framework</module>
-	    <module>nifi-registry-provider-api</module>
-	    <module>nifi-registry-provider-impl</module>
+        <module>nifi-registry-provider-api</module>
+        <module>nifi-registry-provider-impl</module>
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
         <module>nifi-registry-bootstrap</module>
-	    <module>nifi-registry-assembly</module>
+        <module>nifi-registry-assembly</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
@@ -98,8 +101,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2017</inceptionYear>
-    	<org.slf4j.version>1.7.12</org.slf4j.version>
-        <jetty.version>9.2.11.v20150529</jetty.version>
+        <org.slf4j.version>1.7.12</org.slf4j.version>
+        <jetty.version>9.4.3.v20170317</jetty.version>
         <jersey.version>2.25.1</jersey.version>
     </properties>
 
@@ -140,7 +143,7 @@
         </repository>
     </repositories>
 
-  <dependencyManagement>
+    <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>ch.qos.logback</groupId>
@@ -200,28 +203,28 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jsp</artifactId>
+                <artifactId>jetty-annotations</artifactId>
                 <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>apache-jsp</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>apache-jstl</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.4</version>
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
                 <artifactId>javax.servlet-api</artifactId>
                 <version>3.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet.jsp</groupId>
-                <artifactId>javax.servlet.jsp-api</artifactId>
-                <version>2.3.1</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.el</groupId>
-                <artifactId>javax.el-api</artifactId>
-                <version>3.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet.jsp.jstl</groupId>
-                <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-                <version>1.2.1</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
@@ -362,7 +365,9 @@
                             <include>**/*Spec.class</include>
                         </includes>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                        <argLine combine.children="append">-Xmx1G -Djava.net.preferIPv4Stack=true ${maven.surefire.arguments}</argLine>
+                        <argLine combine.children="append">-Xmx1G -Djava.net.preferIPv4Stack=true
+                            ${maven.surefire.arguments}
+                        </argLine>
                     </configuration>
                     <dependencies>
                         <dependency>
@@ -551,78 +556,84 @@
                 <configuration>
                     <checkstyleRules>
                         <module name="Checker">
-                            <property name="charset" value="UTF-8" />
-                            <property name="severity" value="warning" />
+                            <property name="charset" value="UTF-8"/>
+                            <property name="severity" value="warning"/>
                             <!-- Checks for whitespace -->
                             <!-- See http://checkstyle.sf.net/config_whitespace.html -->
                             <module name="FileTabCharacter">
-                                <property name="eachLine" value="true" />
+                                <property name="eachLine" value="true"/>
                             </module>
                             <module name="TreeWalker">
                                 <module name="RegexpSinglelineJava">
-                                    <property name="format" value="\s+$" />
-                                    <property name="message" value="Line has trailing whitespace." />
+                                    <property name="format" value="\s+$"/>
+                                    <property name="message" value="Line has trailing whitespace."/>
                                 </module>
                                 <module name="RegexpSinglelineJava">
-                                    <property name="format" value="[@]see\s+[{][@]link" />
-                                    <property name="message" value="Javadoc @see does not need @link: pick one or the other." />
+                                    <property name="format" value="[@]see\s+[{][@]link"/>
+                                    <property name="message"
+                                              value="Javadoc @see does not need @link: pick one or the other."/>
                                 </module>
-                                <module name="OuterTypeFilename" />
+                                <module name="OuterTypeFilename"/>
                                 <module name="LineLength">
                                     <!-- needs extra, because Eclipse formatter ignores the ending left 
                                     brace -->
-                                    <property name="max" value="200" />
-                                    <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://" />
+                                    <property name="max" value="200"/>
+                                    <property name="ignorePattern"
+                                              value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
                                 </module>
-                                <module name="AvoidStarImport" />
+                                <module name="AvoidStarImport"/>
                                 <module name="UnusedImports">
-                                    <property name="processJavadoc" value="true" />
+                                    <property name="processJavadoc" value="true"/>
                                 </module>
-                                <module name="NoLineWrap" />
+                                <module name="NoLineWrap"/>
                                 <module name="LeftCurly">
-                                    <property name="maxLineLength" value="160" />
+                                    <property name="maxLineLength" value="160"/>
                                 </module>
-                                <module name="RightCurly" />
+                                <module name="RightCurly"/>
                                 <module name="RightCurly">
-                                    <property name="option" value="alone" />
-                                    <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT" />
+                                    <property name="option" value="alone"/>
+                                    <property name="tokens"
+                                              value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT"/>
                                 </module>
                                 <module name="SeparatorWrap">
-                                    <property name="tokens" value="DOT" />
-                                    <property name="option" value="nl" />
+                                    <property name="tokens" value="DOT"/>
+                                    <property name="option" value="nl"/>
                                 </module>
                                 <module name="SeparatorWrap">
-                                    <property name="tokens" value="COMMA" />
-                                    <property name="option" value="EOL" />
+                                    <property name="tokens" value="COMMA"/>
+                                    <property name="option" value="EOL"/>
                                 </module>
                                 <module name="PackageName">
-                                    <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9]*)*$" />
+                                    <property name="format" value="^[a-z]+(\.[a-z][a-zA-Z0-9]*)*$"/>
                                 </module>
                                 <module name="MethodTypeParameterName">
-                                    <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)" />
+                                    <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
                                 </module>
-                                <module name="MethodParamPad" />
+                                <module name="MethodParamPad"/>
                                 <module name="OperatorWrap">
-                                    <property name="option" value="NL" />
-                                    <property name="tokens" value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, QUESTION, SL, SR, STAR " />
+                                    <property name="option" value="NL"/>
+                                    <property name="tokens"
+                                              value="BAND, BOR, BSR, BXOR, DIV, EQUAL, GE, GT, LAND, LE, LITERAL_INSTANCEOF, LOR, LT, MINUS, MOD, NOT_EQUAL, QUESTION, SL, SR, STAR "/>
                                 </module>
                                 <module name="AnnotationLocation">
-                                    <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF" />
+                                    <property name="tokens"
+                                              value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF"/>
                                 </module>
                                 <module name="AnnotationLocation">
-                                    <property name="tokens" value="VARIABLE_DEF" />
-                                    <property name="allowSamelineMultipleAnnotations" value="true" />
+                                    <property name="tokens" value="VARIABLE_DEF"/>
+                                    <property name="allowSamelineMultipleAnnotations" value="true"/>
                                 </module>
-                                <module name="NonEmptyAtclauseDescription" />
+                                <module name="NonEmptyAtclauseDescription"/>
                                 <module name="JavadocMethod">
-                                    <property name="allowMissingJavadoc" value="true" />
-                                    <property name="allowMissingParamTags" value="true" />
-                                    <property name="allowMissingThrowsTags" value="true" />
-                                    <property name="allowMissingReturnTag" value="true" />
-                                    <property name="allowedAnnotations" value="Override,Test,BeforeClass,AfterClass,Before,After" />
-                                    <property name="allowThrowsTagsForSubclasses" value="true" />
+                                    <property name="allowMissingJavadoc" value="true"/>
+                                    <property name="allowMissingParamTags" value="true"/>
+                                    <property name="allowMissingThrowsTags" value="true"/>
+                                    <property name="allowMissingReturnTag" value="true"/>
+                                    <property name="allowedAnnotations"
+                                              value="Override,Test,BeforeClass,AfterClass,Before,After"/>
+                                    <property name="allowThrowsTagsForSubclasses" value="true"/>
                                 </module>
-                                <module name="SingleLineJavadoc" />
+                                <module name="SingleLineJavadoc"/>
                             </module>
                         </module>
                     </checkstyleRules>
@@ -637,8 +648,10 @@
                     <excludes>
                         <exclude>nb-configuration.xml</exclude> <!-- courtesy excludes for netbeans users -->
                         <exclude>nbactions.xml</exclude> <!-- courtesy excludes for netbeans users -->
-                        <exclude>DEPENDENCIES</exclude> <!-- auto generated file by apache's maven config while building sources.zip -->
-                        <exclude>.github/PULL_REQUEST_TEMPLATE.md</exclude> <!-- PR Template for GitHub that does not have a mechanism of including comments -->
+                        <exclude>DEPENDENCIES
+                        </exclude> <!-- auto generated file by apache's maven config while building sources.zip -->
+                        <exclude>.github/PULL_REQUEST_TEMPLATE.md
+                        </exclude> <!-- PR Template for GitHub that does not have a mechanism of including comments -->
                     </excludes>
                 </configuration>
                 <dependencies>
@@ -658,7 +671,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <profiles>
         <profile>
             <!-- Checks style and licensing requirements. This is a good idea to run 

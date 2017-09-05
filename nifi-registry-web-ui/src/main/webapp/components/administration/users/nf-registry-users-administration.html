@@ -1,0 +1,122 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="nifi-registry-users-administration-perspective" class="mat-elevation-z5">
+    <div layout="row" layout-align="space-between top" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <span class="mat-card-title">Authorized Users ({{usersPagingBar.range}}) <span hide-xs>of {{usersPagingBar.total}}</span></span>
+        <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
+            <td-chips [items]="nfRegistryService.autoCompleteUsers" (add)="nfRegistryService.usersSearchAdd($event)"
+                      (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
+            <button class="push-right-sm" color="fds-secondary" md-raised-button (click)="execute({name: 'add'})">
+                Add User
+            </button>
+            <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="userActionMenu">
+                Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
+            </button>
+        </div>
+        <md-menu class="fds-primary-dropdown-button-menu" #userActionMenu="mdMenu" [overlapTrigger]="false">
+            <button md-menu-item> Need to loop over and provide list of all actions available to all currently selected
+                users
+            </button>
+        </md-menu>
+    </div>
+    <div class="pad-left-md pad-right-md">
+        <div id="nifi-registry-users-administration-list-container-column-header" fxLayout="row"
+             fxLayoutAlign="space-between center" class="td-data-table">
+            <div class="td-data-table-column" (click)="nfRegistryService.sortUsers($event, column)"
+                 [mdTooltip]="column.tooltip" *ngFor="let column of nfRegistryService.userColumns"
+                 fxFlex="{{column.width}}">
+                {{column.label}}
+                <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
+                   aria-hidden="true"></i>
+                <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'" class="fa fa-caret-down"
+                   aria-hidden="true"></i>
+            </div>
+            <div class="td-data-table-column">
+                <div fxLayout="row" fxLayoutAlign="end center">
+                    <md-checkbox class="pad-left-sm" [(ngModel)]="nfRegistryService.allUsersSelected"
+                                 (checked)="nfRegistryService.allUsersSelected"
+                                 (change)="nfRegistryService.toggleUsersSelectAll()"></md-checkbox>
+                </div>
+            </div>
+        </div>
+        <div id="nifi-registry-users-administration-list-container">
+            <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
+                 [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredUsers"
+                 (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)">
+                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userColumns"
+                     fxFlex="{{column.width}}">
+                    <div *ngIf="column.name !== 'status'">
+                        {{column.format ? column.format(row[column.name]) : row[column.name]}}
+                    </div>
+                    <div *ngIf="column.name === 'status'">
+                        <i [ngClass]="(row[column.name] === 'authorized')?'fa fa-check-circle authorized':'fa fa-ban suspended'"
+                           aria-hidden="true"></i>
+                    </div>
+                </div>
+                <div class="td-data-table-cell">
+                    <div *ngIf="row.actions">
+                        <div *ngIf="row.actions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
+                            <button (click)="execute(action, row)" *ngFor="let action of row.actions"
+                                    mdTooltip="{{action.tooltip}}" md-icon-button color="accent"
+                                    [disabled]="action.disabled ? '' : null">
+                                <i class="{{action.icon}}" aria-hidden="true"></i>
+                            </button>
+                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                                         (change)="nfRegistryService.toggleUserSelect(row)"
+                                         (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></md-checkbox>
+                        </div>
+                        <div *ngIf="row.actions.length > 4" fxLayout="row" fxLayoutAlign="end center">
+                            <button (click)="row.checked = !row.checked" mdTooltip="Actions" md-icon-button
+                                    [mdMenuTriggerFor]="userTableActionMenu">
+                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                            </button>
+                            <md-menu #userTableActionMenu="mdMenu" [overlapTrigger]="false">
+                                <button (click)="execute(action, row)" *ngFor="let action of row.actions"
+                                        mdTooltip="{{action.tooltip}}" md-menu-item
+                                        [disabled]="action.disabled ? '' : null"
+                                        (click)="nfRegistryService.sidenav.toggle()">
+                                    <i class="{{action.icon}}" aria-hidden="true"></i>
+                                    <span>{{action.name}}</span>
+                                </button>
+                            </md-menu>
+                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                                         (change)="nfRegistryService.toggleUserSelect(row)"
+                                         (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></md-checkbox>
+                        </div>
+                    </div>
+                    <div *ngIf="!row.actions" fxLayout="row" fxLayoutAlign="end center">
+                        <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                                     (change)="nfRegistryService.toggleUserSelect(row)"
+                                     (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></md-checkbox>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="md-padding" *ngIf="!nfRegistryService.filteredUsers.length > 0" layout="row"
+             layout-align="center center">
+            <h3>No results to display.</h3>
+        </div>
+        <td-paging-bar id="nifi-registry-users-administration-list-paging-bar" #usersPagingBar [pageSizeAll]="true"
+                       [pageSizes]="[1, 2, 50, 100, 200, 500, 1000, 2000]"
+                       [initialPage]="1" [pageSize]="nfRegistryService.usersPageSize"
+                       [total]="nfRegistryService.usersPageCount" (change)="nfRegistryService.pageUsers($event)">
+            <span td-paging-bar-label hide-xs>Row per page:</span>
+        </td-paging-bar>
+    </div>
+</div>
+<router-outlet></router-outlet>

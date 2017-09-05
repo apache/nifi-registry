@@ -17,14 +17,19 @@
 <%@ page contentType="text/html" pageEncoding="UTF-8" session="false" %>
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>NiFi Registry</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" href="css/main.css" type="text/css" />
-    </head>
-    <body>
-        <div id="content">
-            <p>NiFi Registry</p>
-        </div>
-    </body>
+<head>
+    <title>NiFi Registry</title>
+    <base href="/">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel=”shortcut icon” href=”nifi-registry/images/registry-favicon.png” type=”image/png>
+    <link rel=”icon” href=”nifi-registry/images/registry-favicon.png” type=”image/png>
+    ${nf.registry.style.tags}
+    <link rel="stylesheet" href='nifi-registry/node_modules/font-awesome/css/font-awesome.css'/>
+</head>
+<body>
+<nf-registry-app></nf-registry-app>
+</body>
+${nf.registry.script.tags}
 </html>

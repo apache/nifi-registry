@@ -1,0 +1,82 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+body {
+    background: $grey5;
+}
+
+#nf-registry-app-container {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#nifi-registry-logo {
+    height: 44px;
+}
+
+#nifi-registry-alerts-count {
+    border-radius: 50%;
+    background: $warnColor;
+    height: 14px;
+    width: 14px;
+    position: relative;
+    left: 9px;
+    color: #FFFFFF;
+    font-size: 9px;
+    text-align: center;
+    line-height: 14px;
+}
+
+#nifi-registry-toolbar {
+    min-width: 1045px;
+    background-color: #FFFFFF;
+    position: absolute;
+    z-index: 1000;
+    background: $grey1;
+}
+
+#nifi-registry-toolbar .mat-icon-button {
+    color: $grey5;
+    font-size: 20px;
+    margin: 0;
+}
+
+#nifi-registry-toolbar .mat-select-value-text, #nifi-registry-toolbar .mat-select-arrow{
+    color: white;
+}
+
+#nifi-registry-toolbar span, #nifi-registry-toolbar .link{
+    color: $grey5;
+}
+
+#nf-registry-perspectives-container {
+    position: absolute;
+    top: 64px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background: $grey5;
+    min-height: 370px;
+    min-width: 1045px;
+    overflow: auto;
+}
+
+md-sidenav {
+    width: 40%;
+    min-width: 418px;
+}

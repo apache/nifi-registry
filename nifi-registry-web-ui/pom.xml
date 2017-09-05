@@ -14,7 +14,8 @@
   limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.apache.nifi.registry</groupId>
@@ -25,26 +26,446 @@
     <artifactId>nifi-registry-web-ui</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>javax.servlet.jsp-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <scope>provided</scope>            
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet.jsp.jstl</groupId>
-            <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
+    <properties>
+        <skipTests>true</skipTests>
+        <staging.dir>${project.build.directory}/tmp</staging.dir>
+        <registry.filter>registry-min.properties</registry.filter>
+        <frontend.source>${basedir}/src/main</frontend.source>
+        <frontend.dependency.configs>${basedir}/src/main/frontend</frontend.dependency.configs>
+        <frontend.working.dir>${project.build.directory}/frontend-working-directory</frontend.working.dir>
+        <frontend.assets>${project.build.directory}/${project.build.finalName}/node_modules</frontend.assets>
+    </properties>
+    <build>
+        <!--
+            These filters are used to populate the includes (css and js)
+            for each of the available pages. The property is the name of
+            the file which contains the properties that define which
+            css and js files get included. When running with minify and
+            compression (default) the filter properties will be overridden
+            in the profile. The JSPs that contain the HEAD portion of the
+            pages will not be pre-compiled and will instead be filtered
+            when the war is built.
+        -->
+        <filters>
+            <filter>src/main/resources/filters/${registry.filter}</filter>
+        </filters>
+        <plugins>
+            <!--
+                Precompile jsp's and add entries into the web.xml - the web.xml
+                is automatically places in ${project.build.directory}. Do not
+                precompile index.jsp, etc.
+                These jsp's need to have the artifacts version filtered in to
+                eliminate browser caching issues and set up the proper includes.
+                Since the webResource filter occurs after the precompilation we
+                must exclude them here.
+            -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jspc-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jspc</goal>
+                        </goals>
+                        <configuration>
+                            <keepSources>true</keepSources>
+                            <useProvidedScope>true</useProvidedScope>
+                            <excludes>
+                                **/index.jsp
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <!--
+                        Filter the web.xml that was generated from jspc to specify the
+                        NiFi Registry base directory. The plugin configuration is
+                        specified here while the execution's are defined below in the
+                        profiles to bind to the appropriate phase.
+                    -->
+                    <execution>
+                        <id>copy-web-xml</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${staging.dir}/WEB-INF</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}</directory>
+                                    <filtering>true</filtering>
+                                    <includes>
+                                        <include>web.xml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Copy build and test configs into frontend working directory.
+                    -->
+                    <execution>
+                        <id>copy-client-side-build-and-test-configs</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${frontend.working.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.dependency.configs}</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Copy src into frontend working directory.
+                    -->
+                    <execution>
+                        <id>copy-source</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${frontend.working.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.source}</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>locale/**/*</include>
+                                        <include>webapp/**/*</include>
+                                        <include>platform/**/*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Simulate an npm installed FDS.
+                    -->
+                    <execution>
+                        <id>copy-fluid-design-system</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${frontend.working.dir}/node_modules/@fluid-design-system/dist
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>platform/**/*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Stage client side node_modules dependencies for inclusion in .war.
+                    -->
+                    <execution>
+                        <id>copy-client-side-deps</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${frontend.assets}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}/node_modules</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <!-- roboto -->
+                                        <include>roboto-fontface/fonts/Roboto/Roboto-Regular.ttf</include>
+                                        <include>roboto-fontface/fonts/Roboto/Roboto-Medium.ttf</include>
+                                        <include>roboto-fontface/fonts/Roboto/Roboto-Light.ttf</include>
+                                        <include>roboto-fontface/fonts/Roboto/Roboto-Bold.ttf</include>
+                                        <include>roboto-fontface/LICENSE*</include>
+                                        <!-- covalent -->
+                                        <include>@covalent/core/common/platform.css</include>
+                                        <include>@covalent/core/common/styles/font/MaterialIcons-Regular.woff2</include>
+                                        <include>@covalent/core/common/styles/font/MaterialIcons-Regular.ttf</include>
+                                        <include>@covalent/core/README.md</include>
+                                        <!-- FDS -->
+                                        <include>
+                                            @fluid-design-system/dist/platform/core/common/styles/css/*
+                                        </include>
+                                        <include>@fluid-design-system/dist/platform/core/dialogs/**/*</include>
+                                        <include>@fluid-design-system/dist/platform/core/LICENSE.md</include>
+                                        <!-- font-awesome -->
+                                        <include>font-awesome/css/font-awesome.css</include>
+                                        <include>font-awesome/fonts/fontawesome-webfont.woff2</include>
+                                        <include>font-awesome/fonts/fontawesome-webfont.ttf</include>
+                                        <include>font-awesome/README.md</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Stage client side styles.
+                    -->
+                    <execution>
+                        <id>copy-webapp-client-side-styles</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}/css</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}/webapp/css</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--
+                Tell the war plugin where to find the filtered web.xml and
+                filter the head portion of the pages. The correct includes and
+                project version is filtered into these jsp's as a browser cache
+                buster.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webXml>${staging.dir}/WEB-INF/web.xml</webXml>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/webapp/WEB-INF/pages</directory>
+                            <targetPath>WEB-INF/pages</targetPath>
+                            <includes>
+                                <include>index.jsp</include>
+                            </includes>
+                            <filtering>true</filtering>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+            <!--
+                Skip tests by default
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
+            <!--
+                Speed up build time by excluding node, npm, and any node_modules from `mvn clean` since the front-end-maven plugin uses these
+                directories as cache.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.build.directory}</directory>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                            <excludes>
+                                <exclude>frontend-working-directory/node/**/*</exclude>
+                                <exclude>frontend-working-directory/node_modules/**/*</exclude>
+                            </excludes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.5</version>
+                <configuration>
+                    <installDirectory>${frontend.working.dir}</installDirectory>
+                </configuration>
+                <executions>
+                    <!--
+                        Install node and npm.
+                    -->
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <nodeVersion>v6.11.1</nodeVersion>
+                            <npmVersion>3.10.10</npmVersion>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Install node_modules (build, test, AND client side dependencies).
+                    -->
+                    <execution>
+                        <id>npm-install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <arguments>--silent --cache-min Infinity install</arguments>
+                            <workingDirectory>${frontend.working.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Compile FDS SASS into css and gzip compress it.
+                    -->
+                    <execution>
+                        <id>grunt-compile-fds-sass</id>
+                        <goals>
+                            <goal>grunt</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <arguments>compile-fds-styles</arguments>
+                            <workingDirectory>${frontend.working.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Selenium, Karma/Jasmine JS unit tests.
+                    -->
+                    <execution>
+                        <id>javascript-tests</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <arguments>run test:ci</arguments>
+                            <workingDirectory>${frontend.working.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Compile nifi registry web ui SASS into css and gzip compress it.
+                    -->
+                    <execution>
+                        <id>grunt-compile-web-ui-sass</id>
+                        <goals>
+                            <goal>grunt</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>compile-web-ui-styles</arguments>
+                            <workingDirectory>${frontend.working.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <!--
+                        Bundle, minify, and gzip compress all the javascript.
+                    -->
+                    <execution>
+                        <id>grunt-package-web-ui</id>
+                        <goals>
+                            <goal>grunt</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>bundle-web-ui</arguments>
+                            <workingDirectory>${frontend.working.dir}</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <!--
+                        Stage the final bundle of JS to be included in the .war
+                    -->
+                    <execution>
+                        <id>copy-web-ui-bundle</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}/webapp</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>nf-registry.bundle.*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Stage the localization files to be included in the .war
+                    -->
+                    <execution>
+                        <id>copy-localization</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}/locale</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes combine.children="append">
+                        <exclude>nbactions.xml</exclude>
+                        <exclude>src/main/frontend/package.json</exclude>
+                        <exclude>src/main/platform/core/package.json</exclude>
+                        <exclude>src/main/platform/core/README.md</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
