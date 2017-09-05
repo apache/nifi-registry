@@ -20,6 +20,7 @@ import org.apache.nifi.registry.security.AuthorizationProvider;
 import org.apache.nifi.registry.security.AuthorizedUserFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -32,6 +33,9 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.webapp.Configuration;
+import org.eclipse.jetty.webapp.JettyWebXmlConfiguration;
+import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +44,7 @@ import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -56,7 +61,7 @@ import java.util.Set;
 public class JettyServer {
 
     private static final Logger logger = LoggerFactory.getLogger(JettyServer.class);
-
+    private static final String WEB_DEFAULTS_XML = "org/apache/nifi-registry/web/webdefault.xml";
     private static final int HEADER_BUFFER_SIZE = 16 * 1024; // 16kb
 
     private static final FileFilter WAR_FILTER = new FileFilter() {
@@ -79,6 +84,11 @@ public class JettyServer {
 
         this.properties = properties;
         this.server = new Server(threadPool);
+
+        // enable the annotation based configuration to ensure the jsp container is initialized properly
+        final Configuration.ClassList classlist = Configuration.ClassList.setServerDefault(server);
+        classlist.addBefore(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
+
         configureConnectors();
         loadWars();
     }
@@ -223,6 +233,7 @@ public class JettyServer {
         List<String> serverClasses = new ArrayList<>(Arrays.asList(webappContext.getServerClasses()));
         serverClasses.remove("org.slf4j.");
         webappContext.setServerClasses(serverClasses.toArray(new String[0]));
+        webappContext.setDefaultsDescriptor(WEB_DEFAULTS_XML);
 
         // get the temp directory for this webapp
         final File webWorkingDirectory = properties.getWebWorkingDirectory();
@@ -245,11 +256,11 @@ public class JettyServer {
         // configure the max form size (3x the default)
         webappContext.setMaxFormContentSize(600000);
 
-//        try {
-//            webappContext.setClassLoader(new WebAppClassLoader(ClassLoader.getSystemClassLoader(), webappContext));
-//        } catch (final IOException ioe) {
-//            throw new RuntimeException(ioe);
-//        }
+        try {
+            webappContext.setClassLoader(new WebAppClassLoader(ClassLoader.getSystemClassLoader(), webappContext));
+        } catch (final IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
         logger.info("Loading WAR: " + warFile.getAbsolutePath() + " with context path set to " + contextPath);
         return webappContext;
     }

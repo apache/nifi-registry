@@ -1,0 +1,170 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="nifi-registry-workflow-administration-perspective-buckets-container" class="mat-elevation-z5">
+    <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <span class="mat-card-title">Buckets ({{nfRegistryService.buckets.length}})</span>
+        <div flex fxLayoutAlign="start center" class="pad-top-md pad-bottom-sm">
+            <md-input-container flex>
+                <input mdInput placeholder="Create New Bucket">
+            </md-input-container>
+            <button class="input-button" color="fds-regular" md-raised-button
+                    i18n="Create new bucket button|A button for creating a new bucket in the registry.@@nf-admin-workflow-create-bucket-button">
+                Create
+            </button>
+        </div>
+        <div id="nifi-registry-workflow-administration-buckets-list-container-column-header" fxLayout="row"
+             fxLayoutAlign="space-between center" class="td-data-table">
+            <div class="td-data-table-column" (click)="nfRegistryService.sortBuckets($event, column)"
+                 [mdTooltip]="column.tooltip" *ngFor="let column of nfRegistryService.bucketColumns"
+                 fxFlex="{{column.width}}">
+                {{column.label}}
+                <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
+                   aria-hidden="true"></i>
+                <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'" class="fa fa-caret-down"
+                   aria-hidden="true"></i>
+            </div>
+            <div class="td-data-table-column"></div>
+        </div>
+        <div id="nifi-registry-workflow-administration-buckets-list-container">
+            <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
+                 [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredBuckets"
+                 (click)="row.checked = !row.checked;nfRegistryService.toggleBucketSelect(row)">
+                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.bucketColumns"
+                     fxFlex="{{column.width}}">
+                    <div>
+                        {{column.format ? column.format(row[column.name]) : row[column.name]}}
+                    </div>
+                </div>
+                <div class="td-data-table-cell">
+                    <div *ngIf="row.actions">
+                        <div *ngIf="row.actions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
+                            <button (click)="execute(action, row)" *ngFor="let action of row.actions"
+                                    mdTooltip="{{action.tooltip}}" md-icon-button color="accent"
+                                    [disabled]="action.disabled ? '' : null">
+                                <i class="{{action.icon}}" aria-hidden="true"></i>
+                            </button>
+                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                                         (change)="nfRegistryService.toggleBucketSelect(row)"
+                                         (click)="row.checked = !row.checked;nfRegistryService.toggleBucketSelect(row)"></md-checkbox>
+                        </div>
+                        <div *ngIf="row.actions.length > 4" fxLayout="row" fxLayoutAlign="end center">
+                            <button (click)="row.checked = !row.checked" mdTooltip="Actions" md-icon-button
+                                    [mdMenuTriggerFor]="bucketTableActionMenu">
+                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                            </button>
+                            <md-menu #bucketTableActionMenu="mdMenu" [overlapTrigger]="false">
+                                <button (click)="execute(action, row)" *ngFor="let action of row.actions"
+                                        mdTooltip="{{action.tooltip}}" md-menu-item
+                                        [disabled]="action.disabled ? '' : null">
+                                    <i class="{{action.icon}}" aria-hidden="true"></i>
+                                    <span>{{action.name}}</span>
+                                </button>
+                            </md-menu>
+                            <md-checkbox [(ngModel)]="row.checked" [checked]="row.checked"
+                                         (change)="nfRegistryService.toggleBucketSelect(row)"
+                                         (click)="row.checked = !row.checked;nfRegistryService.toggleBucketSelect(row)"></md-checkbox>
+                        </div>
+                    </div>
+                    <div *ngIf="!row.actions" fxLayout="row" fxLayoutAlign="end center">
+                        <md-checkbox [(ngModel)]="row.checked" [checked]="row.checked"
+                                     (change)="nfRegistryService.toggleBucketSelect(row)"
+                                     (click)="row.checked = !row.checked;nfRegistryService.toggleBucketSelect(row)"></md-checkbox>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="false" id="nifi-registry-workflow-administration-perspective-certifications-container"
+     class="mat-elevation-z5">
+    <div flex fxFill class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <span class="mat-card-title">Certifications ({{nfRegistryService.certifications.length}})</span>
+        <div flex fxLayoutAlign="start center" class="pad-top-md pad-bottom-sm">
+            <md-input-container flex>
+                <input mdInput placeholder="Create New Certifications">
+            </md-input-container>
+            <button class="input-button" color="fds-regular" md-raised-button>
+                Create
+            </button>
+        </div>
+        <div id="nifi-registry-workflow-administration-certifications-list-container-column-header" flex
+             class="td-data-table">
+            <div class="td-data-table-column" (click)="nfRegistryService.sortCertifications($event, column)"
+                 [mdTooltip]="column.tooltip" *ngFor="let column of nfRegistryService.certificationColumns"
+                 fxFlex="{{column.width}}">
+                {{column.label}}
+                <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
+                   aria-hidden="true"></i>
+                <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'" class="fa fa-caret-down"
+                   aria-hidden="true"></i>
+            </div>
+            <div class="td-data-table-column" fxFlex="20"></div>
+        </div>
+        <div id="nifi-registry-workflow-administration-certifications-list-container">
+            <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
+                 [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredCertifications">
+                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.certificationColumns"
+                     fxFlex="{{column.width}}">
+                    <div *ngIf="column.name !== 'usage' && column.name !== 'badge'">
+                        {{column.format ? column.format(row[column.name]) : row[column.name]}}
+                    </div>
+                    <div *ngIf="column.name === 'usage'">
+                        <md-button-toggle-group class="on-off-toggle-group" (change)="row['usage'] = !row['usage']">
+                            <md-button-toggle value="true" [checked]="row[column.name] === true">
+                                ON
+                            </md-button-toggle>
+                            <md-button-toggle value="false" [checked]="row[column.name] !== true" class="off-toggle">
+                                OFF
+                            </md-button-toggle>
+                        </md-button-toggle-group>
+                    </div>
+                    <div *ngIf="column.name === 'badge'" class="pad-left-md">
+                        <button [style.background]="row[column.name].background" [style.color]="row[column.name].color"
+                                mdTooltip="{{row[column.name].tooltip}}" md-icon-button class="badge"
+                                [disabled]="!row['usage'] ? '' : null">
+                            <i class="{{row[column.name].icon}}" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="td-data-table-cell" fxFlex="20">
+                    <div *ngIf="row.actions">
+                        <div *ngIf="row.actions.length < 4" fxLayout="row" fxLayoutAlign="end center">
+                            <button *ngFor="let action of row.actions" mdTooltip="{{action.tooltip}}" md-icon-button
+                                    color="accent" [disabled]="action.disabled ? '' : null">
+                                <i class="{{action.icon}}" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div *ngIf="row.actions.length >= 4" fxLayout="row" fxLayoutAlign="end center">
+                            <button mdTooltip="Actions" md-icon-button [mdMenuTriggerFor]="tableActionMenu">
+                                <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
+                            </button>
+                            <md-menu #tableActionMenu="mdMenu" [overlapTrigger]="false">
+                                <button *ngFor="let action of row.actions" mdTooltip="{{action.tooltip}}" md-menu-item
+                                        [disabled]="action.disabled ? '' : null">
+                                    <i class="{{action.icon}}" aria-hidden="true"></i>
+                                    <span>{{action.name}}</span>
+                                </button>
+                            </md-menu>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<router-outlet></router-outlet>

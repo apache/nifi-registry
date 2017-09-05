@@ -1,0 +1,186 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div class="pad-top-sm pad-bottom-sm pad-right-xxl pad-left-xxl">
+    <div *ngIf="false" class="pad-top-md pad-bottom-sm">
+        <md-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center"
+                                class="expansion-panel-filter-toggle-group" multiple>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('type:asset')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('type:asset')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">
+                        {{nfRegistryService.getDropletTypeCount('asset')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Assets</div>
+                </div>
+            </md-button-toggle>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('type:extension')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('type:extension')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">
+                        {{nfRegistryService.getDropletTypeCount('extension')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Extensions</div>
+                </div>
+            </md-button-toggle>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('type:flow')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('type:flow')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">{{nfRegistryService.getDropletTypeCount('flow')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Flows</div>
+                </div>
+            </md-button-toggle>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('compliant.label:Compliant')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('compliant.label:Compliant')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">
+                        {{nfRegistryService.getDropletCertificationCount('compliant')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Compliant</div>
+                </div>
+            </md-button-toggle>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('fleet.label:Fleet')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('fleet.label:Fleet')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">
+                        {{nfRegistryService.getDropletCertificationCount('fleet')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Fleet</div>
+                </div>
+            </md-button-toggle>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('prod.label:Production Ready')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('prod.label:Production Ready')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">
+                        {{nfRegistryService.getDropletCertificationCount('prod')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Production Ready</div>
+                </div>
+            </md-button-toggle>
+            <md-button-toggle (change)="nfRegistryService.toggleDropletsFilter('secure.label:Secure')"
+                              [checked]="nfRegistryService.isDropletFilterChecked('secure.label:Secure')">
+                <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
+                    <div class="md-display-1 pad-top-sm" fxFlex="55">
+                        {{nfRegistryService.getDropletCertificationCount('secure')}}
+                    </div>
+                    <div class="pad-top-sm" fxFlex="45">Secure</div>
+                </div>
+            </md-button-toggle>
+        </md-button-toggle-group>
+        <div id="nf-registry-droplet-filter-clear-grouping-button-container">
+            <span *ngIf="nfRegistryService.dropletsSearchTerms.length > 0"
+                  (click)="nfRegistryService.dropletsSearchTerms = [];nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);"><i
+                    class="fa fa-plus-circle fa-rotate-45" aria-hidden="true"></i><span class="pad-left-sm link">Clear Grouping</span></span>
+        </div>
+    </div>
+    <div layout="row" layout-align="space-between center">
+        <div flex fxLayout="row" fxLayoutAlign="end center">
+            <td-chips [(ngModel)]="nfRegistryService.dropletsSearchTerms"
+                      [items]="nfRegistryService.autoCompleteDroplets"
+                      (add)="nfRegistryService.dropletsSearchAdd($event)"
+                      (remove)="nfRegistryService.dropletsSearchRemove($event)" class="push-right-sm"></td-chips>
+            <span class="pad-right-sm">Sort by:</span>
+            <div fxLayout="row" fxLayoutAlign="end center" [mdMenuTriggerFor]="dropletGridSortMenu">
+                <div id="droplet-sort-by-field">{{nfRegistryService.getSortByLabel()}}</div>
+                <i class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i>
+            </div>
+        </div>
+        <md-menu #dropletGridSortMenu="mdMenu" [overlapTrigger]="false">
+            <div *ngFor="let column of nfRegistryService.dropletColumns">
+                <button md-menu-item *ngIf="column.sortable" (click)="nfRegistryService.sortDroplets($event, column);">
+                    {{nfRegistryService.generateSortMenuLabels(column)}}
+                </button>
+            </div>
+        </md-menu>
+    </div>
+</div>
+<div id="nifi-registry-explorer-grid-list-viewer-droplet-container" class="pad-right-xxl pad-left-xxl"
+     *ngIf="nfRegistryService.filteredDroplets.length > 0">
+    <div *ngFor="let droplet of nfRegistryService.filteredDroplets" [@flyInOut]>
+        <td-expansion-panel class="mat-elevation-z5" label={{droplet.label}} sublabel={{droplet.sublabel}}
+                            [disabled]="disabled">
+            <ng-template td-expansion-panel-label>
+                <div fxLayout="column" fxLayoutAlign="space-between start">
+                    <span class="md-title capitalize">{{droplet.displayName}}</span>
+                    <span class="md-subhead">{{droplet.type}}</span>
+                </div>
+            </ng-template>
+            <ng-template td-expansion-panel-sublabel>
+                <div fxLayout="row" fxLayoutAlign="space-between center">
+                    <div class="pad-right-xxl pad-left-xxl" fxLayout="column" fxLayoutAlign="space-between start">
+                        <span class="uppercase">Versions</span> {{droplet.versions.length}}
+                    </div>
+                </div>
+            </ng-template>
+            <div id="nifi-registry-explorer-grid-list-viewer-droplet-container-details" class="md-padding">
+                <div fxLayout="column" fxLayoutAlign="space-between stretch">
+                    <div class="pad-bottom-sm" fxLayout="row" fxLayoutAlign="end center">
+                        <button color="fds-primary" [mdMenuTriggerFor]="primaryButtonDropdownMenu" md-raised-button>
+                            Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
+                        </button>
+                        <md-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="mdMenu"
+                                 [overlapTrigger]="false">
+                            <button md-menu-item *ngFor="let action of droplet.actions"
+                                    (click)="execute(action, droplet)">
+                                <span>{{action.name}}</span>
+                            </button>
+                        </md-menu>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="25">
+                            <span class="uppercase">Description</span>
+                        </div>
+                        <div fxFlex="75">
+                            <span class="uppercase">Change Log</span>
+                        </div>
+                    </div>
+                    <div fxLayout="row">
+                        <div fxFlex="25">
+                            <p>{{droplet.description}}</p>
+                        </div>
+                        <div id="nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log"
+                             fxFlex="75">
+                            <td-steps mode="vertical">
+                                <td-step label="{{version.revision}}" sublabel="by {{version.author}}"
+                                         *ngFor="let version of droplet.versions; let i = index"
+                                         [active]="i === 0 ? true : false">
+                                    <ng-template td-step-label>
+                                        <span>{{version.created | amTimeAgo}}</span>
+                                    </ng-template>
+                                    <div fxLayout="column" fxLayoutAlign="space-between stretch">
+                                        <div fxLayout="row" class="md-body-2">
+                                            {{version.comment}}
+                                        </div>
+                                        <div fxLayout="row" class="md-caption">
+                                            {{version.created}}
+                                        </div>
+                                    </div>
+                                </td-step>
+                            </td-steps>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </td-expansion-panel>
+        <div class="pad-bottom-sm"></div>
+    </div>
+</div>
+<div class="pad-right-xxl pad-left-xxl" *ngIf="nfRegistryService.filteredDroplets.length <= 0">
+    <p class="text-center">No results match this query.</p>
+</div>
+<router-outlet></router-outlet>
