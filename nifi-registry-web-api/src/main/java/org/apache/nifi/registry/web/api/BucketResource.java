@@ -25,6 +25,8 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -40,6 +42,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.Set;
 
+@Component
 @Path("/buckets")
 @Api(
         value = "/buckets",
@@ -55,7 +58,7 @@ public class BucketResource {
 
     private final RegistryService registryService;
 
-    public BucketResource(final RegistryService registryService) {
+    public BucketResource(@Autowired final RegistryService registryService) {
         this.registryService = registryService;
     }
 

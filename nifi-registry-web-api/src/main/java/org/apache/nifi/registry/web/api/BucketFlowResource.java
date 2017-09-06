@@ -22,6 +22,8 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -31,6 +33,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+@Component
 @Path("/buckets/{bucketId}/flows")
 @Api(
         value = "bucket >> flows",
@@ -42,7 +45,7 @@ public class BucketFlowResource {
 
     private final RegistryService registryService;
 
-    public BucketFlowResource(final RegistryService registryService) {
+    public BucketFlowResource(@Autowired final RegistryService registryService) {
         this.registryService = registryService;
     }
 
