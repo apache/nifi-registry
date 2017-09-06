@@ -23,8 +23,12 @@ import org.apache.nifi.registry.provider.generated.Property;
 import org.apache.nifi.registry.provider.generated.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.xml.sax.SAXException;
 
+import javax.annotation.PostConstruct;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -43,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * Standard implementation of ProviderFactory.
  */
+@Configuration
 public class StandardProviderFactory implements ProviderFactory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardProviderFactory.class);
@@ -68,7 +73,7 @@ public class StandardProviderFactory implements ProviderFactory {
     private FlowPersistenceProvider flowPersistenceProvider;
     private MetadataProvider metadataProvider;
 
-    public StandardProviderFactory(final NiFiRegistryProperties properties) {
+    public StandardProviderFactory(@Autowired final NiFiRegistryProperties properties) {
         this.properties = properties;
 
         if (this.properties == null) {
@@ -76,6 +81,7 @@ public class StandardProviderFactory implements ProviderFactory {
         }
     }
 
+    @PostConstruct
     @Override
     public synchronized void initialize() throws ProviderFactoryException {
         if (providersHolder.get() == null) {
@@ -102,6 +108,7 @@ public class StandardProviderFactory implements ProviderFactory {
         }
     }
 
+    @Bean
     @Override
     public synchronized MetadataProvider getMetadataProvider() {
         if (metadataProvider == null) {
@@ -134,6 +141,7 @@ public class StandardProviderFactory implements ProviderFactory {
         return metadataProvider;
     }
 
+    @Bean
     @Override
     public synchronized FlowPersistenceProvider getFlowPersistenceProvider() {
         if (flowPersistenceProvider == null) {

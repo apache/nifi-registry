@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.web.api;
 
+import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.service.TestService;
 import org.apache.nifi.registry.web.response.TestEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +34,15 @@ public class TestResource {
 
     private TestService testService;
 
-    public TestResource(@Autowired TestService testService) {
+    private NiFiRegistryProperties properties;
+
+    public TestResource(@Autowired TestService testService, @Autowired NiFiRegistryProperties properties) {
         this.testService = testService;
+        this.properties = properties;
+
+        if (this.properties == null) {
+            throw new IllegalStateException("Properties cannot be null");
+        }
     }
 
     @GET
