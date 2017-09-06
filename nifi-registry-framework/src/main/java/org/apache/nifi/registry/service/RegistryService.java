@@ -32,6 +32,8 @@ import org.apache.nifi.registry.metadata.MetadataProvider;
 import org.apache.nifi.registry.metadata.StandardBucketMetadata;
 import org.apache.nifi.registry.metadata.StandardFlowMetadata;
 import org.apache.nifi.registry.serialization.Serializer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -39,12 +41,14 @@ import javax.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+@Service
 public class RegistryService {
 
     private final MetadataProvider metadataProvider;
@@ -56,14 +60,18 @@ public class RegistryService {
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
-    public RegistryService(final MetadataProvider metadataProvider,
-                           final FlowPersistenceProvider flowPersistenceProvider,
-                           final Serializer<VersionedFlowSnapshot> snapshotSerializer,
-                           final Validator validator) {
+    public RegistryService(@Autowired final MetadataProvider metadataProvider,
+                           @Autowired final FlowPersistenceProvider flowPersistenceProvider,
+                           @Autowired final Serializer<VersionedFlowSnapshot> snapshotSerializer,
+                           @Autowired final Validator validator) {
         this.metadataProvider = metadataProvider;
         this.flowPersistenceProvider = flowPersistenceProvider;
         this.snapshotSerializer = snapshotSerializer;
         this.validator = validator;
+        Objects.requireNonNull(this.metadataProvider);
+        Objects.requireNonNull(this.flowPersistenceProvider);
+        Objects.requireNonNull(this.snapshotSerializer);
+        Objects.requireNonNull(this.validator);
     }
 
     private <T>  void validate(T t, String invalidMessage) {

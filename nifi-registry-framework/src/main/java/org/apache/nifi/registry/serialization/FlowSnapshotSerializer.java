@@ -18,6 +18,7 @@ package org.apache.nifi.registry.serialization;
 
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.serialization.jaxb.JAXBFlowSnapshotSerializer;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +36,7 @@ import java.util.Map;
  * read from the InputStream to determine the version, and then the InputStream will be passed to the deserializer
  * for the given version.
  */
+@Service
 public class FlowSnapshotSerializer implements Serializer<VersionedFlowSnapshot> {
 
     static final String MAGIC_HEADER = "Flows";

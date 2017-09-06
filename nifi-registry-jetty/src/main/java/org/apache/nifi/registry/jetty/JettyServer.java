@@ -16,8 +16,6 @@
  */
 package org.apache.nifi.registry.jetty;
 
-import org.apache.nifi.registry.security.AuthorizationProvider;
-import org.apache.nifi.registry.security.AuthorizedUserFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
@@ -30,7 +28,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.Configuration;
@@ -40,8 +37,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -51,7 +46,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -215,8 +209,12 @@ public class JettyServer {
         }
 
         webUiContext = loadWar(webUiWar, "/nifi-registry");
+
         webApiContext = loadWar(webApiWar, "/nifi-registry-api");
         webApiContext.setAttribute("nifi-registry.properties", properties);
+
+        // there is an issue scanning the asm repackaged jar so narrow down what we are scanning
+        webApiContext.setAttribute("org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern", ".*/spring-[^/]*\\.jar$");
 
         final HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(webUiContext);
@@ -283,11 +281,6 @@ public class JettyServer {
                     }
                 }
             }
-
-            // add the authorization filter
-            final Filter authorizationFilter = new AuthorizedUserFilter(new AuthorizationProvider(properties));
-            webUiContext.addFilter(new FilterHolder(authorizationFilter), "/*", EnumSet.allOf(DispatcherType.class));
-            webApiContext.addFilter(new FilterHolder(authorizationFilter), "/*", EnumSet.allOf(DispatcherType.class));
 
             dumpUrls();
         } catch (final Throwable t) {

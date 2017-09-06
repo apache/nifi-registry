@@ -104,6 +104,9 @@
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <jetty.version>9.4.3.v20170317</jetty.version>
         <jersey.version>2.25.1</jersey.version>
+        <!-- spring.version should always match the version of spring used by the version of spring-boot -->
+        <spring.boot.version>1.5.6.RELEASE</spring.boot.version>
+        <spring.version>4.3.10.RELEASE</spring.version>
     </properties>
 
     <repositories>
@@ -208,6 +211,11 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-annotations</artifactId>
+                <version>${jetty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
                 <artifactId>apache-jsp</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
@@ -272,6 +280,24 @@
                 <artifactId>javax.el</artifactId>
                 <version>3.0.1-b08</version>
             </dependency>
+            <!-- These Spring dependencies should end up in the REST API through spring-boot, but we need the framework
+                    module to declare Spring beans, so ensure the Spring version lines up with the version of spring-boot -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <!-- End Spring dependencies -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
