@@ -38,6 +38,7 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.ServletContext;
 import javax.validation.Validation;
@@ -45,6 +46,10 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import javax.ws.rs.core.Context;
 
+/**
+ *  NOTE: Don't set @ApplicationPath here because it has already been set to 'nifi-registry-api' in JettyServer
+ */
+@Configuration
 public class NiFiRegistryResourceConfig extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistryResourceConfig.class);
@@ -78,10 +83,12 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(new ThrowableMapper());
 
         // register endpoints
-        register(new TestResource(metadataProvider, flowPersistenceProvider));
         register(new BucketResource(registryService));
         register(new BucketFlowResource(registryService));
         register(new FlowResource(registryService));
+
+        // test endpoint to exercise spring dependency injection
+        register(TestResource.class);
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     }

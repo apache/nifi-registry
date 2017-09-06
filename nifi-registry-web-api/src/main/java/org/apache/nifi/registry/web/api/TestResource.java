@@ -16,9 +16,10 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.metadata.MetadataProvider;
+import org.apache.nifi.registry.service.TestService;
 import org.apache.nifi.registry.web.response.TestEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -26,30 +27,20 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+@Component
 @Path("/test")
 public class TestResource {
 
-    private final MetadataProvider metadataProvider;
+    private TestService testService;
 
-    private final FlowPersistenceProvider flowPersistenceProvider;
-
-    public TestResource(final MetadataProvider metadataProvider, final FlowPersistenceProvider flowPersistenceProvider) {
-        this.metadataProvider = metadataProvider;
-        this.flowPersistenceProvider = flowPersistenceProvider;
-
-        if (this.metadataProvider == null) {
-            throw new IllegalStateException("MetadataProvider cannot be null");
-        }
-
-        if (this.flowPersistenceProvider == null) {
-            throw new IllegalStateException("FlowPersistenceProvider cannot be null");
-        }
+    public TestResource(@Autowired TestService testService) {
+        this.testService = testService;
     }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTest() {
-        final TestEntity testEntity = new TestEntity("testing");
+        final TestEntity testEntity = new TestEntity(testService.test());
         return Response.ok(testEntity).build();
     }
 
