@@ -18,6 +18,7 @@ package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.nifi.registry.link.LinkableEntity;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -28,7 +29,7 @@ import java.util.Objects;
  * to sort based on the snapshot version in ascending order.
  */
 @ApiModel(value = "versionedFlowSnapshot")
-public class VersionedFlowSnapshotMetadata implements Comparable<VersionedFlowSnapshotMetadata> {
+public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Comparable<VersionedFlowSnapshotMetadata> {
 
     @NotBlank
     private String bucketIdentifier;

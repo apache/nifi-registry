@@ -17,7 +17,6 @@
 package org.apache.nifi.registry.provider;
 
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.metadata.MetadataProvider;
 
 /**
  * A factory for obtaining the configured providers.
@@ -30,11 +29,6 @@ public interface ProviderFactory {
      * @throws ProviderFactoryException if an error occurs during initialization
      */
     void initialize() throws ProviderFactoryException;
-
-    /**
-     * @return the configured MetadataProvider
-     */
-    MetadataProvider getMetadataProvider();
 
     /**
      * @return the configured FlowPersistenceProvider

@@ -15,12 +15,6 @@
 -->
 <providers>
 
-    <metadataProvider>
-        <class>org.apache.nifi.registry.provider.MetadataProviderXXX</class>
-        <property name="Metadata Property 1">foo</property>
-        <property name="Metadata Property 2">bar</property>
-    </metadataProvider>
-
     <flowPersistenceProvider>
         <class>org.apache.nifi.registry.provider.FlowProviderXXX</class>
         <property name="Flow Property 1">foo</property>

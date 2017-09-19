@@ -47,6 +47,9 @@ public class NiFiRegistryProperties extends Properties {
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
 
+    public static final String DATABASE_DIRECTORY = "nifi.registry.db.directory";
+    public static final String DATABASE_URL_APPEND = "nifi.registry.db.url.append";
+
     // Defaults
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
     public static final String DEFAULT_WAR_DIR = "./lib";
@@ -155,4 +158,13 @@ public class NiFiRegistryProperties extends Properties {
             return new File(value);
         }
     }
+
+    public String getDatabaseDirectory() {
+        return getProperty(DATABASE_DIRECTORY);
+    }
+
+    public String getDatabaseUrlAppend() {
+        return getProperty(DATABASE_URL_APPEND);
+    }
+
 }

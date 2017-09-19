@@ -15,13 +15,8 @@
 -->
 <providers>
 
-    <metadataProvider>
-        <class>org.apache.nifi.registry.metadata.FileSystemMetadataProvider</class>
-        <property name="Metadata File">./metadata.xml</property>
-    </metadataProvider>
-
     <flowPersistenceProvider>
-        <class>org.apache.nifi.registry.flow.FileSystemFlowPersistenceProvider</class>
+        <class>org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider</class>
         <property name="Flow Storage Directory">./flow_storage</property>
     </flowPersistenceProvider>
 

@@ -18,6 +18,7 @@ package org.apache.nifi.registry.bucket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.nifi.registry.link.LinkableEntity;
 import org.apache.nifi.registry.flow.VersionedFlow;
 
 import javax.validation.Valid;
@@ -29,7 +30,7 @@ import java.util.Set;
 
 @XmlRootElement
 @ApiModel(value = "bucket")
-public class Bucket {
+public class Bucket extends LinkableEntity {
 
     @NotBlank
     private String identifier;
@@ -46,7 +47,7 @@ public class Bucket {
     private Set<VersionedFlow> versionedFlows;
 
 
-    @ApiModelProperty("The id of the bucket. This is set by the server at creation time.")
+    @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
         return identifier;
     }
@@ -93,7 +94,7 @@ public class Bucket {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.identifier);
+        return Objects.hashCode(this.getIdentifier());
     }
 
     @Override
@@ -106,7 +107,7 @@ public class Bucket {
         }
 
         final Bucket other = (Bucket) obj;
-        return Objects.equals(this.identifier, other.identifier);
+        return Objects.equals(this.getIdentifier(), other.getIdentifier());
     }
 
 }
