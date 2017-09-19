@@ -17,21 +17,20 @@
 package org.apache.nifi.registry.service;
 
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.db.entity.BucketEntity;
+import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.FlowEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.metadata.BucketMetadata;
-import org.apache.nifi.registry.metadata.FlowMetadata;
-import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
-import org.apache.nifi.registry.metadata.MetadataProvider;
-import org.apache.nifi.registry.metadata.StandardBucketMetadata;
-import org.apache.nifi.registry.metadata.StandardFlowMetadata;
-import org.apache.nifi.registry.metadata.StandardFlowSnapshotMetadata;
 import org.apache.nifi.registry.serialization.FlowSnapshotSerializer;
 import org.apache.nifi.registry.serialization.Serializer;
+import org.apache.nifi.registry.service.params.QueryParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -43,8 +42,12 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -60,7 +63,7 @@ import static org.mockito.Mockito.when;
 
 public class TestRegistryService {
 
-    private MetadataProvider metadataProvider;
+    private MetadataService metadataService;
     private FlowPersistenceProvider flowPersistenceProvider;
     private Serializer<VersionedFlowSnapshot> snapshotSerializer;
     private Validator validator;
@@ -69,14 +72,14 @@ public class TestRegistryService {
 
     @Before
     public void setup() {
-        metadataProvider = mock(MetadataProvider.class);
+        metadataService = mock(MetadataService.class);
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
         snapshotSerializer = mock(FlowSnapshotSerializer.class);
 
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
 
-        registryService = new RegistryService(metadataProvider, flowPersistenceProvider, snapshotSerializer, validator);
+        registryService = new RegistryService(metadataService, flowPersistenceProvider, snapshotSerializer, validator);
     }
 
     // ---------------------- Test Bucket methods ---------------------------------------------
@@ -87,9 +90,9 @@ public class TestRegistryService {
         bucket.setName("My Bucket");
         bucket.setDescription("This is my bucket.");
 
-        when(metadataProvider.getBucketByName(bucket.getName())).thenReturn(null);
+        when(metadataService.getBucketsByName(bucket.getName())).thenReturn(Collections.emptyList());
 
-        doAnswer(createBucketAnswer()).when(metadataProvider).createBucket(any(BucketMetadata.class));
+        doAnswer(createBucketAnswer()).when(metadataService).createBucket(any(BucketEntity.class));
 
         final Bucket createdBucket = registryService.createBucket(bucket);
         assertNotNull(createdBucket);
@@ -106,13 +109,12 @@ public class TestRegistryService {
         bucket.setName("My Bucket");
         bucket.setDescription("This is my bucket.");
 
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketByName(bucket.getName())).thenReturn(existingBucket);
+        when(metadataService.getBucketsByName(bucket.getName())).thenReturn(Collections.singletonList(existingBucket));
 
         // should throw exception since a bucket with the same name exists
         registryService.createBucket(bucket);
@@ -121,33 +123,32 @@ public class TestRegistryService {
     @Test(expected = ConstraintViolationException.class)
     public void testCreateBucketWithMissingName() {
         final Bucket bucket = new Bucket();
-        when(metadataProvider.getBucketByName(bucket.getName())).thenReturn(null);
+        when(metadataService.getBucketsByName(bucket.getName())).thenReturn(Collections.emptyList());
         registryService.createBucket(bucket);
     }
 
     @Test
     public void testGetExistingBucket() {
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
-        final Bucket bucket = registryService.getBucket(existingBucket.getIdentifier());
+        final Bucket bucket = registryService.getBucket(existingBucket.getId(), true);
         assertNotNull(bucket);
-        assertEquals(existingBucket.getIdentifier(), bucket.getIdentifier());
+        assertEquals(existingBucket.getId(), bucket.getIdentifier());
         assertEquals(existingBucket.getName(), bucket.getName());
         assertEquals(existingBucket.getDescription(), bucket.getDescription());
-        assertEquals(existingBucket.getCreatedTimestamp(), bucket.getCreatedTimestamp());
+        assertEquals(existingBucket.getCreated().getTime(), bucket.getCreatedTimestamp());
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void testGetBucketDoesNotExist() {
-        when(metadataProvider.getBucketById(any(String.class))).thenReturn(null);
-        registryService.getBucket("does-not-exist");
+        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
+        registryService.getBucket("does-not-exist", true);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -166,33 +167,31 @@ public class TestRegistryService {
         bucket.setDescription("This is my bucket.");
         registryService.updateBucket(bucket);
 
-        when(metadataProvider.getBucketById(any(String.class))).thenReturn(null);
+        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
         registryService.updateBucket(bucket);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testUpdateBucketWithSameNameAsExistingBucket() {
-        final BucketMetadata bucketToUpdate = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity bucketToUpdate = new BucketEntity();
+        bucketToUpdate.setId("b1");
+        bucketToUpdate.setName("My Bucket");
+        bucketToUpdate.setDescription("This is my bucket");
+        bucketToUpdate.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(bucketToUpdate.getIdentifier())).thenReturn(bucketToUpdate);
+        when(metadataService.getBucketById(bucketToUpdate.getId())).thenReturn(bucketToUpdate);
 
-        final BucketMetadata otherBucket = new StandardBucketMetadata.Builder()
-                .identifier("b2")
-                .name("My Bucket #2")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity otherBucket = new BucketEntity();
+        otherBucket.setId("b2");
+        otherBucket.setName("My Bucket #2");
+        otherBucket.setDescription("This is my bucket");
+        otherBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketByName(otherBucket.getName())).thenReturn(otherBucket);
+        when(metadataService.getBucketsByName(otherBucket.getName())).thenReturn(Collections.singletonList(otherBucket));
 
         // should fail because other bucket has the same name
         final Bucket updatedBucket = new Bucket();
-        updatedBucket.setIdentifier(bucketToUpdate.getIdentifier());
+        updatedBucket.setIdentifier(bucketToUpdate.getId());
         updatedBucket.setName("My Bucket #2");
         updatedBucket.setDescription(bucketToUpdate.getDescription());
 
@@ -201,19 +200,18 @@ public class TestRegistryService {
 
     @Test
     public void testUpdateBucket() {
-        final BucketMetadata bucketToUpdate = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity bucketToUpdate = new BucketEntity();
+        bucketToUpdate.setId("b1");
+        bucketToUpdate.setName("My Bucket");
+        bucketToUpdate.setDescription("This is my bucket");
+        bucketToUpdate.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(bucketToUpdate.getIdentifier())).thenReturn(bucketToUpdate);
+        when(metadataService.getBucketById(bucketToUpdate.getId())).thenReturn(bucketToUpdate);
 
-        doAnswer(updateBucketAnswer()).when(metadataProvider).updateBucket(any(BucketMetadata.class));
+        doAnswer(updateBucketAnswer()).when(metadataService).updateBucket(any(BucketEntity.class));
 
         final Bucket updatedBucket = new Bucket();
-        updatedBucket.setIdentifier(bucketToUpdate.getIdentifier());
+        updatedBucket.setIdentifier(bucketToUpdate.getId());
         updatedBucket.setName("Updated Name");
         updatedBucket.setDescription("Updated Description");
 
@@ -225,19 +223,18 @@ public class TestRegistryService {
 
     @Test
     public void testUpdateBucketPartial() {
-        final BucketMetadata bucketToUpdate = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity bucketToUpdate = new BucketEntity();
+        bucketToUpdate.setId("b1");
+        bucketToUpdate.setName("My Bucket");
+        bucketToUpdate.setDescription("This is my bucket");
+        bucketToUpdate.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(bucketToUpdate.getIdentifier())).thenReturn(bucketToUpdate);
+        when(metadataService.getBucketById(bucketToUpdate.getId())).thenReturn(bucketToUpdate);
 
-        doAnswer(updateBucketAnswer()).when(metadataProvider).updateBucket(any(BucketMetadata.class));
+        doAnswer(updateBucketAnswer()).when(metadataService).updateBucket(any(BucketEntity.class));
 
         final Bucket updatedBucket = new Bucket();
-        updatedBucket.setIdentifier(bucketToUpdate.getIdentifier());
+        updatedBucket.setIdentifier(bucketToUpdate.getId());
         updatedBucket.setName("Updated Name");
         updatedBucket.setDescription(null);
 
@@ -251,39 +248,36 @@ public class TestRegistryService {
     @Test(expected = ResourceNotFoundException.class)
     public void testDeleteBucketDoesNotExist() {
         final String bucketId = "b1";
-        when(metadataProvider.getBucketById(bucketId)).thenReturn(null);
+        when(metadataService.getBucketById(bucketId)).thenReturn(null);
         registryService.deleteBucket(bucketId);
     }
 
     @Test
     public void testDeleteBucketWithFlows() {
-        final BucketMetadata bucketToDelete = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity bucketToDelete = new BucketEntity();
+        bucketToDelete.setId("b1");
+        bucketToDelete.setName("My Bucket");
+        bucketToDelete.setDescription("This is my bucket");
+        bucketToDelete.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(bucketToDelete.getIdentifier())).thenReturn(bucketToDelete);
+        final FlowEntity flowToDelete = new FlowEntity();
+        flowToDelete.setId("flow1");
+        flowToDelete.setName("Flow 1");
+        flowToDelete.setDescription("This is flow 1");
+        flowToDelete.setCreated(new Date());
 
-        final FlowMetadata flowToDelete = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("Flow 1")
-                .description("This is flow 1")
-                .created(System.currentTimeMillis())
-                .build();
+        final Set<BucketItemEntity> items = new HashSet<>();
+        items.add(flowToDelete);
+        bucketToDelete.setItems(items);
 
-        final Set<FlowMetadata> flowsToDelete = new HashSet<>();
-        flowsToDelete.add(flowToDelete);
+        when(metadataService.getBucketById(bucketToDelete.getId())).thenReturn(bucketToDelete);
 
-        when(metadataProvider.getFlows(bucketToDelete.getIdentifier())).thenReturn(flowsToDelete);
-
-        final Bucket deletedBucket = registryService.deleteBucket(bucketToDelete.getIdentifier());
+        final Bucket deletedBucket = registryService.deleteBucket(bucketToDelete.getId());
         assertNotNull(deletedBucket);
-        assertEquals(bucketToDelete.getIdentifier(), deletedBucket.getIdentifier());
+        assertEquals(bucketToDelete.getId(), deletedBucket.getIdentifier());
 
         verify(flowPersistenceProvider, times(1))
-                .deleteSnapshots(eq(bucketToDelete.getIdentifier()), eq(flowToDelete.getIdentifier()));
+                .deleteSnapshots(eq(bucketToDelete.getId()), eq(flowToDelete.getId()));
     }
 
     // ---------------------- Test VersionedFlow methods ---------------------------------------------
@@ -297,7 +291,7 @@ public class TestRegistryService {
     @Test(expected = ResourceNotFoundException.class)
     public void testCreateFlowBucketDoesNotExist() {
 
-        when(metadataProvider.getBucketById(any(String.class))).thenReturn(null);
+        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
 
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setName("My Flow");
@@ -308,30 +302,27 @@ public class TestRegistryService {
 
     @Test(expected = IllegalStateException.class)
     public void testCreateFlowWithSameName() {
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         // setup a flow with the same name that already exists
 
-        final FlowMetadata flowMetadata = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final FlowEntity flowWithSameName = new FlowEntity();
+        flowWithSameName.setId("flow1");
+        flowWithSameName.setName("Flow 1");
+        flowWithSameName.setDescription("This is flow 1");
+        flowWithSameName.setCreated(new Date());
+        flowWithSameName.setModified(new Date());
 
-        when(metadataProvider.getFlowByName(flowMetadata.getName())).thenReturn(flowMetadata);
+        when(metadataService.getFlowsByName(flowWithSameName.getName())).thenReturn(Collections.singletonList(flowWithSameName));
 
         final VersionedFlow versionedFlow = new VersionedFlow();
-        versionedFlow.setName(flowMetadata.getName());
+        versionedFlow.setName(flowWithSameName.getName());
         versionedFlow.setBucketIdentifier("b1");
 
         registryService.createFlow(versionedFlow.getBucketIdentifier(), versionedFlow);
@@ -339,20 +330,19 @@ public class TestRegistryService {
 
     @Test
     public void testCreateFlowValid() {
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setName("My Flow");
         versionedFlow.setBucketIdentifier("b1");
 
-        doAnswer(createFlowAnswer()).when(metadataProvider).createFlow(any(String.class), any(FlowMetadata.class));
+        doAnswer(createFlowAnswer()).when(metadataService).createFlow(any(FlowEntity.class));
 
         final VersionedFlow createdFlow = registryService.createFlow(versionedFlow.getBucketIdentifier(), versionedFlow);
         assertNotNull(createdFlow);
@@ -366,106 +356,112 @@ public class TestRegistryService {
 
     @Test(expected = ResourceNotFoundException.class)
     public void testGetFlowDoesNotExist() {
-        when(metadataProvider.getFlowById(any(String.class))).thenReturn(null);
-        registryService.getFlow("flow1");
+        when(metadataService.getFlowById(any(String.class))).thenReturn(null);
+        registryService.getFlow("flow1", false);
     }
 
     @Test
     public void testGetFlowExists() {
-        final FlowMetadata flowMetadata = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getFlowById(flowMetadata.getIdentifier())).thenReturn(flowMetadata);
+        final FlowEntity flowEntity = new FlowEntity();
+        flowEntity.setId("flow1");
+        flowEntity.setName("My Flow");
+        flowEntity.setDescription("This is my flow.");
+        flowEntity.setCreated(new Date());
+        flowEntity.setModified(new Date());
+        flowEntity.setBucket(existingBucket);
 
-        final VersionedFlow versionedFlow = registryService.getFlow(flowMetadata.getIdentifier());
+        when(metadataService.getFlowById(flowEntity.getId())).thenReturn(flowEntity);
+
+        final VersionedFlow versionedFlow = registryService.getFlow(flowEntity.getId(), false);
         assertNotNull(versionedFlow);
-        assertEquals(flowMetadata.getIdentifier(), versionedFlow.getIdentifier());
-        assertEquals(flowMetadata.getName(), versionedFlow.getName());
-        assertEquals(flowMetadata.getDescription(), versionedFlow.getDescription());
-        assertEquals(flowMetadata.getBucketIdentifier(), versionedFlow.getBucketIdentifier());
-        assertEquals(flowMetadata.getCreatedTimestamp(), versionedFlow.getCreatedTimestamp());
-        assertEquals(flowMetadata.getModifiedTimestamp(), versionedFlow.getModifiedTimestamp());
+        assertEquals(flowEntity.getId(), versionedFlow.getIdentifier());
+        assertEquals(flowEntity.getName(), versionedFlow.getName());
+        assertEquals(flowEntity.getDescription(), versionedFlow.getDescription());
+        assertEquals(flowEntity.getBucket().getId(), versionedFlow.getBucketIdentifier());
+        assertEquals(flowEntity.getCreated().getTime(), versionedFlow.getCreatedTimestamp());
+        assertEquals(flowEntity.getModified().getTime(), versionedFlow.getModifiedTimestamp());
     }
 
     @Test
     public void testGetFlows() {
-        final FlowMetadata flowMetadata1 = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        final FlowMetadata flowMetadata2 = new StandardFlowMetadata.Builder()
-                .identifier("flow2")
-                .name("My Flow")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final FlowEntity flowEntity1 = new FlowEntity();
+        flowEntity1.setId("flow1");
+        flowEntity1.setName("My Flow");
+        flowEntity1.setDescription("This is my flow.");
+        flowEntity1.setCreated(new Date());
+        flowEntity1.setModified(new Date());
+        flowEntity1.setBucket(existingBucket);
 
-        final Set<FlowMetadata> flows = new LinkedHashSet<>();
-        flows.add(flowMetadata1);
-        flows.add(flowMetadata2);
+        final FlowEntity flowEntity2 = new FlowEntity();
+        flowEntity2.setId("flow2");
+        flowEntity2.setName("My Flow 2");
+        flowEntity2.setDescription("This is my flow 2.");
+        flowEntity2.setCreated(new Date());
+        flowEntity2.setModified(new Date());
+        flowEntity2.setBucket(existingBucket);
 
-        when(metadataProvider.getFlows()).thenReturn(flows);
+        final List<FlowEntity> flows = new ArrayList<>();
+        flows.add(flowEntity1);
+        flows.add(flowEntity2);
 
-        final Set<VersionedFlow> allFlows = registryService.getFlows();
+        when(metadataService.getFlows(any(QueryParameters.class))).thenReturn(flows);
+
+        final QueryParameters queryParameters = new QueryParameters.Builder().build();
+        final List<VersionedFlow> allFlows = registryService.getFlows(queryParameters);
         assertNotNull(allFlows);
         assertEquals(2, allFlows.size());
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void testGetFlowsByBucketDoesNotExist() {
-        when(metadataProvider.getBucketById(any(String.class))).thenReturn(null);
+        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
         registryService.getFlows("b1");
     }
 
     @Test
     public void testGetFlowsByBucketExists() {
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier("b1")
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        final FlowEntity flowEntity1 = new FlowEntity();
+        flowEntity1.setId("flow1");
+        flowEntity1.setName("My Flow");
+        flowEntity1.setDescription("This is my flow.");
+        flowEntity1.setCreated(new Date());
+        flowEntity1.setModified(new Date());
+        flowEntity1.setBucket(existingBucket);
 
-        final FlowMetadata flowMetadata1 = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final FlowEntity flowEntity2 = new FlowEntity();
+        flowEntity2.setId("flow2");
+        flowEntity2.setName("My Flow 2");
+        flowEntity2.setDescription("This is my flow 2.");
+        flowEntity2.setCreated(new Date());
+        flowEntity2.setModified(new Date());
+        flowEntity2.setBucket(existingBucket);
 
-        final FlowMetadata flowMetadata2 = new StandardFlowMetadata.Builder()
-                .identifier("flow2")
-                .name("My Flow")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final Set<BucketItemEntity> flows = new LinkedHashSet<>();
+        flows.add(flowEntity1);
+        flows.add(flowEntity2);
+        existingBucket.setItems(flows);
 
-        final Set<FlowMetadata> flows = new LinkedHashSet<>();
-        flows.add(flowMetadata1);
-        flows.add(flowMetadata2);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
-        when(metadataProvider.getFlows(existingBucket.getIdentifier())).thenReturn(flows);
-
-        final Set<VersionedFlow> allFlows = registryService.getFlows(existingBucket.getIdentifier());
+        final List<VersionedFlow> allFlows = registryService.getFlows(existingBucket.getId());
         assertNotNull(allFlows);
         assertEquals(2, allFlows.size());
     }
@@ -481,37 +477,41 @@ public class TestRegistryService {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier("flow1");
 
-        when(metadataProvider.getFlowById(versionedFlow.getIdentifier())).thenReturn(null);
+        when(metadataService.getFlowById(versionedFlow.getIdentifier())).thenReturn(null);
 
         registryService.updateFlow(versionedFlow);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testUpdateFlowWithSameNameAsExistingFlow() {
-        final FlowMetadata flowToUpdate = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getFlowById(flowToUpdate.getIdentifier())).thenReturn(flowToUpdate);
+        final FlowEntity flowToUpdate = new FlowEntity();
+        flowToUpdate.setId("flow1");
+        flowToUpdate.setName("My Flow");
+        flowToUpdate.setDescription("This is my flow.");
+        flowToUpdate.setCreated(new Date());
+        flowToUpdate.setModified(new Date());
+        flowToUpdate.setBucket(existingBucket);
 
-        final FlowMetadata otherFlow = new StandardFlowMetadata.Builder()
-                .identifier("flow2")
-                .name("My Flow 2")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        when(metadataService.getFlowById(flowToUpdate.getId())).thenReturn(flowToUpdate);
 
-        when(metadataProvider.getFlowByName(otherFlow.getName())).thenReturn(otherFlow);
+        final FlowEntity otherFlow = new FlowEntity();
+        otherFlow.setId("flow2");
+        otherFlow.setName("My Flow 2");
+        otherFlow.setDescription("This is my flow 2.");
+        otherFlow.setCreated(new Date());
+        otherFlow.setModified(new Date());
+        otherFlow.setBucket(existingBucket);
+
+        when(metadataService.getFlowsByName(otherFlow.getName())).thenReturn(Collections.singletonList(otherFlow));
 
         final VersionedFlow versionedFlow = new VersionedFlow();
-        versionedFlow.setIdentifier(flowToUpdate.getIdentifier());
+        versionedFlow.setIdentifier(flowToUpdate.getId());
         versionedFlow.setName(otherFlow.getName());
 
         registryService.updateFlow(versionedFlow);
@@ -519,22 +519,27 @@ public class TestRegistryService {
 
     @Test
     public void testUpdateFlow() throws InterruptedException {
-        final FlowMetadata flowToUpdate = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getFlowById(flowToUpdate.getIdentifier())).thenReturn(flowToUpdate);
-        when(metadataProvider.getFlowByName(flowToUpdate.getName())).thenReturn(flowToUpdate);
+        final FlowEntity flowToUpdate = new FlowEntity();
+        flowToUpdate.setId("flow1");
+        flowToUpdate.setName("My Flow");
+        flowToUpdate.setDescription("This is my flow.");
+        flowToUpdate.setCreated(new Date());
+        flowToUpdate.setModified(new Date());
+        flowToUpdate.setBucket(existingBucket);
 
-        doAnswer(updateFlowAnswer()).when(metadataProvider).updateFlow(any(FlowMetadata.class));
+        when(metadataService.getFlowById(flowToUpdate.getId())).thenReturn(flowToUpdate);
+        when(metadataService.getFlowsByName(flowToUpdate.getName())).thenReturn(Collections.singletonList(flowToUpdate));
+
+        doAnswer(updateFlowAnswer()).when(metadataService).updateFlow(any(FlowEntity.class));
 
         final VersionedFlow versionedFlow = new VersionedFlow();
-        versionedFlow.setIdentifier(flowToUpdate.getIdentifier());
+        versionedFlow.setIdentifier(flowToUpdate.getId());
         versionedFlow.setName("New Flow Name");
         versionedFlow.setDescription("This is a new description");
 
@@ -549,42 +554,43 @@ public class TestRegistryService {
         assertEquals(versionedFlow.getDescription(), updatedFlow.getDescription());
 
         // other fields should not be updated
-        assertEquals(flowToUpdate.getBucketIdentifier(), updatedFlow.getBucketIdentifier());
-        assertEquals(flowToUpdate.getCreatedTimestamp(), updatedFlow.getCreatedTimestamp());
-
-        // modified timestamp should be auto updated
-        assertTrue(updatedFlow.getModifiedTimestamp() > flowToUpdate.getModifiedTimestamp());
+        assertEquals(flowToUpdate.getBucket().getId(), updatedFlow.getBucketIdentifier());
+        assertEquals(flowToUpdate.getCreated().getTime(), updatedFlow.getCreatedTimestamp());
     }
 
     @Test(expected = ResourceNotFoundException.class)
     public void testDeleteFlowDoesNotExist() {
-        when(metadataProvider.getFlowById(any(String.class))).thenReturn(null);
+        when(metadataService.getFlowById(any(String.class))).thenReturn(null);
         registryService.deleteFlow("flow1");
     }
 
     @Test
     public void testDeleteFlowWithSnapshots() {
-        final FlowMetadata flowToDelete = new StandardFlowMetadata.Builder()
-                .identifier("flow1")
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier("b1")
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getFlowById(flowToDelete.getIdentifier())).thenReturn(flowToDelete);
-        when(metadataProvider.getFlowByName(flowToDelete.getName())).thenReturn(flowToDelete);
+        final FlowEntity flowToDelete = new FlowEntity();
+        flowToDelete.setId("flow1");
+        flowToDelete.setName("My Flow");
+        flowToDelete.setDescription("This is my flow.");
+        flowToDelete.setCreated(new Date());
+        flowToDelete.setModified(new Date());
+        flowToDelete.setBucket(existingBucket);
 
-        final VersionedFlow deletedFlow = registryService.deleteFlow(flowToDelete.getIdentifier());
+        when(metadataService.getFlowById(flowToDelete.getId())).thenReturn(flowToDelete);
+        when(metadataService.getFlowsByName(flowToDelete.getName())).thenReturn(Collections.singletonList(flowToDelete));
+
+        final VersionedFlow deletedFlow = registryService.deleteFlow(flowToDelete.getId());
         assertNotNull(deletedFlow);
-        assertEquals(flowToDelete.getIdentifier(), deletedFlow.getIdentifier());
+        assertEquals(flowToDelete.getId(), deletedFlow.getIdentifier());
 
         verify(flowPersistenceProvider, times(1))
-                .deleteSnapshots(flowToDelete.getBucketIdentifier(), flowToDelete.getIdentifier());
+                .deleteSnapshots(flowToDelete.getBucket().getId(), flowToDelete.getId());
 
-        verify(metadataProvider, times(1))
-                .deleteFlow(flowToDelete.getIdentifier());
+        verify(metadataService, times(1)).deleteFlow(flowToDelete);
     }
 
     // ---------------------- Test VersionedFlowSnapshot methods ---------------------------------------------
@@ -638,7 +644,7 @@ public class TestRegistryService {
 
     @Test(expected = ResourceNotFoundException.class)
     public void testCreateSnapshotBucketDoesNotExist() {
-        when(metadataProvider.getBucketById(any(String.class))).thenReturn(null);
+        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
 
         final VersionedFlowSnapshot snapshot = createSnapshot();
         registryService.createFlowSnapshot(snapshot);
@@ -648,16 +654,15 @@ public class TestRegistryService {
     public void testCreateSnapshotFlowDoesNotExist() {
         final VersionedFlowSnapshot snapshot = createSnapshot();
 
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
-        when(metadataProvider.getFlowById(snapshot.getSnapshotMetadata().getFlowIdentifier())).thenReturn(null);
+        when(metadataService.getFlowById(snapshot.getSnapshotMetadata().getFlowIdentifier())).thenReturn(null);
 
         registryService.createFlowSnapshot(snapshot);
     }
@@ -666,37 +671,37 @@ public class TestRegistryService {
     public void testCreateSnapshotVersionAlreadyExists() {
         final VersionedFlowSnapshot snapshot = createSnapshot();
 
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
-
-        // make a snapshot that has the same version as the one being created
-        final FlowSnapshotMetadata existingSnapshot = new StandardFlowSnapshotMetadata.Builder()
-                .flowIdentifier(snapshot.getSnapshotMetadata().getFlowIdentifier())
-                .flowName(snapshot.getSnapshotMetadata().getFlowName())
-                .bucketIdentifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .version(snapshot.getSnapshotMetadata().getVersion())
-                .comments("This is an existing snapshot")
-                .created(System.currentTimeMillis())
-                .build();
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         // return a flow with the existing snapshot when getFlowById is called
-        final FlowMetadata existingFlow = new StandardFlowMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getFlowIdentifier())
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .addSnapshot(existingSnapshot)
-                .build();
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
 
-        when(metadataProvider.getFlowById(existingFlow.getIdentifier())).thenReturn(existingFlow);
+        // make a snapshot that has the same version as the one being created
+        final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey();
+        key.setFlowId(snapshot.getSnapshotMetadata().getFlowIdentifier());
+        key.setVersion(snapshot.getSnapshotMetadata().getVersion());
+
+        final FlowSnapshotEntity existingSnapshot = new FlowSnapshotEntity();
+        existingSnapshot.setId(key);
+        existingSnapshot.setComments("This is an existing snapshot");
+        existingSnapshot.setCreated(new Date());
+        existingSnapshot.setFlow(existingFlow);
+
+        existingFlow.setSnapshots(Collections.singleton(existingSnapshot));
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         registryService.createFlowSnapshot(snapshot);
     }
@@ -705,37 +710,37 @@ public class TestRegistryService {
     public void testCreateSnapshotVersionNotNextVersion() {
         final VersionedFlowSnapshot snapshot = createSnapshot();
 
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
-
-        // make a snapshot for version 1
-        final FlowSnapshotMetadata existingSnapshot = new StandardFlowSnapshotMetadata.Builder()
-                .flowIdentifier(snapshot.getSnapshotMetadata().getFlowIdentifier())
-                .flowName(snapshot.getSnapshotMetadata().getFlowName())
-                .bucketIdentifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .version(1)
-                .comments("This is an existing snapshot")
-                .created(System.currentTimeMillis())
-                .build();
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         // return a flow with the existing snapshot when getFlowById is called
-        final FlowMetadata existingFlow = new StandardFlowMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getFlowIdentifier())
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .addSnapshot(existingSnapshot)
-                .build();
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
 
-        when(metadataProvider.getFlowById(existingFlow.getIdentifier())).thenReturn(existingFlow);
+        // make a snapshot that has the same version as the one being created
+        final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey();
+        key.setFlowId(snapshot.getSnapshotMetadata().getFlowIdentifier());
+        key.setVersion(snapshot.getSnapshotMetadata().getVersion());
+
+        final FlowSnapshotEntity existingSnapshot = new FlowSnapshotEntity();
+        existingSnapshot.setId(key);
+        existingSnapshot.setComments("This is an existing snapshot");
+        existingSnapshot.setCreated(new Date());
+        existingSnapshot.setFlow(existingFlow);
+
+        existingFlow.setSnapshots(Collections.singleton(existingSnapshot));
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         // set the version to something that is not the next one-up version
         snapshot.getSnapshotMetadata().setVersion(100);
@@ -746,59 +751,55 @@ public class TestRegistryService {
     public void testCreateFirstSnapshot() {
         final VersionedFlowSnapshot snapshot = createSnapshot();
 
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         // return a flow with the existing snapshot when getFlowById is called
-        final FlowMetadata existingFlow = new StandardFlowMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getFlowIdentifier())
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
 
-        when(metadataProvider.getFlowById(existingFlow.getIdentifier())).thenReturn(existingFlow);
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
         assertNotNull(createdSnapshot);
 
         verify(snapshotSerializer, times(1)).serialize(eq(snapshot), any(OutputStream.class));
         verify(flowPersistenceProvider, times(1)).saveSnapshot(any(), any());
-        verify(metadataProvider, times(1)).createFlowSnapshot(any(FlowSnapshotMetadata.class));
+        verify(metadataService, times(1)).createFlowSnapshot(any(FlowSnapshotEntity.class));
     }
 
     @Test(expected = IllegalStateException.class)
     public void testCreateFirstSnapshotWithBadVersion() {
         final VersionedFlowSnapshot snapshot = createSnapshot();
 
-        final BucketMetadata existingBucket = new StandardBucketMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .name("My Bucket #1")
-                .description("This is my bucket.")
-                .created(System.currentTimeMillis())
-                .build();
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
 
-        when(metadataProvider.getBucketById(existingBucket.getIdentifier())).thenReturn(existingBucket);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         // return a flow with the existing snapshot when getFlowById is called
-        final FlowMetadata existingFlow = new StandardFlowMetadata.Builder()
-                .identifier(snapshot.getSnapshotMetadata().getFlowIdentifier())
-                .name("My Flow 1")
-                .description("This is my flow.")
-                .bucketIdentifier(snapshot.getSnapshotMetadata().getBucketIdentifier())
-                .created(System.currentTimeMillis())
-                .modified(System.currentTimeMillis())
-                .build();
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
 
-        when(metadataProvider.getFlowById(existingFlow.getIdentifier())).thenReturn(existingFlow);
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         // set the first version to something other than 1
         snapshot.getSnapshotMetadata().setVersion(100);
@@ -809,59 +810,46 @@ public class TestRegistryService {
     public void testGetSnapshotDoesNotExistInMetadataProvider() {
         final String flowId = "flow1";
         final Integer version = 1;
-        when(metadataProvider.getFlowSnapshot(flowId, version)).thenReturn(null);
+        when(metadataService.getFlowSnapshot(flowId, version)).thenReturn(null);
         registryService.getFlowSnapshot(flowId, version);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testGetSnapshotDoesNotExistInPersistenceProvider() {
-        final FlowSnapshotMetadata existingSnapshot = new StandardFlowSnapshotMetadata.Builder()
-                .bucketIdentifier("b1")
-                .flowIdentifier("flow1")
-                .flowName("Flow 1")
-                .version(1)
-                .comments("This is snapshot 1")
-                .created(System.currentTimeMillis())
-                .build();
+        final FlowSnapshotEntity existingSnapshot = createFlowSnapshotEntity();
+        final FlowSnapshotEntityKey key = existingSnapshot.getId();
 
-        when(metadataProvider.getFlowSnapshot(existingSnapshot.getFlowIdentifier(), existingSnapshot.getVersion()))
-                .thenReturn(existingSnapshot);
+        when(metadataService.getFlowSnapshot(key.getFlowId(), key.getVersion())).thenReturn(existingSnapshot);
 
         when(flowPersistenceProvider.getSnapshot(
-                existingSnapshot.getBucketIdentifier(),
-                existingSnapshot.getFlowIdentifier(),
-                existingSnapshot.getVersion()
+                existingSnapshot.getFlow().getBucket().getId(),
+                existingSnapshot.getFlow().getId(),
+                existingSnapshot.getId().getVersion()
         )).thenReturn(null);
 
-        registryService.getFlowSnapshot(existingSnapshot.getFlowIdentifier(), existingSnapshot.getVersion());
+        registryService.getFlowSnapshot(existingSnapshot.getFlow().getId(), existingSnapshot.getId().getVersion());
     }
 
     @Test
     public void testGetSnapshotExists() {
-        final FlowSnapshotMetadata existingSnapshot = new StandardFlowSnapshotMetadata.Builder()
-                .bucketIdentifier("b1")
-                .flowIdentifier("flow1")
-                .flowName("Flow 1")
-                .version(1)
-                .comments("This is snapshot 1")
-                .created(System.currentTimeMillis())
-                .build();
+        final FlowSnapshotEntity existingSnapshot = createFlowSnapshotEntity();
+        final FlowSnapshotEntityKey key = existingSnapshot.getId();
 
-        when(metadataProvider.getFlowSnapshot(existingSnapshot.getFlowIdentifier(), existingSnapshot.getVersion()))
+        when(metadataService.getFlowSnapshot(key.getFlowId(), key.getVersion()))
                 .thenReturn(existingSnapshot);
 
         // return a non-null, non-zero-length array so something gets passed to the serializer
         when(flowPersistenceProvider.getSnapshot(
-                existingSnapshot.getBucketIdentifier(),
-                existingSnapshot.getFlowIdentifier(),
-                existingSnapshot.getVersion()
+                existingSnapshot.getFlow().getBucket().getId(),
+                existingSnapshot.getFlow().getId(),
+                existingSnapshot.getId().getVersion()
         )).thenReturn(new byte[10]);
 
         final VersionedFlowSnapshot snapshotToDeserialize = createSnapshot();
         when(snapshotSerializer.deserialize(any(InputStream.class))).thenReturn(snapshotToDeserialize);
 
         final VersionedFlowSnapshot returnedSnapshot = registryService.getFlowSnapshot(
-                existingSnapshot.getFlowIdentifier(), existingSnapshot.getVersion());
+                existingSnapshot.getFlow().getId(), existingSnapshot.getId().getVersion());
         assertNotNull(returnedSnapshot);
     }
 
@@ -869,68 +857,86 @@ public class TestRegistryService {
     public void testDeleteSnapshotDoesNotExist() {
         final String flowId = "flow1";
         final Integer version = 1;
-        when(metadataProvider.getFlowSnapshot(flowId, version)).thenReturn(null);
+        when(metadataService.getFlowSnapshot(flowId, version)).thenReturn(null);
         registryService.deleteFlowSnapshot(flowId, version);
     }
 
     @Test
     public void testDeleteSnapshotExists() {
-        final FlowSnapshotMetadata existingSnapshot = new StandardFlowSnapshotMetadata.Builder()
-                .bucketIdentifier("b1")
-                .flowIdentifier("flow1")
-                .flowName("Flow 1")
-                .version(1)
-                .comments("This is snapshot 1")
-                .created(System.currentTimeMillis())
-                .build();
+        final FlowSnapshotEntity existingSnapshot = createFlowSnapshotEntity();
+        final FlowSnapshotEntityKey key = existingSnapshot.getId();
 
-        when(metadataProvider.getFlowSnapshot(existingSnapshot.getFlowIdentifier(), existingSnapshot.getVersion()))
+        when(metadataService.getFlowSnapshot(key.getFlowId(), key.getVersion()))
                 .thenReturn(existingSnapshot);
 
-        final VersionedFlowSnapshotMetadata deletedSnapshot = registryService.deleteFlowSnapshot(
-                existingSnapshot.getFlowIdentifier(), existingSnapshot.getVersion());
+        final VersionedFlowSnapshotMetadata deletedSnapshot = registryService.deleteFlowSnapshot(key.getFlowId(), key.getVersion());
         assertNotNull(deletedSnapshot);
-        assertEquals(existingSnapshot.getFlowIdentifier(), deletedSnapshot.getFlowIdentifier());
+        assertEquals(existingSnapshot.getId().getFlowId(), deletedSnapshot.getFlowIdentifier());
 
         verify(flowPersistenceProvider, times(1)).deleteSnapshot(
-                existingSnapshot.getBucketIdentifier(),
-                existingSnapshot.getFlowIdentifier(),
-                existingSnapshot.getVersion()
+                existingSnapshot.getFlow().getBucket().getId(),
+                existingSnapshot.getFlow().getId(),
+                existingSnapshot.getId().getVersion()
         );
 
-        verify(metadataProvider, times(1)).deleteFlowSnapshot(
-                existingSnapshot.getFlowIdentifier(),
-                existingSnapshot.getVersion()
-        );
+        verify(metadataService, times(1)).deleteFlowSnapshot(existingSnapshot);
+    }
+
+    private FlowSnapshotEntity createFlowSnapshotEntity() {
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
+
+        final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey();
+        key.setFlowId("flow1");
+        key.setVersion(1);
+
+        final FlowSnapshotEntity existingSnapshot = new FlowSnapshotEntity();
+        existingSnapshot.setId(key);
+        existingSnapshot.setComments("This is an existing snapshot");
+        existingSnapshot.setCreated(new Date());
+        existingSnapshot.setFlow(existingFlow);
+
+        return existingSnapshot;
     }
 
     // -------------------------------------------------------------------
 
-    private Answer<BucketMetadata> createBucketAnswer() {
+    private Answer<BucketEntity> createBucketAnswer() {
         return (InvocationOnMock invocation) -> {
-            BucketMetadata bucketMetadata = (BucketMetadata) invocation.getArguments()[0];
-            return bucketMetadata;
+            BucketEntity bucketEntity = (BucketEntity) invocation.getArguments()[0];
+            return bucketEntity;
         };
     }
 
-    private Answer<BucketMetadata> updateBucketAnswer() {
+    private Answer<BucketEntity> updateBucketAnswer() {
         return (InvocationOnMock invocation) -> {
-            BucketMetadata bucketMetadata = (BucketMetadata) invocation.getArguments()[0];
-            return bucketMetadata;
+            BucketEntity bucketEntity = (BucketEntity) invocation.getArguments()[0];
+            return bucketEntity;
         };
     }
 
-    private Answer<FlowMetadata> createFlowAnswer() {
+    private Answer<FlowEntity> createFlowAnswer() {
         return (InvocationOnMock invocation) -> {
-            final FlowMetadata flowMetadata = (FlowMetadata) invocation.getArguments()[1];
-            return flowMetadata;
+            final FlowEntity flowEntity = (FlowEntity) invocation.getArguments()[0];
+            return flowEntity;
         };
     }
 
-    private Answer<FlowMetadata> updateFlowAnswer() {
+    private Answer<FlowEntity> updateFlowAnswer() {
         return (InvocationOnMock invocation) -> {
-            final FlowMetadata flowMetadata = (FlowMetadata) invocation.getArguments()[0];
-            return flowMetadata;
+            final FlowEntity flowEntity = (FlowEntity) invocation.getArguments()[0];
+            return flowEntity;
         };
     }
 }

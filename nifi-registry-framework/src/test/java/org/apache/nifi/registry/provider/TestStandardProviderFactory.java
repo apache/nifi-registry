@@ -17,13 +17,11 @@
 package org.apache.nifi.registry.provider;
 
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.metadata.MetadataProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 public class TestStandardProviderFactory {
 
@@ -35,15 +33,6 @@ public class TestStandardProviderFactory {
         final ProviderFactory providerFactory = new StandardProviderFactory(props);
         providerFactory.initialize();
 
-        final MetadataProvider metadataProvider = providerFactory.getMetadataProvider();
-        assertNotNull(metadataProvider);
-        assertTrue(metadataProvider instanceof MockMetadataProvider);
-
-        final MockMetadataProvider mockMetadataProvider = (MockMetadataProvider) metadataProvider;
-        assertNotNull(mockMetadataProvider.getProperties());
-        assertEquals("metadata foo", mockMetadataProvider.getProperties().get("Metadata Property 1"));
-        assertEquals("metadata bar", mockMetadataProvider.getProperties().get("Metadata Property 2"));
-
         final FlowPersistenceProvider flowPersistenceProvider = providerFactory.getFlowPersistenceProvider();
         assertNotNull(flowPersistenceProvider);
 
@@ -51,15 +40,6 @@ public class TestStandardProviderFactory {
         assertNotNull(mockFlowProvider.getProperties());
         assertEquals("flow foo", mockFlowProvider.getProperties().get("Flow Property 1"));
         assertEquals("flow bar", mockFlowProvider.getProperties().get("Flow Property 2"));
-    }
-
-    @Test(expected = ProviderFactoryException.class)
-    public void testGetMetadataProviderBeforeInitializingShouldThrowException() {
-        final NiFiRegistryProperties props = new NiFiRegistryProperties();
-        props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-good.xml");
-
-        final ProviderFactory providerFactory = new StandardProviderFactory(props);
-        providerFactory.getMetadataProvider();
     }
 
     @Test(expected = ProviderFactoryException.class)
@@ -78,17 +58,6 @@ public class TestStandardProviderFactory {
 
         final ProviderFactory providerFactory = new StandardProviderFactory(props);
         providerFactory.initialize();
-    }
-
-    @Test(expected = ProviderFactoryException.class)
-    public void testMetadataProviderClassNotFound() {
-        final NiFiRegistryProperties props = new NiFiRegistryProperties();
-        props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-class-not-found.xml");
-
-        final ProviderFactory providerFactory = new StandardProviderFactory(props);
-        providerFactory.initialize();
-
-        providerFactory.getMetadataProvider();
     }
 
     @Test(expected = ProviderFactoryException.class)

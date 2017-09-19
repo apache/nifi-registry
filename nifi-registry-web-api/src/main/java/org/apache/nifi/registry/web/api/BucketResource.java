@@ -23,6 +23,10 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.service.RegistryService;
+import org.apache.nifi.registry.service.params.QueryParameters;
+import org.apache.nifi.registry.service.params.SortParameter;
+import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.response.FieldsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +34,19 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -56,10 +63,14 @@ public class BucketResource {
     @Context
     UriInfo uriInfo;
 
+    private final LinkService linkService;
+
     private final RegistryService registryService;
 
-    public BucketResource(@Autowired final RegistryService registryService) {
+    @Autowired
+    public BucketResource(final RegistryService registryService, final LinkService linkService) {
         this.registryService = registryService;
+        this.linkService = linkService;
     }
 
     @POST
@@ -78,12 +89,20 @@ public class BucketResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for all buckets in the registry for which the client is authorized. TODO: Will add some search parameters as well.",
+            value = "Get metadata for all buckets in the registry for which the client is authorized. Information about the items stored in each " +
+                    "bucket should be obtained by requesting and individual bucket by id.",
             response = Bucket.class,
             responseContainer = "List"
     )
-    public Response getBuckets() {
-        final Set<Bucket> buckets = registryService.getBuckets();
+    public Response getBuckets(@QueryParam("sort") final List<SortParameter> sortParameters) {
+
+        final QueryParameters params = new QueryParameters.Builder()
+                .addSorts(sortParameters)
+                .build();
+
+        final List<Bucket> buckets = registryService.getBuckets(params);
+        linkService.populateBucketLinks(buckets);
+
         return Response.status(Response.Status.OK).entity(buckets).build();
     }
 
@@ -92,7 +111,8 @@ public class BucketResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for an existing bucket in the registry.",
+            value = "Get metadata for an existing bucket in the registry. If verbose is set to true, then each bucket will be returned " +
+                    "with the set of items in the bucket, but any further children of those items will not be included.",
             response = Bucket.class
     )
     @ApiResponses(
@@ -100,8 +120,15 @@ public class BucketResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response getBucket(@PathParam("bucketId") final String bucketId) {
-        final Bucket bucket = registryService.getBucket(bucketId);
+    public Response getBucket(@PathParam("bucketId") final String bucketId,
+                              @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        final Bucket bucket = registryService.getBucket(bucketId, verbose);
+        linkService.populateBucketLinks(bucket);
+
+        if (bucket.getVersionedFlows() != null) {
+            linkService.populateFlowLinks(bucket.getVersionedFlows());
+        }
+
         return Response.status(Response.Status.OK).entity(bucket).build();
     }
 
@@ -155,6 +182,20 @@ public class BucketResource {
     public Response deleteBucket(@PathParam("bucketId") final String bucketId) {
         final Bucket deletedBucket = registryService.deleteBucket(bucketId);
         return Response.status(Response.Status.OK).entity(deletedBucket).build();
+    }
+
+    @GET
+    @Path("fields")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Retrieves the available field names that can be used for searching or sorting on buckets.",
+            response = FieldsEntity.class
+    )
+    public Response getAvailableBucketFields() {
+        final Set<String> bucketFields = registryService.getBucketFields();
+        final FieldsEntity fieldsEntity = new FieldsEntity(bucketFields);
+        return Response.status(Response.Status.OK).entity(fieldsEntity).build();
     }
 
 }

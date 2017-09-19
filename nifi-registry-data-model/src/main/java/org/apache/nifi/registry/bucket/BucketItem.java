@@ -18,6 +18,7 @@ package org.apache.nifi.registry.bucket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.nifi.registry.link.LinkableEntity;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -25,13 +26,15 @@ import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
 @ApiModel("bucketItem")
-public abstract class BucketItem {
+public abstract class BucketItem extends LinkableEntity {
 
     @NotBlank
     private String identifier;
 
     @NotBlank
     private String name;
+
+    private String description;
 
     @NotBlank
     private String bucketIdentifier;
@@ -45,10 +48,10 @@ public abstract class BucketItem {
     @NotNull
     private final BucketItemType type;
 
+
     public BucketItem(final BucketItemType type) {
         this.type = type;
     }
-
 
     @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
@@ -67,6 +70,16 @@ public abstract class BucketItem {
     public void setName(String name) {
         this.name = name;
     }
+
+    @ApiModelProperty("A description of the item.")
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
 
     @ApiModelProperty("The identifier of the bucket this items belongs to.")
     public String getBucketIdentifier() {
@@ -102,7 +115,7 @@ public abstract class BucketItem {
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.identifier);
+        return Objects.hashCode(this.getIdentifier());
     }
 
     @Override
@@ -115,6 +128,6 @@ public abstract class BucketItem {
         }
 
         final BucketItem other = (BucketItem) obj;
-        return Objects.equals(this.identifier, other.identifier);
+        return Objects.equals(this.getIdentifier(), other.getIdentifier());
     }
 }

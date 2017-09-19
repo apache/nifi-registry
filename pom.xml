@@ -40,7 +40,6 @@
         <module>nifi-registry-security</module>
         <module>nifi-registry-framework</module>
         <module>nifi-registry-provider-api</module>
-        <module>nifi-registry-provider-impl</module>
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
         <module>nifi-registry-bootstrap</module>
@@ -103,10 +102,10 @@
         <inceptionYear>2017</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <jetty.version>9.4.3.v20170317</jetty.version>
+        <jax.rs.api.version>2.0.1</jax.rs.api.version>
         <jersey.version>2.25.1</jersey.version>
-        <!-- spring.version should always match the version of spring used by the version of spring-boot -->
-        <spring.boot.version>1.5.6.RELEASE</spring.boot.version>
-        <spring.version>4.3.10.RELEASE</spring.version>
+        <spring.boot.version>1.5.7.RELEASE</spring.boot.version>
+        <flyway.version>4.2.0</flyway.version>
     </properties>
 
     <repositories>
@@ -235,6 +234,11 @@
                 <version>3.1.0</version>
             </dependency>
             <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${jax.rs.api.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-server</artifactId>
                 <version>${jersey.version}</version>
@@ -280,24 +284,6 @@
                 <artifactId>javax.el</artifactId>
                 <version>3.0.1-b08</version>
             </dependency>
-            <!-- These Spring dependencies should end up in the REST API through spring-boot, but we need the framework
-                    module to declare Spring beans, so ensure the Spring version lines up with the version of spring-boot -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-beans</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-core</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <!-- End Spring dependencies -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>

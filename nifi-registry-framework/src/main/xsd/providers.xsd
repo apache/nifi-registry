@@ -42,7 +42,6 @@
     <xs:element name="providers">
         <xs:complexType>
             <xs:sequence>
-                <xs:element name="metadataProvider" type="Provider" minOccurs="1" maxOccurs="1"/>
                 <xs:element name="flowPersistenceProvider" type="Provider" minOccurs="1" maxOccurs="1" />
             </xs:sequence>
         </xs:complexType>

@@ -40,7 +40,7 @@ public class JAXBSerializer<T> implements Serializer<T> {
         try {
             this.jaxbContext = JAXBContext.newInstance(clazz);
         } catch (JAXBException e) {
-            throw new RuntimeException("Unable to create JAXBContext.", e);
+            throw new RuntimeException("Unable to create JAXBContext: " + e.getMessage(), e);
         }
     }
 

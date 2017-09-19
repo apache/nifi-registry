@@ -15,12 +15,6 @@
 -->
 <providers>
 
-    <metadataProvider>
-        <class>org.apache.nifi.registry.provider.MockMetadataProvider</class>
-        <property name="Metadata Property 1">metadata foo</property>
-        <property name="Metadata Property 2">metadata bar</property>
-    </metadataProvider>
-
     <flowPersistenceProvider>
         <class>org.apache.nifi.registry.provider.MockFlowPersistenceProvider</class>
         <property name="Flow Property 1">flow foo</property>
