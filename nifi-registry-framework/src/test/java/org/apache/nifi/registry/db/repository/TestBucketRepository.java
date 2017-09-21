@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.db.repository;
 
+import org.apache.nifi.registry.db.DatabaseBaseTest;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.junit.Test;
@@ -35,7 +36,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class TestBucketRepository extends RepositoryBaseTest {
+public class TestBucketRepository extends DatabaseBaseTest {
 
     @Autowired
     private BucketRepository bucketRepository;

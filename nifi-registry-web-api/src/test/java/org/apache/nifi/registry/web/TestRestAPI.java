@@ -55,86 +55,31 @@ public class TestRestAPI {
                 createdBuckets.add(createdBucket);
             }
 
-            final Bucket createdBucket = createdBuckets.get(0);
-
             // create some flows
-            final int numFlows = 20;
-            final List<VersionedFlow> createdFlows = new ArrayList<>();
+            final int numFlowsPerBucket = 10;
+            final List<VersionedFlow> allFlows = new ArrayList<>();
 
-            for (int i=0; i < numFlows; i++) {
-                final VersionedFlow createdFlow = createFlow(client, createdBucket, i);
-                System.out.println("Created flow # " + i + " with id " + createdFlow.getIdentifier());
-                createdFlows.add(createdFlow);
+            for (final Bucket bucket : createdBuckets) {
+                final List<VersionedFlow> createdFlows = createFlows(client, bucket, numFlowsPerBucket);
+                allFlows.addAll(createdFlows);
             }
 
-            final VersionedFlow createdFlow = createdFlows.get(0);
-
-            // Create first snapshot for the flow
-
-            final VersionedFlowSnapshotMetadata snapshotMetadata1 = new VersionedFlowSnapshotMetadata();
-            snapshotMetadata1.setBucketIdentifier(createdBucket.getIdentifier());
-            snapshotMetadata1.setFlowIdentifier(createdFlow.getIdentifier());
-            snapshotMetadata1.setFlowName(createdFlow.getName());
-            snapshotMetadata1.setVersion(1);
-            snapshotMetadata1.setComments("This is snapshot #1.");
-
-            final VersionedProcessGroup snapshotContents1 = new VersionedProcessGroup();
-            snapshotContents1.setIdentifier("pg1");
-            snapshotContents1.setName("Process Group 1");
-
-            final VersionedFlowSnapshot snapshot1 = new VersionedFlowSnapshot();
-            snapshot1.setSnapshotMetadata(snapshotMetadata1);
-            snapshot1.setFlowContents(snapshotContents1);
-
-            final VersionedFlowSnapshot createdSnapshot1 = client.target(REGISTRY_API_FLOWS_URL)
-                    .path("/{flowId}/versions")
-                    .resolveTemplate("flowId", createdFlow.getIdentifier())
-                    .request()
-                    .post(
-                            Entity.entity(snapshot1, MediaType.APPLICATION_JSON_TYPE),
-                            VersionedFlowSnapshot.class
-                    );
-
-            System.out.println("Created snapshot with version: " + createdSnapshot1.getSnapshotMetadata().getVersion());
-
-            // Create second snapshot for the flow
-
-            final VersionedFlowSnapshotMetadata snapshotMetadata2 = new VersionedFlowSnapshotMetadata();
-            snapshotMetadata2.setBucketIdentifier(createdBucket.getIdentifier());
-            snapshotMetadata2.setFlowIdentifier(createdFlow.getIdentifier());
-            snapshotMetadata2.setFlowName(createdFlow.getName());
-            snapshotMetadata2.setVersion(2);
-            snapshotMetadata2.setComments("This is snapshot #2.");
-
-            final VersionedProcessGroup snapshotContents2 = new VersionedProcessGroup();
-            snapshotContents2.setIdentifier("pg1");
-            snapshotContents2.setName("Process Group 1 New Name");
-
-            final VersionedFlowSnapshot snapshot2 = new VersionedFlowSnapshot();
-            snapshot2.setSnapshotMetadata(snapshotMetadata2);
-            snapshot2.setFlowContents(snapshotContents2);
-
-            final VersionedFlowSnapshot createdSnapshot2 = client.target(REGISTRY_API_FLOWS_URL)
-                    .path("/{flowId}/versions")
-                    .resolveTemplate("flowId", createdFlow.getIdentifier())
-                    .request()
-                    .post(
-                            Entity.entity(snapshot2, MediaType.APPLICATION_JSON_TYPE),
-                            VersionedFlowSnapshot.class
-                    );
-
-            System.out.println("Created snapshot with version: " + createdSnapshot2.getSnapshotMetadata().getVersion());
+            // create some snapshots
+            final int numSnapshotsPerFlow = 10;
+            for (final VersionedFlow flow : allFlows) {
+                createSnapshots(client, flow, numSnapshotsPerFlow);
+            }
 
             // Retrieve the flow by id
+//            final Response flowResponse = client.target(REGISTRY_API_FLOWS_URL)
+//                    .path("/{flowId}")
+//                    .resolveTemplate("flowId", createdFlow.getIdentifier())
+//                    .request()
+//                    .get();
+//
+//            final String flowJson = flowResponse.readEntity(String.class);
+//            System.out.println("Flow: " + flowJson);
 
-            final Response flowResponse = client.target(REGISTRY_API_FLOWS_URL)
-                    .path("/{flowId}")
-                    .resolveTemplate("flowId", createdFlow.getIdentifier())
-                    .request()
-                    .get();
-
-            final String flowJson = flowResponse.readEntity(String.class);
-            System.out.println("Flow: " + flowJson);
         } catch (WebApplicationException e) {
             LOGGER.error(e.getMessage(), e);
 
@@ -160,8 +105,8 @@ public class TestRestAPI {
 
     private static VersionedFlow createFlow(Client client, Bucket bucket, int num) {
         final VersionedFlow versionedFlow = new VersionedFlow();
-        versionedFlow.setName("Flow #" + num);
-        versionedFlow.setDescription("This is flow #" + num);
+        versionedFlow.setName(bucket.getName() + " Flow #" + num);
+        versionedFlow.setDescription("This is " + bucket.getName() + " flow #" + num);
 
         final VersionedFlow createdFlow = client.target(REGISTRY_API_BUCKETS_URL)
                 .path("/{bucketId}/flows")
@@ -173,6 +118,54 @@ public class TestRestAPI {
                 );
 
         return createdFlow;
+    }
+
+    private static List<VersionedFlow> createFlows(Client client, Bucket bucket, int numFlows) {
+        final List<VersionedFlow> createdFlows = new ArrayList<>();
+
+        for (int i=0; i < numFlows; i++) {
+            final VersionedFlow createdFlow = createFlow(client, bucket, i);
+            System.out.println("Created flow # " + i + " with id " + createdFlow.getIdentifier());
+            createdFlows.add(createdFlow);
+        }
+
+        return createdFlows;
+    }
+
+    private static VersionedFlowSnapshot createSnapshot(Client client, VersionedFlow flow, int num) {
+        final VersionedFlowSnapshotMetadata snapshotMetadata1 = new VersionedFlowSnapshotMetadata();
+        snapshotMetadata1.setBucketIdentifier(flow.getBucketIdentifier());
+        snapshotMetadata1.setFlowIdentifier(flow.getIdentifier());
+        snapshotMetadata1.setFlowName(flow.getName());
+        snapshotMetadata1.setVersion(num);
+        snapshotMetadata1.setComments("This is snapshot #" + num);
+
+        final VersionedProcessGroup snapshotContents1 = new VersionedProcessGroup();
+        snapshotContents1.setIdentifier("pg1");
+        snapshotContents1.setName("Process Group 1");
+
+        final VersionedFlowSnapshot snapshot1 = new VersionedFlowSnapshot();
+        snapshot1.setSnapshotMetadata(snapshotMetadata1);
+        snapshot1.setFlowContents(snapshotContents1);
+
+        final VersionedFlowSnapshot createdSnapshot = client.target(REGISTRY_API_BUCKETS_URL)
+                .path("{bucketId}/flows/{flowId}/versions")
+                .resolveTemplate("bucketId", flow.getBucketIdentifier())
+                .resolveTemplate("flowId", flow.getIdentifier())
+                .request()
+                .post(
+                        Entity.entity(snapshot1, MediaType.APPLICATION_JSON_TYPE),
+                        VersionedFlowSnapshot.class
+                );
+
+        return createdSnapshot;
+    }
+
+    private static void createSnapshots(Client client, VersionedFlow flow, int numSnapshots) {
+        for (int i=1; i <= numSnapshots; i++) {
+            createSnapshot(client, flow, i);
+            System.out.println("Created snapshot # " + i + " for flow with id " + flow.getIdentifier());
+        }
     }
 
 }

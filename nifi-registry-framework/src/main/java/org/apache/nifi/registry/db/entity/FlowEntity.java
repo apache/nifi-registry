@@ -21,6 +21,7 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Set;
 
 @Entity
@@ -35,6 +36,9 @@ public class FlowEntity extends BucketItemEntity {
     )
     private Set<FlowSnapshotEntity> snapshots;
 
+    @Transient
+    private long snapshotCount;
+
     public FlowEntity() {
         setType(BucketItemEntityType.FLOW);
     }
@@ -45,6 +49,14 @@ public class FlowEntity extends BucketItemEntity {
 
     public void setSnapshots(Set<FlowSnapshotEntity> snapshots) {
         this.snapshots = snapshots;
+    }
+
+    public long getSnapshotCount() {
+        return snapshotCount;
+    }
+
+    public void setSnapshotCount(long snapshotCount) {
+        this.snapshotCount = snapshotCount;
     }
 
     @Override
