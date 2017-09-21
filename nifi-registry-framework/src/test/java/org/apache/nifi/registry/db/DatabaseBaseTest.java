@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.repository;
+package org.apache.nifi.registry.db;
 
-import org.apache.nifi.registry.db.RepositoryTestApplication;
+import org.apache.nifi.registry.db.DatabaseTestApplication;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;
@@ -27,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = RepositoryTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@SpringBootTest(classes = DatabaseTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @TestExecutionListeners({DependencyInjectionTestExecutionListener.class, TransactionalTestExecutionListener.class})
-public abstract class RepositoryBaseTest {
+public abstract class DatabaseBaseTest {
 
 }

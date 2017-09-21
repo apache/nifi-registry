@@ -126,7 +126,7 @@ public class RegistryService {
         }
     }
 
-    public Bucket getBucket(final String bucketIdentifier, final boolean verbose) {
+    public Bucket getBucket(final String bucketIdentifier) {
         if (bucketIdentifier == null) {
             throw new IllegalArgumentException("Bucket Identifier cannot be null");
         }
@@ -138,16 +138,26 @@ public class RegistryService {
                 throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
             }
 
-            return DataModelMapper.map(bucket, verbose);
+            return DataModelMapper.map(bucket, false);
         } finally {
             readLock.unlock();
         }
     }
 
-    public List<Bucket> getBuckets(final QueryParameters queryParameters) {
+    public List<Bucket> getBuckets() {
         readLock.lock();
         try {
-            final List<BucketEntity> buckets = metadataService.getBuckets(queryParameters);
+            final List<BucketEntity> buckets = metadataService.getAllBuckets();
+            return buckets.stream().map(b -> DataModelMapper.map(b, false)).collect(Collectors.toList());
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public List<Bucket> getBuckets(final QueryParameters queryParameters, final Set<String> bucketIds) {
+        readLock.lock();
+        try {
+            final List<BucketEntity> buckets = metadataService.getBuckets(queryParameters, bucketIds);
             return buckets.stream().map(b -> DataModelMapper.map(b, false)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
@@ -229,17 +239,6 @@ public class RegistryService {
     }
 
     // ---------------------- BucketItem methods ---------------------------------------------
-
-    public List<BucketItem> getBucketItems(final QueryParameters queryParameters) {
-        readLock.lock();
-        try {
-            final List<BucketItem> bucketItems = new ArrayList<>();
-            metadataService.getBucketItems(queryParameters).stream().forEach(b -> addBucketItem(bucketItems, b));
-            return bucketItems;
-        } finally {
-            readLock.unlock();
-        }
-    }
 
     public List<BucketItem> getBucketItems(final QueryParameters queryParameters, final String bucketIdentifier) {
         if (bucketIdentifier == null) {
@@ -342,29 +341,22 @@ public class RegistryService {
     }
 
     public VersionedFlow getFlow(final String bucketIdentifier, final String flowIdentifier, final boolean verbose) {
+        if (StringUtils.isBlank(bucketIdentifier)) {
+            throw new IllegalArgumentException("Bucket Identifier Identifier cannot be null or blank");
+        }
+
         if (StringUtils.isBlank(flowIdentifier)) {
             throw new IllegalArgumentException("Flow Identifier cannot be null or blank");
         }
 
         readLock.lock();
         try {
-            final FlowEntity flowEntity = metadataService.getFlowById(bucketIdentifier, flowIdentifier);
+            final FlowEntity flowEntity = metadataService.getFlowByIdWithSnapshotCounts(bucketIdentifier, flowIdentifier);
             if (flowEntity == null) {
                 throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
             }
 
             return DataModelMapper.map(flowEntity, verbose);
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    public List<VersionedFlow> getFlows(final QueryParameters queryParameters) {
-        readLock.lock();
-        try {
-            // return non-verbose set of all flows
-            final List<FlowEntity> flows = metadataService.getFlows(queryParameters);
-            return flows.stream().map(f -> DataModelMapper.map(f, false)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -383,18 +375,7 @@ public class RegistryService {
             }
 
             // return non-verbose set of flows for the given bucket
-            final Set<FlowEntity> flows = existingBucket.getFlows();
-            return flows.stream().map(f -> DataModelMapper.map(f, false)).collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
-    }
-
-    public List<VersionedFlow> getFlows(final QueryParameters queryParameters, final Set<String> bucketIds) {
-        readLock.lock();
-        try {
-            // return non-verbose set of all flows
-            final List<FlowEntity> flows = metadataService.getFlows(queryParameters, bucketIds);
+            final List<FlowEntity> flows = metadataService.getFlowsByBucket(existingBucket);
             return flows.stream().map(f -> DataModelMapper.map(f, false)).collect(Collectors.toList());
         } finally {
             readLock.unlock();

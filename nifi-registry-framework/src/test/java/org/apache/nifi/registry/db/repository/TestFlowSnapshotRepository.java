@@ -16,20 +16,23 @@
  */
 package org.apache.nifi.registry.db.repository;
 
+import org.apache.nifi.registry.db.DatabaseBaseTest;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotCount;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-public class TestFlowSnapshotRepository extends RepositoryBaseTest {
+public class TestFlowSnapshotRepository extends DatabaseBaseTest {
 
     @Autowired
     private BucketRepository bucketRepository;
@@ -104,6 +107,17 @@ public class TestFlowSnapshotRepository extends RepositoryBaseTest {
 
         assertNull(flowRepository.findOne(flow.getId()));
         assertNull(flowSnapshotRepository.findOne(key));
+    }
+
+    @Test
+    public void testCountByFlow() {
+        final List<FlowSnapshotCount> counts = flowSnapshotRepository.countByFlow();
+        assertNotNull(counts);
+        assertEquals(1, counts.size());
+
+        final FlowSnapshotCount count = counts.get(0);
+        assertEquals("1", count.getFlowIdentifier());
+        assertEquals(3, count.getSnapshotCount());
     }
 
 }

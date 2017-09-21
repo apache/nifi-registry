@@ -20,7 +20,6 @@ import org.apache.nifi.registry.web.api.AccessPolicyResource;
 import org.apache.nifi.registry.web.api.AccessResource;
 import org.apache.nifi.registry.web.api.BucketFlowResource;
 import org.apache.nifi.registry.web.api.BucketResource;
-import org.apache.nifi.registry.web.api.FlowResource;
 import org.apache.nifi.registry.web.api.ItemResource;
 import org.apache.nifi.registry.web.api.ResourceResource;
 import org.apache.nifi.registry.web.api.TenantResource;
@@ -78,7 +77,6 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(BucketResource.class);
         register(BucketFlowResource.class);
         register(ItemResource.class);
-        register(FlowResource.class);
         register(ResourceResource.class);
         register(TenantResource.class);
 

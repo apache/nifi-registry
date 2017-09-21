@@ -27,6 +27,7 @@ import org.apache.nifi.registry.authorization.RequestAction;
 import org.apache.nifi.registry.authorization.resource.Authorizable;
 import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.params.QueryParameters;
@@ -41,7 +42,6 @@ import org.springframework.stereotype.Component;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -53,6 +53,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -121,12 +122,19 @@ public class BucketResource extends AuthorizableApplicationResource {
             final List<String> sortParameters) {
         authorizeAccess(RequestAction.READ);
 
+        final Set<String> authorizedBucketIds = getAuthorizedBucketIds();
+
+        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
+            // not authorized for any bucket, return empty list of items
+            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
+        }
+
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
         for (String sortParam : sortParameters) {
             paramsBuilder.addSort(SortParameter.fromString(sortParam));
         }
 
-        final List<Bucket> buckets = registryService.getBuckets(paramsBuilder.build());
+        final List<Bucket> buckets = registryService.getBuckets(paramsBuilder.build(), authorizedBucketIds);
         linkService.populateBucketLinks(buckets);
 
         return Response.status(Response.Status.OK).entity(buckets).build();
@@ -145,10 +153,9 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
-    public Response getBucket(@PathParam("bucketId") final String bucketId,
-                              @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+    public Response getBucket(@PathParam("bucketId") final String bucketId) {
         authorizeBucketAccess(RequestAction.READ, bucketId);
-        final Bucket bucket = registryService.getBucket(bucketId, verbose);
+        final Bucket bucket = registryService.getBucket(bucketId);
         linkService.populateBucketLinks(bucket);
 
         if (bucket.getVersionedFlows() != null) {

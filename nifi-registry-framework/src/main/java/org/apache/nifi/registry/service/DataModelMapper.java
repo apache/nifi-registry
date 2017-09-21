@@ -92,6 +92,7 @@ public class DataModelMapper {
         versionedFlow.setDescription(flowEntity.getDescription());
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());
         versionedFlow.setModifiedTimestamp(flowEntity.getModified().getTime());
+        versionedFlow.setVersionCount(flowEntity.getSnapshotCount());
 
         if (mapChildren && flowEntity.getSnapshots() != null) {
             final SortedSet<VersionedFlowSnapshotMetadata> snapshots = new TreeSet<>();

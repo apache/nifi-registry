@@ -30,7 +30,6 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.serialization.FlowSnapshotSerializer;
 import org.apache.nifi.registry.serialization.Serializer;
-import org.apache.nifi.registry.service.params.QueryParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -46,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -137,7 +135,7 @@ public class TestRegistryService {
 
         when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
-        final Bucket bucket = registryService.getBucket(existingBucket.getId(), true);
+        final Bucket bucket = registryService.getBucket(existingBucket.getId());
         assertNotNull(bucket);
         assertEquals(existingBucket.getId(), bucket.getIdentifier());
         assertEquals(existingBucket.getName(), bucket.getName());
@@ -148,7 +146,7 @@ public class TestRegistryService {
     @Test(expected = ResourceNotFoundException.class)
     public void testGetBucketDoesNotExist() {
         when(metadataService.getBucketById(any(String.class))).thenReturn(null);
-        registryService.getBucket("does-not-exist", true);
+        registryService.getBucket("does-not-exist");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -376,7 +374,7 @@ public class TestRegistryService {
         flowEntity.setModified(new Date());
         flowEntity.setBucket(existingBucket);
 
-        when(metadataService.getFlowById(existingBucket.getId(), flowEntity.getId())).thenReturn(flowEntity);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), flowEntity.getId())).thenReturn(flowEntity);
 
         final VersionedFlow versionedFlow = registryService.getFlow(existingBucket.getId(), flowEntity.getId(), false);
         assertNotNull(versionedFlow);
@@ -388,13 +386,21 @@ public class TestRegistryService {
         assertEquals(flowEntity.getModified().getTime(), versionedFlow.getModifiedTimestamp());
     }
 
+    @Test(expected = ResourceNotFoundException.class)
+    public void testGetFlowsByBucketDoesNotExist() {
+        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
+        registryService.getFlows("b1");
+    }
+
     @Test
-    public void testGetFlows() {
+    public void testGetFlowsByBucketExists() {
         final BucketEntity existingBucket = new BucketEntity();
         existingBucket.setId("b1");
         existingBucket.setName("My Bucket");
         existingBucket.setDescription("This is my bucket");
         existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         final FlowEntity flowEntity1 = new FlowEntity();
         flowEntity1.setId("flow1");
@@ -416,50 +422,7 @@ public class TestRegistryService {
         flows.add(flowEntity1);
         flows.add(flowEntity2);
 
-        when(metadataService.getFlows(any(QueryParameters.class))).thenReturn(flows);
-
-        final QueryParameters queryParameters = new QueryParameters.Builder().build();
-        final List<VersionedFlow> allFlows = registryService.getFlows(queryParameters);
-        assertNotNull(allFlows);
-        assertEquals(2, allFlows.size());
-    }
-
-    @Test(expected = ResourceNotFoundException.class)
-    public void testGetFlowsByBucketDoesNotExist() {
-        when(metadataService.getBucketById(any(String.class))).thenReturn(null);
-        registryService.getFlows("b1");
-    }
-
-    @Test
-    public void testGetFlowsByBucketExists() {
-        final BucketEntity existingBucket = new BucketEntity();
-        existingBucket.setId("b1");
-        existingBucket.setName("My Bucket");
-        existingBucket.setDescription("This is my bucket");
-        existingBucket.setCreated(new Date());
-
-        final FlowEntity flowEntity1 = new FlowEntity();
-        flowEntity1.setId("flow1");
-        flowEntity1.setName("My Flow");
-        flowEntity1.setDescription("This is my flow.");
-        flowEntity1.setCreated(new Date());
-        flowEntity1.setModified(new Date());
-        flowEntity1.setBucket(existingBucket);
-
-        final FlowEntity flowEntity2 = new FlowEntity();
-        flowEntity2.setId("flow2");
-        flowEntity2.setName("My Flow 2");
-        flowEntity2.setDescription("This is my flow 2.");
-        flowEntity2.setCreated(new Date());
-        flowEntity2.setModified(new Date());
-        flowEntity2.setBucket(existingBucket);
-
-        final Set<BucketItemEntity> flows = new LinkedHashSet<>();
-        flows.add(flowEntity1);
-        flows.add(flowEntity2);
-        existingBucket.setItems(flows);
-
-        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+        when(metadataService.getFlowsByBucket(eq(existingBucket))).thenReturn(flows);
 
         final List<VersionedFlow> allFlows = registryService.getFlows(existingBucket.getId());
         assertNotNull(allFlows);

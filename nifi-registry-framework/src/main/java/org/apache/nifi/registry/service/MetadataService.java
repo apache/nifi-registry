@@ -71,20 +71,22 @@ public interface MetadataService {
     void deleteBucket(BucketEntity bucket);
 
     /**
-     * Retrieves all buckets known to this metadata provider.
+     * Retrieves all buckets with the given ids.
      *
      * @param params the paging and sorting params, or null
+     * @param bucketIds the ids of the buckets to retrieve
      * @return the set of all buckets
      */
-    List<BucketEntity> getBuckets(QueryParameters params);
+    List<BucketEntity> getBuckets(QueryParameters params, Set<String> bucketIds);
 
     /**
-     * Retrieves items across all buckets.
+     * Retrieves all buckets.
      *
-     * @param queryParameters the parameters for retrieving the items, or null
-     * @return the set of all items
+     * @return the set of all buckets
      */
-    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters);
+    List<BucketEntity> getAllBuckets();
+
+    // --------------------------------------------------------------------------------------------
 
     /**
      * Retrieves items for the given bucket.
@@ -104,6 +106,8 @@ public interface MetadataService {
      */
     List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, Set<String> bucketIds);
 
+    // --------------------------------------------------------------------------------------------
+
     /**
      * Creates a versioned flow in the given bucket.
      *
@@ -114,7 +118,7 @@ public interface MetadataService {
     FlowEntity createFlow(FlowEntity flow);
 
     /**
-     * Retrieves the versioned flow with the given id.
+     * Retrieves the versioned flow with the given id and DOES NOT populate the versionCount.
      *
      * @param bucketIdentifier the identifier of the bucket storing the flow
      * @param flowIdentifier the identifier of the flow to retrieve
@@ -123,12 +127,29 @@ public interface MetadataService {
     FlowEntity getFlowById(String bucketIdentifier, String flowIdentifier);
 
     /**
+     * Retrieves the versioned flow with the given id and DOES populate the versionCount.
+     *
+     * @param bucketIdentifier the identifier of the bucket storing the flow
+     * @param flowIdentifier the identifier of the flow to retrieve
+     * @return the versioned flow with the given id, or null if no flow with the given id exists
+     */
+    FlowEntity getFlowByIdWithSnapshotCounts(final String bucketIdentifier, final String flowIdentifier);
+
+    /**
      * Retrieves the versioned flows with the given name. The name comparison must be case-insensitive.
      *
      * @param name the name of the flow to retrieve
      * @return the versioned flows with the given name, or empty list if no flows with the given name exists
      */
     List<FlowEntity> getFlowsByName(String name);
+
+    /**
+     * Retrieves the versioned flows for the given bucket.
+     *
+     * @param bucketEntity the bucket entity
+     * @return the flows in the given bucket
+     */
+    List<FlowEntity> getFlowsByBucket(BucketEntity bucketEntity);
 
     /**
      * Updates the given versioned flow, only the name and description should be allowed to be updated.
@@ -145,22 +166,7 @@ public interface MetadataService {
      */
     void deleteFlow(FlowEntity flow);
 
-    /**
-     * Retrieves all versioned flows known to this metadata provider.
-     *
-     * @param queryParameters the paging and sorting params, or null
-     * @return the set of all versioned flows
-     */
-    List<FlowEntity> getFlows(QueryParameters queryParameters);
-
-    /**
-     * Retrieves items for the given buckets.
-     *
-     * @param bucketIds the ids of buckets to retrieve items for
-     * @param queryParameters the parameters for retrieving the items, or null
-     * @return the set of items for the bucket
-     */
-    List<FlowEntity> getFlows(QueryParameters queryParameters, Set<String> bucketIds);
+    // --------------------------------------------------------------------------------------------
 
     /**
      * Creates a versioned flow snapshot.
@@ -187,6 +193,8 @@ public interface MetadataService {
      * @param flowSnapshot the flow snapshot to delete
      */
     void deleteFlowSnapshot(FlowSnapshotEntity flowSnapshot);
+
+    // --------------------------------------------------------------------------------------------
 
     /**
      * @return the set of field names for Buckets

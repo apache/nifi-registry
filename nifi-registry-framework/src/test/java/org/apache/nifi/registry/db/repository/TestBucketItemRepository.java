@@ -16,11 +16,11 @@
  */
 package org.apache.nifi.registry.db.repository;
 
+import org.apache.nifi.registry.db.DatabaseBaseTest;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -29,37 +29,13 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class TestBucketItemRepository extends RepositoryBaseTest {
+public class TestBucketItemRepository extends DatabaseBaseTest {
 
     @Autowired
     private BucketRepository bucketRepository;
 
     @Autowired
     private BucketItemRepository bucketItemRepository;
-
-    @Test
-    public void testFindAllPageable() {
-        final Page<BucketItemEntity> page = bucketItemRepository.findAll(new PageRequest(0, 10));
-        assertNotNull(page);
-        assertEquals(1, page.getTotalPages());
-        assertEquals(3, page.getTotalElements());
-
-        final List<BucketItemEntity> entities = page.getContent();
-        assertNotNull(entities);
-        assertEquals(3, entities.size());
-    }
-
-    @Test
-    public void testFindAll() {
-        final Iterable<BucketItemEntity> entities = bucketItemRepository.findAll();
-        assertNotNull(entities);
-
-        int count = 0;
-        for (BucketItemEntity entity : entities) {
-            count++;
-        }
-        assertEquals(3, count);
-    }
 
     @Test
     public void testFindByBucket() {

@@ -19,14 +19,10 @@ package org.apache.nifi.registry.service;
 import org.apache.nifi.registry.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.authorization.AuthorizableLookup;
-import org.apache.nifi.registry.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.authorization.AuthorizeAccess;
 import org.apache.nifi.registry.authorization.Authorizer;
 import org.apache.nifi.registry.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.authorization.ConfigurableAccessPolicyProvider;
 import org.apache.nifi.registry.authorization.ConfigurableUserGroupProvider;
 import org.apache.nifi.registry.authorization.Group;
@@ -35,6 +31,10 @@ import org.apache.nifi.registry.authorization.RequestAction;
 import org.apache.nifi.registry.authorization.UserAndGroups;
 import org.apache.nifi.registry.authorization.UserGroupProvider;
 import org.apache.nifi.registry.authorization.UserGroupProviderInitializationContext;
+import org.apache.nifi.registry.authorization.exception.AccessDeniedException;
+import org.apache.nifi.registry.authorization.exception.AuthorizationAccessException;
+import org.apache.nifi.registry.authorization.exception.AuthorizerCreationException;
+import org.apache.nifi.registry.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.authorization.resource.ResourceType;
 import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
@@ -45,7 +45,6 @@ import org.apache.nifi.registry.model.authorization.Resource;
 import org.apache.nifi.registry.model.authorization.Tenant;
 import org.apache.nifi.registry.model.authorization.User;
 import org.apache.nifi.registry.model.authorization.UserGroup;
-import org.apache.nifi.registry.service.params.QueryParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -428,7 +427,7 @@ public class AuthorizationService {
 
         // add all buckets
         resources.add(ResourceFactory.getBucketsResource());
-        for (final Bucket bucket : registryService.getBuckets(QueryParameters.EMPTY_PARAMETERS)) {
+        for (final Bucket bucket : registryService.getBuckets()) {
             resources.add(ResourceFactory.getChildResource(ResourceType.Bucket, bucket.getIdentifier(), bucket.getName()));
         }
 

@@ -18,7 +18,6 @@ package org.apache.nifi.registry.db.repository;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.Repository;
@@ -32,29 +31,6 @@ import java.util.Set;
  * There should be no CRUD methods performed directly on BucketItems, only general retrieval.
  */
 public interface BucketItemRepository extends Repository<BucketItemEntity,String> {
-
-    /**
-     * Returns all instances of the type.
-     *
-     * @return all entities
-     */
-    Iterable<BucketItemEntity> findAll();
-
-    /**
-     * Returns all entities sorted by the given options.
-     *
-     * @param sort the sort params
-     * @return all entities sorted by the given options
-     */
-    Iterable<BucketItemEntity> findAll(Sort sort);
-
-    /**
-     * Returns a {@link Page} of entities meeting the paging restriction provided in the {@code Pageable} object.
-     *
-     * @param pageable the pageable params
-     * @return a page of entities
-     */
-    Page<BucketItemEntity> findAll(Pageable pageable);
 
     /**
      * Find all items by bucket.

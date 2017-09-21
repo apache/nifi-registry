@@ -36,10 +36,10 @@ import org.springframework.context.annotation.FilterType;
                         type = FilterType.ASSIGNABLE_TYPE,
                         value = DataSourceFactory.class)
         })
-public class RepositoryTestApplication {
+public class DatabaseTestApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(RepositoryTestApplication.class, args);
+        SpringApplication.run(DatabaseTestApplication.class, args);
     }
 
 }
