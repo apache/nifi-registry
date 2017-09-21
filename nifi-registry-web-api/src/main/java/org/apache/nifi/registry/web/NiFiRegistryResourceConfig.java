@@ -19,7 +19,7 @@ package org.apache.nifi.registry.web;
 import org.apache.nifi.registry.web.api.BucketFlowResource;
 import org.apache.nifi.registry.web.api.BucketResource;
 import org.apache.nifi.registry.web.api.FlowResource;
-import org.apache.nifi.registry.web.api.TestResource;
+import org.apache.nifi.registry.web.api.ItemResource;
 import org.apache.nifi.registry.web.mapper.IllegalArgumentExceptionMapper;
 import org.apache.nifi.registry.web.mapper.IllegalStateExceptionMapper;
 import org.apache.nifi.registry.web.mapper.ResourceNotFoundExceptionMapper;
@@ -58,9 +58,7 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(BucketResource.class);
         register(BucketFlowResource.class);
         register(FlowResource.class);
-
-        // test endpoint to exercise spring dependency injection
-        register(TestResource.class);
+        register(ItemResource.class);
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     }

@@ -30,6 +30,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestRestAPI {
 
@@ -43,37 +45,29 @@ public class TestRestAPI {
         try {
             final Client client = ClientBuilder.newClient();
 
-            // Create a bucket
+            // create some buckets
+            final int numBuckets = 20;
+            final List<Bucket> createdBuckets = new ArrayList<>();
 
-            final Bucket bucket = new Bucket();
-            bucket.setName("First Bucket");
-            bucket.setDescription("This is the first bucket.");
+            for (int i=0; i < numBuckets; i++) {
+                final Bucket createdBucket = createBucket(client, i);
+                System.out.println("Created bucket # " + i + " with id " + createdBucket.getIdentifier());
+                createdBuckets.add(createdBucket);
+            }
 
-            final Bucket createdBucket = client.target(REGISTRY_API_BUCKETS_URL)
-                    .request()
-                    .post(
-                            Entity.entity(bucket, MediaType.APPLICATION_JSON),
-                            Bucket.class
-                    );
+            final Bucket createdBucket = createdBuckets.get(0);
 
-            System.out.println("Created bucket with id: " + createdBucket.getName());
+            // create some flows
+            final int numFlows = 20;
+            final List<VersionedFlow> createdFlows = new ArrayList<>();
 
-            // Create a flow
+            for (int i=0; i < numFlows; i++) {
+                final VersionedFlow createdFlow = createFlow(client, createdBucket, i);
+                System.out.println("Created flow # " + i + " with id " + createdFlow.getIdentifier());
+                createdFlows.add(createdFlow);
+            }
 
-            final VersionedFlow versionedFlow = new VersionedFlow();
-            versionedFlow.setName("First Flow");
-            versionedFlow.setDescription("This is the first flow.");
-
-            final VersionedFlow createdFlow = client.target(REGISTRY_API_BUCKETS_URL)
-                    .path("/{bucketId}/flows")
-                    .resolveTemplate("bucketId", createdBucket.getIdentifier())
-                    .request()
-                    .post(
-                            Entity.entity(versionedFlow, MediaType.APPLICATION_JSON),
-                            VersionedFlow.class
-                    );
-
-            System.out.println("Created flow with id: " + createdFlow.getIdentifier());
+            final VersionedFlow createdFlow = createdFlows.get(0);
 
             // Create first snapshot for the flow
 
@@ -147,6 +141,38 @@ public class TestRestAPI {
             final Response response = e.getResponse();
             LOGGER.error(response.readEntity(String.class));
         }
+    }
+
+    private static Bucket createBucket(Client client, int num) {
+        final Bucket bucket = new Bucket();
+        bucket.setName("Bucket #" + num);
+        bucket.setDescription("This is bucket #" + num);
+
+        final Bucket createdBucket = client.target(REGISTRY_API_BUCKETS_URL)
+                .request()
+                .post(
+                        Entity.entity(bucket, MediaType.APPLICATION_JSON),
+                        Bucket.class
+                );
+
+        return createdBucket;
+    }
+
+    private static VersionedFlow createFlow(Client client, Bucket bucket, int num) {
+        final VersionedFlow versionedFlow = new VersionedFlow();
+        versionedFlow.setName("Flow #" + num);
+        versionedFlow.setDescription("This is flow #" + num);
+
+        final VersionedFlow createdFlow = client.target(REGISTRY_API_BUCKETS_URL)
+                .path("/{bucketId}/flows")
+                .resolveTemplate("bucketId", bucket.getIdentifier())
+                .request()
+                .post(
+                        Entity.entity(versionedFlow, MediaType.APPLICATION_JSON),
+                        VersionedFlow.class
+                );
+
+        return createdFlow;
     }
 
 }

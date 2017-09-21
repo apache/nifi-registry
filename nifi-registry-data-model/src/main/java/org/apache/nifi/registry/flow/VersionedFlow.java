@@ -38,22 +38,11 @@ import java.util.SortedSet;
 @ApiModel(value = "versionedFlow")
 public class VersionedFlow extends BucketItem {
 
-    private String description;
-
     @Valid
     private SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata;
 
     public VersionedFlow() {
         super(BucketItemType.FLOW);
-    }
-
-    @ApiModelProperty("A description of the flow.")
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @ApiModelProperty(value = "The metadata for each snapshot of this flow.", readOnly = true)

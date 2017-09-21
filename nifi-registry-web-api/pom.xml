@@ -122,19 +122,19 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-framework</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <!-- This will directly in lib so mark it as provided -->
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-properties</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-framework</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-provider-impl</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

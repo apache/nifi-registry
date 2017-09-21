@@ -68,6 +68,11 @@
     
     <logger name="org.apache.nifi.registry" level="INFO"/>
 
+    <!-- To see SQL statements set this to DEBUG -->
+    <logger name="org.hibernate.SQL" level="INFO" />
+    <!-- To see the values in SQL statements set this to TRACE -->
+    <logger name="org.hibernate.type" level="INFO" />
+
     <!--
         Logger for capturing Bootstrap logs and NiFi Registry's standard error and standard out.
     -->

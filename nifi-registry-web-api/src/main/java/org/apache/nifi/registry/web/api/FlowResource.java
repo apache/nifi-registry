@@ -25,6 +25,10 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.service.RegistryService;
+import org.apache.nifi.registry.service.params.QueryParameters;
+import org.apache.nifi.registry.service.params.SortParameter;
+import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.response.FieldsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,14 +36,19 @@ import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -53,22 +62,37 @@ public class FlowResource {
 
     private static final Logger logger = LoggerFactory.getLogger(FlowResource.class);
 
+    @Context
+    UriInfo uriInfo;
+
+    private final LinkService linkService;
+
     private final RegistryService registryService;
 
-    public FlowResource(@Autowired final RegistryService registryService) {
+    @Autowired
+    public FlowResource(final RegistryService registryService, final LinkService linkService) {
         this.registryService = registryService;
+        this.linkService = linkService;
     }
 
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for all flows in all buckets that the registry has stored for which the client is authorized. TODO: Will add some search parameters as well.",
+            value = "Get metadata for all flows in all buckets that the registry has stored for which the client is authorized. The information about " +
+                    "the versions of each flow should be obtained by requesting a specific flow by id.",
             response = VersionedFlow.class,
             responseContainer = "List"
     )
-    public Response getFlows() {
-        final Set<VersionedFlow> flows = registryService.getFlows();
+    public Response getFlows(@QueryParam("sort") final List<SortParameter> sortParameters) {
+
+        final QueryParameters params = new QueryParameters.Builder()
+                .addSorts(sortParameters)
+                .build();
+
+        final List<VersionedFlow> flows = registryService.getFlows(params);
+        linkService.populateFlowLinks(flows);
+
         return Response.status(Response.Status.OK).entity(flows).build();
     }
 
@@ -77,7 +101,8 @@ public class FlowResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for an existing flow the registry has stored.",
+            value = "Get metadata for an existing flow the registry has stored. If verbose is true, then the metadata " +
+                    "about all snapshots for the flow will also be returned.",
             response = VersionedFlow.class
     )
     @ApiResponses(
@@ -85,8 +110,16 @@ public class FlowResource {
                     @ApiResponse(code = 404, message = "The specified resource could not be found."),
             }
     )
-    public Response getFlow(@PathParam("flowId") final String flowId) {
-        final VersionedFlow flow = registryService.getFlow(flowId);
+    public Response getFlow(@PathParam("flowId") final String flowId,
+                            @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+
+        final VersionedFlow flow = registryService.getFlow(flowId, verbose);
+        linkService.populateFlowLinks(flow);
+
+        if (flow.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(flow.getSnapshotMetadata());
+        }
+
         return Response.status(Response.Status.OK).entity(flow).build();
     }
 
@@ -188,7 +221,12 @@ public class FlowResource {
             }
     )
     public Response getFlowVersions(@PathParam("flowId") final String flowId) {
-        final VersionedFlow flow = registryService.getFlow(flowId);
+        final VersionedFlow flow = registryService.getFlow(flowId, true);
+
+        if (flow.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(flow.getSnapshotMetadata());
+        }
+
         return Response.status(Response.Status.OK).entity(flow.getSnapshotMetadata()).build();
     }
 
@@ -206,7 +244,7 @@ public class FlowResource {
             }
     )
     public Response getLatestFlowVersion(@PathParam("flowId") final String flowId) {
-        final VersionedFlow flow = registryService.getFlow(flowId);
+        final VersionedFlow flow = registryService.getFlow(flowId, true);
 
         final SortedSet<VersionedFlowSnapshotMetadata> snapshots = flow.getSnapshotMetadata();
         if (snapshots == null || snapshots.size() == 0) {
@@ -239,6 +277,20 @@ public class FlowResource {
             @PathParam("versionNumber") final Integer versionNumber) {
         final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(flowId, versionNumber);
         return Response.status(Response.Status.OK).entity(snapshot).build();
+    }
+
+    @GET
+    @Path("fields")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Retrieves the available field names that can be used for searching or sorting on flows.",
+            response = FieldsEntity.class
+    )
+    public Response getAvailableFlowFields() {
+        final Set<String> flowFields = registryService.getFlowFields();
+        final FieldsEntity fieldsEntity = new FieldsEntity(flowFields);
+        return Response.status(Response.Status.OK).entity(fieldsEntity).build();
     }
 
 }

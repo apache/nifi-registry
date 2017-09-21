@@ -17,7 +17,6 @@
 package org.apache.nifi.registry.provider;
 
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.metadata.MetadataProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.generated.Property;
 import org.apache.nifi.registry.provider.generated.Providers;
@@ -71,9 +70,9 @@ public class StandardProviderFactory implements ProviderFactory {
     private final AtomicReference<Providers> providersHolder = new AtomicReference<>(null);
 
     private FlowPersistenceProvider flowPersistenceProvider;
-    private MetadataProvider metadataProvider;
 
-    public StandardProviderFactory(@Autowired final NiFiRegistryProperties properties) {
+    @Autowired
+    public StandardProviderFactory(final NiFiRegistryProperties properties) {
         this.properties = properties;
 
         if (this.properties == null) {
@@ -106,39 +105,6 @@ public class StandardProviderFactory implements ProviderFactory {
                 throw new ProviderFactoryException("Unable to find the providers configuration file at " + providersConfigFile.getAbsolutePath());
             }
         }
-    }
-
-    @Bean
-    @Override
-    public synchronized MetadataProvider getMetadataProvider() {
-        if (metadataProvider == null) {
-            if (providersHolder.get() == null) {
-                throw new ProviderFactoryException("ProviderFactory must be initialized before obtaining a Provider");
-            }
-
-            final Providers providers = providersHolder.get();
-            final org.apache.nifi.registry.provider.generated.Provider jaxbMetadataProvider = providers.getMetadataProvider();
-            final String metadataProviderClassName = jaxbMetadataProvider.getClazz();
-
-            try {
-                final Class<?> rawMetadataProviderClass = Class.forName(metadataProviderClassName, true, StandardProviderFactory.class.getClassLoader());
-                final Class<? extends MetadataProvider> metadataProviderClass = rawMetadataProviderClass.asSubclass(MetadataProvider.class);
-
-                // otherwise create a new instance
-                final Constructor constructor = metadataProviderClass.getConstructor();
-                metadataProvider = (MetadataProvider) constructor.newInstance();
-
-                LOGGER.info("Instantiated MetadataProvider with class name {}", new Object[] {metadataProviderClassName});
-            } catch (Exception e) {
-                throw new ProviderFactoryException("Error creating MetadataProvider with class name: " + metadataProviderClassName, e);
-            }
-
-            final ProviderConfigurationContext configurationContext = createConfigurationContext(jaxbMetadataProvider.getProperty());
-            metadataProvider.onConfigured(configurationContext);
-            LOGGER.info("Configured MetadataProvider with class name {}", new Object[] {metadataProviderClassName});
-        }
-
-        return metadataProvider;
     }
 
     @Bean
