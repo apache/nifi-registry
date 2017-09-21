@@ -21,6 +21,12 @@ package org.apache.nifi.registry.service.params;
  */
 public class SortParameter {
 
+    public static final String API_PARAM_DESCRIPTION =
+            "Apply client-defined sorting to the resulting list of resource objects. " +
+                    "The value of this parameter should be in the format \"field:order\". " +
+                    "Valid values for 'field' can be discovered via GET :resourceURI/fields. " +
+                    "Valid values for 'order' are 'ASC' (ascending order), 'DESC' (descending order).";
+
     private final String fieldName;
 
     private final SortOrder order;

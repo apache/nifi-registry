@@ -18,6 +18,7 @@ package org.apache.nifi.registry.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.params.QueryParameters;
@@ -74,13 +75,17 @@ public class ItemResource {
             response = BucketItem.class,
             responseContainer = "List"
     )
-    public Response getItems(@QueryParam("sort") final List<SortParameter> sortParameters) {
+    public Response getItems(
+            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
+            @QueryParam("sort")
+            final List<String> sortParameters) {
 
-        final QueryParameters params = new QueryParameters.Builder()
-                .addSorts(sortParameters)
-                .build();
+        final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
+        for (String sortParam : sortParameters) {
+            paramsBuilder.addSort(SortParameter.fromString(sortParam));
+        }
 
-        final List<BucketItem> items = registryService.getBucketItems(params);
+        final List<BucketItem> items = registryService.getBucketItems(paramsBuilder.build());
         linkService.populateItemLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();
@@ -93,16 +98,22 @@ public class ItemResource {
     @ApiOperation(
             value = "Get metadata for items of the given bucket.",
             response = BucketItem.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            nickname = "getItemsInBucket"
     )
-    public Response getItems(@PathParam("bucketId") final String bucketId,
-                             @QueryParam("sort") final List<SortParameter> sortParameters) {
+    public Response getItems(
+            @PathParam("bucketId")
+            final String bucketId,
+            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
+            @QueryParam("sort")
+            final List<String> sortParameters) {
 
-        final QueryParameters params = new QueryParameters.Builder()
-                .addSorts(sortParameters)
-                .build();
+        final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
+        for (String sortParam : sortParameters) {
+            paramsBuilder.addSort(SortParameter.fromString(sortParam));
+        }
 
-        final List<BucketItem> items = registryService.getBucketItems(params, bucketId);
+        final List<BucketItem> items = registryService.getBucketItems(paramsBuilder.build(), bucketId);
         linkService.populateItemLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();
@@ -116,7 +127,7 @@ public class ItemResource {
             value = "Retrieves the available field names that can be used for searching or sorting on bucket items.",
             response = FieldsEntity.class
     )
-    public Response getAvailableBucketFields() {
+    public Response getAvailableBucketItemFields() {
         final Set<String> bucketFields = registryService.getBucketItemFields();
         final FieldsEntity fieldsEntity = new FieldsEntity(bucketFields);
         return Response.status(Response.Status.OK).entity(fieldsEntity).build();

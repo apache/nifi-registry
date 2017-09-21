@@ -18,6 +18,7 @@ package org.apache.nifi.registry.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
@@ -84,13 +85,17 @@ public class FlowResource {
             response = VersionedFlow.class,
             responseContainer = "List"
     )
-    public Response getFlows(@QueryParam("sort") final List<SortParameter> sortParameters) {
+    public Response getFlows(
+            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
+            @QueryParam("sort")
+            final List<String> sortParameters) {
 
-        final QueryParameters params = new QueryParameters.Builder()
-                .addSorts(sortParameters)
-                .build();
+        final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
+        for (String sortParam : sortParameters) {
+            paramsBuilder.addSort(SortParameter.fromString(sortParam));
+        }
 
-        final List<VersionedFlow> flows = registryService.getFlows(params);
+        final List<VersionedFlow> flows = registryService.getFlows(paramsBuilder.build());
         linkService.populateFlowLinks(flows);
 
         return Response.status(Response.Status.OK).entity(flows).build();
