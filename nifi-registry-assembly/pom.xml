@@ -116,6 +116,7 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
     <properties>
         <!-- nifi-registry.properties: web properties -->
         <nifi.registry.web.war.directory>./lib</nifi.registry.web.war.directory>
@@ -144,4 +145,181 @@
         <nifi.registry.db.directory>./database</nifi.registry.db.directory>
         <nifi.registry.db.url.append>;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE</nifi.registry.db.url.append>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>rpm</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <nifi.registry.run.as>nifi</nifi.registry.run.as>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack-shared-resources</id>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
+                                    <includeArtifactIds>nifi-registry-resources</includeArtifactIds>
+                                    <includeGroupIds>org.apache.nifi.registry</includeGroupIds>
+                                    <excludeTransitive>false</excludeTransitive>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>rpm-maven-plugin</artifactId>
+                        <configuration>
+                            <name>nifi-registry</name>
+                            <summary>Apache NiFi Registry</summary>
+                            <description>A sub-project of Apache NiFi that provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.</description>
+                            <license>Apache License, Version 2.0 and others (see included LICENSE file)</license>
+                            <url>https://nifi.apache.org/registry.html</url>
+                            <group>Utilities</group>
+                            <prefix>/opt/nifi-registry</prefix>
+                            <defineStatements>
+                                <defineStatement>_use_internal_dependency_generator 0</defineStatement>
+                            </defineStatements>
+                            <defaultDirmode>750</defaultDirmode>
+                            <defaultFilemode>640</defaultFilemode>
+                            <defaultUsername>nifi</defaultUsername>
+                            <defaultGroupname>nifi</defaultGroupname>
+                            <!-- This allows the stanza to produce bootstrap.conf that is pre-configured with run.as=nifi
+                            given the uid is created by the preinstallScriptlet below. Meanwhile, normal zip and tar.gz
+                            ship without this particular property set -->
+                            <installScriptlet>
+                                <!-- It is important to note because of the way the plugin calls the command, the sed backup
+                                parameter -i and the sed command do not beed to be wrapped by single or double quotes.
+                                Also note maven properties are processed before RPM variables and before sed commands -->
+                                <script>sed -i s/^run\.as=$/run\.as=${nifi.registry.run.as}/ $RPM_BUILD_ROOT/opt/nifi-registry/nifi-registry-${project.version}/conf/bootstrap.conf</script>
+                            </installScriptlet>
+                            <preinstallScriptlet>
+                                <script>/usr/bin/getent group nifi &gt;/dev/null || /usr/sbin/groupadd -r nifi; /usr/bin/getent passwd nifi &gt;/dev/null || /usr/sbin/useradd -r -g nifi -d /opt/nifi-registry -s /sbin/nologin -c "NiFi System User" nifi</script>
+                            </preinstallScriptlet>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-bin-rpm</id>
+                                <goals>
+                                    <goal>attached-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <group>Apache NiFI</group>
+                                    <classifier>bin</classifier>
+                                    <provides>
+                                        <provide>nifi-registry</provide>
+                                    </provides>
+                                    <mappings>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}</directory>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}</directory>
+                                            <sources>
+                                                <source>
+                                                    <location>./LICENSE</location>
+                                                </source>
+                                                <source>
+                                                    <location>./NOTICE</location>
+                                                </source>
+                                                <source>
+                                                    <location>./README.md</location>
+                                                    <destination>README</destination>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry</directory>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/bin</directory>
+                                            <filemode>750</filemode>
+                                            <sources>
+                                                <source>
+                                                    <location>${project.build.directory}/generated-resources/bin/nifi-registry.sh</location>
+                                                    <destination>nifi-registry.sh</destination>
+                                                    <filter>true</filter>
+                                                </source>
+                                                <source>
+                                                    <location>${project.build.directory}/generated-resources/bin/nifi-registry-env.sh</location>
+                                                    <destination>nifi-registry-env.sh</destination>
+                                                    <filter>true</filter>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/conf</directory>
+                                            <configuration>true</configuration>
+                                            <sources>
+                                                <source>
+                                                    <location>${project.build.directory}/generated-resources/conf</location>
+                                                    <filter>true</filter>
+                                                </source>
+                                            </sources>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/lib</directory>
+                                        </mapping>
+                                        <!--
+                                            The lib/shared mapping includes the common dependencies between the registry
+                                            application (lib) and registry bootstrap (lib/bootstrap).
+
+                                            The lib/bootstrap mapping then excludes what was in lib/shared and includes
+                                            the other dependencies needed for the registry bootstrap.
+
+                                            The lib mapping excludes what was in lib/shared and excluded the bootstrap module,
+                                            and would bring in everything else from the lib directory of a non RPM build.
+                                            -->
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/lib</directory>
+                                            <dependency>
+                                                <excludes>
+                                                    <exclude>org.apache.commons:commons-lang3</exclude>
+                                                    <exclude>org.apache.nifi.registry:nifi-registry-utils</exclude>
+                                                    <exclude>org.apache.nifi.registry:nifi-registry-bootstrap</exclude>
+                                                </excludes>
+                                            </dependency>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/lib/bootstrap</directory>
+                                            <dependency>
+                                                <includes>
+                                                    <include>org.slf4j:slf4j-api</include>
+                                                    <include>ch.qos.logback:logback-classic</include>
+                                                    <include>ch.qos.logback:logback-core</include>
+                                                    <include>org.apache.nifi.registry:nifi-registry-bootstrap</include>
+                                                </includes>
+                                                <excludes>
+                                                    <exclude>org.apache.commons:commons-lang3</exclude>
+                                                    <exclude>org.apache.nifi.registry:nifi-registry-utils</exclude>
+                                                </excludes>
+                                            </dependency>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/lib/shared</directory>
+                                            <dependency>
+                                                <includes>
+                                                    <include>org.apache.commons:commons-lang3</include>
+                                                    <include>org.apache.nifi.registry:nifi-registry-utils</include>
+                                                </includes>
+                                            </dependency>
+                                        </mapping>
+                                    </mappings>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
