@@ -79,7 +79,8 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for items across all buckets for which the user is authorized.",
+            value = "Get items across all buckets",
+            notes = "The returned items will include only items from buckets for which the is authorized.",
             response = BucketItem.class,
             responseContainer = "List"
     )
@@ -111,17 +112,18 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for items of the given bucket.",
+            value = "Gets items of the given bucket",
             response = BucketItem.class,
             responseContainer = "List",
             nickname = "getItemsInBucket"
     )
     public Response getItems(
             @PathParam("bucketId")
-            final String bucketId,
-            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
             @QueryParam("sort")
-            final List<String> sortParameters) {
+            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
+                final List<String> sortParameters) {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
@@ -140,7 +142,7 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Retrieves the available field names that can be used for searching or sorting on bucket items.",
+            value = "Retrieves the available field names for searching or sorting on bucket items.",
             response = FieldsEntity.class
     )
     public Response getAvailableBucketItemFields() {

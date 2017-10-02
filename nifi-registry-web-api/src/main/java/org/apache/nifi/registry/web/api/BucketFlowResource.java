@@ -43,7 +43,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -84,8 +83,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Create a named flow and store it in the specified bucket. " +
-                    "The flow id is created by the server and a location URI for the created flow resource is returned.",
+            value = "Creates a flow",
+            notes = "The flow id is created by the server and populated in the returned entity.",
             response = VersionedFlow.class
     )
     @ApiResponses({
@@ -94,7 +93,11 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
-    public Response createFlow(@PathParam("bucketId") final String bucketId, final VersionedFlow flow) {
+    public Response createFlow(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+            final String bucketId, final VersionedFlow flow) {
+
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
         verifyPathParamsMatchBody(bucketId, flow);
         final VersionedFlow createdFlow = registryService.createFlow(bucketId, flow);
@@ -105,8 +108,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for all flows in all buckets that the registry has stored for which the client is authorized. The information about " +
-                    "the versions of each flow should be obtained by requesting a specific flow by id.",
+            value = "Gets all flows in the given bucket",
             response = VersionedFlow.class,
             responseContainer = "List"
     )
@@ -117,10 +119,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getFlows(
-            @PathParam("bucketId") final String bucketId,
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
             @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
             @QueryParam("sort")
-            final List<String> sortParameters) {
+                final List<String> sortParameters) {
+
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
@@ -139,8 +144,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for an existing flow the registry has stored. If verbose is true, then the metadata " +
-                    "about all snapshots for the flow will also be returned.",
+            value = "Gets a flow",
             response = VersionedFlow.class
     )
     @ApiResponses({
@@ -150,12 +154,16 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getFlow(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId,
-            @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId) {
+
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
-        final VersionedFlow flow = registryService.getFlow(bucketId, flowId, verbose);
+        final VersionedFlow flow = registryService.getFlow(bucketId, flowId, false);
 
         linkService.populateFlowLinks(flow);
 
@@ -171,7 +179,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Update an existing flow the registry has stored.",
+            value = "Updates a flow",
             response = VersionedFlow.class
     )
     @ApiResponses({
@@ -181,9 +189,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response updateFlow(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId,
-            final VersionedFlow flow) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId,
+                final VersionedFlow flow) {
 
         verifyPathParamsMatchBody(bucketId, flowId, flow);
         setBucketItemMetadataIfMissing(bucketId, flowId, flow);
@@ -199,7 +211,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Delete an existing flow the registry has stored.",
+            value = "Deletes a flow.",
             response = VersionedFlow.class
     )
     @ApiResponses({
@@ -208,8 +220,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response deleteFlow(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId) {
 
         authorizeBucketAccess(RequestAction.DELETE, bucketId);
         final VersionedFlow deletedFlow = registryService.deleteFlow(bucketId, flowId);
@@ -221,8 +237,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Create the next version of a given flow ID. " +
-                    "The version number is created by the server and a location URI for the created version resource is returned.",
+            value = "Creates the next version of a flow",
+            notes = "The version number is created by the server and populated in the returned entity.",
             response = VersionedFlowSnapshot.class
     )
     @ApiResponses({
@@ -232,9 +248,14 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createFlowVersion(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId,
-            final VersionedFlowSnapshot snapshot) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId,
+                final VersionedFlowSnapshot snapshot) {
+
         verifyPathParamsMatchBody(bucketId, flowId, snapshot);
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
@@ -248,7 +269,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get summary of all versions of a flow for a given flow ID.",
+            value = "Gets summary information for all versions of a flow",
             response = VersionedFlowSnapshotMetadata.class,
             responseContainer = "List"
     )
@@ -258,8 +279,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getFlowVersions(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId) {
+
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final VersionedFlow flow = registryService.getFlow(bucketId, flowId, true);
 
@@ -275,7 +301,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get the latest version of a flow for a given flow ID",
+            value = "Get the latest version of a flow",
             response = VersionedFlowSnapshot.class
     )
     @ApiResponses({
@@ -284,8 +310,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getLatestFlowVersion(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId) {
+
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final VersionedFlow flow = registryService.getFlow(bucketId, flowId, true);
 
@@ -305,7 +336,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get a given version of a flow for a given flow ID",
+            value = "Gets the given version of a flow",
             response = VersionedFlowSnapshot.class
     )
     @ApiResponses({
@@ -315,9 +346,15 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getFlowVersion(
-            @PathParam("bucketId") final String bucketId,
-            @PathParam("flowId") final String flowId,
-            @PathParam("versionNumber") final Integer versionNumber) {
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+                final String flowId,
+            @PathParam("versionNumber")
+            @ApiParam("The version number")
+                final Integer versionNumber) {
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
         return Response.status(Response.Status.OK).entity(snapshot).build();
