@@ -18,10 +18,15 @@
 REGISTRY_SCRIPT=`find nifi-registry-assembly/target/ -name nifi-registry.sh | head -1`
 REGISTRY_BIN_DIR=$(dirname "${REGISTRY_SCRIPT}")
 REGISTRY_DIR=$REGISTRY_BIN_DIR/..
+SKIP_UI=$1
 
 ./${REGISTRY_SCRIPT} stop
 
-mvn clean install -Pcontrib-check
+if [ "$SKIP_UI" == "skipUi" ]; then
+  mvn clean install -Pcontrib-check --projects \!nifi-registry-web-ui
+else
+  mvn clean install -Pcontrib-check
+fi
 
 ./${REGISTRY_SCRIPT} start
 

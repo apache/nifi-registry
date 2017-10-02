@@ -114,11 +114,25 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-web-docs</artifactId>
+            <type>war</type>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-resources</artifactId>
             <classifier>resources</classifier>
             <scope>runtime</scope>
             <type>zip</type>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-docs</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <classifier>resources</classifier>
+            <scope>runtime</scope>
+            <type>zip</type>
         </dependency>
     </dependencies>
 
@@ -176,6 +190,20 @@
                                     <includeArtifactIds>nifi-registry-resources</includeArtifactIds>
                                     <includeGroupIds>org.apache.nifi.registry</includeGroupIds>
                                     <excludeTransitive>false</excludeTransitive>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>unpack-docs</id>
+                                <goals>
+                                    <goal>unpack-dependencies</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.directory}/generated-docs</outputDirectory>
+                                    <includeArtifactIds>nifi-registry-docs</includeArtifactIds>
+                                    <includeGroupIds>org.apache.nifi.registry</includeGroupIds>
+                                    <excludeTransitive>false</excludeTransitive>
+                                    <excludes>LICENSE,NOTICE</excludes>
                                 </configuration>
                             </execution>
                         </executions>
@@ -291,6 +319,7 @@
                                                     <exclude>org.apache.commons:commons-lang3</exclude>
                                                     <exclude>org.apache.nifi.registry:nifi-registry-utils</exclude>
                                                     <exclude>org.apache.nifi.registry:nifi-registry-bootstrap</exclude>
+                                                    <exclude>org.apache.nifi.registry:nifi-registry-docs</exclude>
                                                 </excludes>
                                             </dependency>
                                         </mapping>
@@ -317,6 +346,14 @@
                                                     <include>org.apache.nifi.registry:nifi-registry-utils</include>
                                                 </includes>
                                             </dependency>
+                                        </mapping>
+                                        <mapping>
+                                            <directory>/opt/nifi-registry/nifi-registry-${project.version}/docs</directory>
+                                            <sources>
+                                                <source>
+                                                    <location>${project.build.directory}/generated-docs</location>
+                                                </source>
+                                            </sources>
                                         </mapping>
                                     </mappings>
                                 </configuration>
