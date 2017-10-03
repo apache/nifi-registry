@@ -22,7 +22,12 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.authorization.Authorizer;
+import org.apache.nifi.registry.authorization.RequestAction;
+import org.apache.nifi.registry.authorization.resource.Authorizable;
+import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.params.QueryParameters;
 import org.apache.nifi.registry.service.params.SortParameter;
@@ -33,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -57,7 +63,7 @@ import java.util.Set;
         description = "Create named buckets in the registry to store NiFI objects such flows and extensions. " +
                 "Search for and retrieve existing buckets."
 )
-public class BucketResource {
+public class BucketResource extends AuthorizableApplicationResource {
 
     private static final Logger logger = LoggerFactory.getLogger(BucketResource.class);
 
@@ -69,7 +75,12 @@ public class BucketResource {
     private final RegistryService registryService;
 
     @Autowired
-    public BucketResource(final RegistryService registryService, final LinkService linkService) {
+    public BucketResource(
+            final RegistryService registryService,
+            final LinkService linkService,
+            final AuthorizationService authorizationService,
+            final Authorizer authorizer) {
+        super(authorizer, authorizationService);
         this.registryService = registryService;
         this.linkService = linkService;
     }
@@ -81,7 +92,12 @@ public class BucketResource {
             value = "Create a named bucket capable of storing NiFi bucket objects such as flows and extension bundles.",
             response = Bucket.class
     )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
     public Response createBucket(final Bucket bucket) {
+        authorizeAccess(RequestAction.WRITE);
         final Bucket createdBucket = registryService.createBucket(bucket);
         return Response.status(Response.Status.OK).entity(createdBucket).build();
     }
@@ -95,10 +111,15 @@ public class BucketResource {
             response = Bucket.class,
             responseContainer = "List"
     )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
     public Response getBuckets(
             @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
             @QueryParam("sort")
             final List<String> sortParameters) {
+        authorizeAccess(RequestAction.READ);
 
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
         for (String sortParam : sortParameters) {
@@ -120,13 +141,13 @@ public class BucketResource {
                     "with the set of items in the bucket, but any further children of those items will not be included.",
             response = Bucket.class
     )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 404, message = "The specified resource could not be found."),
-            }
-    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
     public Response getBucket(@PathParam("bucketId") final String bucketId,
                               @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
+        authorizeBucketAccess(RequestAction.READ, bucketId);
         final Bucket bucket = registryService.getBucket(bucketId, verbose);
         linkService.populateBucketLinks(bucket);
 
@@ -145,27 +166,28 @@ public class BucketResource {
             value = "Update the metadata for an existing bucket in the registry. Objects stored in the bucket will not be modified.",
             response = Bucket.class
     )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 404, message = "The specified resource could not be found."),
-            }
-    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response updateBucket(@PathParam("bucketId") final String bucketId, final Bucket bucket) {
         if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalArgumentException("Bucket Id cannot be blank");
+            throw new BadRequestException("Bucket id cannot be blank");
         }
 
         if (bucket == null) {
-            throw new IllegalArgumentException("Bucket cannot be null");
+            throw new BadRequestException("Bucket cannot be null");
         }
 
         if (bucket.getIdentifier() != null && !bucketId.equals(bucket.getIdentifier())) {
-            throw new IllegalArgumentException("Bucket id in path param must match bucket id in body");
-        }
-
-        if (bucket.getIdentifier() == null) {
+            throw new BadRequestException("Bucket id in path param must match bucket id in body");
+        } else {
             bucket.setIdentifier(bucketId);
         }
+
+        authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         final Bucket updatedBucket = registryService.updateBucket(bucket);
         return Response.status(Response.Status.OK).entity(updatedBucket).build();
@@ -179,12 +201,16 @@ public class BucketResource {
             value = "Delete an existing bucket in the registry, along with all the objects it is storing.",
             response = Bucket.class
     )
-    @ApiResponses(
-            value = {
-                    @ApiResponse(code = 404, message = "The specified resource could not be found."),
-            }
-    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
     public Response deleteBucket(@PathParam("bucketId") final String bucketId) {
+        if (StringUtils.isBlank(bucketId)) {
+            throw new BadRequestException("Bucket id cannot be blank");
+        }
+        authorizeBucketAccess(RequestAction.WRITE, bucketId);
         final Bucket deletedBucket = registryService.deleteBucket(bucketId);
         return Response.status(Response.Status.OK).entity(deletedBucket).build();
     }
@@ -201,6 +227,13 @@ public class BucketResource {
         final Set<String> bucketFields = registryService.getBucketFields();
         final FieldsEntity fieldsEntity = new FieldsEntity(bucketFields);
         return Response.status(Response.Status.OK).entity(fieldsEntity).build();
+    }
+
+    private void authorizeAccess(RequestAction actionType) {
+        authorizationService.authorizeAccess(lookup -> {
+            final Authorizable bucketsAuthorizable = lookup.getBucketsAuthorizable();
+            bucketsAuthorizable.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
+        });
     }
 
 }

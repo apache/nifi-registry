@@ -34,12 +34,28 @@
                 <artifactId>jaxb2-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>xjc</id>
+                        <id>authorizations</id>
                         <goals>
                             <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <packageName>org.apache.nifi.registry.user.generated</packageName>
+                            <sources>
+                                <source>src/main/xsd/authorizations.xsd</source>
+                            </sources>
+                            <packageName>org.apache.nifi.registry.authorization.file.generated</packageName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tenants</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/tenants.xsd</source>
+                            </sources>
+                            <packageName>org.apache.nifi.registry.authorization.file.tenants.generated</packageName>
+                            <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
                 </executions>
@@ -51,11 +67,25 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <excludes>**/user/generated/*.java</excludes>
+                    <excludes>**/authorization/file/generated/*.java,**/authorization/file/tenants/generated/*.java</excludes>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- This is here because Spring Security 4.2.3.RELEASE builds against Spring Framwork 4.3.9.RELEASE -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>4.3.9.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
@@ -65,6 +95,26 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-utils</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <version>4.2.3.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.55</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.55</version>
         </dependency>
     </dependencies>
 </project>

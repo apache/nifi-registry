@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Repository for BucketItems that exposes only the methods from PagingAndSortingRepository.
@@ -80,5 +81,31 @@ public interface BucketItemRepository extends Repository<BucketItemEntity,String
      * @return the list of items for the bucket based on the pageable params
      */
     List<BucketItemEntity> findByBucket(BucketEntity bucket, Pageable pageable);
+
+    /**
+     * Find all items by buckets.
+     *
+     * @param buckets the buckets to find items for
+     * @return the list of items for the buckets
+     */
+    List<BucketItemEntity> findByBucketIn(Set<BucketEntity> buckets);
+
+    /**
+     * Find all items by buckets with sorting.
+     *
+     * @param buckets the buckets to find items for
+     * @param sort the sort params
+     * @return the list of items for the buckets
+     */
+    List<BucketItemEntity> findByBucketIn(Set<BucketEntity> buckets, Sort sort);
+
+    /**
+     * Find all items by buckets with paging/sorting.
+     *
+     * @param buckets the buckets to find items for
+     * @param pageable the pageable params
+     * @return the list of items for the buckets based on the pageable params
+     */
+    List<BucketItemEntity> findByBucketIn(Set<BucketEntity> buckets, Pageable pageable);
 
 }

@@ -17,7 +17,11 @@
 package org.apache.nifi.registry.properties;
 
 import java.io.File;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +47,10 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_TRUSTSTORE_TYPE = "nifi.registry.security.truststoreType";
     public static final String SECURITY_TRUSTSTORE_PASSWD = "nifi.registry.security.truststorePasswd";
     public static final String SECURITY_NEED_CLIENT_AUTH = "nifi.registry.security.needClientAuth";
-    public static final String SECURITY_AUTHORIZED_USERS = "nifi.registry.security.authorized.users";
+    public static final String SECURITY_USER_AUTHORIZER = "nifi.security.user.authorizer";
+    public static final String SECURITY_IDENTITY_MAPPING_PATTERN_PREFIX = "nifi.registry.security.identity.mapping.pattern.";
+    public static final String SECURITY_IDENTITY_MAPPING_VALUE_PREFIX = "nifi.registry.security.identity.mapping.value.";
+    public static final String SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "nifi.registry.security.authorizers.configuration.file";
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
 
@@ -54,6 +61,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
     public static final String DEFAULT_WAR_DIR = "./lib";
     public static final String DEFAULT_PROVIDERS_CONFIGURATION_FILE = "./conf/providers.xml";
+    public static final String DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "./conf/authorizers.xml";
 
     public int getWebThreads() {
         int webThreads = 200;
@@ -142,14 +150,6 @@ public class NiFiRegistryProperties extends Properties {
         return new File(getProperty(WEB_WORKING_DIR, DEFAULT_WEB_WORKING_DIR));
     }
 
-    public File getAuthorizedUsersFile() {
-        final String authorizedUsersFile = getProperty(SECURITY_AUTHORIZED_USERS);
-        if (StringUtils.isBlank(authorizedUsersFile)) {
-            return null;
-        }
-        return new File(authorizedUsersFile);
-    }
-
     public File getProvidersConfigurationFile() {
         final String value = getProperty(PROVIDERS_CONFIGURATION_FILE);
         if (StringUtils.isBlank(value)) {
@@ -167,4 +167,28 @@ public class NiFiRegistryProperties extends Properties {
         return getProperty(DATABASE_URL_APPEND);
     }
 
+
+    public File getAuthorizersConfigurationFile() {
+        final String value = getProperty(SECURITY_AUTHORIZERS_CONFIGURATION_FILE);
+        if (StringUtils.isBlank(value)) {
+            return new File(DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE);
+        } else {
+            return new File(value);
+        }
+    }
+
+    /**
+     * Retrieves all known property keys.
+     *
+     * @return all known property keys
+     */
+    public Set<String> getPropertyKeys() {
+        Set<String> propertyNames = new HashSet<>();
+        Enumeration e = this.propertyNames();
+        for (; e.hasMoreElements(); ){
+            propertyNames.add((String) e.nextElement());
+        }
+
+        return propertyNames;
+    }
 }

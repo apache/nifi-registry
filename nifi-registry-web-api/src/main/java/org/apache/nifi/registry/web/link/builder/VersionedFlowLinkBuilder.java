@@ -27,7 +27,7 @@ import java.net.URI;
  */
 public class VersionedFlowLinkBuilder implements LinkBuilder<VersionedFlow> {
 
-    private static final String PATH = "flows/{id}";
+    private static final String PATH = "buckets/{bucketId}/flows/{flowId}";
 
     @Override
     public Link createLink(final VersionedFlow versionedFlow) {
@@ -36,7 +36,8 @@ public class VersionedFlowLinkBuilder implements LinkBuilder<VersionedFlow> {
         }
 
         final URI uri = UriBuilder.fromPath(PATH)
-                .resolveTemplate("id", versionedFlow.getIdentifier())
+                .resolveTemplate("bucketId", versionedFlow.getBucketIdentifier())
+                .resolveTemplate("flowId", versionedFlow.getIdentifier())
                 .build();
 
         return Link.fromUri(uri).rel("self").build();

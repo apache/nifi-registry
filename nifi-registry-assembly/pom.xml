@@ -137,6 +137,8 @@
         <nifi.registry.security.truststorePasswd />
         <nifi.registry.security.needClientAuth />
         <nifi.registry.security.authorized.users>./conf/authorized-users.xml</nifi.registry.security.authorized.users>
+        <nifi.security.user.authorizer>managed-authorizer</nifi.security.user.authorizer>
+        <nifi.security.user.login.identity.provider/>
 
         <!-- nifi-registry.properties: provider properties -->
         <nifi.registry.providers.configuration.file>./conf/providers.xml</nifi.registry.providers.configuration.file>
