@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class QueryParameters {
 
+    public static final QueryParameters EMPTY_PARAMETERS = new QueryParameters.Builder().build();
+
     private final Integer pageNum;
 
     private final Integer numRows;

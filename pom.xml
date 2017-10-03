@@ -37,7 +37,8 @@
         <module>nifi-registry-jetty</module>
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
-        <module>nifi-registry-security</module>
+        <module>nifi-registry-security-api</module>
+        <module>nifi-registry-security-api-impl</module>
         <module>nifi-registry-framework</module>
         <module>nifi-registry-provider-api</module>
         <module>nifi-registry-web-api</module>
@@ -265,7 +266,7 @@
                 <version>2.0.0.Final</version>
             </dependency>
             <dependency>
-                <groupId>org.hibernate</groupId>
+                <groupId>org.hibernate.validator</groupId>
                 <artifactId>hibernate-validator</artifactId>
                 <version>6.0.2.Final</version>
             </dependency>
@@ -396,7 +397,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>1.6</version>
+                    <version>2.3.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

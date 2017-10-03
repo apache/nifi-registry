@@ -20,6 +20,7 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Spring Data Repository for BucketEntity.
@@ -27,5 +28,7 @@ import java.util.List;
 public interface BucketRepository extends PagingAndSortingRepository<BucketEntity,String> {
 
     List<BucketEntity> findByNameIgnoreCase(String name);
+
+    List<BucketEntity> findByIdIn(Set<String> id);
 
 }
