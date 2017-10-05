@@ -17,7 +17,7 @@
 package org.apache.nifi.registry.web.mapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.authorization.AccessDeniedException;
+import org.apache.nifi.registry.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.authorization.user.NiFiUser;
 import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
 import org.slf4j.Logger;

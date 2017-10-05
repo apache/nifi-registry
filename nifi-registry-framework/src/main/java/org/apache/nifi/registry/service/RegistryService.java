@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
@@ -269,16 +268,8 @@ public class RegistryService {
 
         readLock.lock();
         try {
-            final Set<BucketEntity> filterBuckets = bucketIdentifiers.stream()
-                    .map(metadataService::getBucketById)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-            if (filterBuckets == null || filterBuckets.isEmpty()) {
-                throw new ResourceNotFoundException("Buckets not found for identifiers: " + StringUtils.join(bucketIdentifiers, ", "));
-            }
-
             final List<BucketItem> bucketItems = new ArrayList<>();
-            metadataService.getBucketItems(queryParameters, filterBuckets).stream().forEach(b -> addBucketItem(bucketItems, b));
+            metadataService.getBucketItems(queryParameters, bucketIdentifiers).stream().forEach(b -> addBucketItem(bucketItems, b));
             return bucketItems;
         } finally {
             readLock.unlock();

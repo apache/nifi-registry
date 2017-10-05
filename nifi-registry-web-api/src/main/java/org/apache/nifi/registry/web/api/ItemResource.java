@@ -43,6 +43,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -88,6 +89,11 @@ public class ItemResource extends AuthorizableApplicationResource {
             final List<String> sortParameters) {
 
         Set<String> authorizedBucketIds = getAuthorizedBucketIds();
+
+        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
+            // not authorized for any bucket, return empty list of items
+            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
+        }
 
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
         for (String sortParam : sortParameters) {

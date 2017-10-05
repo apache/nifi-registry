@@ -98,11 +98,11 @@ public interface MetadataService {
     /**
      * Retrieves items for the given buckets.
      *
-     * @param buckets the buckets to retrieve items for
+     * @param bucketIds the ids of buckets to retrieve items for
      * @param queryParameters the parameters for retrieving the items, or null
      * @return the set of items for the bucket
      */
-    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, Set<BucketEntity> buckets);
+    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, Set<String> bucketIds);
 
     /**
      * Creates a versioned flow in the given bucket.

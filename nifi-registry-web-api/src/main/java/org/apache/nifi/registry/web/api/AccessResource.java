@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.nifi.registry.authorization.AccessDeniedException;
+import org.apache.nifi.registry.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.authorization.user.NiFiUser;
 import org.apache.nifi.registry.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.exception.AdministrationException;

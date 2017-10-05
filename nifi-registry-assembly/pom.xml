@@ -97,6 +97,11 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-security-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-web-ui</artifactId>
             <type>war</type>
             <version>0.0.1-SNAPSHOT</version>
@@ -135,10 +140,8 @@
         <nifi.registry.security.truststore />
         <nifi.registry.security.truststoreType />
         <nifi.registry.security.truststorePasswd />
-        <nifi.registry.security.needClientAuth />
-        <nifi.registry.security.authorized.users>./conf/authorized-users.xml</nifi.registry.security.authorized.users>
-        <nifi.security.user.authorizer>managed-authorizer</nifi.security.user.authorizer>
-        <nifi.security.user.login.identity.provider/>
+        <nifi.registry.security.authorizers.configuration.file>./conf/authorizers.xml</nifi.registry.security.authorizers.configuration.file><nifi.registry.security.needClientAuth />
+        <nifi.registry.security.authorizer>managed-authorizer</nifi.registry.security.authorizer>
 
         <!-- nifi-registry.properties: provider properties -->
         <nifi.registry.providers.configuration.file>./conf/providers.xml</nifi.registry.providers.configuration.file>

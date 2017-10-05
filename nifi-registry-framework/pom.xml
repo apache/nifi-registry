@@ -47,16 +47,6 @@
                             <packageName>org.apache.nifi.registry.provider.generated</packageName>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>authorizers</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-                        <configuration>
-                            <packageName>org.apache.nifi.registry.authorization.generated</packageName>
-                            <clearOutputDir>false</clearOutputDir>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -91,21 +81,11 @@
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-security</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-properties</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
         <dependency>

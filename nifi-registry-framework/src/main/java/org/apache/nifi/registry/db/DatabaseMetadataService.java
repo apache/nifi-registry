@@ -167,6 +167,10 @@ public class DatabaseMetadataService implements MetadataService {
         return buckets;
     }
 
+    private Set<BucketEntity> getBuckets(Set<String> bucketIds) {
+        return new HashSet<>(bucketRepository.findByIdIn(bucketIds));
+    }
+
     // ------------------------------------------------------------------------------------
 
     @Override
@@ -220,13 +224,14 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<BucketItemEntity> getBucketItems(final QueryParameters params, final Set<BucketEntity> buckets) {
+    public List<BucketItemEntity> getBucketItems(final QueryParameters params, final Set<String> bucketIds) {
+        Set<BucketEntity> filterBuckets = getBuckets(bucketIds);
         if (params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedBucketItems(params, buckets);
+            return getPagedBucketItems(params, filterBuckets);
         } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedBucketItems(params, buckets);
+            return getSortedBucketItems(params, filterBuckets);
         } else {
-            return getBucketItems(buckets);
+            return getBucketItems(filterBuckets);
         }
     }
 
@@ -334,12 +339,13 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<FlowEntity> getFlows(final QueryParameters params, Set<String> bucketIds) {
+        Set<BucketEntity> filterBuckets = getBuckets(bucketIds);
         if (params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedFlows(params, bucketIds);
+            return getPagedFlows(params, filterBuckets);
         } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedFlows(params, bucketIds);
+            return getSortedFlows(params, filterBuckets);
         } else {
-            return getAllFlows(bucketIds);
+            return getAllFlows(filterBuckets);
         }
     }
 
@@ -369,18 +375,18 @@ public class DatabaseMetadataService implements MetadataService {
         return flows;
     }
 
-    private List<FlowEntity> getAllFlows(Set<String> bucketIds) {
-        return flowRepository.findByBucketIn(new HashSet<>(bucketRepository.findByIdIn(bucketIds)));
+    private List<FlowEntity> getAllFlows(Set<BucketEntity> buckets) {
+        return flowRepository.findByBucketIn(buckets);
     }
 
-    private List<FlowEntity> getPagedFlows(final QueryParameters params, Set<String> bucketIds) {
+    private List<FlowEntity> getPagedFlows(final QueryParameters params, Set<BucketEntity> buckets) {
         final Pageable pageable = getPageRequest(params);
-        return flowRepository.findByBucketIn(new HashSet<>(bucketRepository.findByIdIn(bucketIds)), pageable);
+        return flowRepository.findByBucketIn(buckets, pageable);
     }
 
-    private List<FlowEntity> getSortedFlows(final QueryParameters params, Set<String> bucketIds) {
+    private List<FlowEntity> getSortedFlows(final QueryParameters params, Set<BucketEntity> buckets) {
         final Sort sort = getSort(params);
-        return flowRepository.findByBucketIn(new HashSet<>(bucketRepository.findByIdIn(bucketIds)), sort);
+        return flowRepository.findByBucketIn(buckets, sort);
     }
 
     // ------------------------------------------------------------------------------------

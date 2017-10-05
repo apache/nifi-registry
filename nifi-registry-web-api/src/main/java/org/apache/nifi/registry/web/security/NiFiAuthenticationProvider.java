@@ -17,10 +17,13 @@
 package org.apache.nifi.registry.web.security;
 
 import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.util.IdentityMapping;
-import org.apache.nifi.registry.authorization.util.IdentityMappingUtil;
-import org.apache.nifi.registry.authorization.util.UserGroupUtil;
+import org.apache.nifi.registry.authorization.Group;
+import org.apache.nifi.registry.authorization.ManagedAuthorizer;
+import org.apache.nifi.registry.authorization.UserAndGroups;
+import org.apache.nifi.registry.authorization.UserGroupProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.properties.util.IdentityMapping;
+import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -28,6 +31,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Base AuthenticationProvider that provides common functionality to mapping identities.
@@ -58,6 +62,23 @@ public abstract class NiFiAuthenticationProvider implements AuthenticationProvid
     }
 
     protected Set<String> getUserGroups(final String identity) {
-        return UserGroupUtil.getUserGroups(authorizer, identity);
+        return getUserGroups(authorizer, identity);
+    }
+
+    protected static Set<String> getUserGroups(final Authorizer authorizer, final String userIdentity) {
+        if (authorizer instanceof ManagedAuthorizer) {
+            final ManagedAuthorizer managedAuthorizer = (ManagedAuthorizer) authorizer;
+            final UserGroupProvider userGroupProvider = managedAuthorizer.getAccessPolicyProvider().getUserGroupProvider();
+            final UserAndGroups userAndGroups = userGroupProvider.getUserAndGroups(userIdentity);
+            final Set<Group> userGroups = userAndGroups.getGroups();
+
+            if (userGroups == null || userGroups.isEmpty()) {
+                return Collections.EMPTY_SET;
+            } else {
+                return userAndGroups.getGroups().stream().map(group -> group.getName()).collect(Collectors.toSet());
+            }
+        } else {
+            return null;
+        }
     }
 }

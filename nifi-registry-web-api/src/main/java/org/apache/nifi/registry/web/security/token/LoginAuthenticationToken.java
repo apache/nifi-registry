@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.web.security.token;
 
-import org.apache.nifi.registry.security.util.CertificateUtils;
+import org.apache.nifi.registry.web.security.util.CertificateUtils;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 
 import java.text.SimpleDateFormat;

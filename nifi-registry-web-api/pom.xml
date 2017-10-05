@@ -105,11 +105,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-            <version>${spring.boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
@@ -127,24 +122,24 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-framework</artifactId>
+            <artifactId>nifi-registry-security-framework</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
-        <!-- This will directly in lib so mark it as provided -->
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-properties</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <scope>provided</scope> <!-- This will be in the lib directory -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-security-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>provided</scope> <!-- This will be in lib directory -->
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-security</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

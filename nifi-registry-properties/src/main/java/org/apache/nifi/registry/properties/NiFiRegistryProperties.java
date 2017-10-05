@@ -47,10 +47,11 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_TRUSTSTORE_TYPE = "nifi.registry.security.truststoreType";
     public static final String SECURITY_TRUSTSTORE_PASSWD = "nifi.registry.security.truststorePasswd";
     public static final String SECURITY_NEED_CLIENT_AUTH = "nifi.registry.security.needClientAuth";
-    public static final String SECURITY_USER_AUTHORIZER = "nifi.security.user.authorizer";
+    public static final String SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "nifi.registry.security.authorizers.configuration.file";
+    public static final String SECURITY_AUTHORIZER = "nifi.registry.security.authorizer";
     public static final String SECURITY_IDENTITY_MAPPING_PATTERN_PREFIX = "nifi.registry.security.identity.mapping.pattern.";
     public static final String SECURITY_IDENTITY_MAPPING_VALUE_PREFIX = "nifi.registry.security.identity.mapping.value.";
-    public static final String SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "nifi.registry.security.authorizers.configuration.file";
+
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
 

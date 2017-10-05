@@ -17,7 +17,7 @@
 package org.apache.nifi.registry.web.security.x509;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.authorization.AccessDeniedException;
+import org.apache.nifi.registry.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.authorization.Authorizer;
 import org.apache.nifi.registry.authorization.RequestAction;
 import org.apache.nifi.registry.authorization.Resource;
