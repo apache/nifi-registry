@@ -37,7 +37,8 @@
         <module>nifi-registry-jetty</module>
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
-        <module>nifi-registry-security</module>
+        <module>nifi-registry-security-api</module>
+        <module>nifi-registry-security-api-impl</module>
         <module>nifi-registry-framework</module>
         <module>nifi-registry-provider-api</module>
         <module>nifi-registry-web-api</module>

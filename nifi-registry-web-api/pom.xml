@@ -122,7 +122,7 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-security-framework</artifactId>
+            <artifactId>nifi-registry-framework</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
