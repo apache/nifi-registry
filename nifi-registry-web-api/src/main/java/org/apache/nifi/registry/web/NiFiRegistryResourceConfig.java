@@ -16,13 +16,24 @@
  */
 package org.apache.nifi.registry.web;
 
+import org.apache.nifi.registry.web.api.AccessPolicyResource;
+import org.apache.nifi.registry.web.api.AccessResource;
 import org.apache.nifi.registry.web.api.BucketFlowResource;
 import org.apache.nifi.registry.web.api.BucketResource;
 import org.apache.nifi.registry.web.api.FlowResource;
 import org.apache.nifi.registry.web.api.ItemResource;
+import org.apache.nifi.registry.web.api.ResourceResource;
+import org.apache.nifi.registry.web.api.TenantResource;
+import org.apache.nifi.registry.web.mapper.AccessDeniedExceptionMapper;
+import org.apache.nifi.registry.web.mapper.AdministrationExceptionMapper;
+import org.apache.nifi.registry.web.mapper.AuthenticationCredentialsNotFoundExceptionMapper;
+import org.apache.nifi.registry.web.mapper.AuthorizationAccessExceptionMapper;
 import org.apache.nifi.registry.web.mapper.IllegalArgumentExceptionMapper;
 import org.apache.nifi.registry.web.mapper.IllegalStateExceptionMapper;
+import org.apache.nifi.registry.web.mapper.InvalidAuthenticationExceptionMapper;
+import org.apache.nifi.registry.web.mapper.NotFoundExceptionMapper;
 import org.apache.nifi.registry.web.mapper.ResourceNotFoundExceptionMapper;
+import org.apache.nifi.registry.web.mapper.SerializationExceptionMapper;
 import org.apache.nifi.registry.web.mapper.ThrowableMapper;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -48,17 +59,28 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         // register filters
         register(HttpMethodOverrideFilter.class);
 
-        // register the exception mappers
+        // register the exception mappers - TODO, see if these can be registered via scanning
+        register(new AccessDeniedExceptionMapper());
+        register(new AdministrationExceptionMapper());
+        register(new AuthenticationCredentialsNotFoundExceptionMapper());
+        register(new AuthorizationAccessExceptionMapper());
         register(new IllegalArgumentExceptionMapper());
         register(new IllegalStateExceptionMapper());
+        register(new InvalidAuthenticationExceptionMapper());
+        register(new NotFoundExceptionMapper());
         register(new ResourceNotFoundExceptionMapper());
+        register(new SerializationExceptionMapper());
         register(new ThrowableMapper());
 
         // register endpoints
+        register(AccessPolicyResource.class);
+        register(AccessResource.class);
         register(BucketResource.class);
         register(BucketFlowResource.class);
-        register(FlowResource.class);
         register(ItemResource.class);
+        register(FlowResource.class);
+        register(ResourceResource.class);
+        register(TenantResource.class);
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
     }

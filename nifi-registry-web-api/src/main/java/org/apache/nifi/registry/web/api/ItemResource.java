@@ -19,7 +19,10 @@ package org.apache.nifi.registry.web.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.nifi.registry.authorization.Authorizer;
+import org.apache.nifi.registry.authorization.RequestAction;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.params.QueryParameters;
 import org.apache.nifi.registry.service.params.SortParameter;
@@ -40,6 +43,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -49,7 +53,7 @@ import java.util.Set;
         value = "/items",
         description = "Retrieve items across all buckets for which the user is authorized."
 )
-public class ItemResource {
+public class ItemResource extends AuthorizableApplicationResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ItemResource.class);
 
@@ -57,11 +61,15 @@ public class ItemResource {
     UriInfo uriInfo;
 
     private final LinkService linkService;
-
     private final RegistryService registryService;
 
     @Autowired
-    public ItemResource(final RegistryService registryService, final LinkService linkService) {
+    public ItemResource(
+            final RegistryService registryService,
+            final LinkService linkService,
+            final AuthorizationService authorizationService,
+            final Authorizer authorizer) {
+        super(authorizer, authorizationService);
         this.registryService = registryService;
         this.linkService = linkService;
     }
@@ -80,12 +88,19 @@ public class ItemResource {
             @QueryParam("sort")
             final List<String> sortParameters) {
 
+        Set<String> authorizedBucketIds = getAuthorizedBucketIds();
+
+        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
+            // not authorized for any bucket, return empty list of items
+            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
+        }
+
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
         for (String sortParam : sortParameters) {
             paramsBuilder.addSort(SortParameter.fromString(sortParam));
         }
 
-        final List<BucketItem> items = registryService.getBucketItems(paramsBuilder.build());
+        final List<BucketItem> items = registryService.getBucketItems(paramsBuilder.build(), authorizedBucketIds);
         linkService.populateItemLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();
@@ -108,6 +123,7 @@ public class ItemResource {
             @QueryParam("sort")
             final List<String> sortParameters) {
 
+        authorizeBucketAccess(RequestAction.READ, bucketId);
         final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
         for (String sortParam : sortParameters) {
             paramsBuilder.addSort(SortParameter.fromString(sortParam));

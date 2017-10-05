@@ -16,9 +16,19 @@
  */
 package org.apache.nifi.registry.util;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -31,7 +41,38 @@ import org.slf4j.Logger;
  */
 public class FileUtils {
 
+    public static final long TRANSFER_CHUNK_SIZE_BYTES = 1024 * 1024 * 8; //8 MB chunks
     public static final long MILLIS_BETWEEN_ATTEMPTS = 50L;
+
+    /**
+     * Closes the given closeable quietly - no logging, no exceptions...
+     *
+     * @param closeable the thing to close
+     */
+    public static void closeQuietly(final Closeable closeable) {
+        if (null != closeable) {
+            try {
+                closeable.close();
+            } catch (final IOException io) {/*IGNORE*/
+
+            }
+        }
+    }
+
+    /**
+     * Releases the given lock quietly no logging, no exception
+     *
+     * @param lock the lock to release
+     */
+    public static void releaseQuietly(final FileLock lock) {
+        if (null != lock) {
+            try {
+                lock.release();
+            } catch (final IOException io) {
+                /*IGNORE*/
+            }
+        }
+    }
 
     /* Superseded by renamed class bellow */
     @Deprecated
@@ -65,6 +106,140 @@ public class FileUtils {
         if (!dir.canRead()) {
             throw new IOException(dir.getAbsolutePath() + " directory does not have read privilege");
         }
+    }
+
+    /**
+     * Copies the given source file to the given destination file. The given destination will be overwritten if it already exists.
+     *
+     * @param source the file to copy
+     * @param destination the file to copy to
+     * @param lockInputFile if true will lock input file during copy; if false will not
+     * @param lockOutputFile if true will lock output file during copy; if false will not
+     * @param move if true will perform what is effectively a move operation rather than a pure copy. This allows for potentially highly efficient movement of the file but if not possible this will
+     * revert to a copy then delete behavior. If false, then the file is copied and the source file is retained. If a true rename/move occurs then no lock is held during that time.
+     * @param logger if failures occur, they will be logged to this logger if possible. If this logger is null, an IOException will instead be thrown, indicating the problem.
+     * @return long number of bytes copied
+     * @throws FileNotFoundException if the source file could not be found
+     * @throws IOException if unable to read or write the underlying streams
+     * @throws SecurityException if a security manager denies the needed file operations
+     */
+    public static long copyFile(final File source, final File destination, final boolean lockInputFile, final boolean lockOutputFile, final boolean move, final Logger logger)
+            throws FileNotFoundException, IOException {
+
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        FileLock inLock = null;
+        FileLock outLock = null;
+        long fileSize = 0L;
+        if (!source.canRead()) {
+            throw new IOException("Must at least have read permission");
+
+        }
+        if (move && source.renameTo(destination)) {
+            fileSize = destination.length();
+        } else {
+            try {
+                fis = new FileInputStream(source);
+                fos = new FileOutputStream(destination);
+                final FileChannel in = fis.getChannel();
+                final FileChannel out = fos.getChannel();
+                if (lockInputFile) {
+                    inLock = in.tryLock(0, Long.MAX_VALUE, true);
+                    if (null == inLock) {
+                        throw new IOException("Unable to obtain shared file lock for: " + source.getAbsolutePath());
+                    }
+                }
+                if (lockOutputFile) {
+                    outLock = out.tryLock(0, Long.MAX_VALUE, false);
+                    if (null == outLock) {
+                        throw new IOException("Unable to obtain exclusive file lock for: " + destination.getAbsolutePath());
+                    }
+                }
+                long bytesWritten = 0;
+                do {
+                    bytesWritten += out.transferFrom(in, bytesWritten, TRANSFER_CHUNK_SIZE_BYTES);
+                    fileSize = in.size();
+                } while (bytesWritten < fileSize);
+                out.force(false);
+                FileUtils.closeQuietly(fos);
+                FileUtils.closeQuietly(fis);
+                fos = null;
+                fis = null;
+                if (move && !FileUtils.deleteFile(source, null, 5)) {
+                    if (logger == null) {
+                        FileUtils.deleteFile(destination, null, 5);
+                        throw new IOException("Could not remove file " + source.getAbsolutePath());
+                    } else {
+                        logger.warn("Configured to delete source file when renaming/move not successful.  However, unable to delete file at: " + source.getAbsolutePath());
+                    }
+                }
+            } finally {
+                FileUtils.releaseQuietly(inLock);
+                FileUtils.releaseQuietly(outLock);
+                FileUtils.closeQuietly(fos);
+                FileUtils.closeQuietly(fis);
+            }
+        }
+        return fileSize;
+    }
+
+    /**
+     * Copies the given source file to the given destination file. The given destination will be overwritten if it already exists.
+     *
+     * @param source the file to copy from
+     * @param destination the file to copy to
+     * @param lockInputFile if true will lock input file during copy; if false will not
+     * @param lockOutputFile if true will lock output file during copy; if false will not
+     * @param logger the logger to use
+     * @return long number of bytes copied
+     * @throws FileNotFoundException if the source file could not be found
+     * @throws IOException if unable to read or write to file
+     * @throws SecurityException if a security manager denies the needed file operations
+     */
+    public static long copyFile(final File source, final File destination, final boolean lockInputFile, final boolean lockOutputFile, final Logger logger) throws FileNotFoundException, IOException {
+        return FileUtils.copyFile(source, destination, lockInputFile, lockOutputFile, false, logger);
+    }
+
+    public static long copyFile(final File source, final OutputStream stream, final boolean closeOutputStream, final boolean lockInputFile) throws FileNotFoundException, IOException {
+        FileInputStream fis = null;
+        FileLock inLock = null;
+        long fileSize = 0L;
+        try {
+            fis = new FileInputStream(source);
+            final FileChannel in = fis.getChannel();
+            if (lockInputFile) {
+                inLock = in.tryLock(0, Long.MAX_VALUE, true);
+                if (inLock == null) {
+                    throw new IOException("Unable to obtain exclusive file lock for: " + source.getAbsolutePath());
+                }
+
+            }
+
+            byte[] buffer = new byte[1 << 18]; //256 KB
+            int bytesRead = -1;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                stream.write(buffer, 0, bytesRead);
+            }
+            in.force(false);
+            stream.flush();
+            fileSize = in.size();
+        } finally {
+            FileUtils.releaseQuietly(inLock);
+            FileUtils.closeQuietly(fis);
+            if (closeOutputStream) {
+                FileUtils.closeQuietly(stream);
+            }
+        }
+        return fileSize;
+    }
+
+    public static long copyFile(final InputStream stream, final File destination, final boolean closeInputStream, final boolean lockOutputFile) throws FileNotFoundException, IOException {
+        final Path destPath = destination.toPath();
+        final long size = Files.copy(stream, destPath);
+        if (closeInputStream) {
+            stream.close();
+        }
+        return size;
     }
 
     /**

@@ -72,10 +72,12 @@ public class TestLinkService {
         final VersionedFlowSnapshotMetadata snapshotMetadata1 = new VersionedFlowSnapshotMetadata();
         snapshotMetadata1.setFlowIdentifier(flow1.getIdentifier());
         snapshotMetadata1.setVersion(1);
+        snapshotMetadata1.setBucketIdentifier(bucket1.getIdentifier());
 
         final VersionedFlowSnapshotMetadata snapshotMetadata2 = new VersionedFlowSnapshotMetadata();
         snapshotMetadata2.setFlowIdentifier(flow1.getIdentifier());
         snapshotMetadata2.setVersion(2);
+        snapshotMetadata2.setBucketIdentifier(bucket1.getIdentifier());
 
         snapshots = new ArrayList<>();
         snapshots.add(snapshotMetadata1);
@@ -91,14 +93,16 @@ public class TestLinkService {
     public void testPopulateBucketLinks() {
         buckets.stream().forEach(b -> Assert.assertNull(b.getLink()));
         linkService.populateBucketLinks(buckets);
-        buckets.stream().forEach(b -> Assert.assertEquals("buckets/" + b.getIdentifier(), b.getLink().getUri().toString()));
+        buckets.stream().forEach(b -> Assert.assertEquals(
+                "buckets/" + b.getIdentifier(), b.getLink().getUri().toString()));
     }
 
     @Test
     public void testPopulateFlowLinks() {
         flows.stream().forEach(f -> Assert.assertNull(f.getLink()));
         linkService.populateFlowLinks(flows);
-        flows.stream().forEach(f -> Assert.assertEquals("flows/" + f.getIdentifier(), f.getLink().getUri().toString()));
+        flows.stream().forEach(f -> Assert.assertEquals(
+                "buckets/" + f.getBucketIdentifier() + "/flows/" + f.getIdentifier(), f.getLink().getUri().toString()));
     }
 
     @Test
@@ -106,14 +110,15 @@ public class TestLinkService {
         snapshots.stream().forEach(s -> Assert.assertNull(s.getLink()));
         linkService.populateSnapshotLinks(snapshots);
         snapshots.stream().forEach(s -> Assert.assertEquals(
-                "flows/" + s.getFlowIdentifier() + "/versions/" + s.getVersion(), s.getLink().getUri().toString()));
+                "buckets/" + s.getBucketIdentifier() + "/flows/" + s.getFlowIdentifier() + "/versions/" + s.getVersion(), s.getLink().getUri().toString()));
     }
 
     @Test
     public void testPopulateItemLinks() {
         items.stream().forEach(i -> Assert.assertNull(i.getLink()));
         linkService.populateItemLinks(items);
-        items.stream().forEach(i -> Assert.assertEquals("flows/" + i.getIdentifier(), i.getLink().getUri().toString()));
+        items.stream().forEach(i -> Assert.assertEquals(
+                "buckets/" + i.getBucketIdentifier() + "/flows/" + i.getIdentifier(), i.getLink().getUri().toString()));
     }
 
 }
