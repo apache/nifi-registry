@@ -16,24 +16,29 @@
  */
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var ngRouter = require('@angular/router');
 
 /**
  * NfRegistryWorkflowAdministration constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
- * @param Router                The angular router module.
- * @param FdsDialogService      The FDS dialog service.
  * @constructor
  */
-function NfRegistryWorkflowAdministration(nfRegistryService, ActivatedRoute, Router, FdsDialogService) {
+function NfRegistryWorkflowAdministration(nfRegistryService, ActivatedRoute) {
     this.route = ActivatedRoute;
     this.nfRegistryService = nfRegistryService;
-    this.router = Router;
-    this.dialogService = FdsDialogService;
+    this.bucketActions = [{
+        'name': 'permissions',
+        'icon': 'fa fa-key',
+        'tooltip': 'Manage Bucket Policies',
+        'type': 'sidenav'
+    }, {
+        'name': 'Delete',
+        'icon': 'fa fa-trash',
+        'tooltip': 'Delete Bucket'
+    }];
 };
 
 NfRegistryWorkflowAdministration.prototype = {
@@ -45,19 +50,13 @@ NfRegistryWorkflowAdministration.prototype = {
     ngOnInit: function () {
         var self = this;
         this.route.params
-            .subscribe(function () {
+            .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'workflow';
-                // TODO: implement certifications
-                // self.nfRegistryService.getCertifications(self.nfRegistryService.registry.id).then(function(certifications) {
-                //     self.nfRegistryService.certifications = self.nfRegistryService.filteredCertifications = certifications;
-                //     self.nfRegistryService.filterCertifications();
-                // });
-
-                self.nfRegistryService.getBuckets(self.nfRegistryService.registry.id).then(function (buckets) {
-                    self.nfRegistryService.buckets = self.nfRegistryService.filteredBuckets = buckets;
-                    self.nfRegistryService.filterBuckets();
-                });
-
+                return self.nfRegistryService.api.getBuckets();
+            })
+            .subscribe(function (buckets) {
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.filterBuckets();
             });
 
     },
@@ -67,42 +66,19 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
-        this.nfRegistryService.certifications = this.nfRegistryService.filteredCertifications = [];
         this.nfRegistryService.buckets = [];
         this.nfRegistryService.filteredBuckets = [];
-        this.autoCompleteBuckets = [];
     },
 
     /**
-     * Execute the given bucket action.
-     *
-     * @param action        The action object.
-     * @param bucket        The bucket object the `action` will act upon.
+     * Create a new bucket.
      */
-    execute: function (action, bucket) {
+    createBucket: function (newBucketInput) {
         var self = this;
-        bucket.checked = !bucket.checked;
-        switch (action.name.toLowerCase()) {
-            case 'delete':
-                this.dialogService.openConfirm({
-                    title: 'Delete Bucket',
-                    message: 'All versions of all flows will be deleted.',
-                    cancelButton: 'Cancel',
-                    acceptButton: 'Delete',
-                    acceptButtonColor: 'fds-warn'
-                }).afterClosed().subscribe(
-                    function (accept) {
-                        if (accept) {
-                            self.nfRegistryService.deleteBucket(bucket.id);
-                        }
-                    });
-                break;
-            case 'permissions':
-                this.router.navigateByUrl('/nifi-registry/administration/' + this.nfRegistryService.registry.id + '/workflow(' + action.type + ':bucket/' + action.name + '/' + bucket.id + ')');
-                break;
-            default:
-                break;
-        }
+        this.nfRegistryService.api.createBucket(newBucketInput.value).subscribe(function (bucket) {
+            self.nfRegistryService.buckets.push(bucket);
+            self.nfRegistryService.filterBuckets();
+        })
     }
 };
 
@@ -116,6 +92,6 @@ NfRegistryWorkflowAdministration.annotations = [
     })
 ];
 
-NfRegistryWorkflowAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute, ngRouter.Router, fdsDialogsModule.FdsDialogService];
+NfRegistryWorkflowAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
 
 module.exports = NfRegistryWorkflowAdministration;

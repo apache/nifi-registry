@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-var ngCore = require('@angular/core');
-var ngMoment = require('angular2-moment');
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
+var ngCoreTesting = require('@angular/core/testing');
+var ngCommon = require('@angular/common');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
@@ -36,45 +36,74 @@ var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-l
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
 var fdsCore = require('@fluid-design-system/core');
+var ngMoment = require('angular2-moment');
 var ngHttp = require('@angular/http');
 
-function NfRegistryModule() {
-};
+describe('NfRegistryExplorer Component', function () {
+    var comp;
+    var fixture;
+    var nfRegistryService;
 
-NfRegistryModule.prototype = {
-    constructor: NfRegistryModule
-};
+    beforeEach(function () {
+        ngCoreTesting.TestBed.configureTestingModule({
+            imports: [
+                ngMoment.MomentModule,
+                ngHttp.HttpModule,
+                ngHttp.JsonpModule,
+                fdsCore,
+                NfRegistryRoutes
+            ],
+            declarations: [
+                FdsDemo,
+                NfRegistry,
+                NfRegistryExplorer,
+                NfRegistryAdministration,
+                NfRegistryGeneralAdministration,
+                NfRegistryUsersAdministration,
+                NfRegistryUserDetails,
+                NfRegistryUserPermissions,
+                NfRegistryBucketPermissions,
+                NfRegistryAddUser,
+                NfRegistryWorkflowAdministration,
+                NfRegistryGridListViewer,
+                NfRegistryBucketGridListViewer,
+                NfRegistryDropletGridListViewer,
+                NfPageNotFoundComponent
+            ],
+            providers: [
+                NfRegistryService,
+                NfRegistryApi,
+                {
+                    provide: ngCommon.APP_BASE_HREF,
+                    useValue: '/'
+                }
+            ]
+        });
 
-NfRegistryModule.annotations = [
-    new ngCore.NgModule({
-        imports: [
-            ngMoment.MomentModule,
-            fdsCore,
-            ngHttp.HttpModule,
-            ngHttp.JsonpModule,
-            NfRegistryRoutes
-        ],
-        declarations: [
-            FdsDemo,
-            NfRegistry,
-            NfRegistryExplorer,
-            NfRegistryAdministration,
-            NfRegistryGeneralAdministration,
-            NfRegistryUsersAdministration,
-            NfRegistryUserDetails,
-            NfRegistryUserPermissions,
-            NfRegistryBucketPermissions,
-            NfRegistryAddUser,
-            NfRegistryWorkflowAdministration,
-            NfRegistryGridListViewer,
-            NfRegistryBucketGridListViewer,
-            NfRegistryDropletGridListViewer,
-            NfPageNotFoundComponent],
-        providers: [
-            NfRegistryService,
-            NfRegistryApi],
-        bootstrap: [NfRegistry]
-    })
-];
+        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryExplorer);
 
-module.exports = NfRegistryModule;
+        // test instance
+        comp = fixture.componentInstance;
+
+        // from the root injector
+        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
+    });
+
+    it('should have a defined component', function () {
+        fixture.detectChanges();
+
+        //assertions
+        expect(comp).toBeDefined();
+        expect(nfRegistryService.perspective).toBe('explorer');
+    });
+
+    it('should destroy the component', function () {
+        fixture.detectChanges();
+
+        // The function to test
+        comp.ngOnDestroy();
+
+        //assertions
+        expect(nfRegistryService.perspective).toBe('');
+    });
+});

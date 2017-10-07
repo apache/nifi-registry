@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
+var rxjs = require('rxjs/Rx');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var ngRouter = require('@angular/router');
+var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 
 /**
  * NfRegistryDropletGridListViewer constructor.
@@ -38,14 +40,27 @@ NfRegistryDropletGridListViewer.prototype = {
      */
     ngOnInit: function () {
         var self = this;
+        this.nfRegistryService.explorerViewType = 'grid-list';
         this.route.params
             .switchMap(function (params) {
-                return self.nfRegistryService.getDroplets(self.nfRegistryService.registry.id, self.nfRegistryService.bucket.id, params['dropletId']);
+                return new rxjs.Observable.forkJoin(
+                    self.nfRegistryService.api.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
+                    self.nfRegistryService.api.getBucket(params['bucketId']),
+                    self.nfRegistryService.api.getBuckets(),
+                    self.nfRegistryService.api.getDroplets(params['bucketId'])
+                );
             })
-            .subscribe(function (droplets) {
-                self.nfRegistryService.droplet = droplets[0];
-                self.nfRegistryService.droplets = self.nfRegistryService.filteredDroplets = droplets;
+            .subscribe(function (response) {
+                var droplet = response[0];
+                var bucket = response[1];
+                var buckets = response[2];
+                var droplets = response[3];
+                self.nfRegistryService.bucket = bucket;
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.droplet = droplet;
+                self.nfRegistryService.droplets = droplets;
                 self.nfRegistryService.filterDroplets();
+                self.nfRegistryService.setBreadcrumbState('in');
             });
     },
 
@@ -53,20 +68,16 @@ NfRegistryDropletGridListViewer.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        var self = this;
+        this.nfRegistryService.bucket = {};
         this.nfRegistryService.droplet = {};
-        this.nfRegistryService.getDroplets(this.nfRegistryService.registry.id,
-            this.nfRegistryService.bucket.id).then(
-            function (droplets) {
-                self.nfRegistryService.droplets = self.nfRegistryService.filteredDroplets = droplets;
-                self.nfRegistryService.filterDroplets();
-            });
+        this.nfRegistryService.setBreadcrumbState('out');
     }
 };
 
 NfRegistryDropletGridListViewer.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-droplet-grid-list-viewer.html!text')
+        template: require('./nf-registry-grid-list-viewer.html!text'),
+        animations: [nfRegistryAnimations.flyInOutAnimation]
     })
 ];
 

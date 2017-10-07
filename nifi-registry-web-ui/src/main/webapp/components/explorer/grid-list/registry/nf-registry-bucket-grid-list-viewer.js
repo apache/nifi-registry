@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
+var rxjs = require('rxjs/Rx');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var ngRouter = require('@angular/router');
+var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 
 /**
  * NfRegistryBucketGridListViewer constructor.
@@ -38,16 +40,24 @@ NfRegistryBucketGridListViewer.prototype = {
      */
     ngOnInit: function () {
         var self = this;
+        this.nfRegistryService.explorerViewType = 'grid-list';
         this.route.params
             .switchMap(function (params) {
-                return self.nfRegistryService.getBuckets(self.nfRegistryService.registry.id, params['bucketId']);
+                return new rxjs.Observable.forkJoin(
+                    self.nfRegistryService.api.getBuckets(),
+                    self.nfRegistryService.api.getDroplets(params['bucketId']),
+                    self.nfRegistryService.api.getBucket(params['bucketId'])
+                );
             })
-            .subscribe(function (buckets) {
-                self.nfRegistryService.bucket = buckets[0];
-                self.nfRegistryService.getDroplets(self.nfRegistryService.registry.id, self.nfRegistryService.bucket.id).then(function (droplets) {
-                    self.nfRegistryService.droplets = self.nfRegistryService.filteredDroplets = droplets;
-                    self.nfRegistryService.filterDroplets();
-                });
+            .subscribe(function (response) {
+                var buckets = response[0];
+                var droplets = response[1];
+                var bucket = response[2];
+                self.nfRegistryService.bucket = bucket;
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.droplets = droplets;
+                self.nfRegistryService.filterDroplets();
+                self.nfRegistryService.setBreadcrumbState('in');
             });
     },
 
@@ -55,19 +65,15 @@ NfRegistryBucketGridListViewer.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        var self = this;
         this.nfRegistryService.bucket = {};
-        this.nfRegistryService.getDroplets(this.nfRegistryService.registry.id).then(
-            function (droplets) {
-                self.nfRegistryService.droplets = self.nfRegistryService.filteredDroplets = droplets;
-                self.nfRegistryService.filterDroplets();
-            });
+        this.nfRegistryService.setBreadcrumbState('out');
     }
 };
 
 NfRegistryBucketGridListViewer.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-bucket-grid-list-viewer.html!text')
+        template: require('./nf-registry-grid-list-viewer.html!text'),
+        animations: [nfRegistryAnimations.flyInOutAnimation]
     })
 ];
 

@@ -25,9 +25,9 @@ var ngCore = require('@angular/core');
 function FdsConfirmDialogComponent() {
     this.title = '';
     this.message = '';
-    this.acceptButton = 'ACCEPT';
+    this.acceptButton = '';
     this.acceptButtonColor = 'fds-primary';
-    this.cancelButton = 'CANCEL';
+    this.cancelButton = '';
     this.cancelButtonColor = 'fds-regular';
     this.dialogRef = undefined;
     this.viewContainerRef = undefined;

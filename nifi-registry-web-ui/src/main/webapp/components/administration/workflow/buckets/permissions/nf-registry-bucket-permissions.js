@@ -43,7 +43,7 @@ NfRegistryBucketPermissions.prototype = {
         this.nfRegistryService.sidenav.open();
         this.route.params
             .switchMap(function (params) {
-                return self.nfRegistryService.getBucket(self.nfRegistryService.registry.id, params['bucketId']);
+                return self.nfRegistryService.api.getBucket(params['bucketId']);
             })
             .subscribe(function (bucket) {
                 self.nfRegistryService.bucket = bucket;
@@ -62,7 +62,7 @@ NfRegistryBucketPermissions.prototype = {
      * Navigate to administer the buckets of the current registry.
      */
     closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/' + this.nfRegistryService.registry.id + '/workflow');
+        this.router.navigateByUrl('/nifi-registry/administration/workflow');
     }
 };
 

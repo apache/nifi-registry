@@ -71,6 +71,8 @@
             'switchMap': 'npm:rxjs/add/operator/switchMap',
             'zone.js': 'npm:zone.js/dist/zone.js',
             'core-js': 'npm:core-js/client/shim.min.js',
+            'superagent': 'npm:superagent/superagent.js',
+            'querystring': 'npm:querystring',
 
             // Fluid Design System
             '@fluid-design-system/core': 'npm:@fluid-design-system/dist/platform/core/fluid-design-system.module.js',
@@ -85,11 +87,10 @@
             'nifi-registry/nf-registry.routes.js': 'nf-registry.routes.js',
             'nifi-registry/components/fluid-design-system/fds-demo.js': 'components/fluid-design-system/fds-demo.js',
             'nifi-registry/nf-registry.js': 'nf-registry.js',
+            'nifi-registry/services/nf-registry.api.js': 'services/nf-registry.api.js',
             'nifi-registry/services/nf-registry.service.js': 'services/nf-registry.service.js',
             'nifi-registry/components/page-not-found/nf-registry-page-not-found.js': 'components/page-not-found/nf-registry-page-not-found.js',
             'nifi-registry/components/explorer/nf-registry-explorer.js': 'components/explorer/nf-registry-explorer.js',
-            'nifi-registry/components/explorer/list/nf-registry-explorer-list-viewer.js': 'components/explorer/list/nf-registry-explorer-list-viewer.js',
-            'nifi-registry/components/explorer/grid-list/nf-registry-explorer-grid-list-viewer.js': 'components/explorer/grid-list/nf-registry-explorer-grid-list-viewer.js',
             'nifi-registry/components/administration/nf-registry-administration.js': 'components/administration/nf-registry-administration.js',
             'nifi-registry/components/administration/general/nf-registry-general-administration.js': 'components/administration/general/nf-registry-general-administration.js',
             'nifi-registry/components/administration/users/nf-registry-users-administration.js': 'components/administration/users/nf-registry-users-administration.js',
@@ -98,15 +99,9 @@
             'nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js': 'components/administration/users/permissions/nf-registry-user-permissions.js',
             'nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js': 'components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js',
             'nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js': 'components/administration/workflow/nf-registry-workflow-administration.js',
-            'nifi-registry/components/explorer/list/registry/nf-registry-list-viewer.js': 'components/explorer/list/registry/nf-registry-list-viewer.js',
             'nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js': 'components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js',
-            'nifi-registry/components/explorer/list/registry/bucket/nf-registry-bucket-list-viewer.js': 'components/explorer/list/registry/bucket/nf-registry-bucket-list-viewer.js',
-            'nifi-registry/components/explorer/grid-list/registry/bucket/nf-registry-bucket-grid-list-viewer.js': 'components/explorer/grid-list/registry/bucket/nf-registry-bucket-grid-list-viewer.js',
-            'nifi-registry/components/explorer/list/registry/bucket/droplet/nf-registry-droplet-list-viewer.js': 'components/explorer/list/registry/bucket/droplet/nf-registry-droplet-list-viewer.js',
-            'nifi-registry/components/explorer/grid-list/registry/bucket/droplet/nf-registry-droplet-grid-list-viewer.js': 'components/explorer/grid-list/registry/bucket/droplet/nf-registry-droplet-grid-list-viewer.js',
-            'nifi-registry/components/explorer/list/registry/nf-registry-details-viewer.js': 'components/explorer/list/registry/nf-registry-details-viewer.js',
-            'nifi-registry/components/explorer/list/registry/bucket/nf-registry-bucket-details-viewer.js': 'components/explorer/list/registry/bucket/nf-registry-bucket-details-viewer.js',
-            'nifi-registry/components/explorer/list/registry/bucket/droplet/nf-registry-droplet-details-viewer.js': 'components/explorer/list/registry/bucket/droplet/nf-registry-droplet-details-viewer.js'
+            'nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js': 'components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js',
+            'nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js': 'components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js'
         },
         // packages tells the System loader how to load when no filename and/or no extension
         packages: {
@@ -122,6 +117,10 @@
                 loader: false
             },
             'rxjs': {
+                defaultExtension: 'js'
+            },
+            'querystring': {
+                main: './index.js',
                 defaultExtension: 'js'
             },
             'moment': {

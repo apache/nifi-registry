@@ -4,9 +4,8 @@
   "description": "",
   "scripts": {
     "protractor": "protractor protractor.config.js",
-    "test:dev": "./node_modules/protractor/bin/webdriver-manager update --gecko false && karma start karma.conf.js",
-    "test:ci": "./node_modules/protractor/bin/webdriver-manager update --gecko false && karma start karma.conf.ci.js",
-    "test:once": "karma start karma.conf.js --single-run"
+    "test": "./node_modules/protractor/bin/webdriver-manager update --gecko false && karma start karma.conf.js --single-run",
+    "test:dev": "./node_modules/protractor/bin/webdriver-manager update --gecko false && karma start karma.conf.js"
   },
   "keywords": [],
   "author": "",
@@ -54,8 +53,10 @@
     "lodash": "4.16.2",
     "material-design-icons": "3.0.1",
     "protractor": "4.0.14",
+    "querystring": "0.2.0",
     "reset-css": "2.2.0",
     "rxjs": "5.4.3",
+    "superagent": "3.6.3",
     "systemjs": "0.20.17",
     "systemjs-plugin-text": "0.0.11",
     "zone.js": "0.8.4"

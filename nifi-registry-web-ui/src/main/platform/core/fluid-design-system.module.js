@@ -20,7 +20,6 @@ var ngCore = require('@angular/core');
 var ngFlex = require('@angular/flex-layout');
 var ngMaterial = require('@angular/material');
 var ngCommon = require('@angular/common');
-var ngHttp = require('@angular/http');
 var ngPlatformBrowser = require('@angular/platform-browser');
 var ngAnimations = require('@angular/platform-browser/animations');
 var covalentCore = require('@covalent/core');
@@ -57,8 +56,6 @@ FluidDesignSystemModule.annotations = [
             ngAnimations.BrowserAnimationsModule,
             ngCommon.CommonModule,
             ngPlatformBrowser.BrowserModule,
-            ngHttp.HttpModule,
-            ngHttp.JsonpModule,
             ngMaterial.MaterialModule,
             covalentCore.CovalentCommonModule,
             covalentCore.CovalentChipsModule,
@@ -78,8 +75,6 @@ FluidDesignSystemModule.annotations = [
             ngAnimations.BrowserAnimationsModule,
             ngCommon.CommonModule,
             ngPlatformBrowser.BrowserModule,
-            ngHttp.HttpModule,
-            ngHttp.JsonpModule,
             ngMaterial.MaterialModule,
             covalentCore.CovalentCommonModule,
             covalentCore.CovalentChipsModule,

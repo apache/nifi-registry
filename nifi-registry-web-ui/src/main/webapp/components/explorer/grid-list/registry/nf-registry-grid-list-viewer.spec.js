@@ -18,6 +18,7 @@
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommon = require('@angular/common');
+var ngRouter = require('@angular/router');
 var ngPlatformBrowser = require('@angular/platform-browser');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
@@ -41,7 +42,7 @@ var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
 var ngHttp = require('@angular/http');
 
-describe('NfRegistryAdministration Component', function () {
+describe('NfRegistryGridListViewer Component', function () {
     var comp;
     var fixture;
     var de;
@@ -76,16 +77,20 @@ describe('NfRegistryAdministration Component', function () {
                 NfPageNotFoundComponent
             ],
             providers: [
-                NfRegistryService,
                 NfRegistryApi,
-                {
+                NfRegistryService, {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
+                }, {
+                    provide: ngRouter.ActivatedRoute,
+                    useValue: {
+                        params: rxjs.Observable.of({})
+                    }
                 }
             ]
         });
 
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryAdministration);
+        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryGridListViewer);
 
         // test instance
         comp = fixture.componentInstance;
@@ -93,10 +98,20 @@ describe('NfRegistryAdministration Component', function () {
         // from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
-        de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-administration-perspective'));
-        el = de.nativeElement;
-        
+
+        // because the NfRegistryGridListViewer component is a nested route component we need to set up the nfRegistryService service manually
+        nfRegistryService.perspective = 'explorer';
+
         // Spy
+        spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([{
+            identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            name: 'Bucket #1'
+        }]));
+        spyOn(nfRegistryService, 'filterDroplets');
+    });
+
+    it('should have a defined component', ngCoreTesting.fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
@@ -114,26 +129,44 @@ describe('NfRegistryAdministration Component', function () {
                 "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
             }
         }]));
-    });
-
-    it('should have a defined component', function () {
+        // 1st change detection triggers ngOnInit which makes getBuckets and getDroplets calls
+        fixture.detectChanges();
+        // wait for async getBuckets and getDroplets calls
+        ngCoreTesting.tick();
+        // 2nd change detection completes after the getBuckets and getDroplets calls
         fixture.detectChanges();
 
         //assertions
         expect(comp).toBeDefined();
-        expect(nfRegistryService.perspective).toBe('administration');
+        expect(nfRegistryService.explorerViewType).toBe('grid-list');
         expect(nfRegistryService.breadCrumbState).toBe('in');
-        expect(de).toBeDefined();
-    });
+        expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
+        expect(nfRegistryService.buckets.length).toBe(1);
+        expect(nfRegistryService.droplets[0].name).toEqual('Flow #1');
+        expect(nfRegistryService.droplets.length).toBe(1);
+        expect(nfRegistryApi.getDroplets).toHaveBeenCalled();
+        expect(nfRegistryApi.getBuckets).toHaveBeenCalled();
+        expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
+    }));
 
-    it('should destroy the component', function () {
+    it('should destroy the component', ngCoreTesting.fakeAsync(function () {
+        spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([]));
+        // 1st change detection triggers ngOnInit which makes getBuckets and getDroplets calls
+        fixture.detectChanges();
+        // wait for async getBuckets and getDroplets calls
+        ngCoreTesting.tick();
+        // 2nd change detection completes after the getBuckets and getDroplets calls
         fixture.detectChanges();
 
         // The function to test
         comp.ngOnDestroy();
 
         //assertions
-        expect(nfRegistryService.perspective).toBe('');
+        expect(nfRegistryService.explorerViewType).toBe('');
+        expect(nfRegistryService.buckets.length).toBe(0);
+        expect(nfRegistryService.droplets.length).toBe(0);
+        expect(nfRegistryService.filteredDroplets.length).toBe(0);
         expect(nfRegistryService.breadCrumbState).toBe('out');
-    });
+    }));
 });
