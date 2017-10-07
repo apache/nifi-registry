@@ -51,7 +51,7 @@ NfRegistryAddUser.prototype = {
      * Navigate to administer users for current registry.
      */
     closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/' + this.nfRegistryService.registry.id + '/users');
+        this.router.navigateByUrl('/nifi-registry/administration/users');
     }
 };
 

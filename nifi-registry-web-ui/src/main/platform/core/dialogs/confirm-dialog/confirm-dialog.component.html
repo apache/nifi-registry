@@ -28,13 +28,13 @@ limitations under the License.
         {{message}}
     </fds-dialog-content>
     <fds-dialog-actions>
-        <button md-raised-button
+        <button *ngIf="cancelButton" md-raised-button
                 color="{{cancelButtonColor}}"
                 #closeBtn
                 (keydown.arrowright)="acceptBtn.focus()"
                 (click)="cancel()">{{cancelButton}}
         </button>
-        <button md-raised-button
+        <button *ngIf="acceptButton" md-raised-button
                 color="{{acceptButtonColor}}"
                 #acceptBtn
                 (keydown.arrowleft)="closeBtn.focus()"

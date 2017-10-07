@@ -27,7 +27,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <properties>
-        <skipTests>true</skipTests>
         <staging.dir>${project.build.directory}/tmp</staging.dir>
         <registry.filter>registry-min.properties</registry.filter>
         <frontend.source>${basedir}/src/main</frontend.source>
@@ -267,17 +266,6 @@
                 </configuration>
             </plugin>
             <!--
-                Skip tests by default
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
-                <configuration>
-                    <skipTests>${skipTests}</skipTests>
-                </configuration>
-            </plugin>
-            <!--
                 Speed up build time by excluding node, npm, and any node_modules from `mvn clean` since the front-end-maven plugin uses these
                 directories as cache.
             -->
@@ -348,20 +336,6 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <arguments>compile-fds-styles</arguments>
-                            <workingDirectory>${frontend.working.dir}</workingDirectory>
-                        </configuration>
-                    </execution>
-                    <!--
-                        Selenium, Karma/Jasmine JS unit tests.
-                    -->
-                    <execution>
-                        <id>javascript-tests</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <phase>test</phase>
-                        <configuration>
-                            <arguments>run test:ci</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>
@@ -468,4 +442,40 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>jsUnitTests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <!--
+                        Selenium, Karma/Jasmine JS unit tests.
+                    -->
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.5</version>
+                        <configuration>
+                            <installDirectory>${frontend.working.dir}</installDirectory>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>javascript-tests</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <arguments>run test</arguments>
+                                    <workingDirectory>${frontend.working.dir}</workingDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

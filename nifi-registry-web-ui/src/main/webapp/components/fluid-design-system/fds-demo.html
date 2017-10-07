@@ -979,7 +979,7 @@ limitations under the License.
                             </div>
                             <div layout="row" layout-align="space-between center">
                                 <div flex fxLayout="row" fxLayoutAlign="end center">
-                                    <td-chips [(ngModel)]="dropletsSearchTerms" [items]="autoCompleteDroplets" (add)="dropletsSearchAdd($event)" (remove)="dropletsSearchRemove($event)" class="push-right-sm"></td-chips>
+                                    <td-chips [(ngModel)]="dropletsSearchTerms" [items]="autoCompleteDroplets" (add)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" (remove)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" class="push-right-sm"></td-chips>
                                     <span class="pad-right-sm">Sort by:</span>
                                     <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="dropletGridSortMenu">
                                         {{getSortBy()}}<i class="fa fa-caret-down" aria-hidden="true"></i>
@@ -987,7 +987,7 @@ limitations under the License.
                                 </div>
                                 <md-menu class="fds-primary-dropdown-button-menu" #dropletGridSortMenu="mdMenu" [overlapTrigger]="false">
                                     <div *ngFor="let column of dropletColumns">
-                                        <button md-menu-item *ngIf="column.sortable" (click)="sortDroplets($event, column);">{{column.label}} {{(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'}}</button>
+                                        <button md-menu-item *ngIf="column.sortable" (click)="sortDroplets(column);">{{column.label}} {{(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'}}</button>
                                     </div>
                                 </md-menu>
                             </div>
@@ -1107,7 +1107,7 @@ limitations under the License.
             </div>
             <div layout="row" layout-align="space-between center">
                 <div flex fxLayout="row" fxLayoutAlign="end center">
-                    <td-chips [(ngModel)]="dropletsSearchTerms" [items]="autoCompleteDroplets" (add)="dropletsSearchAdd($event)" (remove)="dropletsSearchRemove($event)" class="push-right-sm"></td-chips>
+                    <td-chips [(ngModel)]="dropletsSearchTerms" [items]="autoCompleteDroplets" (add)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" (remove)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" class="push-right-sm"></td-chips>
                     <span class="pad-right-sm">Sort by:</span>
                     <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="dropletGridSortMenu">
                         { {getSortBy()} }<i class="fa fa-caret-down" aria-hidden="true"></i>
@@ -1115,7 +1115,7 @@ limitations under the License.
                 </div>
                 <md-menu class="fds-primary-dropdown-button-menu" #dropletGridSortMenu="mdMenu" [overlapTrigger]="false">
                     <div *ngFor="let column of dropletColumns">
-                        <button md-menu-item *ngIf="column.sortable" (click)="sortDroplets($event, column);">{ {column.label} } { {(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'} }</button>
+                        <button md-menu-item *ngIf="column.sortable" (click)="sortDroplets(column);">{ {column.label} } { {(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'} }</button>
                     </div>
                 </md-menu>
             </div>
@@ -1362,7 +1362,7 @@ limitations under the License.
             return sortByColumnLabel;
         },
 
-        sortDroplets: function(sortEvent, column) {
+        sortDroplets: function(column) {
             if (column.sortable === true) {
                 // toggle column sort order
                 var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -1373,14 +1373,6 @@ limitations under the License.
                 //and set this column as the actively sorted column
                 column.active = true;
             }
-        },
-
-        dropletsSearchRemove: function(searchTerm) {
-            this.filterDroplets(this.activeColumn.name, this.activeColumn.sortOrder);
-        },
-
-        dropletsSearchAdd: function(searchTerm) {
-            this.filterDroplets(this.activeColumn.name, this.activeColumn.sortOrder);
         },
 
         toggleDropletsFilter: function(searchTerm) {

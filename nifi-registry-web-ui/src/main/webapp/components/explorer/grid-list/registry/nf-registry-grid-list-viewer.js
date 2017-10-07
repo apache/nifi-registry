@@ -15,23 +15,26 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
+var rxjs = require('rxjs/Rx');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
 
 /**
  * NfRegistryGridListViewer constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
- * @param TdDialogService       The covalent dialog service module.
  * @constructor
  */
-function NfRegistryGridListViewer(nfRegistryService, ActivatedRoute, FdsDialogService) {
+function NfRegistryGridListViewer(nfRegistryService, ActivatedRoute) {
     this.route = ActivatedRoute;
     this.nfRegistryService = nfRegistryService;
-    this.dialogService = FdsDialogService;
+    this.dropletActions = [{
+        'name': 'Delete',
+        'icon': 'fa fa-trash',
+        'tooltip': 'Delete'
+    }];
 };
 
 NfRegistryGridListViewer.prototype = {
@@ -45,17 +48,16 @@ NfRegistryGridListViewer.prototype = {
         this.nfRegistryService.explorerViewType = 'grid-list';
         this.route.params
             .switchMap(function (params) {
-                return self.nfRegistryService.getRegistry(params['registryId']);
+                return new rxjs.Observable.forkJoin(self.nfRegistryService.api.getDroplets(),
+                    self.nfRegistryService.api.getBuckets());
             })
-            .subscribe(function (registry) {
-                self.nfRegistryService.registry = registry;
-                self.nfRegistryService.getBuckets(self.nfRegistryService.registry.id).then(function (buckets) {
-                    self.nfRegistryService.buckets = buckets;
-                    self.nfRegistryService.getDroplets(self.nfRegistryService.registry.id, self.nfRegistryService.bucket.id, self.nfRegistryService.droplet.id).then(function (droplets) {
-                        self.nfRegistryService.droplets = self.nfRegistryService.filteredDroplets = droplets;
-                        self.nfRegistryService.filterDroplets();
-                    });
-                })
+            .subscribe(function (response) {
+                var droplets = response[0];
+                var buckets = response[1];
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.droplets = droplets;
+                self.nfRegistryService.filterDroplets();
+                self.nfRegistryService.setBreadcrumbState('in');
             });
     },
 
@@ -63,34 +65,11 @@ NfRegistryGridListViewer.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        this.nfRegistryService.registry = {};
+        this.nfRegistryService.explorerViewType = '';
         this.nfRegistryService.buckets = [];
         this.nfRegistryService.droplets = [];
         this.nfRegistryService.filteredDroplets = [];
-    },
-
-    /**
-     * Execute the given droplet action.
-     *
-     * @param action        The action object.
-     * @param droplet       The droplet object the `action` will act upon.
-     */
-    execute: function (action, droplet) {
-        var self = this;
-        if (action.name.toLowerCase() === 'delete') {
-            this.dialogService.openConfirm({
-                title: 'Delete Data Flow',
-                message: 'All versions of this data flow will be deleted.',
-                cancelButton: 'Cancel',
-                acceptButton: 'Delete',
-                acceptButtonColor: 'fds-warn'
-            }).afterClosed().subscribe(
-                function (accept) {
-                    if (accept) {
-                        self.nfRegistryService.deleteDroplet(droplet.id);
-                    }
-                });
-        }
+        this.nfRegistryService.setBreadcrumbState('out');
     }
 };
 
@@ -101,6 +80,6 @@ NfRegistryGridListViewer.annotations = [
     })
 ];
 
-NfRegistryGridListViewer.parameters = [NfRegistryService, ngRouter.ActivatedRoute, fdsDialogsModule.FdsDialogService];
+NfRegistryGridListViewer.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
 
 module.exports = NfRegistryGridListViewer;

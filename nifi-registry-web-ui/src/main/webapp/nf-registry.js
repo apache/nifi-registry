@@ -28,11 +28,7 @@ NfRegistry.prototype = {
     constructor: NfRegistry,
 
     ngOnInit: function () {
-        var self = this;
-        this.nfRegistryService.sidenav = this.sidenav;
-        this.nfRegistryService.getRegistries().then(function (registries) {
-            self.nfRegistryService.registries = registries;
-        });
+        this.nfRegistryService.sidenav = this.sidenav; //ngCore.ViewChild
     },
 
     ngAfterViewChecked: function () {

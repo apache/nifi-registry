@@ -16,6 +16,11 @@
  */
 
 var covalentCore = require('@covalent/core');
+var ngRouter = require('@angular/router');
+var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+require('rxjs/add/operator/catch');
+require('rxjs/add/operator/map');
 
 function filterData(data, searchTerm, ignoreCase) {
     var field = '';
@@ -28,28 +33,12 @@ function filterData(data, searchTerm, ignoreCase) {
     if (filter) {
         data = data.filter(function (item) {
             var res = Object.keys(item).find(function (key) {
-                if (field.indexOf(".") > -1) {
-                    var objArray = field.split(".");
-                    var obj = item;
-                    var arrayLength = objArray.length;
-                    for (var i = 0; i < arrayLength; i++) {
-                        try {
-                            obj = obj[objArray[i]];
-                        } catch (e) {
-                            return false;
-                        }
-                    }
-                    var preItemValue = ('' + obj);
-                    var itemValue = ignoreCase ? preItemValue.toLowerCase() : preItemValue;
-                    return itemValue.indexOf(filter) > -1;
-                } else {
-                    if (key !== field && field !== '') {
-                        return false;
-                    }
-                    var preItemValue = ('' + item[key]);
-                    var itemValue = ignoreCase ? preItemValue.toLowerCase() : preItemValue;
-                    return itemValue.indexOf(filter) > -1;
+                if (key !== field && field !== '') {
+                    return false;
                 }
+                var preItemValue = ('' + item[key]);
+                var itemValue = ignoreCase ? preItemValue.toLowerCase() : preItemValue;
+                return itemValue.indexOf(filter) > -1;
             });
             return !(typeof res === 'undefined');
         });
@@ -57,14 +46,26 @@ function filterData(data, searchTerm, ignoreCase) {
     return data;
 };
 
-function NfRegistryService(TdDataTableService) {
-    this.registries = [];
-    this.registry = {};
+/**
+ * NfRegistryService constructor.
+ *
+ * @param TdDataTableService    The covalent data table service module.
+ * @param NfRegistryApi         The registry API module.
+ * @param Router                The angular router module.
+ * @param FdsDialogService      The FDS dialog service.
+ * @constructor
+ */
+function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogService) {
+    this.router = Router;
+    this.dialogService = FdsDialogService;
+    this.registry = {
+        name: "Nifi Registry"
+    };
+    this.api = NfRegistryApi;
     this.bucket = {};
     this.buckets = [];
     this.droplet = {};
     this.droplets = [];
-    this.certifications = [];
     this.user = {};
     this.users = [];
     this.alerts = [];
@@ -110,386 +111,25 @@ function NfRegistryService(TdDataTableService) {
     this.usersCurrentPage = 1;
     this.usersPageSize = 5;
     this.usersPageCount = 0;
-
-    this.filteredCertifications = [];
-
-    this.certificationColumns = [
-        {name: 'name', label: 'Label Name', sortable: true, tooltip: 'Sort Certifications by name.', width: 40},
-        {name: 'usage', label: 'Usage', sortable: true, tooltip: 'Sort Certifications by usage.', width: 30},
-        {name: 'badge', label: 'Badge Design', sortable: false, tooltip: 'Certification badge.', width: 30}
-    ];
-
-    this.autoCompleteCertifications = [];
-    this.certificationsSearchTerms = [];
 };
 
 NfRegistryService.prototype = {
     constructor: NfRegistryService,
 
-    deleteDroplet: function (id) {
-        //TODO: REST call to API to delete droplet by id.
+    /**
+     * Set the state for the breadcrumb animations.
+     *
+     * @param {string} state The state. Valid values are 'in' or 'out'.
+     */
+    setBreadcrumbState: function (state) {
+        this.breadCrumbState = state;
     },
 
-    deleteBucket: function (id) {
-        //TODO: REST call to API to delete bucket by id.
-    },
-
-    deleteUser: function (id) {
-        //TODO: REST call to API to delete user by id.
-    },
-
-    suspendUser: function (id) {
-        //TODO: REST call to API to suspend user by id.
-    },
-
-    getRegistries: function () {
-        //TODO: leverage $http service to make call to nifi registry api. For now just return mock data...
-        var self = this;
-        var date = new Date();
-        return new Promise(
-            function (resolve) {
-                setTimeout(
-                    function () {
-                        resolve(self.registries = [{
-                            id: '23f6cc59-0156-1000-06b4-2b0810089090',
-                            name: "Nifi Registry",
-                            users: [{
-                                id: '23f6cc59-0156-1000-06b4-2b0810089090',
-                                name: 'Scotty 2 Hotty',
-                                status: 'authorized',
-                                provider: 'Friendly LDAP Provider',
-                                type: 'user',
-                                activities: [{
-                                    id: '25fd6vv87-3249-0001-05g6-4d4767890765',
-                                    description: 'Saved something...',
-                                    created: date.setDate(date.getDate() - 1),
-                                    updated: new Date()
-                                }],
-                                actions: [{
-                                    'name': 'details',
-                                    'icon': 'fa fa-info-circle',
-                                    'tooltip': 'User Details',
-                                    'type': 'sidenav',
-
-                                }, {
-                                    'name': 'permissions',
-                                    'icon': 'fa fa-key',
-                                    'tooltip': 'Manage User Policies',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'Delete',
-                                    'icon': 'fa fa-trash',
-                                    'tooltip': 'Delete User'
-                                }, {
-                                    'name': 'Suspend',
-                                    'icon': 'fa fa-ban',
-                                    'tooltip': 'Suspend User'
-                                }]
-                            }, {
-                                id: '25fd6vv87-3249-0001-05g6-4d4767890765',
-                                name: 'Group 1',
-                                status: 'suspended',
-                                provider: 'IOAT',
-                                type: 'group',
-                                actions: [{
-                                    'name': 'details',
-                                    'icon': 'fa fa-info-circle',
-                                    'tooltip': 'User Details',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'permissions',
-                                    'icon': 'fa fa-key',
-                                    'tooltip': 'Manage User Policies',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'Delete',
-                                    'icon': 'fa fa-trash',
-                                    'tooltip': 'Delete User'
-                                }, {
-                                    'name': 'Reauthorize',
-                                    'icon': 'fa fa-check-circle',
-                                    'tooltip': 'Reauthorize User'
-                                }]
-                            }, {
-                                id: '98f6cc59-0156-1000-06b4-2b0810089090',
-                                name: 'G$',
-                                status: 'authorized',
-                                provider: 'Friendly LDAP Provider',
-                                type: 'user',
-                                actions: [{
-                                    'name': 'details',
-                                    'icon': 'fa fa-info-circle',
-                                    'tooltip': 'User Details',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'permissions',
-                                    'icon': 'fa fa-key',
-                                    'tooltip': 'Manage User Policies',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'Delete',
-                                    'icon': 'fa fa-trash',
-                                    'tooltip': 'Delete User'
-                                }, {
-                                    'name': 'Suspend',
-                                    'icon': 'fa fa-ban',
-                                    'tooltip': 'Suspend User'
-                                }]
-                            }, {
-                                id: '65fd6vv87-3249-0001-05g6-4d4767890765',
-                                name: 'Group 2',
-                                status: 'suspended',
-                                provider: 'IOAT',
-                                type: 'group',
-                                actions: [{
-                                    'name': 'details',
-                                    'icon': 'fa fa-info-circle',
-                                    'tooltip': 'User Details',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'permissions',
-                                    'icon': 'fa fa-key',
-                                    'tooltip': 'Manage User Policies',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'Delete',
-                                    'icon': 'fa fa-trash',
-                                    'tooltip': 'Delete User'
-                                }, {
-                                    'name': 'Reauthorize',
-                                    'icon': 'fa fa-check-circle',
-                                    'tooltip': 'Reauthorize User'
-                                }]
-                            }],
-                            buckets: [{
-                                id: '25fd6vv87-3549-0001-05g6-4d4567890765',
-                                name: "My Flows",
-                                actions: [{
-                                    'name': 'permissions',
-                                    'icon': 'fa fa-key',
-                                    'tooltip': 'Manage Bucket Policies',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'Delete',
-                                    'icon': 'fa fa-trash',
-                                    'tooltip': 'Delete Bucket'
-                                }],
-                                droplets: [{
-                                    id: '23f6cc59-0156-1000-09b4-2b0610089090',
-                                    name: "Security_Dev_Ops",
-                                    displayName: 'Security Dev Ops',
-                                    type: 'Data Flow',
-                                    sublabel: 'Some info',
-                                    updated: new Date(),
-                                    description: 'This is the most secure flow ever!',
-                                    versions: [{
-                                        id: '23f6cc59-0156-1000-06b4-2b0810089090',
-                                        revision: '1',
-                                        dependentFlows: [{
-                                            id: '25fd6vv87-3549-0001-05g6-4d4567890765'
-                                        }],
-                                        author: '2Hot',
-                                        comment: 'delete ListenHttp',
-                                        created: new Date(date.setDate(date.getDate() - 1)),
-                                        updated: new Date()
-                                    }, {
-                                        id: '25fd6vv87-3549-0001-05g6-4d4567890765',
-                                        revision: '2',
-                                        dependentFlows: [{
-                                            id: '23f6cc59-0156-1000-06b4-2b0810089090'
-                                        }],
-                                        author: '2Hot',
-                                        comment: 'added Labels for better description of groups of processors',
-                                        created: new Date(),
-                                        updated: new Date()
-                                    }],
-                                    flows: [],
-                                    extensions: [],
-                                    assets: [],
-                                    actions: [{
-                                        'name': 'Delete',
-                                        'icon': 'fa fa-close',
-                                        'tooltip': 'Delete User'
-                                    }]
-                                }]
-                            }, {
-                                id: '23f6cc59-0156-1000-09b4-2b0810089080',
-                                name: "Development Flows",
-                                droplets: [{
-                                    id: '23f6cc59-0156-1000-09b4-2b0610089090',
-                                    name: "Fraud Detection Flow",
-                                    displayName: 'Fraud Detection Flow',
-                                    type: 'Data Flow',
-                                    sublabel: 'A sublabel',
-                                    updated: new Date(date.setDate(date.getDate() - 2)),
-                                    description: 'This flow detects fraud!',
-                                    versions: [{
-                                        id: '23f6cc59-0156-1000-06b4-2b0810089090',
-                                        revision: '1',
-                                        dependentFlows: [{
-                                            id: '25fd6vv87-3549-0001-05g6-4d4567890765'
-                                        }],
-                                        author: 'G$',
-                                        comment: 'added funnel',
-                                        created: new Date(date.setDate(date.getDate() - 1)),
-                                        updated: new Date()
-                                    }, {
-                                        id: '25fd6vv87-3549-0001-05g6-4d4567890765',
-                                        revision: '2',
-                                        dependentFlows: [{
-                                            id: '23f6cc59-0156-1000-06b4-2b0810089090'
-                                        }],
-                                        author: '2Hot',
-                                        comment: 'added Execute script',
-                                        created: new Date(date.setDate(date.getDate() - 1)),
-                                        updated: new Date()
-                                    }, {
-                                        id: '77fd6vv87-3549-0001-05g6-4d4567890765',
-                                        revision: '3',
-                                        dependentFlows: [{
-                                            id: '23f6cc59-0156-1000-06b4-2b0810089090'
-                                        }],
-                                        author: 'Payne',
-                                        comment: 'removed Execute script',
-                                        created: new Date(date.setDate(date.getDate() - 1)),
-                                        updated: new Date()
-                                    }, {
-                                        id: '96fd6vv87-3549-0001-05g6-4d4567890765',
-                                        revision: '4',
-                                        dependentFlows: [{
-                                            id: '23f6cc59-0156-1000-06b4-2b0810089090'
-                                        }],
-                                        author: 'G$',
-                                        comment: 'add Execute script',
-                                        created: new Date(date.setDate(date.getDate() - 1)),
-                                        updated: new Date()
-                                    }],
-                                    flows: [],
-                                    extensions: [],
-                                    assets: [],
-                                    actions: [{
-                                        'name': 'Delete',
-                                        'icon': 'fa fa-close'
-                                    }]
-                                }, {
-                                    id: '59f6cc23-0156-1000-09b4-2b0610089090',
-                                    name: "Cyber Security",
-                                    displayName: 'Cyber Security',
-                                    type: 'Data Flow',
-                                    sublabel: 'A sublabel',
-                                    updated: new Date(date.setDate(date.getDate() - 1)),
-                                    description: 'This is the most cyber secure flow ever!',
-                                    versions: [{
-                                        id: '23f6cc59-0156-1000-06b4-2b0810089090',
-                                        revision: '1',
-                                        dependentFlows: [{
-                                            id: '25fd6vv87-3549-0001-05g6-4d4567890765'
-                                        }],
-                                        author: 'G$',
-                                        comment: 'added funnel',
-                                        created: new Date(date.setDate(date.getDate() - 1)),
-                                        updated: new Date()
-                                    }],
-                                    flows: [],
-                                    extensions: [],
-                                    assets: [],
-                                    actions: [{
-                                        'name': 'Delete',
-                                        'icon': 'fa fa-close',
-                                        'tooltip': 'Delete User'
-                                    }]
-                                }],
-                                actions: [{
-                                    'name': 'permissions',
-                                    'icon': 'fa fa-key',
-                                    'tooltip': 'Manage Bucket Policies',
-                                    'type': 'sidenav'
-                                }, {
-                                    'name': 'Delete',
-                                    'icon': 'fa fa-trash',
-                                    'tooltip': 'Delete Bucket'
-                                }]
-                            }] // some data model for the contents of a registry
-                        }])
-                    }, 0);
-            }
-        );
-    },
-
-    getRegistry: function (registryId) {
-        return this.getRegistries().then(
-            function (registries) {
-                return registries.find(
-                    function (registry) {
-                        if (registryId === registry.id) {
-                            return registry;
-                        }
-                    });
-            });
-    },
-
-    getDroplet: function (registryId, bucketId, dropletId) {
-        return this.getDroplets(registryId, bucketId, dropletId).then(
-            function (droplets) {
-                return droplets[0];
-            });
-    },
-
-    getDroplets: function (registryIds, bucketIds, dropletIds) {
-        var self = this;
-        return this.getRegistries().then(
-            function (registries) {
-                var buckets = [];
-
-                registries.find(
-                    function (registry) {
-                        if (registryIds === undefined || registryIds.indexOf(registry.id) >= 0) {
-                            registry.buckets.find(
-                                function (bucket) {
-                                    if (bucketIds === undefined || bucketIds.indexOf(bucket.id) >= 0) {
-                                        buckets.push(bucket);
-                                    }
-                                });
-                        }
-                    });
-
-                var droplets = [];
-
-                buckets.find(
-                    function (bucket) {
-                        bucket.droplets.find(
-                            function (droplet) {
-                                if (dropletIds === undefined || dropletIds.indexOf(droplet.id) >= 0) {
-                                    droplets.push(droplet);
-                                }
-                            });
-                    });
-
-                return droplets;
-            });
-
-    },
-
-    isDropletFilterChecked: function (term) {
-        return (this.dropletsSearchTerms.indexOf(term) > -1);
-    },
-
-    getDropletTypeCount: function (type) {
-        return this.filteredDroplets.filter(function (droplet) {
-            return droplet.type === type;
-        }).length;
-    },
-
-    getDropletCertificationCount: function (certification) {
-        return this.filteredDroplets.filter(function (droplet) {
-            return Object.keys(droplet).find(function (key) {
-                if (key === certification && droplet[certification].type === 'certification') {
-                    return droplet;
-                }
-            });
-        }).length;
-    },
-
+    /**
+     * Gets the droplet grid-list explorer component's active sorting column display label.
+     *
+     * @returns {string}
+     */
     getSortByLabel: function () {
         var sortByColumn;
         var arrayLength = this.dropletColumns.length;
@@ -514,6 +154,12 @@ NfRegistryService.prototype = {
         }
     },
 
+    /**
+     * Generates the droplet grid-list explorer component's sorting menu options.
+     *
+     * @param col   One of the available `dropletColumns`.
+     * @returns {string}
+     */
     generateSortMenuLabels: function (col) {
         var label = '';
         switch (col.label) {
@@ -527,57 +173,78 @@ NfRegistryService.prototype = {
         return label;
     },
 
-    sortDroplets: function (sortEvent, column) {
+    /**
+     * Execute the given droplet action.
+     *
+     * @param action        The action object.
+     * @param droplet       The droplet object the `action` will act upon.
+     */
+    executeDropletAction: function (action, droplet) {
+        var self = this;
+        if (action.name.toLowerCase() === 'delete') {
+            this.dialogService.openConfirm({
+                title: 'Delete ' + droplet.type.toLowerCase(),
+                message: 'All versions of this ' + droplet.type.toLowerCase() + ' will be deleted.',
+                cancelButton: 'Cancel',
+                acceptButton: 'Delete',
+                acceptButtonColor: 'fds-warn'
+            }).afterClosed().subscribe(
+                function (accept) {
+                    if (accept) {
+                        self.api.deleteDroplet(droplet.link.href).subscribe(function(){
+                            self.droplets = self.droplets.filter(function(d){
+                                return (d.identifier !== droplet.identifier) ? true : false
+                            });
+                            self.filterDroplets();
+                        });
+                    }
+                });
+        }
+    },
+
+    /**
+     * Retrieves the snapshot metadata for the given droplet.
+     *
+     * @param droplet       The droplet.
+     */
+    getDropletSnapshotMetadata: function (droplet) {
+        this.api.getDropletSnapshotMetadata(droplet.link.href, true).subscribe(function(snapshotMetadata) {
+            droplet.snapshotMetadata = snapshotMetadata;
+        })
+    },
+
+    /**
+     * Sort `droplets` by `column`.
+     *
+     * @param column    The column to sort by.
+     */
+    sortDroplets: function (column) {
         if (column.sortable === true) {
             // toggle column sort order
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
             this.filterDroplets(column.name, sortOrder);
-            this.activeDropletColumn = column;
             //only one column can be actively sorted so we reset all to inactive
             this.dropletColumns.forEach(function (c) {
                 c.active = false;
             });
             //and set this column as the actively sorted column
             column.active = true;
+            this.activeDropletColumn = column;
         }
     },
 
-    dropletsSearchRemove: function (searchTerm) {
-        this.filterDroplets(this.activeDropletColumn.name, this.activeDropletColumn.sortOrder);
-    },
-
-    dropletsSearchAdd: function (searchTerm) {
-        this.filterDroplets(this.activeDropletColumn.name, this.activeDropletColumn.sortOrder);
-    },
-
-    toggleDropletsFilter: function (searchTerm) {
-        var applySearchTerm = true;
-        // check if the search term is already applied and remove it if true
-        if (this.dropletsSearchTerms.length > 0) {
-            var arrayLength = this.dropletsSearchTerms.length;
-            for (var i = 0; i < arrayLength; i++) {
-                var index = this.dropletsSearchTerms.indexOf(searchTerm);
-                if (index > -1) {
-                    this.dropletsSearchTerms.splice(index, 1);
-                    applySearchTerm = false;
-                }
-            }
-        }
-
-        // if we just removed the search term do NOT apply it again
-        if (applySearchTerm) {
-            this.dropletsSearchTerms.push(searchTerm);
-        }
-
-        this.filterDroplets(this.activeDropletColumn.name, this.activeDropletColumn.sortOrder);
-    },
-
+    /**
+     * Filter droplets.
+     *
+     * @param {string} [sortBy]       The column name to sort `dropletColumns` by.
+     * @param {string} [sortOrder]    The order. Either 'ASC' or 'DES'
+     */
     filterDroplets: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
             sortOrder = 'ASC'
         }
-        // if `sortBy` is `undefined` then find the first sortable column in this.dropletColumns
+        // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
             var arrayLength = this.dropletColumns.length;
             for (var i = 0; i < arrayLength; i++) {
@@ -596,7 +263,14 @@ NfRegistryService.prototype = {
             }
         }
 
-        var newData = this.droplets;
+        var newData;
+
+        // if we are viewing a single droplet
+        if (this.droplet.identifier) {
+            newData = [this.droplet];
+        } else {
+            newData = this.droplets;
+        }
 
         for (var i = 0; i < this.dropletsSearchTerms.length; i++) {
             newData = filterData(newData, this.dropletsSearchTerms[i], true, this.activeDropletColumn.name);
@@ -607,6 +281,9 @@ NfRegistryService.prototype = {
         this.getAutoCompleteDroplets();
     },
 
+    /**
+     * Generates the auto complete options for the droplet filter.
+     */
     getAutoCompleteDroplets: function () {
         var self = this;
         this.autoCompleteDroplets = [];
@@ -617,36 +294,48 @@ NfRegistryService.prototype = {
         });
     },
 
-    getBucket: function (registryId, bucketId) {
-        return this.getBuckets(registryId, bucketId).then(
-            function (buckets) {
-                return buckets[0];
-            });
-    },
-
-    getBuckets: function (registryIds, bucketIds) {
+    /**
+     * Execute the given bucket action.
+     *
+     * @param action        The action object.
+     * @param bucket        The bucket object the `action` will act upon.
+     */
+    executeBucketAction: function (action, bucket) {
         var self = this;
-        return this.getRegistries().then(
-            function (registries) {
-                var buckets = [];
-
-                registries.find(
-                    function (registry) {
-                        if (registryIds === undefined || registryIds.indexOf(registry.id) >= 0) {
-                            registry.buckets.find(
-                                function (bucket) {
-                                    if (bucketIds === undefined || bucketIds.indexOf(bucket.id) >= 0) {
-                                        buckets.push(bucket);
-                                    }
+        switch (action.name.toLowerCase()) {
+            case 'delete':
+                this.dialogService.openConfirm({
+                    title: 'Delete Bucket',
+                    message: 'All versions of all items will be deleted.',
+                    cancelButton: 'Cancel',
+                    acceptButton: 'Delete',
+                    acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(
+                    function (accept) {
+                        if (accept) {
+                            self.api.deleteBucket(bucket.identifier).subscribe(function (response) {
+                                self.buckets = self.buckets.filter(function (b) {
+                                    return b.identifier !== bucket.identifier;
                                 });
+                                self.filterBuckets();
+                            });
                         }
                     });
-
-                return buckets;
-            });
-
+                break;
+            case 'permissions':
+                this.router.navigateByUrl('/nifi-registry/administration/workflow(' + action.type + ':bucket/' + action.name + '/' + bucket.identifier + ')');
+                break;
+            default:
+                break;
+        }
     },
 
+    /**
+     * Filter buckets.
+     *
+     * @param {string} sortBy       The column name to sort `bucketColumns` by.
+     * @param {string} sortOrder    The order. Either 'ASC' or 'DES'
+     */
     filterBuckets: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
@@ -683,6 +372,9 @@ NfRegistryService.prototype = {
         this.getAutoCompleteBuckets();
     },
 
+    /**
+     * Generates the auto complete options for the bucket filter.
+     */
     getAutoCompleteBuckets: function () {
         var self = this;
         this.autoCompleteBuckets = [];
@@ -693,6 +385,11 @@ NfRegistryService.prototype = {
         });
     },
 
+    /**
+     * Sort `buckets` by `column`.
+     *
+     * @param column    The column to sort by.
+     */
     sortBuckets: function (sortEvent, column) {
         if (column.sortable === true) {
             // toggle column sort order
@@ -706,14 +403,6 @@ NfRegistryService.prototype = {
             //and set this column as the actively sorted column
             column.active = true;
         }
-    },
-
-    bucketsSearchRemove: function (searchTerm) {
-        this.filterDroplets(this.activeBucketsColumn.name, this.activeBucketsColumn.sortOrder);
-    },
-
-    bucketsSearchAdd: function (searchTerm) {
-        this.filterDroplets(this.activeBucketsColumn.name, this.activeBucketsColumn.sortOrder);
     },
 
     allFilteredBucketsSelected: function () {
@@ -732,134 +421,6 @@ NfRegistryService.prototype = {
         } else {
             this.allBucketsSelected = false;
         }
-    },
-
-    getCertification: function (registryId, certificatonId) {
-        return this.getCertifications(registryId, certificatonId).then(
-            function (certificatons) {
-                return certificatons[0];
-            });
-    },
-    getCertifications: function (registryIds, certificatonIds) {
-        var self = this;
-        return this.getRegistries().then(
-            function (registries) {
-                var certificatons = [];
-
-                registries.find(
-                    function (registry) {
-                        if (registryIds === undefined || registryIds.indexOf(registry.id) >= 0) {
-                            registry.certifications.find(
-                                function (certificaton) {
-                                    if (certificatonIds === undefined || certificatonIds.indexOf(certificaton.id) >= 0) {
-                                        certificatons.push(certificaton);
-                                    }
-                                });
-                        }
-                    });
-
-                return certificatons;
-            });
-
-    },
-
-    filterCertifications: function (sortBy, sortOrder) {
-        // if `sortOrder` is `undefined` then use 'ASC'
-        if (sortOrder === undefined) {
-            sortOrder = 'ASC'
-        }
-
-        // if `sortBy` is `undefined` then find the first sortable column in this.bucketColumns
-        if (sortBy === undefined) {
-            var arrayLength = this.bucketColumns.length;
-            for (var i = 0; i < arrayLength; i++) {
-                if (this.bucketColumns[i].sortable === true) {
-                    sortBy = this.bucketColumns[i].name;
-                    this.activeBucketColumn = this.bucketColumns[i];
-                    //only one column can be actively sorted so we reset all to inactive
-                    this.bucketColumns.forEach(function (c) {
-                        c.active = false;
-                    });
-                    //and set this column as the actively sorted column
-                    this.bucketColumns[i].active = true;
-                    this.bucketColumns[i].sortOrder = sortOrder;
-                    break;
-                }
-            }
-        }
-
-        var newData = this.certifications;
-
-        for (var i = 0; i < this.certificationsSearchTerms.length; i++) {
-            newData = filterData(newData, this.certificationsSearchTerms[i], true, this.activeBucketColumn.name);
-        }
-
-        newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
-        this.filteredCertifications = newData;
-        this.getAutoCompleteCertifications();
-    },
-
-    getAutoCompleteCertifications: function () {
-        var self = this;
-        this.autoCompleteCertifications = [];
-        this.bucketColumns.forEach(function (c) {
-            return self.filteredCertifications.forEach(function (r) {
-                return (r[c.name.toLowerCase()]) ? self.autoCompleteCertifications.push(r[c.name.toLowerCase()].toString()) : '';
-            });
-        });
-    },
-
-    sortCertifications: function (sortEvent, column) {
-        if (column.sortable === true) {
-            // toggle column sort order
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
-            this.filterCertifications(column.name, sortOrder);
-            this.activeCertificationsColumn = column;
-            //only one column can be actively sorted so we reset all to inactive
-            this.bucketColumns.forEach(function (c) {
-                c.active = false;
-            });
-            //and set this column as the actively sorted column
-            column.active = true;
-        }
-    },
-
-    certificationsSearchRemove: function (searchTerm) {
-        this.filterDroplets(this.activeCertificationsColumn.name, this.activeCertificationsColumn.sortOrder);
-    },
-
-    certificationsSearchAdd: function (searchTerm) {
-        this.filterDroplets(this.activeCertificationsColumn.name, this.activeCertificationsColumn.sortOrder);
-    },
-
-    getUser: function (registryId, userId) {
-        return this.getUsers(registryId, userId).then(
-            function (users) {
-                return users[0];
-            });
-    },
-
-    getUsers: function (registryIds, userIds) {
-        var self = this;
-        return this.getRegistries().then(
-            function (registries) {
-                var users = [];
-
-                registries.find(
-                    function (registry) {
-                        if (registryIds === undefined || registryIds.indexOf(registry.id) >= 0) {
-                            registry.users.find(
-                                function (user) {
-                                    if (userIds === undefined || userIds.indexOf(user.id) >= 0) {
-                                        users.push(user);
-                                    }
-                                });
-                        }
-                    });
-
-                return users;
-            });
-
     },
 
     sortUsers: function (sortEvent, column) {
@@ -970,12 +531,8 @@ NfRegistryService.prototype = {
     },
 
     //</editor-fold>
-
-    setBreadcrumbState: function (state) {
-        this.breadCrumbState = state;
-    }
 };
 
-NfRegistryService.parameters = [covalentCore.TdDataTableService];
+NfRegistryService.parameters = [covalentCore.TdDataTableService, NfRegistryApi, ngRouter.Router, fdsDialogsModule.FdsDialogService];
 
 module.exports = NfRegistryService;

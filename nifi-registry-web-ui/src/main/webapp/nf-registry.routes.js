@@ -19,7 +19,6 @@ var ngRouter = require('@angular/router');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryExplorerGridListViewer = require('nifi-registry/components/explorer/grid-list/nf-registry-explorer-grid-list-viewer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryGeneralAdministration = require('nifi-registry/components/administration/general/nf-registry-general-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
@@ -29,34 +28,31 @@ var NfRegistryUserPermissions = require('nifi-registry/components/administration
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/bucket/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/bucket/droplet/nf-registry-droplet-grid-list-viewer.js');
+var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
+var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
 
 var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     path: 'nifi-registry/explorer',
     component: NfRegistryExplorer,
-    children: [{
-        path: 'grid-list',
-        component: NfRegistryExplorerGridListViewer,
-        children: [{
-            path: ':registryId',
-            component: NfRegistryGridListViewer,
-            children: [{
-                path: ':bucketId',
-                component: NfRegistryBucketGridListViewer,
-                children: [{
-                    path: ':dropletId',
-                    component: NfRegistryDropletGridListViewer
-                }]
-            }]
-        }]
-    }]
+    children: [
+        {
+            path: 'grid-list',
+            component: NfRegistryGridListViewer
+        }, {
+            path: 'grid-list/buckets/:bucketId',
+            component: NfRegistryBucketGridListViewer
+        },
+        {
+            path: 'grid-list/buckets/:bucketId/:dropletType/:dropletId',
+            component: NfRegistryDropletGridListViewer
+        }
+        ]
     // canActivate: [AuthGuard] //TODO: https://angular.io/api/router/CanActivate https://scotch.io/tutorials/routing-angular-2-single-page-apps-with-the-component-router
 }, {
     path: 'nifi-registry/fluid-design-system',
     component: FdsDemo
 }, {
-    path: 'nifi-registry/administration/:registryId',
+    path: 'nifi-registry/administration',
     component: NfRegistryAdministration,
     children: [{
         path: '',
@@ -73,12 +69,16 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
         component: NfRegistryWorkflowAdministration
     }]
 }, {
+    path: 'nifi-registry/explorer/grid-list/buckets',
+    redirectTo: '/nifi-registry/explorer/grid-list',
+    pathMatch: 'full'
+}, {
     path: 'nifi-registry',
-    redirectTo: '/nifi-registry/explorer/grid-list/23f6cc59-0156-1000-06b4-2b0810089090',
+    redirectTo: '/nifi-registry/explorer/grid-list',
     pathMatch: 'full'
 }, {
     path: '',
-    redirectTo: '/nifi-registry/explorer/grid-list/23f6cc59-0156-1000-06b4-2b0810089090',
+    redirectTo: '/nifi-registry/explorer/grid-list',
     pathMatch: 'full'
 }, {
     path: '**',

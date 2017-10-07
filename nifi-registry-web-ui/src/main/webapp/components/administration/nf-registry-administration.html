@@ -19,18 +19,18 @@ limitations under the License.
     <md-button-toggle-group name="nifi-registry-administration-perspective" fxLayout="row"
                             fxLayoutAlign="space-between center" class="tab-toggle-group">
         <md-button-toggle [checked]="nfRegistryService.adminPerspective === 'general'" value="general" class="uppercase"
-                          routerLink="/nifi-registry/administration/{{nfRegistryService.registry.id}}/general"
+                          routerLink="/nifi-registry/administration/general"
                           i18n="General administration tab|A description of the type of administration options available.@@nf-admin-general-tab-title">
             general
         </md-button-toggle>
         <md-button-toggle [checked]="nfRegistryService.adminPerspective === 'users'" value="users" class="uppercase"
-                          routerLink="/nifi-registry/administration/{{nfRegistryService.registry.id}}/users"
+                          routerLink="/nifi-registry/administration/users"
                           i18n="Users administration tab|A description of the type of administration options available.@@nf-admin-users-tab-title">
             Users
         </md-button-toggle>
         <md-button-toggle [checked]="nfRegistryService.adminPerspective === 'workflow'" value="workflow"
                           class="uppercase"
-                          routerLink="/nifi-registry/administration/{{nfRegistryService.registry.id}}/workflow"
+                          routerLink="/nifi-registry/administration/workflow"
                           i18n="Workflow administration tab|A description of the type of administration options available.@@nf-admin-workflow-tab-title">
             Workflow
         </md-button-toggle>
