@@ -47,7 +47,7 @@ NfRegistryUsersAdministration.prototype = {
         this.route.params
             .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'users';
-                return self.nfRegistryService.getUsers(self.nfRegistryService.registry.id);
+                return self.nfRegistryService.api.getUsers();
             })
             .subscribe(function (users) {
                 self.nfRegistryService.users = self.nfRegistryService.filteredUsers = users;
@@ -85,7 +85,7 @@ NfRegistryUsersAdministration.prototype = {
                 }).afterClosed().subscribe(
                     function (accept) {
                         if (accept) {
-                            self.nfRegistryService.deleteUser(user.id);
+                            self.nfRegistryService.api.deleteUser(user.identifier);
                         }
                     });
                 break;
@@ -99,15 +99,15 @@ NfRegistryUsersAdministration.prototype = {
                 }).afterClosed().subscribe(
                     function (accept) {
                         if (accept) {
-                            self.nfRegistryService.suspendUser(user.id);
+                            self.nfRegistryService.api.suspendUser(user.identifier);
                         }
                     });
                 break;
             case 'add':
-                this.router.navigateByUrl('/nifi-registry/administration/' + this.nfRegistryService.registry.id + '/users(sidenav:user/add)');
+                this.router.navigateByUrl('/nifi-registry/administration/users(sidenav:user/add)');
                 break;
             default:
-                this.router.navigateByUrl('/nifi-registry/administration/' + this.nfRegistryService.registry.id + '/users(' + action.type + ':user/' + action.name + '/' + user.id + ')');
+                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':user/' + action.name + '/' + user.id + ')');
                 break;
         }
     }

@@ -50,10 +50,20 @@
 
             // other libraries
             'rxjs': 'npm:rxjs',
+            'moment': 'npm:moment',
+            'angular2-moment': 'npm:angular2-moment',
             'switchMap': 'npm:rxjs/add/operator/switchMap',
+            'zone.js': 'npm:zone.js/dist/zone.js',
+            'core-js': 'npm:core-js/client/shim.min.js',
+            'superagent': 'npm:superagent/superagent.js',
+            'querystring': 'npm:querystring',
 
             // Fluid Design System
             '@fluid-design-system/core': 'npm:@fluid-design-system/dist/platform/core/fluid-design-system.module.js',
+            '@fluid-design-system/dialogs': 'npm:@fluid-design-system/dist/platform/core/dialogs/fds-dialogs.module.js',
+            '@fluid-design-system/dialog-component': 'npm:@fluid-design-system/dist/platform/core/dialogs/fds-dialog.component.js',
+            '@fluid-design-system/dialog-service': 'npm:@fluid-design-system/dist/platform/core/dialogs/services/dialog.service.js',
+            '@fluid-design-system/confirm-dialog-component': 'npm:@fluid-design-system/dist/platform/core/dialogs/confirm-dialog/confirm-dialog.component.js',
         },
         // packages tells the System loader how to load when no filename and/or no extension
         packages: {
@@ -68,7 +78,19 @@
             'nifi-registry/systemjs-angular-loader.js': {
                 loader: false
             },
-            rxjs: {
+            'rxjs': {
+                defaultExtension: 'js'
+            },
+            'querystring': {
+                main: './index.js',
+                defaultExtension: 'js'
+            },
+            'moment': {
+                main: './moment.js',
+                defaultExtension: 'js'
+            },
+            'angular2-moment': {
+                main: './index.js',
                 defaultExtension: 'js'
             }
         }

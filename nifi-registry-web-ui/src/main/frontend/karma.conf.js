@@ -21,8 +21,17 @@ module.exports = function (config) {
 
     config.set({
         basePath: '',
+        browserNoActivityTimeout: 9999999, //default 10000
+        browserDisconnectTimeout: 999999, // default 2000
+        browserDisconnectTolerance: 1, // default 0
+        captureTimeout: 999999,
         frameworks: ['jasmine'],
-
+        customLaunchers: {
+            Chrome_travis_ci: {
+                base: 'Chrome',
+                flags: ['--no-sandbox']
+            }
+        },
         plugins: [
             require('karma-jasmine'),
             require('karma-chrome-launcher'),
@@ -51,13 +60,18 @@ module.exports = function (config) {
             'node_modules/zone.js/dist/jasmine-patch.js',
             'node_modules/zone.js/dist/async-test.js',
             'node_modules/zone.js/dist/fake-async-test.js',
+
+            // others
             'node_modules/hammerjs/hammer.js',
+            'node_modules/moment/moment.js',
+            'node_modules/superagent/superagent.js',
 
             // RxJs
             {pattern: 'node_modules/rxjs/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/rxjs/**/*.js.map', included: false, watched: false},
 
             // Paths loaded via module imports:
+            {pattern: 'node_modules/systemjs/**/*.js.map', included: false, watched: false},
             {pattern: 'node_modules/@angular/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/@angular/**/*.js.map', included: false, watched: false},
             {pattern: 'node_modules/@covalent/**/*.js', included: false, watched: false},
@@ -65,6 +79,9 @@ module.exports = function (config) {
             {pattern: 'node_modules/@fluid-design-system/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/jquery/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/roboto-fontface/**/*.ttf', included: false, watched: false},
+            {pattern: 'node_modules/angular2-moment/**/*.js', included: false, watched: false},
+            {pattern: 'node_modules/angular2-moment/**/*.js.map', included: false, watched: false},
+            {pattern: 'node_modules/querystring/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/systemjs-plugin-text/text.js', included: false, watched: false},
 
             {pattern: appBase + 'systemjs.spec.config.js', included: false, watched: false},
@@ -73,28 +90,30 @@ module.exports = function (config) {
             // Include the Fluid Design System (which includes the Teradata Covalent and
             // Angular Material themes) in the test suite.
             {
-                pattern: 'node_modules/@fluid-design-system/dist/platform/core/common/styles/css/fluid-design-system.min.css',
+                pattern: 'node_modules/@fluid-design-system/dist/platform/core/common/styles/css/*.min.css',
                 included: true,
                 watched: true,
                 served: true
             },
             {
-                pattern: 'node_modules/@fluid-design-system/dist/platform/core/common/styles/css/fluid-design-system.min.css.map',
-                included: false,
-                watched: false
+                pattern: 'node_modules/@fluid-design-system/dist/platform/core/**/*.html',
+                included: true,
+                watched: true,
+                served: true
             },
 
             // Include the Nifi Registry styles (currently built based off of the
             // @fluid-design-system/dist/platform/core/common/styles/_globalVars.scss)
             {
-                pattern: 'webapp/css/nf-registry.min.css',
+                pattern: 'webapp/css/*.css',
                 included: true,
                 watched: true
             },
             {
-                pattern: 'webapp/css/nf-registry.min.css.map',
-                included: false,
-                watched: false
+                pattern: 'webapp/**/*.html',
+                included: true,
+                watched: true,
+                served: true
             },
 
             // Asset (HTML) paths loaded via Angular's component compiler
@@ -105,6 +124,9 @@ module.exports = function (config) {
             {pattern: '**/*.svg', watched: false, included: false, served: true},
 
             // Paths for debugging with source maps in dev tools
+            {pattern: 'node_modules/@fluid-design-system/dist/platform/**/*.css.map', included: false, watched: false},
+            {pattern: appBase + '**/*.js.map', included: false, watched: false},
+            {pattern: appBase + '**/*.css.map', included: false, watched: false},
             {pattern: appBase + '**/*.js', included: false, watched: false}
         ],
 
@@ -119,10 +141,9 @@ module.exports = function (config) {
 
         exclude: [],
         preprocessors: {
-            'webapp/**/!(*spec|*mock).js': 'coverage',
-            'platform/**/!(*spec|*mock).js': 'coverage'
+            'webapp/**/!(*spec|*mock|*stub|*config|*extras|*fds-demo).js': 'coverage'
         },
-        reporters: ['progress', 'kjhtml', 'spec', 'coverage'],
+        reporters: ['kjhtml', 'coverage'],
         coverageReporter: {
             type: 'html',
             dir: 'coverage/'
@@ -136,5 +157,21 @@ module.exports = function (config) {
         autoWatch: true,
         browsers: ['Chrome'],
         singleRun: false
-    })
+    });
+
+    if (process.env.TRAVIS) {
+        config.set({
+            browsers: ['Chrome_travis_ci']
+        });
+
+        // Override base config
+        config.set({
+            singleRun: true,
+            autoWatch: false,
+            reporters: ['spec', 'coverage'],
+            specReporter: {
+                failFast: true
+            }
+        });
+    }
 }

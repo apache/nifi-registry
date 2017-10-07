@@ -40,15 +40,7 @@ NfRegistryAdministration.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.perspective = 'administration';
-        this.route.params
-            .switchMap(function (params) {
-                self.nfRegistryService.setBreadcrumbState('out');
-                return self.nfRegistryService.getRegistry(params['registryId']);
-            })
-            .subscribe(function (registry) {
-                self.nfRegistryService.registry = registry;
-                self.nfRegistryService.setBreadcrumbState('in');
-            });
+        this.nfRegistryService.setBreadcrumbState('in');
     },
 
     /**
@@ -56,16 +48,7 @@ NfRegistryAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.perspective = '';
-        this.nfRegistryService.registry = {};
-    },
-
-    /**
-     * Navigate to administer the registry.
-     *
-     * @param id     The registry id..
-     */
-    navigateToAdministration: function (id) {
-        this.route.navigateByUrl('nifi-registry/administration/' + id);
+        this.nfRegistryService.setBreadcrumbState('out');
     }
 };
 

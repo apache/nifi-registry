@@ -721,7 +721,7 @@ FdsDemo.prototype = {
         return sortByColumnLabel;
     },
 
-    sortDroplets: function (sortEvent, column) {
+    sortDroplets: function (column) {
         if (column.sortable === true) {
             // toggle column sort order
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -734,14 +734,6 @@ FdsDemo.prototype = {
             //and set this column as the actively sorted column
             column.active = true;
         }
-    },
-
-    dropletsSearchRemove: function (searchTerm) {
-        this.filterDroplets(this.activeColumn.name, this.activeColumn.sortOrder);
-    },
-
-    dropletsSearchAdd: function (searchTerm) {
-        this.filterDroplets(this.activeColumn.name, this.activeColumn.sortOrder);
     },
 
     toggleDropletsFilter: function (searchTerm) {

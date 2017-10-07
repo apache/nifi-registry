@@ -17,7 +17,7 @@ limitations under the License.
 
 <div fxFill>
     <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-md pad-bottom-md pad-left-sm pad-right-sm">
-        <span *ngIf="nfRegistryService.bucket.id" class="mat-card-title">{{nfRegistryService.bucket.name}}</span>
+        <span *ngIf="nfRegistryService.bucket.identifier" class="mat-card-title">{{nfRegistryService.bucket.name}}</span>
         <button md-icon-button (click)="closeSideNav()">
             <md-icon color="primary">close</md-icon>
         </button>

@@ -13,9 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# before_install
-#   1. Configures pre-installed Chrome on Travis CI for karma testing
+language: java
+
+env:
+    - USER_LANGUAGE=en USER_REGION=US'
+    - USER_LANGUAGE=fr USER_REGION=FR'
+    - USER_LANGUAGE=ja USER_REGION=JP'
+    - USER_LANGUAGE=pt USER_REGION=BR'
+    - USER_LANGUAGE=default USER_REGION=default
+
+os:
+    - linux
+
+jdk:
+    - oraclejdk8
+
+# Caches mvn repository in order to speed up builds
+cache:
+    directories:
+        - $HOME/.m2
+        - $HOME/.npm
+
+before_cache:
+    # Remove nifi repo again to save travis from caching it
+    - rm -rf $HOME/.m2/repository/org/apache/nifi-registry/
+
+addons:
+    chrome: stable
+
+# before_install aids in setting up the Travis-CI environment
+#   1. simulate an `X` server on Travis CI for karma tests that require a GUI
+#   2. Configures pre-installed Chrome on Travis CI to be used in “headless” mode
 before_install:
-  - export CHROME_BIN=chromium-browser
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
+    - export DISPLAY=:99.0
+    - sh -e /etc/init.d/xvfb start
+    - sleep 3 # give xvfb some time to start
+    - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+
+install: true
+script:  mvn -T 2C clean install -PjsUnitTests

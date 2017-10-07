@@ -18,6 +18,7 @@
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommon = require('@angular/common');
+var ngRouter = require('@angular/router');
 var ngPlatformBrowser = require('@angular/platform-browser');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
@@ -41,7 +42,7 @@ var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
 var ngHttp = require('@angular/http');
 
-describe('NfRegistryAdministration Component', function () {
+describe('NfRegistryWorkflowAdministration Component', function () {
     var comp;
     var fixture;
     var de;
@@ -81,23 +82,28 @@ describe('NfRegistryAdministration Component', function () {
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
+                }, {
+                    provide: ngRouter.ActivatedRoute,
+                    useValue: {
+                        params: rxjs.Observable.of({})
+                    }
                 }
             ]
         });
-
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryAdministration);
-
+        
+        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryWorkflowAdministration);
+        
         // test instance
         comp = fixture.componentInstance;
 
         // from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
-        de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-administration-perspective'));
+        de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-workflow-administration-perspective-buckets-container'));
         el = de.nativeElement;
         
         // Spy
-        spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
+        spyOn(nfRegistryService.api, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
             "name": "Flow #1",
@@ -114,26 +120,58 @@ describe('NfRegistryAdministration Component', function () {
                 "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
             }
         }]));
+        spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([{name: 'Bucket #1'}]));
+        spyOn(nfRegistryApi, 'createBucket').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({name: 'Newly Created Bucket'}));
+        spyOn(nfRegistryService, 'filterBuckets');
     });
 
-    it('should have a defined component', function () {
+    it('should have a defined component', ngCoreTesting.async(function () {
         fixture.detectChanges();
+        fixture.whenStable().then(function () { // wait for async getBuckets
+            fixture.detectChanges();
 
-        //assertions
-        expect(comp).toBeDefined();
-        expect(nfRegistryService.perspective).toBe('administration');
-        expect(nfRegistryService.breadCrumbState).toBe('in');
-        expect(de).toBeDefined();
-    });
+            //assertions
+            expect(comp).toBeDefined();
+            expect(de).toBeDefined();
+            expect(nfRegistryService.adminPerspective).toBe('workflow');
+            expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
+            expect(nfRegistryService.buckets.length).toBe(1);
+            expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
+        });
+    }));
 
-    it('should destroy the component', function () {
+    it('should create a new bucket', ngCoreTesting.async(function () {
+        fixture.detectChanges();
+        fixture.whenStable().then(function () { // wait for async getBuckets
+            fixture.detectChanges();
+            comp.createBucket({value: 'This bucket name.'});
+            fixture.detectChanges();
+            fixture.whenStable().then(function () { // wait for async createBucket
+                fixture.detectChanges();
+
+                //assertions
+                expect(nfRegistryApi.createBucket).toHaveBeenCalledWith('This bucket name.');
+                expect(nfRegistryService.buckets[1].name).toEqual('Newly Created Bucket');
+                expect(nfRegistryService.buckets.length).toBe(2);
+                expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
+            });
+        });
+    }));
+
+    it('should destroy the component', ngCoreTesting.fakeAsync(function () {
+        fixture.detectChanges();
+        // wait for async getBucket call
+        ngCoreTesting.tick();
         fixture.detectChanges();
 
         // The function to test
         comp.ngOnDestroy();
 
         //assertions
-        expect(nfRegistryService.perspective).toBe('');
-        expect(nfRegistryService.breadCrumbState).toBe('out');
-    });
+        expect(nfRegistryService.adminPerspective).toBe('');
+        expect(nfRegistryService.buckets.length).toBe(0);
+        expect(nfRegistryService.filteredBuckets.length).toBe(0);
+    }));
 });

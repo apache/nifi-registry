@@ -23,43 +23,43 @@ limitations under the License.
         <md-toolbar id="nifi-registry-toolbar">
             <img id="nifi-registry-logo" src="nifi-registry/images/registry-logo-web-app.svg">
             <div fxFlex="1 1 auto" class="pad-left-xl" [@flyInOut]="nfRegistryService.breadCrumbState">
-                <span routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{nfRegistryService.registry.id}}">{{nfRegistryService.registry.name}}</span>
+                <span routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">{{nfRegistryService.registry.name}}</span>
                 <md-menu #availableRegistriesMenu="mdMenu" [overlapTrigger]="false">
                     <button md-menu-item *ngFor="let registry of nfRegistryService.registries"
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{registry.id}}">
+                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                         <span>{{registry.name}}</span>
                     </button>
                 </md-menu>
                 <span *ngIf="nfRegistryService.perspective === 'administration'"> / Administration</span>
-                <span *ngIf="(nfRegistryService.perspective === 'explorer') && nfRegistryService.bucket.id"
+                <span *ngIf="(nfRegistryService.perspective === 'explorer') && nfRegistryService.bucket.identifier"
                       [mdMenuTriggerFor]="availableBucketsMenu"> / {{nfRegistryService.bucket.name}}<i
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
-                <span *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.registry.id && !nfRegistryService.bucket.id"
+                <span *ngIf="nfRegistryService.perspective === 'explorer' && !nfRegistryService.bucket.identifier"
                       [mdMenuTriggerFor]="availableBucketsMenu"> / All<i class="fa fa-caret-down pad-left-sm"
                                                                          aria-hidden="true"></i></span>
                 <md-menu #availableBucketsMenu="mdMenu" [overlapTrigger]="false">
                     <button md-menu-item
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{nfRegistryService.registry.id}}">
+                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                         <span>All buckets...</span>
                     </button>
                     <button md-menu-item *ngFor="let bucket of nfRegistryService.buckets"
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{nfRegistryService.registry.id}}/{{bucket.id}}">
+                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/buckets/{{bucket.identifier}}">
                         <span>{{bucket.name}}</span>
                     </button>
                 </md-menu>
-                <span *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.droplet.id"
+                <span *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.droplet.identifier"
                       [mdMenuTriggerFor]="availableDropletsMenu"> / {{nfRegistryService.droplet.name}}<i
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
                 <span [mdMenuTriggerFor]="availableDropletsMenu"
-                      *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.bucket.id && !nfRegistryService.droplet.id"> / All<i
+                      *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.bucket.identifier && !nfRegistryService.droplet.identifier"> / All<i
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
                 <md-menu #availableDropletsMenu="mdMenu" [overlapTrigger]="false">
                     <button md-menu-item
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{nfRegistryService.registry.id}}/{{nfRegistryService.bucket.id}}">
+                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/buckets/{{nfRegistryService.bucket.identifier}}">
                         <span>All droplets...</span>
                     </button>
                     <button md-menu-item *ngFor="let droplet of nfRegistryService.droplets"
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{nfRegistryService.registry.id}}/{{nfRegistryService.bucket.id}}/{{droplet.id}}">
+                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{droplet.link.href}}">
                         <span>{{droplet.name}}</span>
                     </button>
                 </md-menu>
@@ -72,12 +72,12 @@ limitations under the License.
             </button>
             <button md-ripple [@flyInOut] *ngIf="nfRegistryService.perspective === 'explorer'" md-icon-button
                     mdTooltip="Registry Administration"
-                    routerLink="/nifi-registry/administration/{{nfRegistryService.registry.id}}/general">
+                    routerLink="/nifi-registry/administration/general">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
             <button md-ripple [@flyInOut] *ngIf="nfRegistryService.perspective === 'administration'" md-mini-fab
                     mdTooltip="Close settings and return to Explorer perspective."
-                    routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{nfRegistryService.registry.id}}">
+                    routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                 <md-icon color="primary">close</md-icon>
             </button>
         </md-toolbar>
