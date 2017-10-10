@@ -265,30 +265,6 @@
                     </webResources>
                 </configuration>
             </plugin>
-            <!--
-                Speed up build time by excluding node, npm, and any node_modules from `mvn clean` since the front-end-maven plugin uses these
-                directories as cache.
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.build.directory}</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                            <excludes>
-                                <exclude>frontend-working-directory/node/**/*</exclude>
-                                <exclude>frontend-working-directory/node_modules/**/*</exclude>
-                            </excludes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
