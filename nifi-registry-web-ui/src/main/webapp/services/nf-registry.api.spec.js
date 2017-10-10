@@ -26,7 +26,6 @@ var NfRegistryService = require('nifi-registry/services/nf-registry.service.js')
 var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryGeneralAdministration = require('nifi-registry/components/administration/general/nf-registry-general-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/add/nf-registry-add-user.js');
 var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
@@ -59,7 +58,6 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
                 NfRegistry,
                 NfRegistryExplorer,
                 NfRegistryAdministration,
-                NfRegistryGeneralAdministration,
                 NfRegistryUsersAdministration,
                 NfRegistryUserDetails,
                 NfRegistryUserPermissions,
