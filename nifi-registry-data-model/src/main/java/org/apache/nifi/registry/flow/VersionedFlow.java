@@ -22,6 +22,7 @@ import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.bucket.BucketItemType;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.SortedSet;
 
@@ -38,11 +39,23 @@ import java.util.SortedSet;
 @ApiModel(value = "versionedFlow")
 public class VersionedFlow extends BucketItem {
 
+    @Min(0)
+    private long versionCount;
+
     @Valid
     private SortedSet<VersionedFlowSnapshotMetadata> snapshotMetadata;
 
     public VersionedFlow() {
         super(BucketItemType.FLOW);
+    }
+
+    @ApiModelProperty(value = "The number of versions of this flow.", readOnly = true)
+    public long getVersionCount() {
+        return versionCount;
+    }
+
+    public void setVersionCount(long versionCount) {
+        this.versionCount = versionCount;
     }
 
     @ApiModelProperty(value = "The metadata for each snapshot of this flow.", readOnly = true)

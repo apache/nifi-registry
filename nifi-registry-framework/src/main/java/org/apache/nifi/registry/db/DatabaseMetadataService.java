@@ -19,6 +19,7 @@ package org.apache.nifi.registry.db;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
@@ -42,8 +43,10 @@ import javax.persistence.metamodel.Metamodel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -131,17 +134,7 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<BucketEntity> getBuckets(final QueryParameters params) {
-        if (params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedBuckets(params);
-        } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedBuckets(params);
-        } else {
-            return getAllBuckets();
-        }
-    }
-
-    private List<BucketEntity> getAllBuckets() {
+    public List<BucketEntity> getAllBuckets() {
         final List<BucketEntity> buckets = new ArrayList<>();
         for (BucketEntity bucket : bucketRepository.findAll()) {
             buckets.add(bucket);
@@ -149,19 +142,38 @@ public class DatabaseMetadataService implements MetadataService {
         return buckets;
     }
 
-    private List<BucketEntity> getPagedBuckets(final QueryParameters params) {
-        final Pageable pageable = getPageRequest(params);
+    @Override
+    public List<BucketEntity> getBuckets(final QueryParameters params, final Set<String> bucketIds) {
+        if (params != null && params.getNumRows() != null && params.getPageNum() != null) {
+            return getPagedBuckets(params, bucketIds);
+        } else if (params != null && params.getSortParameters() != null && params.getSortParameters().size() > 0) {
+            return getSortedBuckets(params, bucketIds);
+        } else {
+            return getAllBuckets(bucketIds);
+        }
+    }
+
+    private List<BucketEntity> getAllBuckets(final Set<String> bucketIds) {
         final List<BucketEntity> buckets = new ArrayList<>();
-        for (BucketEntity bucket : bucketRepository.findAll(pageable)) {
+        for (BucketEntity bucket : bucketRepository.findByIdIn(bucketIds)) {
             buckets.add(bucket);
         }
         return buckets;
     }
 
-    private List<BucketEntity> getSortedBuckets(final QueryParameters params) {
+    private List<BucketEntity> getPagedBuckets(final QueryParameters params, final Set<String> bucketIds) {
+        final Pageable pageable = getPageRequest(params);
+        final List<BucketEntity> buckets = new ArrayList<>();
+        for (BucketEntity bucket : bucketRepository.findByIdIn(bucketIds, pageable)) {
+            buckets.add(bucket);
+        }
+        return buckets;
+    }
+
+    private List<BucketEntity> getSortedBuckets(final QueryParameters params, final Set<String> bucketIds) {
         final Sort sort = getSort(params);
         final List<BucketEntity> buckets = new ArrayList<>();
-        for (BucketEntity bucket : bucketRepository.findAll(sort)) {
+        for (BucketEntity bucket : bucketRepository.findByIdIn(bucketIds, sort)) {
             buckets.add(bucket);
         }
         return buckets;
@@ -174,117 +186,89 @@ public class DatabaseMetadataService implements MetadataService {
     // ------------------------------------------------------------------------------------
 
     @Override
-    public List<BucketItemEntity> getBucketItems(final QueryParameters params) {
-        if (params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedBucketItems(params);
-        } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedBucketItems(params);
-        } else {
-            return getAllBucketItems();
-        }
-    }
-
-    private List<BucketItemEntity> getAllBucketItems() {
-        final List<BucketItemEntity> bucketItems = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findAll()) {
-            bucketItems.add(item);
-        }
-        return bucketItems;
-    }
-
-    private List<BucketItemEntity> getPagedBucketItems(final QueryParameters params) {
-        final Pageable pageable = getPageRequest(params);
-        final List<BucketItemEntity> items = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findAll(pageable)) {
-            items.add(item);
-        }
-        return items;
-    }
-
-    private List<BucketItemEntity> getSortedBucketItems(final QueryParameters params) {
-        final Sort sort = getSort(params);
-        final List<BucketItemEntity> items = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findAll(sort)) {
-            items.add(item);
-        }
-        return items;
-    }
-
-    // ------------------------------------------------------------------------------------
-
-    @Override
     public List<BucketItemEntity> getBucketItems(final QueryParameters params, final BucketEntity bucket) {
-        if (params.getNumRows() != null && params.getPageNum() != null) {
+        if (params != null && params.getNumRows() != null && params.getPageNum() != null) {
             return getPagedBucketItems(params, bucket);
-        } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
+        } else if (params != null && params.getSortParameters() != null && params.getSortParameters().size() > 0) {
             return getSortedBucketItems(params, bucket);
         } else {
             return getBucketItems(bucket);
         }
     }
 
+    private List<BucketItemEntity> getBucketItems(final BucketEntity bucket) {
+        final Iterable<BucketItemEntity> items = itemRepository.findByBucket(bucket);
+        return getItemsWithCounts(items);
+    }
+
+    private List<BucketItemEntity> getPagedBucketItems(final QueryParameters params, final BucketEntity bucket) {
+        final Pageable pageable = getPageRequest(params);
+        final Iterable<BucketItemEntity> items = itemRepository.findByBucket(bucket, pageable);
+        return getItemsWithCounts(items);
+    }
+
+    private List<BucketItemEntity> getSortedBucketItems(final QueryParameters params, final BucketEntity bucket) {
+        final Sort sort = getSort(params);
+        final Iterable<BucketItemEntity> items = itemRepository.findByBucket(bucket, sort);
+        return getItemsWithCounts(items);
+    }
+
+    // ------------------------------------------------------------------------------------
+
     @Override
     public List<BucketItemEntity> getBucketItems(final QueryParameters params, final Set<String> bucketIds) {
         Set<BucketEntity> filterBuckets = getBuckets(bucketIds);
-        if (params.getNumRows() != null && params.getPageNum() != null) {
+        if (params != null && params.getNumRows() != null && params.getPageNum() != null) {
             return getPagedBucketItems(params, filterBuckets);
-        } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
+        } else if (params != null && params.getSortParameters() != null && params.getSortParameters().size() > 0) {
             return getSortedBucketItems(params, filterBuckets);
         } else {
             return getBucketItems(filterBuckets);
         }
     }
 
-    private List<BucketItemEntity> getBucketItems(final BucketEntity bucket) {
-        final List<BucketItemEntity> bucketItems = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findByBucket(bucket)) {
-            bucketItems.add(item);
-        }
-        return bucketItems;
-    }
-
-    private List<BucketItemEntity> getPagedBucketItems(final QueryParameters params, final BucketEntity bucket) {
-        final Pageable pageable = getPageRequest(params);
-        final List<BucketItemEntity> items = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findByBucket(bucket, pageable)) {
-            items.add(item);
-        }
-        return items;
-    }
-
-    private List<BucketItemEntity> getSortedBucketItems(final QueryParameters params, final BucketEntity bucket) {
-        final Sort sort = getSort(params);
-        final List<BucketItemEntity> items = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findByBucket(bucket, sort)) {
-            items.add(item);
-        }
-        return items;
-    }
-
     private List<BucketItemEntity> getBucketItems(final Set<BucketEntity> buckets) {
-        final List<BucketItemEntity> bucketItems = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findByBucketIn(buckets)) {
-            bucketItems.add(item);
-        }
-        return bucketItems;
+        final List<BucketItemEntity> items = itemRepository.findByBucketIn(buckets);
+        return getItemsWithCounts(items);
     }
 
     private List<BucketItemEntity> getPagedBucketItems(final QueryParameters params, final Set<BucketEntity> buckets) {
         final Pageable pageable = getPageRequest(params);
-        final List<BucketItemEntity> items = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findByBucketIn(buckets, pageable)) {
-            items.add(item);
-        }
-        return items;
+        final List<BucketItemEntity> items = itemRepository.findByBucketIn(buckets, pageable);
+        return getItemsWithCounts(items);
     }
 
     private List<BucketItemEntity> getSortedBucketItems(final QueryParameters params, final Set<BucketEntity> buckets) {
         final Sort sort = getSort(params);
-        final List<BucketItemEntity> items = new ArrayList<>();
-        for (BucketItemEntity item : itemRepository.findByBucketIn(buckets, sort)) {
-            items.add(item);
+        final List<BucketItemEntity> items = itemRepository.findByBucketIn(buckets, sort);
+        return getItemsWithCounts(items);
+    }
+
+    // ------------------------------------------------------------------------------------
+
+    private List<BucketItemEntity> getItemsWithCounts(final Iterable<BucketItemEntity> items) {
+        final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();
+
+        final List<BucketItemEntity> itemWithCounts = new ArrayList<>();
+        for (final BucketItemEntity item : items) {
+            if (item.getType() == BucketItemEntityType.FLOW) {
+                final Long snapshotCount = snapshotCounts.get(item.getId());
+                if (snapshotCount != null) {
+                    final FlowEntity flowEntity = (FlowEntity) item;
+                    flowEntity.setSnapshotCount(snapshotCount);
+                }
+            }
+
+            itemWithCounts.add(item);
         }
-        return items;
+
+        return itemWithCounts;
+    }
+
+    private Map<String,Long> getFlowSnapshotCounts() {
+        final Map<String,Long> flowSnapshotCounts = new HashMap<>();
+        flowSnapshotRepository.countByFlow().stream().forEach(c -> flowSnapshotCounts.put(c.getFlowIdentifier(), c.getSnapshotCount()));
+        return flowSnapshotCounts;
     }
 
     // ------------------------------------------------------------------------------------
@@ -300,8 +284,26 @@ public class DatabaseMetadataService implements MetadataService {
     public FlowEntity getFlowById(final String bucketIdentifier, final String flowIdentifier) {
         FlowEntity flow = flowRepository.findOne(flowIdentifier);
 
-        if (flow.getBucket() == null || !bucketIdentifier.equals(flow.getBucket().getId())) {
+        if (flow == null || flow.getBucket() == null || !bucketIdentifier.equals(flow.getBucket().getId())) {
             return null;
+        }
+
+        return flow;
+    }
+
+    @Override
+    public FlowEntity getFlowByIdWithSnapshotCounts(final String bucketIdentifier, final String flowIdentifier) {
+        FlowEntity flow = flowRepository.findOne(flowIdentifier);
+
+        if (flow == null || flow.getBucket() == null || !bucketIdentifier.equals(flow.getBucket().getId())) {
+            return null;
+        }
+
+        final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();
+
+        final Long snapshotCount = snapshotCounts.get(flow.getId());
+        if (snapshotCount != null) {
+            flow.setSnapshotCount(snapshotCount);
         }
 
         return flow;
@@ -322,6 +324,21 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
+    public List<FlowEntity> getFlowsByBucket(final BucketEntity bucketEntity) {
+        final Map<String,Long> snapshotCounts = getFlowSnapshotCounts();
+
+        final List<FlowEntity> flows = flowRepository.findByBucket(bucketEntity);
+        for (final FlowEntity flowEntity : flows) {
+            final Long snapshotCount = snapshotCounts.get(flowEntity.getId());
+            if (snapshotCount != null) {
+                flowEntity.setSnapshotCount(snapshotCount);
+            }
+        }
+
+        return flows;
+    }
+
+    @Override
     public FlowEntity updateFlow(final FlowEntity flow) {
         flow.setModified(new Date());
         return flowRepository.save(flow);
@@ -330,63 +347,6 @@ public class DatabaseMetadataService implements MetadataService {
     @Override
     public void deleteFlow(final FlowEntity flow) {
         flowRepository.delete(flow);
-    }
-
-    @Override
-    public List<FlowEntity> getFlows(final QueryParameters params) {
-        return getFlows(params, null);
-    }
-
-    @Override
-    public List<FlowEntity> getFlows(final QueryParameters params, Set<String> bucketIds) {
-        Set<BucketEntity> filterBuckets = getBuckets(bucketIds);
-        if (params.getNumRows() != null && params.getPageNum() != null) {
-            return getPagedFlows(params, filterBuckets);
-        } else if (params.getSortParameters() != null && params.getSortParameters().size() > 0) {
-            return getSortedFlows(params, filterBuckets);
-        } else {
-            return getAllFlows(filterBuckets);
-        }
-    }
-
-    private List<FlowEntity> getAllFlows() {
-        final List<FlowEntity> flows = new ArrayList<>();
-        for (FlowEntity flowEntity : flowRepository.findAll()) {
-            flows.add(flowEntity);
-        }
-        return flows;
-    }
-
-    private List<FlowEntity> getPagedFlows(final QueryParameters params) {
-        final Pageable pageable = getPageRequest(params);
-        final List<FlowEntity> flows = new ArrayList<>();
-        for (FlowEntity flowEntity : flowRepository.findAll(pageable)) {
-            flows.add(flowEntity);
-        }
-        return flows;
-    }
-
-    private List<FlowEntity> getSortedFlows(final QueryParameters params) {
-        final Sort sort = getSort(params);
-        final List<FlowEntity> flows = new ArrayList<>();
-        for (FlowEntity flowEntity : flowRepository.findAll(sort)) {
-            flows.add(flowEntity);
-        }
-        return flows;
-    }
-
-    private List<FlowEntity> getAllFlows(Set<BucketEntity> buckets) {
-        return flowRepository.findByBucketIn(buckets);
-    }
-
-    private List<FlowEntity> getPagedFlows(final QueryParameters params, Set<BucketEntity> buckets) {
-        final Pageable pageable = getPageRequest(params);
-        return flowRepository.findByBucketIn(buckets, pageable);
-    }
-
-    private List<FlowEntity> getSortedFlows(final QueryParameters params, Set<BucketEntity> buckets) {
-        final Sort sort = getSort(params);
-        return flowRepository.findByBucketIn(buckets, sort);
     }
 
     // ------------------------------------------------------------------------------------

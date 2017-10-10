@@ -18,12 +18,9 @@ package org.apache.nifi.registry.db.repository;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Spring Data Repository for FlowEntity.
@@ -33,29 +30,11 @@ public interface FlowRepository extends PagingAndSortingRepository<FlowEntity,St
     List<FlowEntity> findByNameIgnoreCase(String name);
 
     /**
-     * Find all flows by buckets.
+     * Find flows for the given bucket.
      *
-     * @param buckets the buckets to find items for
-     * @return the list of items for the buckets
-     */
-    List<FlowEntity> findByBucketIn(Set<BucketEntity> buckets);
-
-    /**
-     * Find all flows by buckets with sorting.
-     *
-     * @param buckets the buckets to find flows for
-     * @param sort the sort params
+     * @param bucket the bucket to find flows for
      * @return the list of flows for the buckets
      */
-    List<FlowEntity> findByBucketIn(Set<BucketEntity> buckets, Sort sort);
-
-    /**
-     * Find all flows by buckets with paging/sorting.
-     *
-     * @param buckets the buckets to find flows for
-     * @param pageable the pageable params
-     * @return the list of flows for the buckets based on the pageable params
-     */
-    List<FlowEntity> findByBucketIn(Set<BucketEntity> buckets, Pageable pageable);
+    List<FlowEntity> findByBucket(BucketEntity bucket);
 
 }

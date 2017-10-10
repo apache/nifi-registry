@@ -14,27 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.repository;
-
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.PagingAndSortingRepository;
-
-import java.util.List;
-import java.util.Set;
+package org.apache.nifi.registry.db.entity;
 
 /**
- * Spring Data Repository for BucketEntity.
+ * Used to perform a custom query that returns the # of snapshots for each flow.
  */
-public interface BucketRepository extends PagingAndSortingRepository<BucketEntity,String> {
+public class FlowSnapshotCount {
 
-    List<BucketEntity> findByNameIgnoreCase(String name);
+    private final String flowIdentifier;
 
-    List<BucketEntity> findByIdIn(Set<String> id);
+    private final long snapshotCount;
 
-    List<BucketEntity> findByIdIn(Set<String> id, Sort sort);
+    public FlowSnapshotCount(final String flowIdentifier, final long snapshotCount) {
+        this.flowIdentifier = flowIdentifier;
+        this.snapshotCount = snapshotCount;
+    }
 
-    List<BucketEntity> findByIdIn(Set<String> id, Pageable pageable);
+    public String getFlowIdentifier() {
+        return flowIdentifier;
+    }
+
+    public long getSnapshotCount() {
+        return snapshotCount;
+    }
 
 }

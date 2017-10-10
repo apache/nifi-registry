@@ -16,13 +16,20 @@
  */
 package org.apache.nifi.registry.db.repository;
 
+import org.apache.nifi.registry.db.entity.FlowSnapshotCount;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.util.List;
 
 /**
  * Repository for FlowSnapshotEntity.
  */
 public interface FlowSnapshotRepository extends PagingAndSortingRepository<FlowSnapshotEntity, FlowSnapshotEntityKey> {
+
+    @Query("select new org.apache.nifi.registry.db.entity.FlowSnapshotCount(fs.id.flowId, count(*)) from FlowSnapshotEntity as fs group by fs.id.flowId")
+    List<FlowSnapshotCount> countByFlow();
 
 }
