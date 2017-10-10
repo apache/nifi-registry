@@ -92,7 +92,6 @@
             'nifi-registry/components/page-not-found/nf-registry-page-not-found.js': 'components/page-not-found/nf-registry-page-not-found.js',
             'nifi-registry/components/explorer/nf-registry-explorer.js': 'components/explorer/nf-registry-explorer.js',
             'nifi-registry/components/administration/nf-registry-administration.js': 'components/administration/nf-registry-administration.js',
-            'nifi-registry/components/administration/general/nf-registry-general-administration.js': 'components/administration/general/nf-registry-general-administration.js',
             'nifi-registry/components/administration/users/nf-registry-users-administration.js': 'components/administration/users/nf-registry-users-administration.js',
             'nifi-registry/components/administration/users/add/nf-registry-add-user.js': 'components/administration/users/add/nf-registry-add-user.js',
             'nifi-registry/components/administration/users/details/nf-registry-user-details.js': 'components/administration/users/details/nf-registry-user-details.js',
