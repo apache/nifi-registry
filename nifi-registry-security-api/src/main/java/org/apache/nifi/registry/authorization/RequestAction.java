@@ -23,8 +23,8 @@ import java.util.StringJoiner;
  */
 public enum RequestAction {
     READ("read"),
-    WRITE("write");
-    // TODO, add DELETE RequestAction feature
+    WRITE("write"),
+    DELETE("delete");
 
     private String value;
 
@@ -38,10 +38,12 @@ public enum RequestAction {
     }
 
     public static RequestAction valueOfValue(final String action) {
-        if (RequestAction.READ.toString().equals(action)) {
+        if (RequestAction.READ.toString().equalsIgnoreCase(action)) {
             return RequestAction.READ;
-        } else if (RequestAction.WRITE.toString().equals(action)) {
+        } else if (RequestAction.WRITE.toString().equalsIgnoreCase(action)) {
             return RequestAction.WRITE;
+        } else if (RequestAction.DELETE.toString().equalsIgnoreCase(action)) {
+            return RequestAction.DELETE;
         } else {
             StringJoiner stringJoiner = new StringJoiner(", ");
             for(RequestAction ra : RequestAction.values()) {

@@ -204,7 +204,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicyForResource(
-            @ApiParam(value = "The request action.", allowableValues = "read, write" /* todo, +delete */,  required = true)
+            @ApiParam(value = "The request action.", allowableValues = "read, write, delete", required = true)
             @PathParam("action")
             final String action,
             @ApiParam(value = "The resource of the policy.", required = true)
@@ -300,7 +300,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             final String identifier) {
 
         verifyAuthorizerSupportsConfigurablePolicies();
-        authorizeAccessToPolicy(RequestAction.WRITE, identifier);
+        authorizeAccessToPolicy(RequestAction.DELETE, identifier);
         AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
         return generateOkResponse(deletedPolicy).build();
     }

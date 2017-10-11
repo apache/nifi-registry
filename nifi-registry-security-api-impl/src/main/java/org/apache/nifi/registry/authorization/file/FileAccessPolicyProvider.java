@@ -105,21 +105,24 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     private static final String RESOURCE_ATTR = "resource";
     private static final String ACTIONS_ATTR = "actions";
 
+    /* These codes must match the enumeration values set in authorizations.xsd */
     static final String READ_CODE = "R";
     static final String WRITE_CODE = "W";
-    /* TODO, add DELETE_CODE */
+    static final String DELETE_CODE = "D";
 
     /*  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
      *  (and also gets us away from requiring magic strings here) */
     private static final ResourceActionPair[] INITIAL_ADMIN_ACCESS_POLICIES = {
             new ResourceActionPair("/resources", READ_CODE),
-            new ResourceActionPair("/resources", WRITE_CODE),
             new ResourceActionPair("/tenants", READ_CODE),
             new ResourceActionPair("/tenants", WRITE_CODE),
+            new ResourceActionPair("/tenants", DELETE_CODE),
             new ResourceActionPair("/policies", READ_CODE),
             new ResourceActionPair("/policies", WRITE_CODE),
+            new ResourceActionPair("/policies", DELETE_CODE),
             new ResourceActionPair("/buckets", READ_CODE),
             new ResourceActionPair("/buckets", WRITE_CODE),
+            new ResourceActionPair("/buckets", DELETE_CODE),
     };
 
     static final String PROP_NODE_IDENTITY_PREFIX = "Node Identity ";
@@ -406,6 +409,8 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             builder.action(RequestAction.READ);
         } else if (actions.equals(RequestAction.WRITE.name())) {
             builder.action(RequestAction.WRITE);
+        } else if (actions.equals(RequestAction.DELETE.name())) {
+            builder.action(RequestAction.DELETE);
         } else {
             throw new IllegalStateException("Unknown Policy Action: " + actions);
         }
@@ -566,6 +571,8 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
                 builder.action(RequestAction.READ);
             } else if (action.equals(WRITE_CODE)) {
                 builder.action(RequestAction.WRITE);
+            } else if (action.equals(DELETE_CODE)) {
+                builder.action(RequestAction.DELETE);
             } else {
                 throw new IllegalStateException("Unknown Policy Action: " + action);
             }
@@ -592,6 +599,9 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
                 break;
             case WRITE:
                 policy.setAction(WRITE_CODE);
+                break;
+            case DELETE:
+                policy.setAction(DELETE_CODE);
                 break;
             default:
                 break;

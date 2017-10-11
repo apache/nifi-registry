@@ -16,31 +16,32 @@
  */
 package org.apache.nifi.registry.web.mapper;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
 /**
  * Maps exceptions into client responses.
  */
 @Provider
-public class IllegalArgumentExceptionMapper implements ExceptionMapper<IllegalArgumentException> {
+public class BadRequestExceptionMapper implements ExceptionMapper<BadRequestException> {
 
-    private static final Logger logger = LoggerFactory.getLogger(IllegalArgumentExceptionMapper.class);
+    private static final Logger logger = LoggerFactory.getLogger(BadRequestExceptionMapper.class);
 
     @Override
-    public Response toResponse(IllegalArgumentException exception) {
+    public Response toResponse(BadRequestException exception) {
         logger.info(String.format("%s. Returning %s response.", exception, Response.Status.BAD_REQUEST));
 
         if (logger.isDebugEnabled()) {
             logger.debug(StringUtils.EMPTY, exception);
         }
 
-        return Response.status(Status.BAD_REQUEST).entity(exception.getMessage()).type("text/plain").build();
+        return Response.status(Response.Status.BAD_REQUEST).entity(exception.getMessage()).type("text/plain").build();
     }
 
 }

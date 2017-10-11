@@ -217,7 +217,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         if (StringUtils.isBlank(bucketId)) {
             throw new BadRequestException("Bucket id cannot be blank");
         }
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
+        authorizeBucketAccess(RequestAction.DELETE, bucketId);
         final Bucket deletedBucket = registryService.deleteBucket(bucketId);
         return Response.status(Response.Status.OK).entity(deletedBucket).build();
     }
