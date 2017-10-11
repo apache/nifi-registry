@@ -63,6 +63,7 @@
                 <xs:restriction base="xs:string">
                     <xs:enumeration value="R"/>
                     <xs:enumeration value="W"/>
+                    <xs:enumeration value="D"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>

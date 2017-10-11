@@ -211,7 +211,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @PathParam("bucketId") final String bucketId,
             @PathParam("flowId") final String flowId) {
 
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
+        authorizeBucketAccess(RequestAction.DELETE, bucketId);
         final VersionedFlow deletedFlow = registryService.deleteFlow(bucketId, flowId);
         return Response.status(Response.Status.OK).entity(deletedFlow).build();
     }

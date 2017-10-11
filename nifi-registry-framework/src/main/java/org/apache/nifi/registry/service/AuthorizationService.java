@@ -51,6 +51,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
@@ -197,7 +198,7 @@ public class AuthorizationService {
         }
     }
 
-    public List<UserGroup> getUserGroupsForUser(String userIdentifier) {
+    private List<UserGroup> getUserGroupsForUser(String userIdentifier) {
         this.readLock.lock();
         try {
             return userGroupProvider.getGroups()
@@ -306,7 +307,7 @@ public class AuthorizationService {
         }
     }
 
-    public List<AccessPolicySummary> getAccessPolicySummariesForUser(String userIdentifier) {
+    private List<AccessPolicySummary> getAccessPolicySummariesForUser(String userIdentifier) {
         readLock.lock();
         try {
             return accessPolicyProvider.getAccessPolicies().stream()
@@ -318,7 +319,7 @@ public class AuthorizationService {
         }
     }
 
-    public List<AccessPolicySummary> getAccessPolicySummariesForUserGroup(String userGroupIdentifier) {
+    private List<AccessPolicySummary> getAccessPolicySummariesForUserGroup(String userGroupIdentifier) {
         readLock.lock();
         try {
             return accessPolicyProvider.getAccessPolicies().stream()
@@ -340,9 +341,9 @@ public class AuthorizationService {
             accessPolicy.setResource(currentAccessPolicy.getResource());
             accessPolicy.setAction(currentAccessPolicy.getAction().toString());
 
-            org.apache.nifi.registry.authorization.AccessPolicy updateAccessPolicy =
+            org.apache.nifi.registry.authorization.AccessPolicy updatedAccessPolicy =
                     ((ConfigurableAccessPolicyProvider) accessPolicyProvider).updateAccessPolicy(accessPolicyFromDTO(accessPolicy));
-            return accessPolicyToDTO(updateAccessPolicy);
+            return accessPolicyToDTO(updatedAccessPolicy);
         } finally {
             writeLock.unlock();
         }
@@ -465,9 +466,9 @@ public class AuthorizationService {
         }
 
         Collection<Tenant> users = accessPolicy.getUsers() != null
-                ? accessPolicy.getUsers().stream().map(this::getTenant).collect(Collectors.toList()) : null;
+                ? accessPolicy.getUsers().stream().map(this::getTenant).filter(Objects::nonNull).collect(Collectors.toList()) : null;
         Collection<Tenant> userGroups = accessPolicy.getGroups() != null
-                ? accessPolicy.getGroups().stream().map(this::getTenant).collect(Collectors.toList()) : null;
+                ? accessPolicy.getGroups().stream().map(this::getTenant).filter(Objects::nonNull).collect(Collectors.toList()) : null;
 
         Boolean isConfigurable = AuthorizerCapabilityDetection.isAccessPolicyConfigurable(authorizer, accessPolicy);
 

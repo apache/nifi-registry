@@ -112,7 +112,7 @@ public interface Authorizable {
                     if (RequestAction.READ.equals(action)) {
                         safeDescription.append("view ");
                     } else {
-                        safeDescription.append("modify ");
+                        safeDescription.append("modify "); // covers write or delete
                     }
                     safeDescription.append(resource.getSafeDescription()).append(".");
 
