@@ -101,6 +101,8 @@ public class AuthorizationsHolder {
                 builder.action(RequestAction.READ);
             } else if (authorizationCode.equals(FileAccessPolicyProvider.WRITE_CODE)){
                 builder.action(RequestAction.WRITE);
+            } else if (authorizationCode.equals(FileAccessPolicyProvider.DELETE_CODE)){
+                builder.action(RequestAction.DELETE);
             } else {
                 throw new IllegalStateException("Unknown Policy Action: " + authorizationCode);
             }

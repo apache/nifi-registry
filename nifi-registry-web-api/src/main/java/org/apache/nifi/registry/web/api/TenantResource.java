@@ -257,7 +257,7 @@ public class TenantResource extends AuthorizableApplicationResource {
             @PathParam("id") final String identifier) {
 
         verifyAuthorizerSupportsConfigurableUserGroups();
-        authorizeAccess(RequestAction.WRITE);
+        authorizeAccess(RequestAction.DELETE);
 
         final User user = authorizationService.deleteUser(identifier);
         return generateOkResponse(user).build();
@@ -449,7 +449,7 @@ public class TenantResource extends AuthorizableApplicationResource {
             @PathParam("id")
             final String identifier) {
         verifyAuthorizerSupportsConfigurableUserGroups();
-        authorizeAccess(RequestAction.WRITE);
+        authorizeAccess(RequestAction.DELETE);
 
         final UserGroup userGroup = authorizationService.deleteUserGroup(identifier);
         return generateOkResponse(userGroup).build();

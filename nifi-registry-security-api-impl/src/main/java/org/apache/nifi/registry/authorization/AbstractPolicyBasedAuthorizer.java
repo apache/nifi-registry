@@ -468,6 +468,8 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
             builder.action(RequestAction.READ);
         } else if (actions.equals(RequestAction.WRITE.name())) {
             builder.action(RequestAction.WRITE);
+        } else if (actions.equals(RequestAction.DELETE.name())) {
+            builder.action(RequestAction.DELETE);
         } else {
             throw new IllegalStateException("Unknown Policy Action: " + actions);
         }
