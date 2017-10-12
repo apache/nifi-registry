@@ -29,6 +29,8 @@ public class User extends Tenant {
     private Set<Tenant> userGroups;
     private Set<AccessPolicySummary> accessPolicies;
 
+    public User() {}
+
     public User(String identifier, String identity) {
         super(identifier, identity);
     }
