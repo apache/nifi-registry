@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -35,11 +36,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.AuthorizerCapabilityDetection;
-import org.apache.nifi.registry.authorization.RequestAction;
-import org.apache.nifi.registry.authorization.resource.Authorizable;
-import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.resource.Authorizable;
+import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.model.authorization.AccessPolicy;
 import org.apache.nifi.registry.model.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -91,6 +92,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createAccessPolicy(
             @Context final HttpServletRequest httpServletRequest,
@@ -135,6 +137,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_409),
+            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicies() {
 
@@ -163,7 +166,8 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
-            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405) })
     public Response getAccessPolicy(
             @ApiParam(value = "The access policy id.", required = true)
             @PathParam("id") final String identifier) {
@@ -202,6 +206,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicyForResource(
             @ApiParam(value = "The request action.", allowableValues = "read, write, delete", required = true)
@@ -245,6 +250,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response updateAccessPolicy(
             @Context
@@ -290,9 +296,10 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             response = AccessPolicy.class
     )
     @ApiResponses({
-            @ApiResponse(code = 401, message = "Client could not be authenticated."),
-            @ApiResponse(code = 403, message = "Client is not authorized to make this request."),
-            @ApiResponse(code = 404, message = "The specified resource could not be found.") })
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405) })
     public Response removeAccessPolicy(
             @Context final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The access policy id.", required = true)
@@ -308,13 +315,13 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
 
     private void verifyAuthorizerIsManaged() {
         if (!AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
+            throw new NotAllowedException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
         }
     }
 
     private void verifyAuthorizerSupportsConfigurablePolicies() {
         if (!AuthorizerCapabilityDetection.isConfigurableAccessPolicyProvider(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_POLICIES);
+            throw new NotAllowedException(AuthorizationService.MSG_NON_CONFIGURABLE_POLICIES);
         }
     }
 

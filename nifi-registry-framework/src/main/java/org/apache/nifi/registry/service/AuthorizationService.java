@@ -16,28 +16,28 @@
  */
 package org.apache.nifi.registry.service;
 
-import org.apache.nifi.registry.authorization.AccessPolicyProvider;
-import org.apache.nifi.registry.authorization.AccessPolicyProviderInitializationContext;
-import org.apache.nifi.registry.authorization.AuthorizableLookup;
-import org.apache.nifi.registry.authorization.AuthorizeAccess;
-import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.AuthorizerCapabilityDetection;
-import org.apache.nifi.registry.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.authorization.ConfigurableAccessPolicyProvider;
-import org.apache.nifi.registry.authorization.ConfigurableUserGroupProvider;
-import org.apache.nifi.registry.authorization.Group;
-import org.apache.nifi.registry.authorization.ManagedAuthorizer;
-import org.apache.nifi.registry.authorization.RequestAction;
-import org.apache.nifi.registry.authorization.UserAndGroups;
-import org.apache.nifi.registry.authorization.UserGroupProvider;
-import org.apache.nifi.registry.authorization.UserGroupProviderInitializationContext;
-import org.apache.nifi.registry.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.authorization.exception.AuthorizerDestructionException;
-import org.apache.nifi.registry.authorization.resource.ResourceFactory;
-import org.apache.nifi.registry.authorization.resource.ResourceType;
-import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
+import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
+import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
+import org.apache.nifi.registry.security.authorization.AuthorizeAccess;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
+import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
+import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
+import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
+import org.apache.nifi.registry.security.authorization.Group;
+import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.UserAndGroups;
+import org.apache.nifi.registry.security.authorization.UserGroupProvider;
+import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
+import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
+import org.apache.nifi.registry.security.authorization.resource.ResourceType;
+import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.model.authorization.AccessPolicy;
 import org.apache.nifi.registry.model.authorization.AccessPolicySummary;
@@ -105,11 +105,11 @@ public class AuthorizationService {
     public Tenant getTenant(String identifier) {
         this.readLock.lock();
         try {
-            org.apache.nifi.registry.authorization.User user = userGroupProvider.getUser(identifier);
+            org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
             if (user != null) {
                 return tenantToDTO(user);
             } else {
-                org.apache.nifi.registry.authorization.Group group = userGroupProvider.getGroup(identifier);
+                org.apache.nifi.registry.security.authorization.Group group = userGroupProvider.getGroup(identifier);
                 return tenantToDTO(group);
             }
         } finally {
@@ -124,7 +124,7 @@ public class AuthorizationService {
         verifyUserGroupProviderIsConfigurable();
         writeLock.lock();
         try {
-            final org.apache.nifi.registry.authorization.User createdUser =
+            final org.apache.nifi.registry.security.authorization.User createdUser =
                 ((ConfigurableUserGroupProvider) userGroupProvider).addUser(userFromDTO(user));
             return userToDTO(createdUser);
         } finally {
@@ -154,7 +154,7 @@ public class AuthorizationService {
         verifyUserGroupProviderIsConfigurable();
         this.writeLock.lock();
         try {
-            final org.apache.nifi.registry.authorization.User updatedUser =
+            final org.apache.nifi.registry.security.authorization.User updatedUser =
                     ((ConfigurableUserGroupProvider) userGroupProvider).updateUser(userFromDTO(user));
             return userToDTO(updatedUser);
         } finally {
@@ -181,7 +181,7 @@ public class AuthorizationService {
         verifyUserGroupProviderIsConfigurable();
         writeLock.lock();
         try {
-            final org.apache.nifi.registry.authorization.Group createdGroup =
+            final org.apache.nifi.registry.security.authorization.Group createdGroup =
                     ((ConfigurableUserGroupProvider) userGroupProvider).addGroup(userGroupFromDTO(userGroup));
             return userGroupToDTO(createdGroup);
         } finally {
@@ -198,18 +198,18 @@ public class AuthorizationService {
         }
     }
 
-    private List<UserGroup> getUserGroupsForUser(String userIdentifier) {
-        this.readLock.lock();
-        try {
-            return userGroupProvider.getGroups()
-                    .stream()
-                    .filter(group -> group.getUsers().contains(userIdentifier))
-                    .map(this::userGroupToDTO)
-                    .collect(Collectors.toList());
-        } finally {
-            this.readLock.unlock();
-        }
-    }
+//    private List<UserGroup> getUserGroupsForUser(String userIdentifier) {
+//        this.readLock.lock();
+//        try {
+//            return userGroupProvider.getGroups()
+//                    .stream()
+//                    .filter(group -> group.getUsers().contains(userIdentifier))
+//                    .map(this::userGroupToDTO)
+//                    .collect(Collectors.toList());
+//        } finally {
+//            this.readLock.unlock();
+//        }
+//    }
 
     public UserGroup getUserGroup(String identifier) {
         this.readLock.lock();
@@ -224,7 +224,7 @@ public class AuthorizationService {
         verifyUserGroupProviderIsConfigurable();
         writeLock.lock();
         try {
-            final org.apache.nifi.registry.authorization.Group updatedGroup =
+            final org.apache.nifi.registry.security.authorization.Group updatedGroup =
                     ((ConfigurableUserGroupProvider) userGroupProvider).updateGroup(userGroupFromDTO(userGroup));
             return userGroupToDTO(updatedGroup);
         } finally {
@@ -251,7 +251,7 @@ public class AuthorizationService {
         verifyAccessPolicyProviderIsConfigurable();
         writeLock.lock();
         try {
-            org.apache.nifi.registry.authorization.AccessPolicy createdAccessPolicy =
+            org.apache.nifi.registry.security.authorization.AccessPolicy createdAccessPolicy =
                     ((ConfigurableAccessPolicyProvider) accessPolicyProvider).addAccessPolicy(accessPolicyFromDTO(accessPolicy));
             return accessPolicyToDTO(createdAccessPolicy);
         } finally {
@@ -336,12 +336,12 @@ public class AuthorizationService {
         writeLock.lock();
         try {
             // Don't allow changing action or resource of existing policy (should only be adding/removing users/groups)
-            org.apache.nifi.registry.authorization.AccessPolicy currentAccessPolicy =
+            org.apache.nifi.registry.security.authorization.AccessPolicy currentAccessPolicy =
                     accessPolicyProvider.getAccessPolicy(accessPolicy.getIdentifier());
             accessPolicy.setResource(currentAccessPolicy.getResource());
             accessPolicy.setAction(currentAccessPolicy.getAction().toString());
 
-            org.apache.nifi.registry.authorization.AccessPolicy updatedAccessPolicy =
+            org.apache.nifi.registry.security.authorization.AccessPolicy updatedAccessPolicy =
                     ((ConfigurableAccessPolicyProvider) accessPolicyProvider).updateAccessPolicy(accessPolicyFromDTO(accessPolicy));
             return accessPolicyToDTO(updatedAccessPolicy);
         } finally {
@@ -419,8 +419,8 @@ public class AuthorizationService {
         }
     }
 
-    private List<org.apache.nifi.registry.authorization.Resource> getAllAuthorizableResources() {
-        final List<org.apache.nifi.registry.authorization.Resource> resources = new ArrayList<>();
+    private List<org.apache.nifi.registry.security.authorization.Resource> getAllAuthorizableResources() {
+        final List<org.apache.nifi.registry.security.authorization.Resource> resources = new ArrayList<>();
         resources.add(ResourceFactory.getPoliciesResource());
         resources.add(ResourceFactory.getTenantResource());
         resources.add(ResourceFactory.getProxyResource());
@@ -436,19 +436,23 @@ public class AuthorizationService {
     }
 
     private org.apache.nifi.registry.model.authorization.User userToDTO(
-            final org.apache.nifi.registry.authorization.User user) {
+            final org.apache.nifi.registry.security.authorization.User user) {
         if (user == null) {
             return null;
         }
         String userIdentifier = user.getIdentifier();
-        Collection<UserGroup> userGroups = getUserGroupsForUser(userIdentifier);
+
+        Collection<Tenant> groupsContainingUser = userGroupProvider.getGroups().stream()
+                .filter(group -> group.getUsers().contains(userIdentifier))
+                .map(AuthorizationService::tenantToDTO)
+                .collect(Collectors.toList());
         Collection<AccessPolicySummary> accessPolicySummaries = getAccessPolicySummariesForUser(userIdentifier);
 
-        return userToDTO(user, userGroups, accessPolicySummaries);
+        return userToDTO(user, groupsContainingUser, accessPolicySummaries);
     }
 
     private org.apache.nifi.registry.model.authorization.UserGroup userGroupToDTO(
-            final org.apache.nifi.registry.authorization.Group userGroup) {
+            final org.apache.nifi.registry.security.authorization.Group userGroup) {
         if (userGroup == null) {
             return null;
         }
@@ -460,7 +464,7 @@ public class AuthorizationService {
     }
 
     private org.apache.nifi.registry.model.authorization.AccessPolicy accessPolicyToDTO(
-            final org.apache.nifi.registry.authorization.AccessPolicy accessPolicy) {
+            final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy) {
         if (accessPolicy == null) {
             return null;
         }
@@ -476,7 +480,7 @@ public class AuthorizationService {
     }
 
     private org.apache.nifi.registry.model.authorization.AccessPolicySummary accessPolicyToSummaryDTO(
-            final org.apache.nifi.registry.authorization.AccessPolicy accessPolicy) {
+            final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy) {
         if (accessPolicy == null) {
             return null;
         }
@@ -491,7 +495,7 @@ public class AuthorizationService {
         return accessPolicySummaryDTO;
     }
 
-    private static Resource resourceToDTO(org.apache.nifi.registry.authorization.Resource resource) {
+    private static Resource resourceToDTO(org.apache.nifi.registry.security.authorization.Resource resource) {
         if (resource == null) {
             return null;
         }
@@ -501,33 +505,33 @@ public class AuthorizationService {
         return resourceDto;
     }
 
-    private static Tenant tenantToDTO(org.apache.nifi.registry.authorization.User user) {
+    private static Tenant tenantToDTO(org.apache.nifi.registry.security.authorization.User user) {
         if (user == null) {
             return null;
         }
         return new Tenant(user.getIdentifier(), user.getIdentity());
     }
 
-    private static Tenant tenantToDTO(org.apache.nifi.registry.authorization.Group group) {
+    private static Tenant tenantToDTO(org.apache.nifi.registry.security.authorization.Group group) {
         if (group == null) {
             return null;
         }
         return new Tenant(group.getIdentifier(), group.getName());
     }
 
-    private static org.apache.nifi.registry.authorization.User userFromDTO(
+    private static org.apache.nifi.registry.security.authorization.User userFromDTO(
             final org.apache.nifi.registry.model.authorization.User userDTO) {
         if (userDTO == null) {
             return null;
         }
-        return new org.apache.nifi.registry.authorization.User.Builder()
+        return new org.apache.nifi.registry.security.authorization.User.Builder()
                 .identifier(userDTO.getIdentifier() != null ? userDTO.getIdentifier() : UUID.randomUUID().toString())
                 .identity(userDTO.getIdentity())
                 .build();
     }
 
     private static org.apache.nifi.registry.model.authorization.User userToDTO(
-            final org.apache.nifi.registry.authorization.User user,
+            final org.apache.nifi.registry.security.authorization.User user,
             final Collection<? extends Tenant> userGroups,
             final Collection<? extends AccessPolicySummary> accessPolicies) {
 
@@ -540,12 +544,12 @@ public class AuthorizationService {
         return userDTO;
     }
 
-    private static org.apache.nifi.registry.authorization.Group userGroupFromDTO(
+    private static org.apache.nifi.registry.security.authorization.Group userGroupFromDTO(
             final org.apache.nifi.registry.model.authorization.UserGroup userGroupDTO) {
         if (userGroupDTO == null) {
             return null;
         }
-        org.apache.nifi.registry.authorization.Group.Builder groupBuilder = new org.apache.nifi.registry.authorization.Group.Builder()
+        org.apache.nifi.registry.security.authorization.Group.Builder groupBuilder = new org.apache.nifi.registry.security.authorization.Group.Builder()
                 .identifier(userGroupDTO.getIdentifier() != null ? userGroupDTO.getIdentifier() : UUID.randomUUID().toString())
                 .name(userGroupDTO.getIdentity());
         Set<Tenant> users = userGroupDTO.getUsers();
@@ -556,7 +560,7 @@ public class AuthorizationService {
     }
 
     private static org.apache.nifi.registry.model.authorization.UserGroup userGroupToDTO(
-            final org.apache.nifi.registry.authorization.Group userGroup,
+            final org.apache.nifi.registry.security.authorization.Group userGroup,
             final Collection<? extends Tenant> users,
             final Collection<? extends AccessPolicySummary> accessPolicies) {
         if (userGroup == null) {
@@ -568,10 +572,10 @@ public class AuthorizationService {
         return userGroupDTO;
     }
 
-    private static org.apache.nifi.registry.authorization.AccessPolicy accessPolicyFromDTO(
+    private static org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicyFromDTO(
             final org.apache.nifi.registry.model.authorization.AccessPolicy accessPolicyDTO) {
-        org.apache.nifi.registry.authorization.AccessPolicy.Builder accessPolicyBuilder =
-                new org.apache.nifi.registry.authorization.AccessPolicy.Builder()
+        org.apache.nifi.registry.security.authorization.AccessPolicy.Builder accessPolicyBuilder =
+                new org.apache.nifi.registry.security.authorization.AccessPolicy.Builder()
                         .identifier(accessPolicyDTO.getIdentifier() != null ? accessPolicyDTO.getIdentifier() : UUID.randomUUID().toString())
                         .resource(accessPolicyDTO.getResource())
                         .action(RequestAction.valueOfValue(accessPolicyDTO.getAction()));
@@ -590,7 +594,7 @@ public class AuthorizationService {
     }
 
     private static org.apache.nifi.registry.model.authorization.AccessPolicy accessPolicyToDTO(
-            final org.apache.nifi.registry.authorization.AccessPolicy accessPolicy,
+            final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy,
             final Collection<? extends Tenant> userGroups,
             final Collection<? extends Tenant> users,
             final Boolean isConfigurable) {
@@ -613,17 +617,17 @@ public class AuthorizationService {
 
         return new AccessPolicyProvider() {
             @Override
-            public Set<org.apache.nifi.registry.authorization.AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
+            public Set<org.apache.nifi.registry.security.authorization.AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
                 throw new IllegalStateException(MSG_NON_MANAGED_AUTHORIZER);
             }
 
             @Override
-            public org.apache.nifi.registry.authorization.AccessPolicy getAccessPolicy(String identifier) throws AuthorizationAccessException {
+            public org.apache.nifi.registry.security.authorization.AccessPolicy getAccessPolicy(String identifier) throws AuthorizationAccessException {
                 throw new IllegalStateException(MSG_NON_MANAGED_AUTHORIZER);
             }
 
             @Override
-            public org.apache.nifi.registry.authorization.AccessPolicy getAccessPolicy(String resourceIdentifier, RequestAction action) throws AuthorizationAccessException {
+            public org.apache.nifi.registry.security.authorization.AccessPolicy getAccessPolicy(String resourceIdentifier, RequestAction action) throws AuthorizationAccessException {
                 throw new IllegalStateException(MSG_NON_MANAGED_AUTHORIZER);
             }
 
@@ -631,17 +635,17 @@ public class AuthorizationService {
             public UserGroupProvider getUserGroupProvider() {
                 return new UserGroupProvider() {
                     @Override
-                    public Set<org.apache.nifi.registry.authorization.User> getUsers() throws AuthorizationAccessException {
+                    public Set<org.apache.nifi.registry.security.authorization.User> getUsers() throws AuthorizationAccessException {
                         throw new IllegalStateException(MSG_NON_MANAGED_AUTHORIZER);
                     }
 
                     @Override
-                    public org.apache.nifi.registry.authorization.User getUser(String identifier) throws AuthorizationAccessException {
+                    public org.apache.nifi.registry.security.authorization.User getUser(String identifier) throws AuthorizationAccessException {
                         throw new IllegalStateException(MSG_NON_MANAGED_AUTHORIZER);
                     }
 
                     @Override
-                    public org.apache.nifi.registry.authorization.User getUserByIdentity(String identity) throws AuthorizationAccessException {
+                    public org.apache.nifi.registry.security.authorization.User getUserByIdentity(String identity) throws AuthorizationAccessException {
                         throw new IllegalStateException(MSG_NON_MANAGED_AUTHORIZER);
                     }
 

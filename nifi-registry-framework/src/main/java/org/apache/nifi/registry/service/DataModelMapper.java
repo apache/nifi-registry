@@ -23,8 +23,10 @@ import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
+import org.apache.nifi.registry.db.entity.KeyEntity;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.security.key.Key;
 
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -124,6 +126,22 @@ public class DataModelMapper {
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
         return metadata;
+    }
+
+    public static Key map(final KeyEntity keyEntity) {
+        final Key key = new Key();
+        key.setId(keyEntity.getId());
+        key.setIdentity(keyEntity.getTenantIdentity());
+        key.setKey(keyEntity.getKeyValue());
+        return key;
+    }
+
+    public static KeyEntity map(final Key key) {
+        final KeyEntity keyEntity = new KeyEntity();
+        keyEntity.setId(key.getId());
+        keyEntity.setTenantIdentity(key.getIdentity());
+        keyEntity.setKeyValue(key.getKey());
+        return keyEntity;
     }
 
 }

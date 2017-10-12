@@ -22,11 +22,11 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.AuthorizerCapabilityDetection;
-import org.apache.nifi.registry.authorization.RequestAction;
-import org.apache.nifi.registry.authorization.resource.Authorizable;
-import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.resource.Authorizable;
+import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.model.authorization.User;
 import org.apache.nifi.registry.model.authorization.UserGroup;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -458,13 +459,13 @@ public class TenantResource extends AuthorizableApplicationResource {
 
     private void verifyAuthorizerIsManaged() {
         if (!AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
+            throw new NotAllowedException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
         }
     }
 
     private void verifyAuthorizerSupportsConfigurableUserGroups() {
         if (!AuthorizerCapabilityDetection.isConfigurableUserGroupProvider(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_USERS);
+            throw new NotAllowedException(AuthorizationService.MSG_NON_CONFIGURABLE_USERS);
         }
     }
 
