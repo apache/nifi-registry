@@ -44,7 +44,7 @@
     -->
     <userGroupProvider>
         <identifier>file-user-group-provider</identifier>
-        <class>org.apache.nifi.registry.authorization.file.FileUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider</class>
         <property name="Users File">./target/test-classes/conf/secure-file/users.xml</property>
         <property name="Initial User Identity 1">CN=user1, OU=nifi</property>
     </userGroupProvider>
@@ -118,7 +118,7 @@
     -->
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
-        <class>org.apache.nifi.registry.authorization.file.FileAccessPolicyProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileAccessPolicyProvider</class>
         <property name="User Group Provider">file-user-group-provider</property>
         <property name="Authorizations File">./target/test-classes/conf/secure-file/authorizations.xml</property>
         <property name="Initial Admin Identity">CN=user1, OU=nifi</property>
@@ -136,7 +136,7 @@
     -->
     <authorizer>
         <identifier>managed-authorizer</identifier>
-        <class>org.apache.nifi.registry.authorization.StandardManagedAuthorizer</class>
+        <class>org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer</class>
         <property name="Access Policy Provider">file-access-policy-provider</property>
     </authorizer>
 

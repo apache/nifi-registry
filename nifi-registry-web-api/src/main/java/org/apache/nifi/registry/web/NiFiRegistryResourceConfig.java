@@ -29,8 +29,13 @@ import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
 
+import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 
@@ -62,5 +67,13 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(TenantResource.class);
 
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+    }
+
+    // Disable default SpringMVC filter beans that are not compatible with Jersey
+    @Bean
+    public FilterRegistrationBean registration(@Autowired HiddenHttpMethodFilter filter) {
+        FilterRegistrationBean registration = new FilterRegistrationBean((Filter) filter);
+        registration.setEnabled(false);
+        return registration;
     }
 }

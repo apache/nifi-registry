@@ -17,6 +17,8 @@
 package org.apache.nifi.registry.security.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.security.util.KeyStoreUtils;
+import org.apache.nifi.registry.security.util.KeystoreType;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
