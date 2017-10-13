@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.registry.web.security.util;
+package org.apache.nifi.registry.security.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

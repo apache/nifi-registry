@@ -14,24 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.response;
+package org.apache.nifi.registry.client;
 
-import java.util.Set;
+/**
+ * Indicates an error interacting with the NiFi registry for a reason other than IOException.
+ */
+public class NiFiRegistryException extends Exception {
 
-public class FieldsEntity {
-
-    private Set<String> fields;
-
-    public FieldsEntity(Set<String> fields) {
-        this.fields = fields;
+    public NiFiRegistryException(final String message) {
+        super(message);
     }
 
-    public Set<String> getFields() {
-        return fields;
-    }
-
-    public void setFields(Set<String> fields) {
-        this.fields = fields;
+    public NiFiRegistryException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 
 }

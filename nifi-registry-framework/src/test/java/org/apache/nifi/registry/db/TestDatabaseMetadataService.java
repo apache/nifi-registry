@@ -20,7 +20,7 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
-import org.apache.nifi.registry.service.params.QueryParameters;
+import org.apache.nifi.registry.service.QueryParameters;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

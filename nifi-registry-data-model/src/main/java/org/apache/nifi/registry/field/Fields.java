@@ -14,12 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.util;
+package org.apache.nifi.registry.field;
 
-/**
- * Keystore types.
- */
-public enum KeystoreType {
-    PKCS12,
-    JKS;
+import java.util.Set;
+
+public class Fields {
+
+    private Set<String> fields;
+
+    public Fields() {
+
+    }
+
+    public Fields(Set<String> fields) {
+        this.fields = fields;
+    }
+
+    public Set<String> getFields() {
+        return fields;
+    }
+
+    public void setFields(Set<String> fields) {
+        this.fields = fields;
+    }
+
 }
