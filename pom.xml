@@ -39,14 +39,16 @@
         <module>nifi-registry-runtime</module>
         <module>nifi-registry-security-api</module>
         <module>nifi-registry-security-api-impl</module>
-        <module>nifi-registry-framework</module>
+        <module>nifi-registry-security-utils</module>
+	<module>nifi-registry-framework</module>
         <module>nifi-registry-provider-api</module>
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
         <module>nifi-registry-web-docs</module>
 	<module>nifi-registry-bootstrap</module>
         <module>nifi-registry-docs</module>
-	<module>nifi-registry-assembly</module>
+        <module>nifi-registry-assembly</module>
+	<module>nifi-registry-client</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>

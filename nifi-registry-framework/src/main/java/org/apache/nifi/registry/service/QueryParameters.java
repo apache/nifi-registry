@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.service.params;
+package org.apache.nifi.registry.service;
+
+import org.apache.nifi.registry.params.SortOrder;
+import org.apache.nifi.registry.params.SortParameter;
 
 import java.util.ArrayList;
 import java.util.Collection;
