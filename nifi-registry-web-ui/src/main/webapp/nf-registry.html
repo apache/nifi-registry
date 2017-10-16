@@ -71,12 +71,10 @@ limitations under the License.
                 <i class="fa fa-bell" aria-hidden="true"></i>
             </button>
             <button md-ripple [@flyInOut] *ngIf="nfRegistryService.perspective === 'explorer'" md-icon-button
-                    mdTooltip="Registry Administration"
                     routerLink="/nifi-registry/administration/users">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
             <button md-ripple [@flyInOut] *ngIf="nfRegistryService.perspective === 'administration'" md-mini-fab
-                    mdTooltip="Close settings and return to Explorer perspective."
                     routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                 <md-icon color="primary">close</md-icon>
             </button>

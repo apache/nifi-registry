@@ -16,22 +16,26 @@
  */
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var ngRouter = require('@angular/router');
+var ngMaterial = require('@angular/material');
 
 /**
  * NfRegistryWorkflowAdministration constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
+ * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryWorkflowAdministration(nfRegistryService, ActivatedRoute) {
+function NfRegistryWorkflowAdministration(nfRegistryService, ActivatedRoute, matDialog) {
     this.route = ActivatedRoute;
     this.nfRegistryService = nfRegistryService;
+    this.dialog = matDialog;
     this.bucketActions = [{
         'name': 'permissions',
-        'icon': 'fa fa-key',
+        'icon': 'fa fa-pencil',
         'tooltip': 'Manage Bucket Policies',
         'type': 'sidenav'
     }, {
@@ -66,19 +70,15 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
-        this.nfRegistryService.buckets = [];
-        this.nfRegistryService.filteredBuckets = [];
+        this.nfRegistryService.buckets = this.nfRegistryService.filteredBuckets = [];
+        this.nfRegistryService.allBucketsSelected = false;
     },
 
     /**
-     * Create a new bucket.
+     * Opens the create new bucket dialog.
      */
-    createBucket: function (newBucketInput) {
-        var self = this;
-        this.nfRegistryService.api.createBucket(newBucketInput.value).subscribe(function (bucket) {
-            self.nfRegistryService.buckets.push(bucket);
-            self.nfRegistryService.filterBuckets();
-        })
+    createBucket: function () {
+        this.dialog.open(NfRegistryCreateBucket);
     }
 };
 
@@ -92,6 +92,6 @@ NfRegistryWorkflowAdministration.annotations = [
     })
 ];
 
-NfRegistryWorkflowAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
+NfRegistryWorkflowAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute, ngMaterial.MdDialog];
 
 module.exports = NfRegistryWorkflowAdministration;
