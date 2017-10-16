@@ -33,6 +33,7 @@ var NfRegistryUserDetails = require('nifi-registry/components/administration/use
 var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
+var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
@@ -69,10 +70,14 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
+                NfRegistryCreateBucket,
                 NfRegistryGridListViewer,
                 NfRegistryBucketGridListViewer,
                 NfRegistryDropletGridListViewer,
                 NfPageNotFoundComponent
+            ],
+            entryComponents: [
+                NfRegistryCreateBucket
             ],
             providers: [
                 NfRegistryService,
@@ -88,9 +93,9 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 }
             ]
         });
-        
+
         fixture = ngCoreTesting.TestBed.createComponent(NfRegistryWorkflowAdministration);
-        
+
         // test instance
         comp = fixture.componentInstance;
 
@@ -99,7 +104,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
         de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-workflow-administration-perspective-buckets-container'));
         el = de.nativeElement;
-        
+
         // Spy
         spyOn(nfRegistryService.api, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
@@ -140,23 +145,16 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         });
     }));
 
-    it('should create a new bucket', ngCoreTesting.async(function () {
+    it('should open a dialog to create a new bucket', function () {
+        spyOn(comp.dialog, 'open')
         fixture.detectChanges();
-        fixture.whenStable().then(function () { // wait for async getBuckets
-            fixture.detectChanges();
-            comp.createBucket({value: 'This bucket name.'});
-            fixture.detectChanges();
-            fixture.whenStable().then(function () { // wait for async createBucket
-                fixture.detectChanges();
 
-                //assertions
-                expect(nfRegistryApi.createBucket).toHaveBeenCalledWith('This bucket name.');
-                expect(nfRegistryService.buckets[1].name).toEqual('Newly Created Bucket');
-                expect(nfRegistryService.buckets.length).toBe(2);
-                expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
-            });
-        });
-    }));
+        // the function to test
+        comp.createBucket();
+
+        //assertions
+        expect(comp.dialog.open).toBeDefined();
+    });
 
     it('should destroy the component', ngCoreTesting.fakeAsync(function () {
         fixture.detectChanges();
@@ -171,5 +169,6 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         expect(nfRegistryService.adminPerspective).toBe('');
         expect(nfRegistryService.buckets.length).toBe(0);
         expect(nfRegistryService.filteredBuckets.length).toBe(0);
+        expect(nfRegistryService.allBucketsSelected).toBe(false);
     }));
 });

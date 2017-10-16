@@ -75,42 +75,33 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.dataTableService = TdDataTableService;
 
     this.filteredDroplets = [];
-
     this.dropletColumns = [
         {name: 'name', label: 'Name', sortable: true},
         {name: 'updated', label: 'Updated', sortable: true}
     ];
-
     this.autoCompleteDroplets = [];
     this.dropletsSearchTerms = [];
 
     this.filteredBuckets = [];
-
     this.bucketColumns = [
         {name: 'name', label: 'Bucket Name', sortable: true, tooltip: 'Sort Buckets by name.'}
     ];
-
     this.allBucketsSelected = false;
     this.autoCompleteBuckets = [];
+    this.selectedBuckets = [];
     this.bucketsSearchTerms = [];
+    this.disableMultiBucketActions = true;
 
     this.filteredUsers = [];
-
     this.userColumns = [
         {name: 'status', label: 'Status', sortable: true, tooltip: 'User Status.', width: 18},
         {name: 'name', label: 'Name', sortable: true, tooltip: 'User name.', width: 30},
         {name: 'provider', label: 'Provider', sortable: true, tooltip: 'Authentication provider.', width: 30}
     ];
-
     this.allUsersSelected = false;
     this.autoCompleteUsers = [];
     this.selectedUsers = [];
-
     this.usersSearchTerms = [];
-    this.usersFromRow = 1;
-    this.usersCurrentPage = 1;
-    this.usersPageSize = 5;
-    this.usersPageCount = 0;
 };
 
 NfRegistryService.prototype = {
@@ -191,8 +182,8 @@ NfRegistryService.prototype = {
             }).afterClosed().subscribe(
                 function (accept) {
                     if (accept) {
-                        self.api.deleteDroplet(droplet.link.href).subscribe(function(){
-                            self.droplets = self.droplets.filter(function(d){
+                        self.api.deleteDroplet(droplet.link.href).subscribe(function () {
+                            self.droplets = self.droplets.filter(function (d) {
                                 return (d.identifier !== droplet.identifier) ? true : false
                             });
                             self.filterDroplets();
@@ -208,7 +199,7 @@ NfRegistryService.prototype = {
      * @param droplet       The droplet.
      */
     getDropletSnapshotMetadata: function (droplet) {
-        this.api.getDropletSnapshotMetadata(droplet.link.href, true).subscribe(function(snapshotMetadata) {
+        this.api.getDropletSnapshotMetadata(droplet.link.href, true).subscribe(function (snapshotMetadata) {
             droplet.snapshotMetadata = snapshotMetadata;
         })
     },
@@ -369,6 +360,16 @@ NfRegistryService.prototype = {
 
         newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
         this.filteredBuckets = newData;
+
+        var selected = 0;
+        this.filteredBuckets.forEach(function (filteredBucket) {
+            if (filteredBucket.checked) {
+                selected++;
+            }
+        });
+
+        this.disableMultiBucketActions = (selected > 0) ? false : true;
+
         this.getAutoCompleteBuckets();
     },
 
@@ -390,7 +391,7 @@ NfRegistryService.prototype = {
      *
      * @param column    The column to sort by.
      */
-    sortBuckets: function (sortEvent, column) {
+    sortBuckets: function (column) {
         if (column.sortable === true) {
             // toggle column sort order
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -405,22 +406,124 @@ NfRegistryService.prototype = {
         }
     },
 
+    /**
+     * Returns true if each bucket in the `filteredBuckets` are selected.
+     *
+     * @returns {boolean}
+     */
     allFilteredBucketsSelected: function () {
+        var selected = 0;
+        var allSelected = true;
         this.filteredBuckets.forEach(function (c) {
+            if (c.checked) {
+                selected++;
+            }
             if (c.checked === undefined || c.checked === false) {
-                return false;
+                allSelected =false;
             }
         });
 
-        return true;
+        this.disableMultiBucketActions = (selected > 0) ? false : true;
+        return allSelected;
     },
 
-    toggleBucketSelect: function (row) {
+    /**
+     * Checks all filtered buckets checked state and sets the `allBucketsSelected`
+     * property accordingly.
+     */
+    determineAllBucketsSelectedState: function () {
         if (this.allFilteredBucketsSelected()) {
             this.allBucketsSelected = true;
         } else {
             this.allBucketsSelected = false;
         }
+    },
+
+    /**
+     * Checks the `allBucketsSelected` property state and either selects
+     * or deselects all filtered buckets.
+     */
+    toggleBucketsSelectAll: function () {
+        if (this.allBucketsSelected) {
+            this.selectAllBuckets();
+        } else {
+            this.deselectAllBuckets();
+        }
+    },
+
+    /**
+     * Sets the `checked` property of each filtered bucket to true.
+     */
+    selectAllBuckets: function () {
+        this.filteredBuckets.forEach(function (c) {
+            c.checked = true;
+        });
+        this.disableMultiBucketActions = false;
+    },
+
+    /**
+     * Sets the `checked` property of each filtered bucket to false.
+     */
+    deselectAllBuckets: function () {
+        this.filteredBuckets.forEach(function (c) {
+            c.checked = false;
+        });
+        this.disableMultiBucketActions = true;
+    },
+
+    /**
+     * Removes a `searchTerm` from the `bucketsSearchTerms` and filters the `buckets`.
+     *
+     * @param {string} searchTerm The search term to remove.
+     */
+    bucketsSearchRemove: function (searchTerm) {
+        //only remove the first occurrence of the search term
+        var index = this.bucketsSearchTerms.indexOf(searchTerm);
+        if (index !== -1) {
+            this.bucketsSearchTerms.splice(index, 1);
+        }
+        this.filterBuckets();
+    },
+
+    /**
+     * Adds a `searchTerm` from the `bucketsSearchTerms` and filters the `buckets`.
+     *
+     * @param {string} searchTerm The search term to add.
+     */
+    bucketsSearchAdd: function (searchTerm) {
+        this.bucketsSearchTerms.push(searchTerm);
+        this.filterBuckets();
+    },
+
+    /**
+     * Deletes all versions of all flows of each selected bucket
+     */
+    deleteSelectedBuckets: function() {
+        var self = this;
+        this.dialogService.openConfirm({
+            title: 'Delete Buckets',
+            message: 'All versions of all flows of each selected bucket will be deleted.',
+            cancelButton: 'Cancel',
+            acceptButton: 'Delete',
+            acceptButtonColor: 'fds-warn'
+        }).afterClosed().subscribe(
+            function (accept) {
+                if (accept) {
+                    self.filteredBuckets.forEach(function (filteredBucket) {
+                        if (filteredBucket.checked) {
+                            self.api.deleteBucket(filteredBucket.identifier).subscribe(function (response) {
+                                self.buckets = self.buckets.filter(function (bucket) {
+                                    return bucket.identifier !== filteredBucket.identifier;
+                                });
+                                self.filterBuckets();
+                                self.determineAllBucketsSelectedState();
+                            });
+                        }
+                    });
+
+                }
+            });
+
     },
 
     sortUsers: function (sortEvent, column) {
@@ -444,24 +547,11 @@ NfRegistryService.prototype = {
         if (index !== -1) {
             this.usersSearchTerms.splice(index, 1);
         }
-        this.usersCurrentPage = 1;
-        this.usersFromRow = 1;
-        this.usersPageSize = 1;
         this.filterUsers();
     },
 
     usersSearchAdd: function (searchTerm) {
         this.usersSearchTerms.push(searchTerm);
-        this.usersCurrentPage = 1;
-        this.usersFromRow = 1;
-        this.usersPageSize = 1;
-        this.filterUsers();
-    },
-
-    pageUsers: function (pagingEvent) {
-        this.usersFromRow = pagingEvent.fromRow;
-        this.usersCurrentPage = pagingEvent.page;
-        this.usersPageSize = pagingEvent.pageSize;
         this.filterUsers();
     },
 
@@ -476,7 +566,6 @@ NfRegistryService.prototype = {
             newData = filterData(newData, this.usersSearchTerms[i], true);
         }
         newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
-        this.usersPageCount = newData.length;
         newData = this.dataTableService.pageData(newData, this.usersFromRow, this.usersCurrentPage * this.usersPageSize);
         this.filteredUsers = newData;
         this.getAutoCompleteUsers();
