@@ -16,10 +16,10 @@ limitations under the License.
 -->
 
 <div id="nifi-registry-users-administration-perspective" class="mat-elevation-z5">
-    <div layout="row" layout-align="space-between top" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-        <span class="mat-card-title">Authorized Users ({{usersPagingBar.range}}) <span hide-xs>of {{usersPagingBar.total}}</span></span>
+    <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <span class="mat-card-title">Authorized Users ({{nfRegistryService.users.length}})</span>
         <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
-            <td-chips [items]="nfRegistryService.autoCompleteUsers" (add)="nfRegistryService.usersSearchAdd($event)"
+            <td-chips class="push-right-sm" [items]="nfRegistryService.autoCompleteUsers" (add)="nfRegistryService.usersSearchAdd($event)"
                       (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
             <button class="push-right-sm" color="fds-secondary" md-raised-button (click)="execute({name: 'add'})">
                 Add User
@@ -33,12 +33,10 @@ limitations under the License.
                 users
             </button>
         </md-menu>
-    </div>
-    <div class="pad-left-md pad-right-md">
         <div id="nifi-registry-users-administration-list-container-column-header" fxLayout="row"
              fxLayoutAlign="space-between center" class="td-data-table">
             <div class="td-data-table-column" (click)="nfRegistryService.sortUsers($event, column)"
-                 [mdTooltip]="column.tooltip" *ngFor="let column of nfRegistryService.userColumns"
+                 *ngFor="let column of nfRegistryService.userColumns"
                  fxFlex="{{column.width}}">
                 {{column.label}}
                 <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
@@ -111,12 +109,6 @@ limitations under the License.
              layout-align="center center">
             <h3>No results to display.</h3>
         </div>
-        <td-paging-bar id="nifi-registry-users-administration-list-paging-bar" #usersPagingBar [pageSizeAll]="true"
-                       [pageSizes]="[1, 2, 50, 100, 200, 500, 1000, 2000]"
-                       [initialPage]="1" [pageSize]="nfRegistryService.usersPageSize"
-                       [total]="nfRegistryService.usersPageCount" (change)="nfRegistryService.pageUsers($event)">
-            <span td-paging-bar-label hide-xs>Row per page:</span>
-        </td-paging-bar>
     </div>
 </div>
 <router-outlet></router-outlet>

@@ -39,6 +39,8 @@ var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var ngHttp = require('@angular/http');
 var rxjs = require('rxjs/Rx');
+var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var ngRouter = require('@angular/router');
 
 describe('NfRegistry Service isolated unit tests', function () {
     var comp;
@@ -46,7 +48,7 @@ describe('NfRegistry Service isolated unit tests', function () {
     var nfRegistryService;
 
     beforeEach(function () {
-        nfRegistryService = new NfRegistryService();
+        nfRegistryService = new NfRegistryService({}, {}, {}, {});
     });
 
     it('should set the breadcrumb animation state', function () {
@@ -154,7 +156,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         var column = {name: 'name', label: 'Name', sortable: true};
 
         // The function to test
-        var label = nfRegistryService.sortDroplets(column);
+        nfRegistryService.sortDroplets(column);
 
         //assertions
         expect(column.active).toBe(true);
@@ -162,6 +164,25 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(filterDropletsCall.args[0]).toBe('name');
         expect(filterDropletsCall.args[1]).toBe('ASC');
         expect(nfRegistryService.activeDropletColumn).toBe(column);
+    });
+
+    it('should sort `buckets` by `column`', function () {
+        //Spy
+        spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
+        });
+
+        // object to be updated by the test
+        var column = {name: 'name', label: 'Bucket Name', sortable: true};
+
+        // The function to test
+        nfRegistryService.sortBuckets(column);
+
+        //assertions
+        expect(column.active).toBe(true);
+        var filterBucketsCall = nfRegistryService.filterBuckets.calls.first();
+        expect(filterBucketsCall.args[0]).toBe('name');
+        expect(filterBucketsCall.args[1]).toBe('ASC');
+        expect(nfRegistryService.activeBucketsColumn).toBe(column);
     });
 
     it('should generate the auto complete options for the droplet filter.', function () {
@@ -188,6 +209,163 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(nfRegistryService.autoCompleteDroplets[0]).toBe(nfRegistryService.filteredDroplets[0].name);
+    });
+
+    it('should generate the auto complete options for the bucket filter.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredBuckets = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #1',
+            'description': 'This is bucket #1'
+        }];
+
+        // The function to test
+        nfRegistryService.getAutoCompleteBuckets();
+
+        //assertions
+        expect(nfRegistryService.autoCompleteBuckets[0]).toBe(nfRegistryService.filteredBuckets[0].name);
+    });
+
+    it('should check if all buckets are selected and return false.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredBuckets = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #2'
+        }];
+
+        // The function to test
+        var allSelected = nfRegistryService.allFilteredBucketsSelected();
+
+        //assertions
+        expect(allSelected).toBe(false);
+        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+    });
+
+    it('should check if all buckets are selected and return true.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredBuckets = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #1',
+            'checked': true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #2',
+            'checked': true
+        }];
+
+        // The function to test
+        var allSelected = nfRegistryService.allFilteredBucketsSelected();
+
+        //assertions
+        expect(allSelected).toBe(true);
+        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+    });
+
+    it('should set the `allBucketsSelected` state to true.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'allFilteredBucketsSelected').and.callFake(function () {
+        }).and.returnValue(true);
+
+        // The function to test
+        nfRegistryService.determineAllBucketsSelectedState();
+
+        //assertions
+        expect(nfRegistryService.allBucketsSelected).toBe(true);
+    });
+
+    it('should set the `allBucketsSelected` state to false.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'allFilteredBucketsSelected').and.callFake(function () {
+        }).and.returnValue(false);
+
+        // The function to test
+        nfRegistryService.determineAllBucketsSelectedState();
+
+        //assertions
+        expect(nfRegistryService.allBucketsSelected).toBe(false);
+    });
+
+    it('should toggle all bucket `checked` properties to true.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'selectAllBuckets').and.callFake(function () {
+        });
+
+        nfRegistryService.allBucketsSelected = true;
+
+        // The function to test
+        nfRegistryService.toggleBucketsSelectAll();
+
+        //assertions
+        expect(nfRegistryService.selectAllBuckets).toHaveBeenCalled();
+    });
+
+    it('should toggle all bucket `checked` properties to false.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'deselectAllBuckets').and.callFake(function () {
+        });
+
+        nfRegistryService.allBucketsSelected = false;
+
+        // The function to test
+        nfRegistryService.toggleBucketsSelectAll();
+
+        //assertions
+        expect(nfRegistryService.deselectAllBuckets).toHaveBeenCalled();
+    });
+
+    it('should select all buckets.', function () {
+        nfRegistryService.filteredBuckets = [{identifier: 1}];
+
+        // The function to test
+        nfRegistryService.selectAllBuckets();
+
+        //assertions
+        expect(nfRegistryService.filteredBuckets[0].checked).toBe(true);
+        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+    });
+
+    it('should deselect all buckets.', function () {
+        nfRegistryService.filteredBuckets = [{identifier: 1, checked: true}];
+
+        // The function to test
+        nfRegistryService.deselectAllBuckets();
+
+        //assertions
+        expect(nfRegistryService.filteredBuckets[0].checked).toBe(false);
+        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+    });
+
+    it('should add a bucket search term.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
+        });
+
+        // The function to test
+        nfRegistryService.bucketsSearchAdd('Bucket #1');
+
+        //assertions
+        expect(nfRegistryService.bucketsSearchTerms.length).toBe(1);
+        expect(nfRegistryService.bucketsSearchTerms[0]).toBe('Bucket #1');
+        expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
+    });
+
+    it('should add a bucket search term.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
+        });
+
+        //set up the state
+        nfRegistryService.bucketsSearchTerms = ['Bucket #1'];
+
+        // The function to test
+        nfRegistryService.bucketsSearchRemove('Bucket #1');
+
+        //assertions
+        expect(nfRegistryService.bucketsSearchTerms.length).toBe(0);
+        expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
     });
 });
 
@@ -253,7 +431,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should retrieve the snapshot metadata for the given droplet.', ngCoreTesting.fakeAsync(function () {
         //Spy
-        spyOn(nfRegistryService.api, 'getDropletSnapshotMetadata').and.callFake(function(){}).and.returnValue(rxjs.Observable.of([{
+        spyOn(nfRegistryService.api, 'getDropletSnapshotMetadata').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([{
             version: 999
         }]));
 
@@ -288,7 +467,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteDroplet').and.callFake(function(){}).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}));
+        spyOn(nfRegistryService.api, 'deleteDroplet').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}));
         spyOn(nfRegistryService, 'filterDroplets').and.callFake(function () {
         });
 
@@ -418,5 +598,157 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.filteredDroplets.length).toBe(1);
         expect(nfRegistryService.filteredDroplets[0].name).toBe('Flow #1');
         expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
+    }));
+
+    it('should execute a `delete` action on a bucket.', ngCoreTesting.fakeAsync(function () {
+        // from the root injector
+        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+
+        //Spy
+        spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
+        });
+        spyOn(dialogService, 'openConfirm').and.callFake(function () {
+        }).and.returnValue({
+            afterClosed: function () {
+                return rxjs.Observable.of(true);
+            }
+        });
+        spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}));
+
+        // object to be updated by the test
+        var bucket = {identifier: '999'};
+
+        // set up the bucket to be deleted
+        nfRegistryService.buckets = [bucket, {identifier: 1}];
+
+        // The function to test
+        nfRegistryService.executeBucketAction({name: 'delete'}, bucket);
+
+        // wait for async openConfirm call
+        ngCoreTesting.tick();
+
+        //inform angular to detect changes
+        fixture.detectChanges();
+
+        // wait for async deleteBucket call
+        ngCoreTesting.tick();
+
+        //inform angular to detect changes
+        fixture.detectChanges();
+
+        //assertions
+        expect(dialogService.openConfirm).toHaveBeenCalled();
+        expect(nfRegistryService.api.deleteBucket).toHaveBeenCalled();
+        expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
+        expect(nfRegistryService.buckets.length).toBe(1);
+        expect(nfRegistryService.buckets[0].identifier).toBe(1);
+    }));
+
+    it('should execute a `permissions` action on a bucket.', function () {
+        // from the root injector
+        var router = ngCoreTesting.TestBed.get(ngRouter.Router);
+
+        //Spy
+        spyOn(router, 'navigateByUrl').and.callFake(function () {
+        });
+
+        // object to be updated by the test
+        var bucket = {identifier: '999'};
+
+        // The function to test
+        nfRegistryService.executeBucketAction({name: 'permissions', type: 'sidenav'}, bucket);
+
+        //assertions
+        var navigateByUrlCall = router.navigateByUrl.calls.first();
+        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:bucket/permissions/999)');
+    });
+
+    it('should filter buckets by name.', ngCoreTesting.fakeAsync(function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.bucketsSearchTerms = ['Bucket #1'];
+        nfRegistryService.buckets = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #1',
+            'description': 'This is bucket #1',
+            'checked': true
+        }, {
+            'identifier': '5d04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Bucket #2',
+            'description': 'This is bucket #2',
+            'checked': true
+        }];
+
+        //Spy
+        spyOn(nfRegistryService, 'getAutoCompleteBuckets');
+
+        //assertion
+        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+
+        // The function to test
+        nfRegistryService.filterBuckets();
+
+        // wait for async nfRegistryService.api.deleteDroplet call
+        ngCoreTesting.tick();
+
+        //inform angular to detect changes
+        fixture.detectChanges();
+
+        //assertions
+        expect(nfRegistryService.filteredBuckets.length).toBe(1);
+        expect(nfRegistryService.filteredBuckets[0].name).toBe('Bucket #1');
+        expect(nfRegistryService.getAutoCompleteBuckets).toHaveBeenCalled();
+        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+    }));
+
+    it('should delete all selected buckets.', ngCoreTesting.fakeAsync(function () {
+        // from the root injector
+        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+
+        //Spy
+        spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
+        });
+        spyOn(nfRegistryService, 'determineAllBucketsSelectedState').and.callFake(function () {
+        });
+        spyOn(dialogService, 'openConfirm').and.callFake(function () {
+        }).and.returnValue({
+            afterClosed: function () {
+                return rxjs.Observable.of(true);
+            }
+        });
+        spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: 999}));
+
+        // object to be updated by the test
+        var bucket = {identifier: 999, checked: true};
+
+        // set up the bucket to be deleted
+        nfRegistryService.buckets = nfRegistryService.filteredBuckets = [bucket, {identifier: 1}];
+
+        // The function to test
+        nfRegistryService.deleteSelectedBuckets();
+
+        // wait for async openConfirm call
+        ngCoreTesting.tick();
+
+        //inform angular to detect changes
+        fixture.detectChanges();
+
+        // wait for async deleteBucket call
+        ngCoreTesting.tick();
+
+        //inform angular to detect changes
+        fixture.detectChanges();
+
+        //assertions
+        expect(dialogService.openConfirm).toHaveBeenCalled();
+        expect(nfRegistryService.api.deleteBucket).toHaveBeenCalled();
+        expect(nfRegistryService.api.deleteBucket.calls.count()).toBe(1);
+        expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
+        expect(nfRegistryService.filterBuckets.calls.count()).toBe(1);
+        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.determineAllBucketsSelectedState).toHaveBeenCalled();
+        expect(nfRegistryService.buckets.length).toBe(1);
+        expect(nfRegistryService.buckets[0].identifier).toBe(1);
     }));
 });

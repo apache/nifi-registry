@@ -1,0 +1,46 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="nifi-registry-admin-create-bucket-dialog">
+    <div class="pad-bottom-md" fxLayout="row" fxLayoutAlign="space-between center">
+        <span class="mat-card-title">New Bucket</span>
+        <button md-icon-button (click)="cancel()">
+            <md-icon color="primary">close</md-icon>
+        </button>
+    </div>
+    <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-md">
+        <div class="pad-bottom-md fill-available-width">
+            <md-input-container floatPlaceholder="always" fxFlex>
+                <input #newBucketInput mdInput floatPlaceholder="always" placeholder="Bucket Name">
+            </md-input-container>
+        </div>
+        <md-checkbox [(ngModel)]="keepDialogOpen">
+            Keep this dialog open after creating bucket
+        </md-checkbox>
+    </div>
+    <div fxLayout="row">
+        <span fxFlex></span>
+        <button (click)="cancel()" color="fds-regular" md-raised-button
+                i18n="Cancel creation of new bucket|A button for cancelling the creation of a new bucket in the registry.@@nf-admin-workflow-create-bucket-button">
+            Cancel
+        </button>
+        <button [disabled]="newBucketInput.value.length === 0" class="push-left-sm" (click)="createBucket(newBucketInput)" color="fds-primary" md-raised-button
+                i18n="Create new bucket button|A button for creating a new bucket in the registry.@@nf-admin-workflow-create-bucket-button">
+            Create
+        </button>
+    </div>
+</div>

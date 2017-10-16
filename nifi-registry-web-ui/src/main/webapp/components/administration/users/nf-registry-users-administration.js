@@ -61,6 +61,7 @@ NfRegistryUsersAdministration.prototype = {
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
         this.nfRegistryService.users = this.nfRegistryService.filteredUsers = [];
+        this.nfRegistryService.allUsersSelected = false;
     },
 
     /**

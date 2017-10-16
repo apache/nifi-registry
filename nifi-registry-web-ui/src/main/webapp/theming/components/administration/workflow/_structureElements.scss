@@ -19,43 +19,31 @@
     position: absolute;
     top: 79px;
     left: 50px;
-    right: calc(50% - 5px);
+    right: 20px;
     bottom: 20px;
     background: white;
 }
-
-//#nifi-registry-workflow-administration-perspective-certifications-container {
-//    position: absolute;
-//    top: 79px;
-//    left: calc(50% + 25px);
-//    right: 20px;
-//    bottom: 20px;
-//    background: white;
-//}
 
 #nifi-registry-workflow-administration-buckets-list-container {
     overflow-y: auto;
     position: absolute;
     bottom: 30px;
-    top: 171px;
+    top: 138px;
     left: 30px;
     right: 30px;
     overflow-x: hidden;
 }
 
-//#nifi-registry-workflow-administration-certifications-list-container {
-//    overflow-y: auto;
-//    position: absolute;
-//    bottom: 30px;
-//    top: 171px;
-//    left: 30px;
-//    right: 30px;
-//    overflow-x: hidden;
-//}
-
 #nf-registry-workflow-bucket-permissions-side-nav-container {
     position: absolute;
     bottom: 15px;
     right: 10px;
+}
+
+#nifi-registry-workflow-bucket-list-paging-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 

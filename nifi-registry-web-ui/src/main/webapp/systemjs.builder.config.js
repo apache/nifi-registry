@@ -96,6 +96,7 @@
             'nifi-registry/components/administration/users/add/nf-registry-add-user.js': 'components/administration/users/add/nf-registry-add-user.js',
             'nifi-registry/components/administration/users/details/nf-registry-user-details.js': 'components/administration/users/details/nf-registry-user-details.js',
             'nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js': 'components/administration/users/permissions/nf-registry-user-permissions.js',
+            'nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js': 'components/administration/workflow/dialogs/nf-registry-create-bucket.js',
             'nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js': 'components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js',
             'nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js': 'components/administration/workflow/nf-registry-workflow-administration.js',
             'nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js': 'components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js',
