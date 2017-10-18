@@ -72,12 +72,12 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
-        // ignore the access endpoints for obtaining the access config, the access token
+        // ignore the access endpoints for obtaining the access config, access token
         // granting, and access status for a given user (note: we are not ignoring the
-        // the /access/download-token and /access/ui-extension-token endpoints
+        // the /access/download-token endpoints)
         webSecurity
                 .ignoring()
-                    .antMatchers("/access", "/access/config", "/access/token", "/access/kerberos", "/access/oidc/**");
+                    .antMatchers("/access", "/access/config", "/access/token");
     }
 
     @Override

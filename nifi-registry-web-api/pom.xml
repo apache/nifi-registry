@@ -137,11 +137,17 @@
             <version>0.0.1-SNAPSHOT</version>
             <scope>provided</scope> <!-- This will be in lib directory -->
         </dependency>
-	<dependency>
-	    <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-security-utils</artifactId>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-provider-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-	</dependency>
+            <scope>provided</scope> <!-- This will be in lib directory -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+                <artifactId>nifi-registry-security-utils</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -184,6 +190,20 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
+        </dependency>
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Integration tests run using embedded Jetty server -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
