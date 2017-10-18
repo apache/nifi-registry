@@ -353,7 +353,9 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public FlowSnapshotEntity createFlowSnapshot(final FlowSnapshotEntity flowSnapshot) {
-        flowSnapshot.setCreated(new Date());
+        if (flowSnapshot.getCreated() == null) {
+            flowSnapshot.setCreated(new Date());
+        }
         return flowSnapshotRepository.save(flowSnapshot);
     }
 

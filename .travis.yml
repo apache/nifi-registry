@@ -51,4 +51,4 @@ before_install:
     - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
 
 install: true
-script:  mvn -T 2C clean install -PjsUnitTests
+script:  mvn -T 2C clean install -PjsUnitTests,integration-tests,contrib-check

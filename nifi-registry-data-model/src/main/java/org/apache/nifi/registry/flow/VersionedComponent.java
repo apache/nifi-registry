@@ -18,6 +18,8 @@
 package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 
 public abstract class VersionedComponent {
@@ -67,5 +69,31 @@ public abstract class VersionedComponent {
 
     public void setComponentType(ComponentType type) {
         // purposely do nothing here, this just to allow unmarshalling
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        VersionedComponent that = (VersionedComponent) o;
+
+        return new EqualsBuilder()
+                .append(identifier, that.identifier)
+                .append(name, that.name)
+                .append(comments, that.comments)
+                .append(position, that.position)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(identifier)
+                .append(name)
+                .append(comments)
+                .append(position)
+                .toHashCode();
     }
 }
