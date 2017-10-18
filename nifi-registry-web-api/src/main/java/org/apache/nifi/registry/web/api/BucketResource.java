@@ -90,7 +90,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Create a named bucket capable of storing NiFi bucket objects such as flows and extension bundles.",
+            value = "Creates a bucket",
             response = Bucket.class
     )
     @ApiResponses({
@@ -107,8 +107,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for all buckets in the registry for which the client is authorized. Information about the items stored in each " +
-                    "bucket should be obtained by requesting and individual bucket by id.",
+            value = "Gets all buckets",
+            notes = "The returned list will include only buckets for which the caller is authorized.",
             response = Bucket.class,
             responseContainer = "List"
     )
@@ -145,15 +145,18 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get metadata for an existing bucket in the registry. If verbose is set to true, then each bucket will be returned " +
-                    "with the set of items in the bucket, but any further children of those items will not be included.",
+            value = "Gets a bucket",
             response = Bucket.class
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
-    public Response getBucket(@PathParam("bucketId") final String bucketId) {
+    public Response getBucket(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+                    final String bucketId) {
+
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final Bucket bucket = registryService.getBucket(bucketId);
         linkService.populateBucketLinks(bucket);
@@ -170,7 +173,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Update the metadata for an existing bucket in the registry. Objects stored in the bucket will not be modified.",
+            value = "Updates a bucket",
             response = Bucket.class
     )
     @ApiResponses({
@@ -179,7 +182,11 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
-    public Response updateBucket(@PathParam("bucketId") final String bucketId, final Bucket bucket) {
+    public Response updateBucket(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+            final String bucketId, final Bucket bucket) {
+
         if (StringUtils.isBlank(bucketId)) {
             throw new BadRequestException("Bucket id cannot be blank");
         }
@@ -205,7 +212,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Delete an existing bucket in the registry, along with all the objects it is storing.",
+            value = "Deletes a bucket along with all objects stored in the bucket",
             response = Bucket.class
     )
     @ApiResponses({
@@ -213,7 +220,11 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
-    public Response deleteBucket(@PathParam("bucketId") final String bucketId) {
+    public Response deleteBucket(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+            final String bucketId) {
+
         if (StringUtils.isBlank(bucketId)) {
             throw new BadRequestException("Bucket id cannot be blank");
         }
@@ -227,7 +238,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Retrieves the available field names that can be used for searching or sorting on buckets.",
+            value = "Retrieves field names for searching or sorting on buckets.",
             response = FieldsEntity.class
     )
     public Response getAvailableBucketFields() {

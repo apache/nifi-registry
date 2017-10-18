@@ -27,7 +27,11 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
+import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.Configuration;
@@ -43,6 +47,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -71,6 +76,7 @@ public class JettyServer {
 
     private WebAppContext webUiContext;
     private WebAppContext webApiContext;
+    private WebAppContext webDocsContext;
 
     public JettyServer(final NiFiRegistryProperties properties) {
         final QueuedThreadPool threadPool = new QueuedThreadPool(properties.getWebThreads());
@@ -194,11 +200,14 @@ public class JettyServer {
 
         File webUiWar = null;
         File webApiWar = null;
+        File webDocsWar = null;
         for (final File war : wars) {
             if (war.getName().startsWith("nifi-registry-web-ui")) {
                 webUiWar = war;
             } else if (war.getName().startsWith("nifi-registry-web-api")) {
                 webApiWar = war;
+            } else if (war.getName().startsWith("nifi-registry-web-docs")) {
+                webDocsWar = war;
             }
         }
 
@@ -206,6 +215,8 @@ public class JettyServer {
             throw new IllegalStateException("Unable to locate NiFi Registry Web UI");
         } else if (webApiWar == null) {
             throw new IllegalStateException("Unable to locate NiFi Registry Web API");
+        } else if (webDocsWar == null) {
+            throw new IllegalStateException("Unable to locate NiFi Registry Web Docs");
         }
 
         webUiContext = loadWar(webUiWar, "/nifi-registry");
@@ -216,9 +227,14 @@ public class JettyServer {
         // there is an issue scanning the asm repackaged jar so narrow down what we are scanning
         webApiContext.setAttribute("org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern", ".*/spring-[^/]*\\.jar$");
 
+        final String docsContextPath = "/nifi-registry-docs";
+        webDocsContext = loadWar(webDocsWar, docsContextPath);
+
         final HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(webUiContext);
         handlers.addHandler(webApiContext);
+        handlers.addHandler(createDocsWebApp(docsContextPath));
+        handlers.addHandler(webDocsContext);
         server.setHandler(handlers);
     }
 
@@ -261,6 +277,40 @@ public class JettyServer {
         }
         logger.info("Loading WAR: " + warFile.getAbsolutePath() + " with context path set to " + contextPath);
         return webappContext;
+    }
+
+    private ContextHandler createDocsWebApp(final String contextPath) {
+        try {
+            final ResourceHandler resourceHandler = new ResourceHandler();
+            resourceHandler.setDirectoriesListed(false);
+
+            // load the docs directory
+            final File docsDir = Paths.get("docs").toRealPath().toFile();
+            final Resource docsResource = Resource.newResource(docsDir);
+
+            // load the rest documentation
+            final File webApiDocsDir = new File(webApiContext.getTempDirectory(), "webapp/docs");
+            if (!webApiDocsDir.exists()) {
+                final boolean made = webApiDocsDir.mkdirs();
+                if (!made) {
+                    throw new RuntimeException(webApiDocsDir.getAbsolutePath() + " could not be created");
+                }
+            }
+            final Resource webApiDocsResource = Resource.newResource(webApiDocsDir);
+
+            // create resources for both docs locations
+            final ResourceCollection resources = new ResourceCollection(docsResource, webApiDocsResource);
+            resourceHandler.setBaseResource(resources);
+
+            // create the context handler
+            final ContextHandler handler = new ContextHandler(contextPath);
+            handler.setHandler(resourceHandler);
+
+            logger.info("Loading documents web app with context path set to " + contextPath);
+            return handler;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Resource directory paths are malformed: " + ex.getMessage());
+        }
     }
 
     public void start() {
