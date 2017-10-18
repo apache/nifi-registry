@@ -95,7 +95,7 @@ limitations under the License.
                                             {{snapshotMeta.comments}}
                                         </div>
                                         <div fxLayout="row" class="md-caption">
-                                            {{(snapshotMeta.timestamp | amFromUnix) | amDateFormat:'MMM-DD-YYYY'}} at {{(snapshotMeta.timestamp | amFromUnix) | amDateFormat:'h:mm A'}}
+                                            {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'MMM-DD-YYYY'}} at {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'h:mm A'}}
                                         </div>
                                     </div>
                                 </td-step>
