@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.service.params;
+package org.apache.nifi.registry.params;
 
 public enum SortOrder {
 

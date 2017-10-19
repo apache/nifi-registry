@@ -124,6 +124,11 @@ public class JettyServer {
                 throw new IllegalStateException("Invalid HTTPs port: " + port);
             }
 
+            if (StringUtils.isBlank(properties.getKeyStorePath())) {
+                throw new IllegalStateException(NiFiRegistryProperties.SECURITY_KEYSTORE
+                        + " must be provided to configure Jetty for HTTPs");
+            }
+
             logger.info("Configuring Jetty for HTTPs on port: " + port);
 
             // add some secure config

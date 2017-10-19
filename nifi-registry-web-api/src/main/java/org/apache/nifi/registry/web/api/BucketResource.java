@@ -30,10 +30,10 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.service.params.QueryParameters;
-import org.apache.nifi.registry.service.params.SortParameter;
+import org.apache.nifi.registry.service.QueryParameters;
+import org.apache.nifi.registry.params.SortParameter;
 import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.response.FieldsEntity;
+import org.apache.nifi.registry.field.Fields;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -239,12 +239,12 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Retrieves field names for searching or sorting on buckets.",
-            response = FieldsEntity.class
+            response = Fields.class
     )
     public Response getAvailableBucketFields() {
         final Set<String> bucketFields = registryService.getBucketFields();
-        final FieldsEntity fieldsEntity = new FieldsEntity(bucketFields);
-        return Response.status(Response.Status.OK).entity(fieldsEntity).build();
+        final Fields fields = new Fields(bucketFields);
+        return Response.status(Response.Status.OK).entity(fields).build();
     }
 
     private void authorizeAccess(RequestAction actionType) {

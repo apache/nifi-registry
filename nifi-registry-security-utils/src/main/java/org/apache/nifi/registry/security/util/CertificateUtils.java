@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.util;
+package org.apache.nifi.registry.security.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.ASN1Encodable;
