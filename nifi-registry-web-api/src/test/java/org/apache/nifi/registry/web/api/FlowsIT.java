@@ -78,7 +78,6 @@ public class FlowsIT extends UnsecuredIntegrationTestBase {
                 "\"createdTimestamp\":1505091360000," +
                 "\"modifiedTimestamp\":1505091360000," +
                 "\"type\":\"FLOW\"," +
-                "\"snapshotMetadata\":null," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1/flows/1\"}}," +
                 "{\"identifier\":\"2\",\"name\":\"Flow 2\"," +
                 "\"description\":\"This is flow 2\"," +

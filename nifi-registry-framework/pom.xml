@@ -106,17 +106,17 @@
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-utils</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope> <!-- will be in lib sir -->
+            <scope>provided</scope> <!-- will be in lib dir -->
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-provider-api</artifactId>
-            <scope>provided</scope> <!-- will be in lib sir -->
+            <scope>provided</scope> <!-- will be in lib dir -->
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-security-api</artifactId>
-            <scope>provided</scope> <!-- will be in lib sir -->
+            <scope>provided</scope> <!-- will be in lib dir -->
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>

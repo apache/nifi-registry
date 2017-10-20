@@ -19,6 +19,7 @@ package org.apache.nifi.registry.web.mapper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
@@ -28,6 +29,7 @@ import javax.ws.rs.ext.Provider;
 /**
  * Maps exceptions into client responses.
  */
+@Component
 @Provider
 public class BadRequestExceptionMapper implements ExceptionMapper<BadRequestException> {
 
