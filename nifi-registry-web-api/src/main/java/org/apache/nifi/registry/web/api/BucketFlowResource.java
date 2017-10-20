@@ -101,6 +101,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
         verifyPathParamsMatchBody(bucketId, flow);
         final VersionedFlow createdFlow = registryService.createFlow(bucketId, flow);
+        linkService.populateFlowLinks(createdFlow);
         return Response.status(Response.Status.OK).entity(createdFlow).build();
     }
 
@@ -166,7 +167,6 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         final VersionedFlow flow = registryService.getFlow(bucketId, flowId, false);
 
         linkService.populateFlowLinks(flow);
-
         if (flow.getSnapshotMetadata() != null) {
             linkService.populateSnapshotLinks(flow.getSnapshotMetadata());
         }
@@ -203,6 +203,11 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         final VersionedFlow updatedFlow = registryService.updateFlow(flow);
+        linkService.populateFlowLinks(updatedFlow);
+        if (updatedFlow.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(updatedFlow.getSnapshotMetadata());
+        }
+
         return Response.status(Response.Status.OK).entity(updatedFlow).build();
     }
 
@@ -261,6 +266,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         setSnaphotMetadataIfMissing(bucketId, flowId, snapshot);
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
+        if (createdSnapshot.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(createdSnapshot.getSnapshotMetadata());
+        }
         return Response.status(Response.Status.OK).entity(createdSnapshot).build();
     }
 
@@ -328,6 +336,10 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         final VersionedFlowSnapshotMetadata lastSnapshotMetadata = snapshots.last();
         final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, lastSnapshotMetadata.getVersion());
 
+        if (lastSnapshot.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(lastSnapshot.getSnapshotMetadata());
+        }
+
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
     }
 
@@ -357,6 +369,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
                 final Integer versionNumber) {
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
+        if (snapshot.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(snapshot.getSnapshotMetadata());
+        }
         return Response.status(Response.Status.OK).entity(snapshot).build();
     }
 

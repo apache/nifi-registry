@@ -100,6 +100,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     public Response createBucket(final Bucket bucket) {
         authorizeAccess(RequestAction.WRITE);
         final Bucket createdBucket = registryService.createBucket(bucket);
+        linkService.populateBucketLinks(createdBucket);
         return Response.status(Response.Status.OK).entity(createdBucket).build();
     }
 
@@ -204,6 +205,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         final Bucket updatedBucket = registryService.updateBucket(bucket);
+        linkService.populateBucketLinks(updatedBucket);
         return Response.status(Response.Status.OK).entity(updatedBucket).build();
     }
 
