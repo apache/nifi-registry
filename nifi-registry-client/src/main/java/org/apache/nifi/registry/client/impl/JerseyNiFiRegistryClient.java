@@ -16,6 +16,11 @@
  */
 package org.apache.nifi.registry.client.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.FlowClient;
@@ -91,6 +96,7 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
         final ClientConfig clientConfig = new ClientConfig();
         clientConfig.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout);
         clientConfig.property(ClientProperties.READ_TIMEOUT, readTimeout);
+        clientConfig.register(jacksonJaxbJsonProvider());
         clientBuilder.withConfig(clientConfig);
         this.client = clientBuilder.build();
 
@@ -155,5 +161,18 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
             return new JerseyNiFiRegistryClient(this);
         }
 
+    }
+
+    private static JacksonJaxbJsonProvider jacksonJaxbJsonProvider() {
+        JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
+        mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory()));
+        // Ignore unknown properties so that deployed client remain compatible with future versions of NiFi Registry that add new fields
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        jacksonJaxbJsonProvider.setMapper(mapper);
+        return jacksonJaxbJsonProvider;
     }
 }

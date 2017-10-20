@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.web.security.InvalidAuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -28,6 +29,7 @@ import javax.ws.rs.ext.Provider;
 /**
  * Maps access denied exceptions into a client response.
  */
+@Component
 @Provider
 public class InvalidAuthenticationExceptionMapper implements ExceptionMapper<InvalidAuthenticationException> {
 
