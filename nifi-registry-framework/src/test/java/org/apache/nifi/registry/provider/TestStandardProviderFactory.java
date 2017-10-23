@@ -16,12 +16,16 @@
  */
 package org.apache.nifi.registry.provider;
 
+import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
 
 public class TestStandardProviderFactory {
 
@@ -30,7 +34,10 @@ public class TestStandardProviderFactory {
         final NiFiRegistryProperties props = new NiFiRegistryProperties();
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-good.xml");
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props);
+        final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
+        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
         providerFactory.initialize();
 
         final FlowPersistenceProvider flowPersistenceProvider = providerFactory.getFlowPersistenceProvider();
@@ -47,7 +54,10 @@ public class TestStandardProviderFactory {
         final NiFiRegistryProperties props = new NiFiRegistryProperties();
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-good.xml");
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props);
+        final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
+        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
         providerFactory.getFlowPersistenceProvider();
     }
 
@@ -56,7 +66,10 @@ public class TestStandardProviderFactory {
         final NiFiRegistryProperties props = new NiFiRegistryProperties();
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-does-not-exist.xml");
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props);
+        final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
+        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
         providerFactory.initialize();
     }
 
@@ -65,7 +78,10 @@ public class TestStandardProviderFactory {
         final NiFiRegistryProperties props = new NiFiRegistryProperties();
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-class-not-found.xml");
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props);
+        final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
+        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
         providerFactory.initialize();
 
         providerFactory.getFlowPersistenceProvider();

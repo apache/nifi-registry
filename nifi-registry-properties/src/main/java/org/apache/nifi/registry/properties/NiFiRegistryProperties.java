@@ -52,6 +52,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_IDENTITY_MAPPING_PATTERN_PREFIX = "nifi.registry.security.identity.mapping.pattern.";
     public static final String SECURITY_IDENTITY_MAPPING_VALUE_PREFIX = "nifi.registry.security.identity.mapping.value.";
 
+    public static final String EXTENSION_DIR_PREFIX = "nifi.registry.extension.dir.";
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
 
@@ -168,7 +169,6 @@ public class NiFiRegistryProperties extends Properties {
         return getProperty(DATABASE_URL_APPEND);
     }
 
-
     public File getAuthorizersConfigurationFile() {
         final String value = getProperty(SECURITY_AUTHORIZERS_CONFIGURATION_FILE);
         if (StringUtils.isBlank(value)) {
@@ -176,6 +176,12 @@ public class NiFiRegistryProperties extends Properties {
         } else {
             return new File(value);
         }
+    }
+
+    public Set<String> getExtensionsDirs() {
+        final Set<String> extensionDirs = new HashSet<>();
+        stringPropertyNames().stream().filter(key -> key.startsWith(EXTENSION_DIR_PREFIX)).forEach(key -> extensionDirs.add(getProperty(key)));
+        return extensionDirs;
     }
 
     /**

@@ -24,6 +24,7 @@ import org.apache.nifi.registry.authorization.exception.AuthorizerDestructionExc
 import org.apache.nifi.registry.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.authorization.generated.Authorizers;
 import org.apache.nifi.registry.authorization.generated.Prop;
+import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.slf4j.Logger;
@@ -72,16 +73,23 @@ public class StandardAuthorizerFactory implements AuthorizerFactory, UserGroupPr
     }
 
     private final NiFiRegistryProperties properties;
+    private final ExtensionManager extensionManager;
+
     private Authorizer authorizer;
     private final Map<String, UserGroupProvider> userGroupProviders = new HashMap<>();
     private final Map<String, AccessPolicyProvider> accessPolicyProviders = new HashMap<>();
     private final Map<String, Authorizer> authorizers = new HashMap<>();
 
-    public StandardAuthorizerFactory(final NiFiRegistryProperties properties) {
+    public StandardAuthorizerFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
         this.properties = properties;
+        this.extensionManager = extensionManager;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
+        }
+
+        if (this.extensionManager == null) {
+            throw new IllegalStateException("ExtensionManager cannot be null");
         }
     }
 
@@ -239,8 +247,13 @@ public class StandardAuthorizerFactory implements AuthorizerFactory, UserGroupPr
 
         final UserGroupProvider instance;
 
+        final ClassLoader classLoader = extensionManager.getExtensionClassLoader(userGroupProviderClassName);
+        if (classLoader == null) {
+            throw new IllegalStateException("Extension not found in any of the configured class loaders: " + userGroupProviderClassName);
+        }
+
         // attempt to load the class
-        Class<?> rawUserGroupProviderClass = Class.forName(userGroupProviderClassName);
+        Class<?> rawUserGroupProviderClass = Class.forName(userGroupProviderClassName, true, classLoader);
         Class<? extends UserGroupProvider> userGroupProviderClass = rawUserGroupProviderClass.asSubclass(UserGroupProvider.class);
 
         // otherwise create a new instance
@@ -262,8 +275,13 @@ public class StandardAuthorizerFactory implements AuthorizerFactory, UserGroupPr
     private AccessPolicyProvider createAccessPolicyProvider(final String identifier, final String accessPolicyProviderClassName) throws Exception {
         final AccessPolicyProvider instance;
 
+        final ClassLoader classLoader = extensionManager.getExtensionClassLoader(accessPolicyProviderClassName);
+        if (classLoader == null) {
+            throw new IllegalStateException("Extension not found in any of the configured class loaders: " + accessPolicyProviderClassName);
+        }
+
         // attempt to load the class
-        Class<?> rawAccessPolicyProviderClass = Class.forName(accessPolicyProviderClassName);
+        Class<?> rawAccessPolicyProviderClass = Class.forName(accessPolicyProviderClassName, true, classLoader);
         Class<? extends AccessPolicyProvider> accessPolicyClass = rawAccessPolicyProviderClass.asSubclass(AccessPolicyProvider.class);
 
         // otherwise create a new instance
@@ -284,8 +302,14 @@ public class StandardAuthorizerFactory implements AuthorizerFactory, UserGroupPr
 
     private Authorizer createAuthorizer(final String identifier, final String authorizerClassName, final String classpathResources) throws Exception {
         final Authorizer instance;
+
+        final ClassLoader classLoader = extensionManager.getExtensionClassLoader(authorizerClassName);
+        if (classLoader == null) {
+            throw new IllegalStateException("Extension not found in any of the configured class loaders: " + authorizerClassName);
+        }
+
         // attempt to load the class
-        Class<?> rawAuthorizerClass = Class.forName(authorizerClassName);
+        Class<?> rawAuthorizerClass = Class.forName(authorizerClassName, true, classLoader);
         Class<? extends Authorizer> authorizerClass = rawAuthorizerClass.asSubclass(Authorizer.class);
 
         // otherwise create a new instance
