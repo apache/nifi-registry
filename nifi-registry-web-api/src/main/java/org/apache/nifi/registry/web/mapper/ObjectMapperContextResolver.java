@@ -16,31 +16,29 @@
  */
 package org.apache.nifi.registry.web.mapper;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonInclude.Value;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 
 @Component
 @Provider
-public class IllegalStateExceptionMapper implements ExceptionMapper<IllegalStateException> {
+public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper> {
 
-    private static final Logger logger = LoggerFactory.getLogger(IllegalStateExceptionMapper.class);
+    private final ObjectMapper mapper;
 
-    @Override
-    public Response toResponse(IllegalStateException exception) {
-        // log the error
-        logger.info(String.format("%s. Returning %s response.", exception, Response.Status.CONFLICT));
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(StringUtils.EMPTY, exception);
-        }
-
-        return Response.status(Response.Status.CONFLICT).entity(exception.getMessage()).type("text/plain").build();
+    public ObjectMapperContextResolver() throws Exception {
+        mapper = new ObjectMapper();
+        mapper.setPropertyInclusion(Value.construct(Include.NON_NULL, Include.NON_NULL));
+        mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory()));
     }
 
+    @Override
+    public ObjectMapper getContext(Class<?> objectType) {
+        return mapper;
+    }
 }

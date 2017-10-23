@@ -24,10 +24,12 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Maps not found exceptions into client responses.
  */
+@Component
 @Provider
 public class NotFoundExceptionMapper implements ExceptionMapper<NotFoundException> {
 

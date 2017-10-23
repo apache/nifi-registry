@@ -21,10 +21,12 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Maps unknown node exceptions into client responses.
  */
+@Component
 @Provider
 public class ThrowableMapper implements ExceptionMapper<Throwable> {
 

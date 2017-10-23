@@ -23,10 +23,12 @@ import javax.ws.rs.ext.Provider;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * Maps exceptions into client responses.
  */
+@Component
 @Provider
 public class IllegalArgumentExceptionMapper implements ExceptionMapper<IllegalArgumentException> {
 

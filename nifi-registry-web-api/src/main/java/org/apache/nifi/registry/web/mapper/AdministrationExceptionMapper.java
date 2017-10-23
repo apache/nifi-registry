@@ -19,6 +19,7 @@ package org.apache.nifi.registry.web.mapper;
 import org.apache.nifi.registry.exception.AdministrationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -27,6 +28,7 @@ import javax.ws.rs.ext.Provider;
 /**
  * Maps administration exceptions into client responses.
  */
+@Component
 @Provider
 public class AdministrationExceptionMapper implements ExceptionMapper<AdministrationException> {
 
