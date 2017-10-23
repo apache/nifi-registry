@@ -21,6 +21,7 @@ import org.apache.nifi.registry.authorization.Authorizer;
 import org.apache.nifi.registry.authorization.AuthorizerFactory;
 import org.apache.nifi.registry.authorization.StandardAuthorizableLookup;
 import org.apache.nifi.registry.authorization.StandardAuthorizerFactory;
+import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.web.security.NiFiAnonymousUserFilter;
 import org.apache.nifi.registry.web.security.x509.SubjectDnX509PrincipalExtractor;
@@ -54,7 +55,8 @@ import org.springframework.security.web.authentication.preauth.x509.X509Principa
 public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistrySecurityConfig.class);
 
-    private NiFiRegistryProperties properties;
+    private final NiFiRegistryProperties properties;
+    private final ExtensionManager extensionManager;
 
     private X509AuthenticationFilter x509AuthenticationFilter;
 
@@ -66,8 +68,11 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private NiFiAnonymousUserFilter anonymousAuthenticationFilter;
 
-    public NiFiRegistrySecurityConfig() {
+    @Autowired
+    public NiFiRegistrySecurityConfig(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
         super(true); // disable defaults
+        this.properties = properties;
+        this.extensionManager = extensionManager;
     }
 
     @Override
@@ -188,7 +193,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean(initMethod = "initialize")
     public AuthorizerFactory authorizerFactory() {
-        return new StandardAuthorizerFactory(this.properties);
+        return new StandardAuthorizerFactory(this.properties, this.extensionManager);
     }
 
     @Bean
@@ -201,10 +206,6 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         return new StandardAuthorizableLookup();
     }
 
-    @Autowired
-    public void setProperties(NiFiRegistryProperties properties) {
-        this.properties = properties;
-    }
 
     // TODO, add Jwt and Otp support
 //    @Autowired
