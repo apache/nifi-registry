@@ -21,8 +21,6 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.test.context.jdbc.Sql;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -31,9 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class BucketsIT extends UnsecuredIntegrationTestBase {
-
-    private final Client client = ClientBuilder.newClient();
+public class BucketsIT extends UnsecuredITBase {
 
     @Test
     public void testGetBucketsEmpty() throws Exception {
