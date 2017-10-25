@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.provider;
 
+import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.generated.Property;
@@ -67,16 +68,22 @@ public class StandardProviderFactory implements ProviderFactory {
     }
 
     private final NiFiRegistryProperties properties;
+    private final ExtensionManager extensionManager;
     private final AtomicReference<Providers> providersHolder = new AtomicReference<>(null);
 
     private FlowPersistenceProvider flowPersistenceProvider;
 
     @Autowired
-    public StandardProviderFactory(final NiFiRegistryProperties properties) {
+    public StandardProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
         this.properties = properties;
+        this.extensionManager = extensionManager;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
+        }
+
+        if (this.extensionManager == null) {
+            throw new IllegalStateException("ExtensionManager cannot be null");
         }
     }
 
@@ -120,7 +127,12 @@ public class StandardProviderFactory implements ProviderFactory {
             final String flowProviderClassName = jaxbFlowProvider.getClazz();
 
             try {
-                final Class<?> rawFlowProviderClass = Class.forName(flowProviderClassName, true, StandardProviderFactory.class.getClassLoader());
+                final ClassLoader classLoader = extensionManager.getExtensionClassLoader(flowProviderClassName);
+                if (classLoader == null) {
+                    throw new IllegalStateException("Extension not found in any of the configured class loaders: " + flowProviderClassName);
+                }
+
+                final Class<?> rawFlowProviderClass = Class.forName(flowProviderClassName, true, classLoader);
                 final Class<? extends FlowPersistenceProvider> flowProviderClass = rawFlowProviderClass.asSubclass(FlowPersistenceProvider.class);
 
                 final Constructor constructor = flowProviderClass.getConstructor();

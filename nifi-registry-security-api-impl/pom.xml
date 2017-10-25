@@ -33,6 +33,9 @@
             <resource>
                 <directory>src/main/xsd</directory>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
         </resources>
         <plugins>
             <plugin>
