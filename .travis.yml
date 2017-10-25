@@ -42,13 +42,20 @@ addons:
     chrome: stable
 
 # before_install aids in setting up the Travis-CI environment
-#   1. simulate an `X` server on Travis CI for karma tests that require a GUI
-#   2. Configures pre-installed Chrome on Travis CI to be used in “headless” mode
+#   1. Configures pre-installed Chrome on Travis CI to be used in “headless” mode
 before_install:
+    - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
+
+# before_script aids in setting up the Travis-CI environment
+#   1. simulate an `X` server on Travis CI for karma tests that require a GUI
+before_script:
     - export DISPLAY=:99.0
     - sh -e /etc/init.d/xvfb start
     - sleep 3 # give xvfb some time to start
-    - google-chrome-stable --headless --disable-gpu --remote-debugging-port=9222 http://localhost &
 
+# skip the installation step entirely
 install: true
-script:  mvn -T 2C clean install -PjsUnitTests,integration-tests,contrib-check
+
+#build commands
+script:
+    - mvn -T 2C clean install -Pintegration-tests,contrib-check
