@@ -16,30 +16,28 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.NiFiRegistryApiTestApplication;
+import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
+
+import javax.annotation.PostConstruct;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Deploy the Web API Application using an embedded Jetty Server for local integration testing, with the follow characteristics:
- *
- * - A NiFiRegistryProperties Bean has to be explicitly provided to the application context, i.e. using an inline @TestConfiguration class
- * - @DirtiesContext is providing that each (sub)class gets a fresh context
- * - The database is embed H2 using volatile (in-memory) persistence
- * - Custom SQL is clearing the DB before each test method by default, unless method overrides this behavior
+ * A base class to simplify creating integration tests against an API application running with an embedded server and volatile DB.
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = NiFiRegistryApiTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:db/clearDB.sql")
 public abstract class IntegrationTestBase {
 
     private static final String CONTEXT_PATH = "/nifi-registry-api-test";
@@ -47,6 +45,14 @@ public abstract class IntegrationTestBase {
     @TestConfiguration
     public static class TestConfigurationClass {
 
+        /* REQUIRED: Any subclass extending IntegrationTestBase must add a Spring profile that defines a
+         * property value for this key containing the path to the nifi-registy.properties file to use to
+         * create a NiFiRegistryProperties Bean in the ApplicationContext.  */
+        @Value("${nifi.registry.properties.file}")
+        private String propertiesFileLocation;
+
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final Lock readLock = lock.readLock();
         private NiFiRegistryProperties testProperties;
 
         @Bean
@@ -56,23 +62,107 @@ public abstract class IntegrationTestBase {
             return jettyContainerFactory;
         }
 
+        @Bean
+        public NiFiRegistryProperties getNiFiRegistryProperties() {
+            readLock.lock();
+            try {
+                if (testProperties == null) {
+                    testProperties = loadNiFiRegistryProperties(propertiesFileLocation);
+                }
+            } finally {
+                readLock.unlock();
+            }
+            return testProperties;
+        }
+
     }
 
-    @LocalServerPort
-    int port;
+    @Autowired
+    private NiFiRegistryProperties properties;
 
-    String createURL(String resourcePathRelativeToBaseUrl) {
-        if (resourcePathRelativeToBaseUrl == null) {
+    /* OPTIONAL: Any subclass that extends this base class MAY provide or specify a @TestConfiguration that provides a
+     * NiFiRegistryClientConfig @Bean. The properties specified should correspond with the integration test cases in
+     * the concrete subclass. See SecureFileIT for an example. */
+    @Autowired(required = false)
+    private NiFiRegistryClientConfig clientConfig;
+
+    /* This will be injected with the random port assigned to the embedded Jetty container. */
+    @LocalServerPort
+    private int port;
+
+    /**
+     * Subclasses can access this auto-configured JAX-RS client to communicate to the NiFi Registry Server
+     */
+    protected Client client;
+
+    @PostConstruct
+    void initialize() {
+        if (this.clientConfig != null) {
+            this.client = createClientFromConfig(this.clientConfig);
+        } else {
+            this.client = ClientBuilder.newClient();
+        }
+
+    }
+
+    /**
+     * Subclasses can utilize this method to build a URL that has the correct protocol, hostname, and port
+     * for a given path.
+     *
+     * @param relativeResourcePath the path component of the resource you wish to access, relative to the
+     *                             base API URL, where the base includes the servlet context path.
+     *
+     * @return a String containing the absolute URL of the resource.
+     */
+    String createURL(String relativeResourcePath) {
+        if (relativeResourcePath == null) {
             throw new IllegalArgumentException("Resource path cannot be null");
         }
 
-        StringBuilder baseUri = new StringBuilder().append("http://localhost:").append(port).append(CONTEXT_PATH);
-        if (!resourcePathRelativeToBaseUrl.startsWith("/")) {
-            baseUri.append('/');
-        }
-        baseUri.append(resourcePathRelativeToBaseUrl);
+        final boolean isSecure = this.properties.getSslPort() != null;
+        final String protocolSchema = isSecure ? "https" : "http";
 
-        return baseUri.toString();
+        final StringBuilder baseUriBuilder = new StringBuilder()
+                .append(protocolSchema).append("://localhost:").append(port).append(CONTEXT_PATH);
+
+        if (!relativeResourcePath.startsWith("/")) {
+            baseUriBuilder.append('/');
+        }
+        baseUriBuilder.append(relativeResourcePath);
+
+        return baseUriBuilder.toString();
+    }
+
+    /**
+     * A helper method for loading NiFiRegistryProperties by reading *.properties files from disk.
+     *
+     * @param propertiesFilePath The location of the properties file
+     * @return A NiFIRegistryProperties instance based on the properties file contents
+     */
+    static NiFiRegistryProperties loadNiFiRegistryProperties(String propertiesFilePath) {
+        NiFiRegistryProperties properties = new NiFiRegistryProperties();
+        try (final FileReader reader = new FileReader(propertiesFilePath)) {
+            properties.load(reader);
+        } catch (final IOException ioe) {
+            throw new RuntimeException("Unable to load properties: " + ioe, ioe);
+        }
+        return properties;
+    }
+
+    private static Client createClientFromConfig(NiFiRegistryClientConfig registryClientConfig) {
+
+        final SSLContext sslContext = registryClientConfig.getSslContext();
+        final HostnameVerifier hostnameVerifier = registryClientConfig.getHostnameVerifier();
+
+        final ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+        if (sslContext != null) {
+            clientBuilder.sslContext(sslContext);
+        }
+        if (hostnameVerifier != null) {
+            clientBuilder.hostnameVerifier(hostnameVerifier);
+        }
+
+        return clientBuilder.build();
     }
 
 }
