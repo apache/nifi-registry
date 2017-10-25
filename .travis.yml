@@ -57,4 +57,5 @@ install: true
 
 #build commands
 script:
-    - mvn -T 2C clean install -PjsUnitTests,integration-tests,contrib-check
+    - mvn -T 2C clean install -Pintegration-tests,contrib-check
+
