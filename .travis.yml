@@ -38,7 +38,7 @@ before_cache:
     - rm -rf $HOME/.m2/repository/org/apache/nifi-registry/
 
 addons:
-    chrome: beta
+    chrome: stable
 
 # before_install aids in setting up the Travis-CI environment
 #   1. Configures pre-installed Chrome on Travis CI to be used in “headless” mode
