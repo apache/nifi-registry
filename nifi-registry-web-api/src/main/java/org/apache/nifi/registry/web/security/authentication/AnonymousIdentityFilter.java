@@ -18,23 +18,22 @@ package org.apache.nifi.registry.web.security.authentication;
 
 import org.apache.nifi.registry.security.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
-import org.apache.nifi.registry.web.security.authentication.token.NiFiAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 import javax.servlet.http.HttpServletRequest;
 
-public class NiFiAnonymousUserFilter extends AnonymousAuthenticationFilter {
+public class AnonymousIdentityFilter extends AnonymousAuthenticationFilter {
 
     private static final String ANONYMOUS_KEY = "anonymousNifiKey";
 
-    public NiFiAnonymousUserFilter() {
+    public AnonymousIdentityFilter() {
         super(ANONYMOUS_KEY);
     }
 
     @Override
     protected Authentication createAuthentication(HttpServletRequest request) {
-        return new NiFiAuthenticationToken(new NiFiUserDetails(StandardNiFiUser.ANONYMOUS));
+        return new AuthenticationSuccessToken(new NiFiUserDetails(StandardNiFiUser.ANONYMOUS));
     }
 
 }

@@ -28,17 +28,20 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.UnsupportedJwtException;
 import org.apache.commons.lang3.StringUtils;
-
 import org.apache.nifi.registry.exception.AdministrationException;
+import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.key.Key;
 import org.apache.nifi.registry.security.key.KeyService;
-import org.apache.nifi.registry.web.security.authentication.token.LoginAuthenticationToken;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
+// TODO, look into replacing this JwtService service with Apache Licensed JJWT library
 @Service
 public class JwtService {
 
@@ -50,6 +53,7 @@ public class JwtService {
 
     private final KeyService keyService;
 
+    @Autowired
     public JwtService(final KeyService keyService) {
         this.keyService = keyService;
     }
@@ -68,7 +72,7 @@ public class JwtService {
                 throw new JwtException("No subject available in token");
             }
 
-            // TODO: Validate issuer against active registry?
+            // TODO: Validate issuer against active IdentityProvider?
             if (StringUtils.isEmpty(jws.getBody().getIssuer())) {
                 throw new JwtException("No issuer available in token");
             }
@@ -110,51 +114,93 @@ public class JwtService {
     /**
      * Generates a signed JWT token from the provided (Spring Security) login authentication token.
      *
-     * @param authenticationToken an instance of the Spring Security token after login credentials have been verified against the respective information source
+     * @param authenticationResponse an instance of the Spring Security token after login credentials have been verified against the respective information source
      * @return a signed JWT containing the user identity and the identity provider, Base64-encoded
      * @throws JwtException if there is a problem generating the signed token
      */
-    public String generateSignedToken(final LoginAuthenticationToken authenticationToken) throws JwtException {
-        if (authenticationToken == null) {
+    public String generateSignedToken(final AuthenticationResponse authenticationResponse) throws JwtException {
+        if (authenticationResponse == null) {
             throw new IllegalArgumentException("Cannot generate a JWT for a null authentication token");
         }
 
         // Set expiration from the token
-        final Calendar expiration = Calendar.getInstance();
-        expiration.setTimeInMillis(authenticationToken.getExpiration());
+        final Calendar now = Calendar.getInstance();
+        long expirationMillisRelativeToNow = validateTokenExpiration(authenticationResponse.getExpiration(), authenticationResponse.getIdentity());
+        long expirationMillis = now.getTimeInMillis() + expirationMillisRelativeToNow;
+        final Calendar expiration = new Calendar.Builder().setInstant(expirationMillis).build();
 
-        final Object principal = authenticationToken.getPrincipal();
+        final Object principal = authenticationResponse.getIdentity();
         if (principal == null || StringUtils.isEmpty(principal.toString())) {
-            final String errorMessage = "Cannot generate a JWT for a token with an empty identity issued by " + authenticationToken.getIssuer();
+            final String errorMessage = "Cannot generate a JWT for a token with an empty identity issued by " + authenticationResponse.getIssuer();
             logger.error(errorMessage);
             throw new JwtException(errorMessage);
         }
 
         // Create a JWT with the specified authentication
         final String identity = principal.toString();
-        final String username = authenticationToken.getName();
+        final String username = authenticationResponse.getUsername();
 
         try {
             // Get/create the key for this user
             final Key key = keyService.getOrCreateKey(identity);
             final byte[] keyBytes = key.getKey().getBytes(StandardCharsets.UTF_8);
 
-            logger.trace("Generating JWT for " + authenticationToken);
+            logger.trace("Generating JWT for " + describe(authenticationResponse));
 
             // TODO: Implement "jti" claim with nonce to prevent replay attacks and allow blacklisting of revoked tokens
             // Build the token
             return Jwts.builder().setSubject(identity)
-                    .setIssuer(authenticationToken.getIssuer())
-                    .setAudience(authenticationToken.getIssuer())
+                    .setIssuer(authenticationResponse.getIssuer())
+                    .setAudience(authenticationResponse.getIssuer())
                     .claim(USERNAME_CLAIM, username)
                     .claim(KEY_ID_CLAIM, key.getId())
+                    .setIssuedAt(now.getTime())
                     .setExpiration(expiration.getTime())
-                    .setIssuedAt(Calendar.getInstance().getTime())
                     .signWith(SIGNATURE_ALGORITHM, keyBytes).compact();
         } catch (NullPointerException | AdministrationException e) {
             final String errorMessage = "Could not retrieve the signing key for JWT for " + identity;
             logger.error(errorMessage, e);
             throw new JwtException(errorMessage, e);
         }
+    }
+
+    private long validateTokenExpiration(long proposedTokenExpiration, String identity) {
+        final long maxExpiration = TimeUnit.MILLISECONDS.convert(12, TimeUnit.HOURS);
+        final long minExpiration = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
+
+        if (proposedTokenExpiration > maxExpiration) {
+            logger.warn(String.format("Max token expiration exceeded. Setting expiration to %s from %s for %s", maxExpiration,
+                    proposedTokenExpiration, identity));
+            proposedTokenExpiration = maxExpiration;
+        } else if (proposedTokenExpiration < minExpiration) {
+            logger.warn(String.format("Min token expiration not met. Setting expiration to %s from %s for %s", minExpiration,
+                    proposedTokenExpiration, identity));
+            proposedTokenExpiration = minExpiration;
+        }
+
+        return proposedTokenExpiration;
+    }
+
+    private static String describe(AuthenticationResponse authenticationResponse) {
+        Calendar expirationTime = Calendar.getInstance();
+        expirationTime.setTimeInMillis(authenticationResponse.getExpiration());
+        long remainingTime = expirationTime.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
+        dateFormat.setTimeZone(expirationTime.getTimeZone());
+        String expirationTimeString = dateFormat.format(expirationTime.getTime());
+
+        return new StringBuilder("LoginAuthenticationToken for ")
+                .append(authenticationResponse.getUsername())
+                .append(" issued by ")
+                .append(authenticationResponse.getIssuer())
+                .append(" expiring at ")
+                .append(expirationTimeString)
+                .append(" [")
+                .append(authenticationResponse.getExpiration())
+                .append(" ms, ")
+                .append(remainingTime)
+                .append(" ms remaining]")
+                .toString();
     }
 }

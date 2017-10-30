@@ -16,8 +16,17 @@
  */
 package org.apache.nifi.registry.security.authentication;
 
-public interface LoginIdentityProviderLookup {
+public interface IdentityProviderUsage {
 
-    LoginIdentityProvider getLoginIdentityProvider(String identifier);
+    /**
+     * Provides the usage instructions for an identity provider.
+     *
+     * The instructions should target a human consumer of the
+     * NiFi Registry REST API that needs to know how to handle
+     * Authentication when using / programming an API client.
+     *
+     * @return the usage instructions for an identity provider
+     */
+    String getText();
 
 }

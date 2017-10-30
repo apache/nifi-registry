@@ -14,15 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.authentication;
+package org.apache.nifi.registry.security.authentication;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProvider;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProviderConfigurationContext;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProviderLookup;
-import org.apache.nifi.registry.security.authentication.annotation.LoginIdentityProviderContext;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.security.authentication.annotation.IdentityProviderContext;
 import org.apache.nifi.registry.security.authentication.generated.IdentityProviders;
 import org.apache.nifi.registry.security.authentication.generated.Property;
 import org.apache.nifi.registry.security.authentication.generated.Provider;
@@ -33,6 +30,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -53,16 +51,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup, DisposableBean {
+public class IdentityProviderFactory implements IdentityProviderLookup, DisposableBean {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoginIdentityProviderFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(IdentityProviderFactory.class);
     private static final String LOGIN_IDENTITY_PROVIDERS_XSD = "/identity-providers.xsd";
     private static final String JAXB_GENERATED_PATH = "org.apache.nifi.registry.security.authentication.generated";
     private static final JAXBContext JAXB_CONTEXT = initializeJaxbContext();
 
     private static JAXBContext initializeJaxbContext() {
         try {
-            return JAXBContext.newInstance(JAXB_GENERATED_PATH, LoginIdentityProviderFactory.class.getClassLoader());
+            return JAXBContext.newInstance(JAXB_GENERATED_PATH, IdentityProviderFactory.class.getClassLoader());
         } catch (JAXBException e) {
             throw new RuntimeException("Unable to create JAXBContext.");
         }
@@ -70,11 +68,11 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
 
     private NiFiRegistryProperties properties;
     private ExtensionManager extensionManager;
-    private LoginIdentityProvider loginIdentityProvider;
-    private final Map<String, LoginIdentityProvider> loginIdentityProviders = new HashMap<>();
+    private IdentityProvider identityProvider;
+    private final Map<String, IdentityProvider> identityProviders = new HashMap<>();
 
     @Autowired
-    public LoginIdentityProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
+    public IdentityProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
         this.properties = properties;
         this.extensionManager = extensionManager;
 
@@ -88,13 +86,15 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
     }
 
     @Override
-    public LoginIdentityProvider getLoginIdentityProvider(String identifier) {
-        return loginIdentityProviders.get(identifier);
+    public IdentityProvider getIdentityProvider(String identifier) {
+        return identityProviders.get(identifier);
     }
 
+    @Primary
     @Bean
-    public LoginIdentityProvider getLoginIdentityProvider() throws Exception {
-        if (loginIdentityProvider == null) {
+//    @Bean("LoginIdentityProvider")
+    public IdentityProvider getIdentityProvider() throws Exception {
+        if (identityProvider == null) {
             // look up the login identity provider to use
             final String loginIdentityProviderIdentifier = properties.getProperty(NiFiRegistryProperties.SECURITY_IDENTITY_PROVIDER);
 
@@ -104,32 +104,32 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
 
                 // create each login identity provider
                 for (final Provider provider : loginIdentityProviderConfiguration.getProvider()) {
-                    loginIdentityProviders.put(provider.getIdentifier(), createLoginIdentityProvider(provider.getIdentifier(), provider.getClazz()));
+                    identityProviders.put(provider.getIdentifier(), createLoginIdentityProvider(provider.getIdentifier(), provider.getClazz()));
                 }
 
                 // configure each login identity provider
                 for (final Provider provider : loginIdentityProviderConfiguration.getProvider()) {
-                    final LoginIdentityProvider instance = loginIdentityProviders.get(provider.getIdentifier());
+                    final IdentityProvider instance = identityProviders.get(provider.getIdentifier());
                     instance.onConfigured(loadLoginIdentityProviderConfiguration(provider));
                 }
 
                 // get the login identity provider instance
-                loginIdentityProvider = getLoginIdentityProvider(loginIdentityProviderIdentifier);
+                identityProvider = getIdentityProvider(loginIdentityProviderIdentifier);
 
                 // ensure it was found
-                if (loginIdentityProvider == null) {
+                if (identityProvider == null) {
                     throw new Exception(String.format("The specified login identity provider '%s' could not be found.", loginIdentityProviderIdentifier));
                 }
             }
         }
 
-        return loginIdentityProvider;
+        return identityProvider;
     }
 
     @Override
     public void destroy() throws Exception {
-        if (loginIdentityProviders != null) {
-            loginIdentityProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+        if (identityProviders != null) {
+            identityProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
         }
     }
 
@@ -157,8 +157,8 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
         }
     }
 
-    private LoginIdentityProvider createLoginIdentityProvider(final String identifier, final String loginIdentityProviderClassName) throws Exception {
-        final LoginIdentityProvider instance;
+    private IdentityProvider createLoginIdentityProvider(final String identifier, final String loginIdentityProviderClassName) throws Exception {
+        final IdentityProvider instance;
 
         final ClassLoader classLoader = extensionManager.getExtensionClassLoader(loginIdentityProviderClassName);
         if (classLoader == null) {
@@ -167,11 +167,11 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
 
         // attempt to load the class
         Class<?> rawLoginIdentityProviderClass = Class.forName(loginIdentityProviderClassName, true, classLoader);
-        Class<? extends LoginIdentityProvider> loginIdentityProviderClass = rawLoginIdentityProviderClass.asSubclass(LoginIdentityProvider.class);
+        Class<? extends IdentityProvider> loginIdentityProviderClass = rawLoginIdentityProviderClass.asSubclass(IdentityProvider.class);
 
         // otherwise create a new instance
         Constructor constructor = loginIdentityProviderClass.getConstructor();
-        instance = (LoginIdentityProvider) constructor.newInstance();
+        instance = (IdentityProvider) constructor.newInstance();
 
         // method injection
         performMethodInjection(instance, loginIdentityProviderClass);
@@ -179,27 +179,24 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
         // field injection
         performFieldInjection(instance, loginIdentityProviderClass);
 
-        // call post construction lifecycle event
-        instance.initialize(new StandardLoginIdentityProviderInitializationContext(identifier, this));
-
         return instance;
     }
 
-    private LoginIdentityProviderConfigurationContext loadLoginIdentityProviderConfiguration(final Provider provider) {
+    private IdentityProviderConfigurationContext loadLoginIdentityProviderConfiguration(final Provider provider) {
         final Map<String, String> providerProperties = new HashMap<>();
 
         for (final Property property : provider.getProperty()) {
             providerProperties.put(property.getName(), property.getValue());
         }
 
-        return new StandardLoginIdentityProviderConfigurationContext(provider.getIdentifier(), providerProperties);
+        return new StandardIdentityProviderConfigurationContext(provider.getIdentifier(), this, providerProperties);
     }
 
-    private void performMethodInjection(final LoginIdentityProvider instance, final Class loginIdentityProviderClass)
+    private void performMethodInjection(final IdentityProvider instance, final Class loginIdentityProviderClass)
             throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         for (final Method method : loginIdentityProviderClass.getMethods()) {
-            if (method.isAnnotationPresent(LoginIdentityProviderContext.class)) {
+            if (method.isAnnotationPresent(IdentityProviderContext.class)) {
                 // make the method accessible
                 final boolean isAccessible = method.isAccessible();
                 method.setAccessible(true);
@@ -224,14 +221,14 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
         }
 
         final Class parentClass = loginIdentityProviderClass.getSuperclass();
-        if (parentClass != null && LoginIdentityProvider.class.isAssignableFrom(parentClass)) {
+        if (parentClass != null && IdentityProvider.class.isAssignableFrom(parentClass)) {
             performMethodInjection(instance, parentClass);
         }
     }
 
-    private void performFieldInjection(final LoginIdentityProvider instance, final Class loginIdentityProviderClass) throws IllegalArgumentException, IllegalAccessException {
+    private void performFieldInjection(final IdentityProvider instance, final Class loginIdentityProviderClass) throws IllegalArgumentException, IllegalAccessException {
         for (final Field field : loginIdentityProviderClass.getDeclaredFields()) {
-            if (field.isAnnotationPresent(LoginIdentityProviderContext.class)) {
+            if (field.isAnnotationPresent(IdentityProviderContext.class)) {
                 // make the method accessible
                 final boolean isAccessible = field.isAccessible();
                 field.setAccessible(true);
@@ -256,7 +253,7 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
         }
 
         final Class parentClass = loginIdentityProviderClass.getSuperclass();
-        if (parentClass != null && LoginIdentityProvider.class.isAssignableFrom(parentClass)) {
+        if (parentClass != null && IdentityProvider.class.isAssignableFrom(parentClass)) {
             performFieldInjection(instance, parentClass);
         }
     }

@@ -45,6 +45,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,20 +72,23 @@ import static org.junit.Assert.assertTrue;
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:db/clearDB.sql")
 public class SecureLdapIT extends IntegrationTestBase {
 
+    private static final String tokenLoginPath = "access/token/login";
+    private static final String tokenIdentityProviderPath = "access/token/identity-provider";
+
     @TestConfiguration
     @Profile("ITSecureLdap")
     public static class LdapTestConfiguration {
 
-        static AuthorizerFactory af;
+        static AuthorizerFactory authorizerFactory;
 
         @Primary
         @Bean
         @DependsOn({"directoryServer"}) // Can't load LdapUserGroupProvider until the embedded LDAP server, which creates the "directoryServer" bean, is running
         public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager) {
-            if (af == null) {
-                af = new AuthorizerFactory(properties, extensionManager);
+            if (authorizerFactory == null) {
+                authorizerFactory = new AuthorizerFactory(properties, extensionManager);
             }
-            return af.getAuthorizer();
+            return authorizerFactory.getAuthorizer();
         }
 
     }
@@ -93,11 +97,9 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     @Before
     public void generateAuthToken() {
-        final Form form = new Form()
-                .param("username", "nifiadmin")
-                .param("password", "password");
+        final Form form = encodeCredentialsForURLFormParams("nifiadmin", "password");
         final String token = client
-                .target(createURL("access/token"))
+                .target(createURL(tokenLoginPath))
                 .request()
                 .post(Entity.form(form), String.class);
         adminAuthToken = token;
@@ -121,14 +123,58 @@ public class SecureLdapIT extends IntegrationTestBase {
                 "\"status\":\"ACTIVE\"" +
                 "}";
 
-        // When: the /access/token endpoint is queried
-        final Form form = new Form()
-                .param("username", "nobel")
-                .param("password", "password");
+        // When: the /access/token/login endpoint is queried
+        final Form form = encodeCredentialsForURLFormParams("nobel", "password");
         final Response tokenResponse = client
-                .target(createURL("access/token"))
+                .target(createURL(tokenLoginPath))
                 .request()
                 .post(Entity.form(form), Response.class);
+
+        // Then: the server returns 200 OK with an access token
+        assertEquals(201, tokenResponse.getStatus());
+        String token = tokenResponse.readEntity(String.class);
+        assertTrue(StringUtils.isNotEmpty(token));
+        String[] jwtParts = token.split("\\.");
+        assertEquals(3, jwtParts.length);
+        String jwtPayload = new String(Base64.decodeBase64(jwtParts[1]), "UTF-8");
+        JSONAssert.assertEquals(expectedJwtPayloadJson, jwtPayload, false);
+
+        // When: the token is returned in the Authorization header
+        final Response accessResponse = client
+                .target(createURL("access"))
+                .request()
+                .header("Authorization", "Bearer " + token)
+                .get(Response.class);
+
+        // Then: the server acknowledges the client has access
+        assertEquals(200, accessResponse.getStatus());
+        String accessStatus = accessResponse.readEntity(String.class);
+        JSONAssert.assertEquals(expectedAccessStatusJson, accessStatus, false);
+
+    }
+
+    @Test
+    public void testTokenGenerationWithIdentityProvider() throws Exception {
+
+        // Given: the client and server have been configured correctly for LDAP authentication
+        String expectedJwtPayloadJson = "{" +
+                "\"sub\":\"nobel\"," +
+                "\"preferred_username\":\"nobel\"," +
+                "\"iss\":\"LdapIdentityProvider\"," +
+                "\"aud\":\"LdapIdentityProvider\"" +
+                "}";
+        String expectedAccessStatusJson = "{" +
+                "\"identity\":\"nobel\"," +
+                "\"status\":\"ACTIVE\"" +
+                "}";
+
+        // When: the /access/token/identity-provider endpoint is queried
+        final String basicAuthCredentials = encodeCredentialsForBasicAuth("nobel", "password");
+        final Response tokenResponse = client
+                .target(createURL(tokenIdentityProviderPath))
+                .request()
+                .header("Authorization", "Basic " + basicAuthCredentials)
+                .post(null, Response.class);
 
         // Then: the server returns 200 OK with an access token
         assertEquals(201, tokenResponse.getStatus());
@@ -240,14 +286,12 @@ public class SecureLdapIT extends IntegrationTestBase {
         // Given: the server has been configured with an initial admin "nifiadmin" and a user with no accessPolicies "nobel"
         String nobelId = getTenantIdentifierByIdentity("nobel");
         String chemistsId = getTenantIdentifierByIdentity("chemists"); // a group containing user "nobel"
-        final Form form = new Form()
-                .param("username", "nobel")
-                .param("password", "password");
+
+        final Form form = encodeCredentialsForURLFormParams("nobel", "password");
         final String nobelAuthToken = client
-                .target(createURL("access/token"))
+                .target(createURL(tokenLoginPath))
                 .request()
                 .post(Entity.form(form), String.class);
-
 
         // When: nifiadmin creates a bucket
         final Bucket bucket = new Bucket();
@@ -382,4 +426,15 @@ public class SecureLdapIT extends IntegrationTestBase {
         return matchedTenant != null ? matchedTenant.getIdentifier() : null;
     }
 
+    private static Form encodeCredentialsForURLFormParams(String username, String password) {
+        return new Form()
+                .param("username", username)
+                .param("password", password);
+    }
+
+    private static String encodeCredentialsForBasicAuth(String username, String password) {
+        final String credentials = username + ":" + password;
+        final String base64credentials =  new String(java.util.Base64.getEncoder().encode(credentials.getBytes(Charset.forName("UTF-8"))));
+        return base64credentials;
+    }
 }

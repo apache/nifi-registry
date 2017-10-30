@@ -17,15 +17,15 @@
 package org.apache.nifi.registry.security.ldap;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
-import org.apache.nifi.registry.security.authentication.LoginCredentials;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProvider;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProviderConfigurationContext;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProviderInitializationContext;
+import org.apache.nifi.registry.security.authentication.BasicAuthIdentityProvider;
+import org.apache.nifi.registry.security.authentication.IdentityProvider;
+import org.apache.nifi.registry.security.authentication.IdentityProviderConfigurationContext;
 import org.apache.nifi.registry.security.authentication.exception.IdentityAccessException;
-import org.apache.nifi.registry.security.authentication.exception.InvalidLoginCredentialsException;
-import org.apache.nifi.registry.security.authentication.exception.ProviderCreationException;
-import org.apache.nifi.registry.security.authentication.exception.ProviderDestructionException;
+import org.apache.nifi.registry.security.authentication.exception.InvalidCredentialsException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.security.util.SslContextFactory;
 import org.apache.nifi.registry.security.util.SslContextFactory.ClientAuth;
 import org.apache.nifi.registry.util.FormatUtils;
@@ -60,33 +60,29 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Abstract LDAP based implementation of a login identity provider.
+ * LDAP based implementation of a login identity provider.
  */
-public class LdapIdentityProvider implements LoginIdentityProvider {
+public class LdapIdentityProvider extends BasicAuthIdentityProvider implements IdentityProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(LdapIdentityProvider.class);
 
-    private AbstractLdapAuthenticationProvider provider;
-    private String issuer;
+    private static final String issuer = LdapIdentityProvider.class.getSimpleName();
+
+    private AbstractLdapAuthenticationProvider ldapAuthenticationProvider;
     private long expiration;
     private IdentityStrategy identityStrategy;
 
     @Override
-    public final void initialize(final LoginIdentityProviderInitializationContext initializationContext) throws ProviderCreationException {
-        this.issuer = getClass().getSimpleName();
-    }
-
-    @Override
-    public final void onConfigured(final LoginIdentityProviderConfigurationContext configurationContext) throws ProviderCreationException {
+    public final void onConfigured(final IdentityProviderConfigurationContext configurationContext) throws SecurityProviderCreationException {
         final String rawExpiration = configurationContext.getProperty("Authentication Expiration");
         if (StringUtils.isBlank(rawExpiration)) {
-            throw new ProviderCreationException("The Authentication Expiration must be specified.");
+            throw new SecurityProviderCreationException("The Authentication Expiration must be specified.");
         }
 
         try {
             expiration = FormatUtils.getTimeDuration(rawExpiration, TimeUnit.MILLISECONDS);
         } catch (final IllegalArgumentException iae) {
-            throw new ProviderCreationException(String.format("The Expiration Duration '%s' is not a valid time duration", rawExpiration));
+            throw new SecurityProviderCreationException(String.format("The Expiration Duration '%s' is not a valid time duration", rawExpiration));
         }
 
         final LdapContextSource context = new LdapContextSource();
@@ -103,7 +99,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
         try {
             authenticationStrategy = LdapAuthenticationStrategy.valueOf(rawAuthenticationStrategy);
         } catch (final IllegalArgumentException iae) {
-            throw new ProviderCreationException(String.format("Unrecognized authentication strategy '%s'. Possible values are [%s]",
+            throw new SecurityProviderCreationException(String.format("Unrecognized authentication strategy '%s'. Possible values are [%s]",
                     rawAuthenticationStrategy, StringUtils.join(LdapAuthenticationStrategy.values(), ", ")));
         }
 
@@ -166,7 +162,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
         try {
             referralStrategy = ReferralStrategy.valueOf(rawReferralStrategy);
         } catch (final IllegalArgumentException iae) {
-            throw new ProviderCreationException(String.format("Unrecognized referral strategy '%s'. Possible values are [%s]",
+            throw new SecurityProviderCreationException(String.format("Unrecognized referral strategy '%s'. Possible values are [%s]",
                     rawReferralStrategy, StringUtils.join(ReferralStrategy.values(), ", ")));
         }
 
@@ -177,7 +173,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
         final String urls = configurationContext.getProperty("Url");
 
         if (StringUtils.isBlank(urls)) {
-            throw new ProviderCreationException("LDAP identity provider 'Url' must be specified.");
+            throw new SecurityProviderCreationException("LDAP identity provider 'Url' must be specified.");
         }
 
         // connection
@@ -188,7 +184,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
         final String userSearchFilter = configurationContext.getProperty("User Search Filter");
 
         if (StringUtils.isBlank(userSearchBase) || StringUtils.isBlank(userSearchFilter)) {
-            throw new ProviderCreationException("LDAP identity provider 'User Search Base' and 'User Search Filter' must be specified.");
+            throw new SecurityProviderCreationException("LDAP identity provider 'User Search Base' and 'User Search Filter' must be specified.");
         }
 
         final LdapUserSearch userSearch = new FilterBasedLdapUserSearch(userSearchBase, userSearchFilter, context);
@@ -210,7 +206,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
                 // attempt to get the configured identity strategy
                 identityStrategy = IdentityStrategy.valueOf(rawIdentityStrategy);
             } catch (final IllegalArgumentException iae) {
-                throw new ProviderCreationException(String.format("Unrecognized identity strategy '%s'. Possible values are [%s]",
+                throw new SecurityProviderCreationException(String.format("Unrecognized identity strategy '%s'. Possible values are [%s]",
                         rawIdentityStrategy, StringUtils.join(IdentityStrategy.values(), ", ")));
             }
         }
@@ -225,17 +221,74 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
             context.afterPropertiesSet();
             authenticator.afterPropertiesSet();
         } catch (final Exception e) {
-            throw new ProviderCreationException(e.getMessage(), e);
+            throw new SecurityProviderCreationException(e.getMessage(), e);
         }
 
         // create the underlying provider
-        provider = new LdapAuthenticationProvider(authenticator);
+        ldapAuthenticationProvider = new LdapAuthenticationProvider(authenticator);
     }
 
-    private void setTimeout(final LoginIdentityProviderConfigurationContext configurationContext,
-            final Map<String, Object> baseEnvironment,
-            final String configurationProperty,
-            final String environmentKey) {
+    @Override
+    public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) throws InvalidCredentialsException, IdentityAccessException {
+
+        if (authenticationRequest == null || StringUtils.isEmpty(authenticationRequest.getUsername())) {
+            logger.debug("Call to authenticate method with null or empty authenticationRequest, returning null without attempting to authenticate");
+            return null;
+        }
+
+        if (ldapAuthenticationProvider == null) {
+            throw new IdentityAccessException("The LDAP authentication provider is not initialized.");
+        }
+
+        try {
+            final String username = authenticationRequest.getUsername();
+            final Object credentials = authenticationRequest.getCredentials();
+            final String password = credentials != null && credentials instanceof String ? (String) credentials : null;
+
+            // perform the authentication
+            final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, credentials);
+            final Authentication authentication = ldapAuthenticationProvider.authenticate(token);
+
+            // use dn if configured
+            if (IdentityStrategy.USE_DN.equals(identityStrategy)) {
+                // attempt to get the ldap user details to get the DN
+                if (authentication.getPrincipal() instanceof LdapUserDetails) {
+                    final LdapUserDetails userDetails = (LdapUserDetails) authentication.getPrincipal();
+                    return new AuthenticationResponse(userDetails.getDn(), username, expiration, issuer);
+                } else {
+                    logger.warn(String.format("Unable to determine user DN for %s, using username.", authentication.getName()));
+                    return new AuthenticationResponse(authentication.getName(), username, expiration, issuer);
+                }
+            } else {
+                return new AuthenticationResponse(authentication.getName(), username, expiration, issuer);
+            }
+        } catch (final BadCredentialsException | UsernameNotFoundException | AuthenticationException e) {
+            throw new InvalidCredentialsException(e.getMessage(), e);
+        } catch (final Exception e) {
+            // there appears to be a bug that generates a InternalAuthenticationServiceException wrapped around an AuthenticationException. this
+            // shouldn't be the case as they the service exception suggestions that something was wrong with the service. while the authentication
+            // exception suggests that username and/or credentials were incorrect. checking the cause seems to address this scenario.
+            final Throwable cause = e.getCause();
+            if (cause instanceof AuthenticationException) {
+                throw new InvalidCredentialsException(e.getMessage(), e);
+            }
+
+            logger.error(e.getMessage());
+            if (logger.isDebugEnabled()) {
+                logger.debug(StringUtils.EMPTY, e);
+            }
+            throw new IdentityAccessException("Unable to validate the supplied credentials. Please contact the system administrator.", e);
+        }
+    }
+
+    @Override
+    public final void preDestruction() throws SecurityProviderDestructionException {
+    }
+
+    private void setTimeout(final IdentityProviderConfigurationContext configurationContext,
+                            final Map<String, Object> baseEnvironment,
+                            final String configurationProperty,
+                            final String environmentKey) {
 
         final String rawTimeout = configurationContext.getProperty(configurationProperty);
         if (StringUtils.isNotBlank(rawTimeout)) {
@@ -243,12 +296,12 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
                 final Long timeout = FormatUtils.getTimeDuration(rawTimeout, TimeUnit.MILLISECONDS);
                 baseEnvironment.put(environmentKey, timeout.toString());
             } catch (final IllegalArgumentException iae) {
-                throw new ProviderCreationException(String.format("The %s '%s' is not a valid time duration", configurationProperty, rawTimeout));
+                throw new SecurityProviderCreationException(String.format("The %s '%s' is not a valid time duration", configurationProperty, rawTimeout));
             }
         }
     }
 
-    private SSLContext getConfiguredSslContext(final LoginIdentityProviderConfigurationContext configurationContext) {
+    private SSLContext getConfiguredSslContext(final IdentityProviderConfigurationContext configurationContext) {
         final String rawKeystore = configurationContext.getProperty("TLS - Keystore");
         final String rawKeystorePassword = configurationContext.getProperty("TLS - Keystore Password");
         final String rawKeystoreType = configurationContext.getProperty("TLS - Keystore Type");
@@ -266,7 +319,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
             } else {
                 // ensure the protocol is specified
                 if (StringUtils.isBlank(rawProtocol)) {
-                    throw new ProviderCreationException("TLS - Protocol must be specified.");
+                    throw new SecurityProviderCreationException("TLS - Protocol must be specified.");
                 }
 
                 if (StringUtils.isBlank(rawKeystore)) {
@@ -282,7 +335,7 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
                         try {
                             clientAuth = ClientAuth.valueOf(rawClientAuth);
                         } catch (final IllegalArgumentException iae) {
-                            throw new ProviderCreationException(String.format("Unrecognized client auth '%s'. Possible values are [%s]",
+                            throw new SecurityProviderCreationException(String.format("Unrecognized client auth '%s'. Possible values are [%s]",
                                     rawClientAuth, StringUtils.join(ClientAuth.values(), ", ")));
                         }
                     }
@@ -292,57 +345,10 @@ public class LdapIdentityProvider implements LoginIdentityProvider {
                 }
             }
         } catch (final KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyManagementException | IOException e) {
-            throw new ProviderCreationException(e.getMessage(), e);
+            throw new SecurityProviderCreationException(e.getMessage(), e);
         }
 
         return sslContext;
-    }
-
-    @Override
-    public final AuthenticationResponse authenticate(final LoginCredentials credentials) throws InvalidLoginCredentialsException, IdentityAccessException {
-        if (provider == null) {
-            throw new IdentityAccessException("The LDAP authentication provider is not initialized.");
-        }
-
-        try {
-            // perform the authentication
-            final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(credentials.getUsername(), credentials.getPassword());
-            final Authentication authentication = provider.authenticate(token);
-
-            // use dn if configured
-            if (IdentityStrategy.USE_DN.equals(identityStrategy)) {
-                // attempt to get the ldap user details to get the DN
-                if (authentication.getPrincipal() instanceof LdapUserDetails) {
-                    final LdapUserDetails userDetails = (LdapUserDetails) authentication.getPrincipal();
-                    return new AuthenticationResponse(userDetails.getDn(), credentials.getUsername(), expiration, issuer);
-                } else {
-                    logger.warn(String.format("Unable to determine user DN for %s, using username.", authentication.getName()));
-                    return new AuthenticationResponse(authentication.getName(), credentials.getUsername(), expiration, issuer);
-                }
-            } else {
-                return new AuthenticationResponse(authentication.getName(), credentials.getUsername(), expiration, issuer);
-            }
-        } catch (final BadCredentialsException | UsernameNotFoundException | AuthenticationException e) {
-            throw new InvalidLoginCredentialsException(e.getMessage(), e);
-        } catch (final Exception e) {
-            // there appears to be a bug that generates a InternalAuthenticationServiceException wrapped around an AuthenticationException. this
-            // shouldn't be the case as they the service exception suggestions that something was wrong with the service. while the authentication
-            // exception suggests that username and/or credentials were incorrect. checking the cause seems to address this scenario.
-            final Throwable cause = e.getCause();
-            if (cause instanceof AuthenticationException) {
-                throw new InvalidLoginCredentialsException(e.getMessage(), e);
-            }
-
-            logger.error(e.getMessage());
-            if (logger.isDebugEnabled()) {
-                logger.debug(StringUtils.EMPTY, e);
-            }
-            throw new IdentityAccessException("Unable to validate the supplied credentials. Please contact the system administrator.", e);
-        }
-    }
-
-    @Override
-    public final void preDestruction() throws ProviderDestructionException {
     }
 
 }

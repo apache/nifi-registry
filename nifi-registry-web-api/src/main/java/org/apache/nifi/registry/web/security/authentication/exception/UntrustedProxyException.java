@@ -18,9 +18,6 @@ package org.apache.nifi.registry.web.security.authentication.exception;
 
 import org.springframework.security.core.AuthenticationException;
 
-/**
- *
- */
 public class UntrustedProxyException extends AuthenticationException {
 
     public UntrustedProxyException(String msg) {

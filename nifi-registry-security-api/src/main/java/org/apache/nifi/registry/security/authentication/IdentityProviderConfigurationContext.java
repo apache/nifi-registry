@@ -18,15 +18,17 @@ package org.apache.nifi.registry.security.authentication;
 
 import java.util.Map;
 
-/**
- *
- */
-public interface LoginIdentityProviderConfigurationContext {
+public interface IdentityProviderConfigurationContext {
 
     /**
      * @return identifier for the authority provider
      */
     String getIdentifier();
+
+    /**
+     * @return the IdentityProviderLookup from the factory context
+     */
+    public IdentityProviderLookup getIdentityProviderLookup();
 
     /**
      * Retrieves all properties the component currently understands regardless

@@ -16,10 +16,12 @@
  */
 package org.apache.nifi.registry.security.authentication;
 
+import java.io.Serializable;
+
 /**
  * Authentication response for a user login attempt.
  */
-public class AuthenticationResponse {
+public class AuthenticationResponse implements Serializable {
 
     private final String identity;
     private final String username;
@@ -62,4 +64,35 @@ public class AuthenticationResponse {
         return expiration;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AuthenticationResponse that = (AuthenticationResponse) o;
+
+        if (expiration != that.expiration) return false;
+        if (identity != null ? !identity.equals(that.identity) : that.identity != null) return false;
+        if (username != null ? !username.equals(that.username) : that.username != null) return false;
+        return issuer != null ? issuer.equals(that.issuer) : that.issuer == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = identity != null ? identity.hashCode() : 0;
+        result = 31 * result + (username != null ? username.hashCode() : 0);
+        result = 31 * result + (int) (expiration ^ (expiration >>> 32));
+        result = 31 * result + (issuer != null ? issuer.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "AuthenticationResponse{" +
+                "identity='" + identity + '\'' +
+                ", username='" + username + '\'' +
+                ", expiration=" + expiration +
+                ", issuer='" + issuer + '\'' +
+                '}';
+    }
 }
