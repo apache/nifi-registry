@@ -17,7 +17,7 @@
 package org.apache.nifi.registry.extension;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authentication.LoginIdentityProvider;
+import org.apache.nifi.registry.security.authentication.IdentityProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
@@ -55,7 +55,7 @@ public class ExtensionManager {
         classes.add(UserGroupProvider.class);
         classes.add(AccessPolicyProvider.class);
         classes.add(Authorizer.class);
-        classes.add(LoginIdentityProvider.class);
+        classes.add(IdentityProvider.class);
         EXTENSION_CLASSES = Collections.unmodifiableList(classes);
     }
 

@@ -17,18 +17,17 @@
 package org.apache.nifi.registry.web.security;
 
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.web.security.authentication.NiFiAnonymousUserFilter;
-import org.apache.nifi.registry.web.security.authentication.jwt.JwtAuthenticationFilter;
-import org.apache.nifi.registry.web.security.authentication.jwt.JwtAuthenticationProvider;
-import org.apache.nifi.registry.web.security.authentication.x509.X509AuthenticationFilter;
-import org.apache.nifi.registry.web.security.authentication.x509.X509AuthenticationProvider;
-import org.apache.nifi.registry.web.security.authentication.x509.X509CertificateExtractor;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
+import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
+import org.apache.nifi.registry.web.security.authentication.IdentityFilter;
+import org.apache.nifi.registry.web.security.authentication.jwt.JwtIdentityProvider;
+import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityAuthenticationProvider;
+import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,10 +36,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.authentication.preauth.x509.X509PrincipalExtractor;
 
 /**
- * NiFi Web Api Spring security
+ * NiFi Registry Web Api Spring security
  */
 @Configuration
 @EnableWebSecurity
@@ -50,18 +48,17 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired private NiFiRegistryProperties properties;
 
-    @Autowired private X509CertificateExtractor certificateExtractor;
-    @Autowired private X509PrincipalExtractor principalExtractor;
-    @Autowired private X509AuthenticationProvider x509AuthenticationProvider;
-    private X509AuthenticationFilter x509AuthenticationFilter;
+    @Autowired private Authorizer authorizer;
 
-    @Autowired private JwtAuthenticationProvider jwtAuthenticationProvider;
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private AnonymousIdentityFilter anonymousAuthenticationFilter = new AnonymousIdentityFilter();
 
-//    @Autowired private OtpAuthenticationProvider otpAuthenticationProvider;
-//    private OtpAuthenticationFilter otpAuthenticationFilter;
+    @Autowired private X509IdentityProvider x509IdentityProvider;
+    private IdentityFilter x509AuthenticationFilter;
+    private IdentityAuthenticationProvider x509AuthenticationProvider;
 
-    private NiFiAnonymousUserFilter anonymousAuthenticationFilter;
+    @Autowired private JwtIdentityProvider jwtIdentityProvider;
+    private IdentityFilter jwtAuthenticationFilter;
+    private IdentityAuthenticationProvider jwtAuthenticationProvider;
 
     public NiFiRegistrySecurityConfig() {
         super(true); // disable defaults
@@ -69,12 +66,8 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
-        // ignore the access endpoints for obtaining the access config, access token
-        // granting, and access status for a given user (note: we are not ignoring the
-        // the /access/download-token endpoints)
-        webSecurity
-                .ignoring()
-                .antMatchers( "/access/token");
+        // allow any client to access the endpoint for logging in to generate an access token
+        webSecurity.ignoring().antMatchers( "/access/token/*");
     }
 
     @Override
@@ -91,68 +84,48 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(x509AuthenticationFilter(), AnonymousAuthenticationFilter.class);
 
         // jwt
-        http.addFilterBefore(jwtFilterBean(), AnonymousAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter(), AnonymousAuthenticationFilter.class);
 
         // otp
-        // http.addFilterBefore(otpFilterBean(), AnonymousAuthenticationFilter.class);
+        // todo, if needed one-time password auth filter goes here
 
         // anonymous
-        http.anonymous().authenticationFilter(anonymousFilter());
-    }
-
-    @Bean
-    @Override
-    public AuthenticationManager authenticationManagerBean() throws Exception {
-        // override xxxBean method so the authentication manager is available in app context (necessary for the method level security)
-        return super.authenticationManagerBean();
+        http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
-                .authenticationProvider(x509AuthenticationProvider)
-                .authenticationProvider(jwtAuthenticationProvider);
-//                .authenticationProvider(otpAuthenticationProvider); // TODO OTP support
+                .authenticationProvider(x509AuthenticationProvider())
+                .authenticationProvider(jwtAuthenticationProvider());
     }
 
-    @Bean
-    public JwtAuthenticationFilter jwtFilterBean() throws Exception {
-        if (jwtAuthenticationFilter == null) {
-            jwtAuthenticationFilter = new JwtAuthenticationFilter();
-            jwtAuthenticationFilter.setProperties(properties);
-            jwtAuthenticationFilter.setAuthenticationManager(authenticationManager());
-        }
-        return jwtAuthenticationFilter;
-    }
-
-//    @Bean // TODO OtpAuthenticationFilter
-//    public OtpAuthenticationFilter otpFilterBean() throws Exception {
-//        if (otpAuthenticationFilter == null) {
-//            otpAuthenticationFilter = new OtpAuthenticationFilter();
-//            otpAuthenticationFilter.setProperties(properties);
-//            otpAuthenticationFilter.setAuthenticationManager(authenticationManager());
-//        }
-//        return otpAuthenticationFilter;
-//    }
-
-    @Bean
-    public X509AuthenticationFilter x509AuthenticationFilter() throws Exception {
+    private IdentityFilter x509AuthenticationFilter() throws Exception {
         if (x509AuthenticationFilter == null) {
-            x509AuthenticationFilter = new X509AuthenticationFilter();
-            x509AuthenticationFilter.setProperties(properties);
-            x509AuthenticationFilter.setCertificateExtractor(certificateExtractor);
-            x509AuthenticationFilter.setPrincipalExtractor(principalExtractor);
-            x509AuthenticationFilter.setAuthenticationManager(authenticationManager());
+            x509AuthenticationFilter = new IdentityFilter(x509IdentityProvider);
         }
         return x509AuthenticationFilter;
     }
 
-    @Bean
-    public NiFiAnonymousUserFilter anonymousFilter() throws Exception {
-        if (anonymousAuthenticationFilter == null) {
-            anonymousAuthenticationFilter = new NiFiAnonymousUserFilter();
+    private IdentityAuthenticationProvider x509AuthenticationProvider() {
+        if (x509AuthenticationProvider == null) {
+            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, x509IdentityProvider);
         }
-        return anonymousAuthenticationFilter;
+        return x509AuthenticationProvider;
+    }
+
+    private IdentityFilter jwtAuthenticationFilter() throws Exception {
+        if (jwtAuthenticationFilter == null) {
+            jwtAuthenticationFilter = new IdentityFilter(jwtIdentityProvider);
+        }
+        return jwtAuthenticationFilter;
+    }
+
+    private IdentityAuthenticationProvider jwtAuthenticationProvider() {
+        if (jwtAuthenticationProvider == null) {
+            jwtAuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
+        }
+        return jwtAuthenticationProvider;
     }
 
 }

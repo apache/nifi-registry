@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.authentication.token;
+package org.apache.nifi.registry.web.security.authentication;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,11 +22,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 /**
  * An authentication token that represents an Authenticated and Authorized user of the NiFi Apis. The authorities are based off the specified UserDetails.
  */
-public class NiFiAuthenticationToken extends AbstractAuthenticationToken {
+public class AuthenticationSuccessToken extends AbstractAuthenticationToken {
 
-    final UserDetails nifiUserDetails;
+    private final UserDetails nifiUserDetails;
 
-    public NiFiAuthenticationToken(final UserDetails nifiUserDetails) {
+    public AuthenticationSuccessToken(final UserDetails nifiUserDetails) {
         super(nifiUserDetails.getAuthorities());
         super.setAuthenticated(true);
         setDetails(nifiUserDetails);

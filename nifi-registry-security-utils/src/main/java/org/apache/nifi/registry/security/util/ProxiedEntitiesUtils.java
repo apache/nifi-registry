@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.authentication;
+package org.apache.nifi.registry.security.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authorization.user.NiFiUser;
-import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- *
- */
 public class ProxiedEntitiesUtils {
     private static final Logger logger = LoggerFactory.getLogger(ProxiedEntitiesUtils.class);
 
@@ -133,31 +124,4 @@ public class ProxiedEntitiesUtils {
         return proxyChain;
     }
 
-    /**
-     * Builds the proxy chain for the specified user.
-     *
-     * @param user The current user
-     * @return The proxy chain for that user in String form
-     */
-    public static String buildProxiedEntitiesChainString(final NiFiUser user) {
-        // calculate the dn chain
-        List<String> proxyChain = NiFiUserUtils.buildProxiedEntitiesChain(user);
-        if (proxyChain.isEmpty()) {
-            return ANONYMOUS_CHAIN;
-        }
-        proxyChain = proxyChain.stream().map(ProxiedEntitiesUtils::formatProxyDn).collect(Collectors.toList());
-        return StringUtils.join(proxyChain, "");
-    }
-
-    public static void successfulAuthorization(HttpServletRequest request, HttpServletResponse response, Authentication authResult) {
-        if (StringUtils.isNotBlank(request.getHeader(PROXY_ENTITIES_CHAIN))) {
-            response.setHeader(PROXY_ENTITIES_ACCEPTED, Boolean.TRUE.toString());
-        }
-    }
-
-    public static void unsuccessfulAuthorization(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        if (StringUtils.isNotBlank(request.getHeader(PROXY_ENTITIES_CHAIN))) {
-            response.setHeader(PROXY_ENTITIES_DETAILS, failed.getMessage());
-        }
-    }
 }

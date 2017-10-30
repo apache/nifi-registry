@@ -14,28 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.authentication;
+package org.apache.nifi.registry.security.authentication;
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
+public class UsernamePasswordAuthenticationRequest extends AuthenticationRequest {
 
-/**
- * Base class for authentication request tokens in NiFI.
- */
-public abstract class NiFiAuthenticationRequestToken extends AbstractAuthenticationToken {
-
-    private final String clientAddress;
-
-    /**
-     * @param clientAddress   The address of the client making the request
-     */
-    public NiFiAuthenticationRequestToken(final String clientAddress) {
-        super(null);
-        setAuthenticated(false);
-        this.clientAddress = clientAddress;
-    }
-
-    public String getClientAddress() {
-        return clientAddress;
+    public UsernamePasswordAuthenticationRequest(String username, String password) {
+        super(username, password, null);
     }
 
 }

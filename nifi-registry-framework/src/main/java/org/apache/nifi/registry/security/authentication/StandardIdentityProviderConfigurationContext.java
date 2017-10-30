@@ -14,29 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.security.authentication;
-
-import org.apache.nifi.registry.security.authentication.LoginIdentityProviderConfigurationContext;
+package org.apache.nifi.registry.security.authentication;
 
 import java.util.Collections;
 import java.util.Map;
 
-/**
- *
- */
-public class StandardLoginIdentityProviderConfigurationContext implements LoginIdentityProviderConfigurationContext {
+public class StandardIdentityProviderConfigurationContext implements IdentityProviderConfigurationContext {
 
     private final String identifier;
+    private final IdentityProviderLookup lookup;
     private final Map<String, String> properties;
 
-    public StandardLoginIdentityProviderConfigurationContext(String identifier, Map<String, String> properties) {
+    public StandardIdentityProviderConfigurationContext(String identifier, final IdentityProviderLookup lookup, Map<String, String> properties) {
         this.identifier = identifier;
+        this.lookup = lookup;
         this.properties = properties;
     }
 
     @Override
     public String getIdentifier() {
         return identifier;
+    }
+
+    @Override
+    public IdentityProviderLookup getIdentityProviderLookup() {
+        return lookup;
     }
 
     @Override

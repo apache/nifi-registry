@@ -14,26 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authentication.exception;
+package org.apache.nifi.registry.security.exception;
 
 /**
- * Represents the exceptional case when an AuthorityProvider fails instantiated.
- *
+ * Represents the exceptional case when a security api provider fails instantiation.
  */
-public class ProviderCreationException extends RuntimeException {
+public class SecurityProviderCreationException extends RuntimeException {
 
-    public ProviderCreationException() {
+    public SecurityProviderCreationException() {
     }
 
-    public ProviderCreationException(String msg) {
+    public SecurityProviderCreationException(String msg) {
         super(msg);
     }
 
-    public ProviderCreationException(Throwable cause) {
+    public SecurityProviderCreationException(Throwable cause) {
         super(cause);
     }
 
-    public ProviderCreationException(String msg, Throwable cause) {
+    public SecurityProviderCreationException(String msg, Throwable cause) {
         super(msg, cause);
     }
 }
