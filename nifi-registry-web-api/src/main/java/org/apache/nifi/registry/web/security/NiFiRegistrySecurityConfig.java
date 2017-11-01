@@ -50,8 +50,8 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired private NiFiRegistryProperties properties;
 
-    @Autowired X509CertificateExtractor certificateExtractor;
-    @Autowired X509PrincipalExtractor principalExtractor;
+    @Autowired private X509CertificateExtractor certificateExtractor;
+    @Autowired private X509PrincipalExtractor principalExtractor;
     @Autowired private X509AuthenticationProvider x509AuthenticationProvider;
     private X509AuthenticationFilter x509AuthenticationFilter;
 
@@ -74,7 +74,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         // the /access/download-token endpoints)
         webSecurity
                 .ignoring()
-                .antMatchers("/access", "/access/config", "/access/token");
+                .antMatchers( "/access/token");
     }
 
     @Override
