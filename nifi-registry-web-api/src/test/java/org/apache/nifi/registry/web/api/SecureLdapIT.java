@@ -18,7 +18,9 @@ package org.apache.nifi.registry.web.api;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.SecureLdapTestApiApplication;
+import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.extension.ExtensionManager;
+import org.apache.nifi.registry.model.authorization.AccessPolicy;
 import org.apache.nifi.registry.model.authorization.Tenant;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -43,8 +45,13 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -82,7 +89,7 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     }
 
-    private String authToken;
+    private String adminAuthToken;
 
     @Before
     public void generateAuthToken() {
@@ -93,11 +100,11 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .target(createURL("access/token"))
                 .request()
                 .post(Entity.form(form), String.class);
-        authToken = token;
+        adminAuthToken = token;
     }
 
     @Test
-    public void testTokenGeneration() throws Exception {
+    public void testTokenGenerationAndAccessStatus() throws Exception {
 
         // Note: this test intentionally does not use the token generated
         // for nifiadmin by the @Before method
@@ -170,7 +177,7 @@ public class SecureLdapIT extends IntegrationTestBase {
         final String usersJson = client
                 .target(createURL("tenants/users"))
                 .request()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + adminAuthToken)
                 .get(String.class);
 
         // Then: the server returns a list of all users (see test-ldap-data.ldif)
@@ -191,14 +198,14 @@ public class SecureLdapIT extends IntegrationTestBase {
         final String groupsJson = client
                 .target(createURL("tenants/user-groups"))
                 .request()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + adminAuthToken)
                 .get(String.class);
 
         // Then: the server returns a list of all users (see test-ldap-data.ldif)
         JSONAssert.assertEquals(expectedJson, groupsJson, false);
     }
 
-
+    @Test
     public void testCreateTenantFails() throws Exception {
 
         // Given: the server has been configured with the LdapUserGroupProvider, which is non-configurable,
@@ -210,21 +217,169 @@ public class SecureLdapIT extends IntegrationTestBase {
         final Response createUserResponse = client
                 .target(createURL("tenants/users"))
                 .request()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + adminAuthToken)
                 .post(Entity.entity(tenant, MediaType.APPLICATION_JSON_TYPE), Response.class);
 
         // Then: an error is returned
-        assertEquals(405, createUserResponse.getStatus());
+        assertEquals(409, createUserResponse.getStatus());
 
         // When: the POST /tenants/users endpoint is accessed
         final Response createUserGroupResponse = client
                 .target(createURL("tenants/user-groups"))
                 .request()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + adminAuthToken)
                 .post(Entity.entity(tenant, MediaType.APPLICATION_JSON_TYPE), Response.class);
 
         // Then: an error is returned because the UserGroupProvider is non-configurable
-        assertEquals(405, createUserGroupResponse.getStatus());
+        assertEquals(409, createUserGroupResponse.getStatus());
+    }
+
+    @Test
+    public void testAccessPolicyCreation() throws Exception {
+
+        // Given: the server has been configured with an initial admin "nifiadmin" and a user with no accessPolicies "nobel"
+        String nobelId = getTenantIdentifierByIdentity("nobel");
+        String chemistsId = getTenantIdentifierByIdentity("chemists"); // a group containing user "nobel"
+        final Form form = new Form()
+                .param("username", "nobel")
+                .param("password", "password");
+        final String nobelAuthToken = client
+                .target(createURL("access/token"))
+                .request()
+                .post(Entity.form(form), String.class);
+
+
+        // When: nifiadmin creates a bucket
+        final Bucket bucket = new Bucket();
+        bucket.setName("Integration Test Bucket");
+        bucket.setDescription("A bucket created by an integration test.");
+        Response adminCreatesBucketResponse = client
+                .target(createURL("buckets"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .post(Entity.entity(bucket, MediaType.APPLICATION_JSON), Response.class);
+
+        // Then: the server returns a 200 OK
+        assertEquals(200, adminCreatesBucketResponse.getStatus());
+        Bucket createdBucket = adminCreatesBucketResponse.readEntity(Bucket.class);
+
+
+        // When: user nobel initial queries /buckets
+        final Bucket[] buckets1 = client
+                .target(createURL("buckets"))
+                .request()
+                .header("Authorization", "Bearer " + nobelAuthToken)
+                .get(Bucket[].class);
+
+        // Then: an empty list is returned (nobel has no read access yet)
+        assertNotNull(buckets1);
+        assertEquals(0, buckets1.length);
+
+
+        // When: nifiadmin grants read access on createdBucket to 'chemists' a group containing nobel
+        Set<String> policiesToCleanup = new HashSet<>();
+        AccessPolicy readPolicy = new AccessPolicy();
+        readPolicy.setResource("/buckets/" + createdBucket.getIdentifier());
+        readPolicy.setAction("read");
+        readPolicy.addUserGroups(Arrays.asList(new Tenant(chemistsId, "chemists")));
+        Response adminGrantsReadAccessResponse = client
+                .target(createURL("policies"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .post(Entity.entity(readPolicy, MediaType.APPLICATION_JSON), Response.class);
+
+        // Then: the server returns a 201 Created
+        assertEquals(201, adminGrantsReadAccessResponse.getStatus());
+        policiesToCleanup.add(adminGrantsReadAccessResponse.readEntity(AccessPolicy.class).getIdentifier());
+
+        try {
+
+            // When: user nobel re-queries /buckets
+            final Bucket[] buckets2 = client
+                    .target(createURL("buckets"))
+                    .request()
+                    .header("Authorization", "Bearer " + nobelAuthToken)
+                    .get(Bucket[].class);
+
+            // Then: the created bucket is now present
+            assertNotNull(buckets2);
+            assertEquals(1, buckets2.length);
+            assertEquals(createdBucket.getIdentifier(), buckets2[0].getIdentifier());
+            assertEquals(1, buckets2[0].getAuthorizedActions().size());
+            assertTrue(buckets2[0].getAuthorizedActions().contains("read"));
+
+
+            // When: nifiadmin grants write access on createdBucket to user 'nobel'
+            AccessPolicy writePolicy = new AccessPolicy();
+            writePolicy.setResource("/buckets/" + createdBucket.getIdentifier());
+            writePolicy.setAction("write");
+            writePolicy.addUsers(Arrays.asList(new Tenant(nobelId, "nobel")));
+            Response adminGrantsWriteAccessResponse = client
+                    .target(createURL("policies"))
+                    .request()
+                    .header("Authorization", "Bearer " + adminAuthToken)
+                    .post(Entity.entity(writePolicy, MediaType.APPLICATION_JSON), Response.class);
+
+            // Then: the server returns a 201 Created
+            assertEquals(201, adminGrantsWriteAccessResponse.getStatus());
+            policiesToCleanup.add(adminGrantsWriteAccessResponse.readEntity(AccessPolicy.class).getIdentifier());
+
+
+            // When: user nobel re-queries /buckets
+            final Bucket[] buckets3 = client
+                    .target(createURL("buckets"))
+                    .request()
+                    .header("Authorization", "Bearer " + nobelAuthToken)
+                    .get(Bucket[].class);
+
+            // Then: the authorizedActions are updated
+            assertNotNull(buckets3);
+            assertEquals(1, buckets3.length);
+            assertEquals(createdBucket.getIdentifier(), buckets3[0].getIdentifier());
+            assertEquals(2, buckets3[0].getAuthorizedActions().size());
+            assertTrue(buckets3[0].getAuthorizedActions().contains("read"));
+            assertTrue(buckets3[0].getAuthorizedActions().contains("write"));
+
+        } finally {
+            // Teardown: delete the policy we made in case other tests assume they are starting with no policies
+            for (String policyId : policiesToCleanup) {
+                Response adminDeletesPolicyResponse = client
+                        .target(createURL("policies/" + policyId))
+                        .request()
+                        .header("Authorization", "Bearer " + adminAuthToken)
+                        .delete(Response.class);
+                assertEquals(200, adminDeletesPolicyResponse.getStatus());
+            }
+        }
+
+    }
+
+    /** A helper method to lookup identifiers for tenant identities
+     *
+     * @param tenantIdentity - the identity to lookup
+     * @return A string containing the identifier of the tenant, or null if the tenant identity is not found.
+     */
+    private String getTenantIdentifierByIdentity(String tenantIdentity) {
+
+        final Tenant[] users = client
+                .target(createURL("tenants/users"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Tenant[].class);
+
+        final Tenant[] groups = client
+                .target(createURL("tenants/user-groups"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Tenant[].class);
+
+
+        final Tenant matchedTenant = Stream.concat(Arrays.stream(users), Arrays.stream(groups))
+                .filter(tenant -> tenant.getIdentity().equalsIgnoreCase(tenantIdentity))
+                .findFirst()
+                .orElse(null);
+
+        return matchedTenant != null ? matchedTenant.getIdentifier() : null;
     }
 
 }

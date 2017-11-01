@@ -16,29 +16,33 @@
  */
 package org.apache.nifi.registry.web.mapper;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonInclude.Value;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.ext.ContextResolver;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 
 @Component
 @Provider
-public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper> {
+@Produces(MediaType.APPLICATION_JSON)
+public class NiFiRegistryJsonProvider extends JacksonJaxbJsonProvider {
 
-    private final ObjectMapper mapper;
+    private static final ObjectMapper mapper = new ObjectMapper();
 
-    public ObjectMapperContextResolver() throws Exception {
-        mapper = new ObjectMapper();
-        mapper.setPropertyInclusion(Value.construct(Include.NON_NULL, Include.NON_NULL));
+    static {
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.setPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
         mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory()));
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    @Override
-    public ObjectMapper getContext(Class<?> objectType) {
-        return mapper;
+    public NiFiRegistryJsonProvider() {
+        super();
+        setMapper(mapper);
     }
 }

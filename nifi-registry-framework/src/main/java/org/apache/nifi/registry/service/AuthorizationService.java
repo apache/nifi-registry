@@ -16,6 +16,13 @@
  */
 package org.apache.nifi.registry.service;
 
+import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.model.authorization.AccessPolicy;
+import org.apache.nifi.registry.model.authorization.AccessPolicySummary;
+import org.apache.nifi.registry.model.authorization.Resource;
+import org.apache.nifi.registry.model.authorization.Tenant;
+import org.apache.nifi.registry.model.authorization.User;
+import org.apache.nifi.registry.model.authorization.UserGroup;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
@@ -38,13 +45,6 @@ import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestr
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.model.authorization.AccessPolicy;
-import org.apache.nifi.registry.model.authorization.AccessPolicySummary;
-import org.apache.nifi.registry.model.authorization.Resource;
-import org.apache.nifi.registry.model.authorization.Tenant;
-import org.apache.nifi.registry.model.authorization.User;
-import org.apache.nifi.registry.model.authorization.UserGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -150,6 +150,15 @@ public class AuthorizationService {
         }
     }
 
+    public User getUserByIdentity(String identity) {
+        this.readLock.lock();
+        try {
+            return userToDTO(userGroupProvider.getUserByIdentity(identity));
+        } finally {
+            this.readLock.unlock();
+        }
+    }
+
     public User updateUser(User user) {
         verifyUserGroupProviderIsConfigurable();
         this.writeLock.lock();
@@ -197,19 +206,6 @@ public class AuthorizationService {
             this.readLock.unlock();
         }
     }
-
-//    private List<UserGroup> getUserGroupsForUser(String userIdentifier) {
-//        this.readLock.lock();
-//        try {
-//            return userGroupProvider.getGroups()
-//                    .stream()
-//                    .filter(group -> group.getUsers().contains(userIdentifier))
-//                    .map(this::userGroupToDTO)
-//                    .collect(Collectors.toList());
-//        } finally {
-//            this.readLock.unlock();
-//        }
-//    }
 
     public UserGroup getUserGroup(String identifier) {
         this.readLock.lock();
@@ -295,18 +291,6 @@ public class AuthorizationService {
         }
     }
 
-    public List<AccessPolicy> getAccessPoliciesForUser(String userIdentifier) {
-        readLock.lock();
-        try {
-            return accessPolicyProvider.getAccessPolicies().stream()
-                    .filter(accessPolicy -> accessPolicy.getUsers().contains(userIdentifier))
-                    .map(this::accessPolicyToDTO)
-                    .collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
-    }
-
     private List<AccessPolicySummary> getAccessPolicySummariesForUser(String userIdentifier) {
         readLock.lock();
         try {
@@ -364,46 +348,39 @@ public class AuthorizationService {
 
     // ---------------------- Resource Lookup methods --------------------------------------
 
-    public List<Resource> getAuthorizedResources(RequestAction actionType, ResourceType resourceType) {
-        final List<Resource> authorizedResources =
-                getAllAuthorizableResources()
-                        .stream()
-                        .filter(resource -> {
-                            String resourceId = resource.getIdentifier();
-                            if (resourceType != null) {
-                                if (!resourceId.startsWith(resourceType.getValue())) {
-                                    return false;
-                                }
-                            }
-                            try {
-                                authorizableLookup
-                                        .getAuthorizableByResource(resource.getIdentifier())
-                                        .authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
-                            } catch (AccessDeniedException e) {
-                                return false;
-                            }
-                            return true;
-
-                        })
-                        .map(AuthorizationService::resourceToDTO)
-                        .collect(Collectors.toList());
-
-        return authorizedResources;
-    }
-
-    public List<Resource> getAuthorizedResources(RequestAction actionType) {
-        return getAuthorizedResources(actionType, null);
-    }
-
     public List<Resource> getResources() {
         final List<Resource> dtoResources =
-                getAllAuthorizableResources()
+                getAuthorizableResources()
                         .stream()
                         .map(AuthorizationService::resourceToDTO)
                         .collect(Collectors.toList());
         return dtoResources;
     }
 
+    public List<Resource> getAuthorizedResources(RequestAction actionType) {
+        return getAuthorizedResources(actionType, null);
+    }
+
+    public List<Resource> getAuthorizedResources(RequestAction actionType, ResourceType resourceType) {
+        final List<Resource> authorizedResources =
+                getAuthorizableResources(resourceType)
+                        .stream()
+                        .filter(resource -> {
+                            String resourceId = resource.getIdentifier();
+                            try {
+                                authorizableLookup
+                                        .getAuthorizableByResource(resource.getIdentifier())
+                                        .authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
+                                return true;
+                            } catch (AccessDeniedException e) {
+                                return false;
+                            }
+                        })
+                        .map(AuthorizationService::resourceToDTO)
+                        .collect(Collectors.toList());
+
+        return authorizedResources;
+    }
 
     // ---------------------- Private Helper methods --------------------------------------
 
@@ -419,17 +396,32 @@ public class AuthorizationService {
         }
     }
 
-    private List<org.apache.nifi.registry.security.authorization.Resource> getAllAuthorizableResources() {
-        final List<org.apache.nifi.registry.security.authorization.Resource> resources = new ArrayList<>();
-        resources.add(ResourceFactory.getPoliciesResource());
-        resources.add(ResourceFactory.getTenantResource());
-        resources.add(ResourceFactory.getProxyResource());
-        resources.add(ResourceFactory.getResourceResource());
+    private List<org.apache.nifi.registry.security.authorization.Resource> getAuthorizableResources() {
+        return getAuthorizableResources(null);
+    }
 
-        // add all buckets
-        resources.add(ResourceFactory.getBucketsResource());
-        for (final Bucket bucket : registryService.getBuckets()) {
-            resources.add(ResourceFactory.getChildResource(ResourceType.Bucket, bucket.getIdentifier(), bucket.getName()));
+    private List<org.apache.nifi.registry.security.authorization.Resource> getAuthorizableResources(ResourceType includeFilter) {
+
+        final List<org.apache.nifi.registry.security.authorization.Resource> resources = new ArrayList<>();
+
+        if (includeFilter == null || includeFilter.equals(ResourceType.Policy)) {
+            resources.add(ResourceFactory.getPoliciesResource());
+        }
+        if (includeFilter == null || includeFilter.equals(ResourceType.Tenant)) {
+            resources.add(ResourceFactory.getTenantResource());
+        }
+        if (includeFilter == null || includeFilter.equals(ResourceType.Proxy)) {
+            resources.add(ResourceFactory.getProxyResource());
+        }
+        if (includeFilter == null || includeFilter.equals(ResourceType.Resource)) {
+            resources.add(ResourceFactory.getResourceResource());
+        }
+        if (includeFilter == null || includeFilter.equals(ResourceType.Bucket)) {
+            resources.add(ResourceFactory.getBucketsResource());
+            // add all buckets
+            for (final Bucket bucket : registryService.getBuckets()) {
+                resources.add(ResourceFactory.getChildResource(ResourceType.Bucket, bucket.getIdentifier(), bucket.getName()));
+            }
         }
 
         return resources;
@@ -533,7 +525,7 @@ public class AuthorizationService {
     private static org.apache.nifi.registry.model.authorization.User userToDTO(
             final org.apache.nifi.registry.security.authorization.User user,
             final Collection<? extends Tenant> userGroups,
-            final Collection<? extends AccessPolicySummary> accessPolicies) {
+            final Collection<AccessPolicySummary> accessPolicies) {
 
         if (user == null) {
             return null;
@@ -562,7 +554,7 @@ public class AuthorizationService {
     private static org.apache.nifi.registry.model.authorization.UserGroup userGroupToDTO(
             final org.apache.nifi.registry.security.authorization.Group userGroup,
             final Collection<? extends Tenant> users,
-            final Collection<? extends AccessPolicySummary> accessPolicies) {
+            final Collection<AccessPolicySummary> accessPolicies) {
         if (userGroup == null) {
             return null;
         }

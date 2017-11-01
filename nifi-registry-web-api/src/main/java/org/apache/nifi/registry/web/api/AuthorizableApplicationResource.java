@@ -56,9 +56,9 @@ public class AuthorizableApplicationResource extends ApplicationResource {
         authorizeBucketAccess(actionType, bucketItem.getBucketIdentifier());
     }
 
-    protected Set<String> getAuthorizedBucketIds() {
+    protected Set<String> getAuthorizedBucketIds(RequestAction actionType) {
         return authorizationService
-                .getAuthorizedResources(RequestAction.READ, ResourceType.Bucket)
+                .getAuthorizedResources(actionType, ResourceType.Bucket)
                 .stream()
                 .map(AuthorizableApplicationResource::extractBucketIdFromResource)
                 .filter(Objects::nonNull)

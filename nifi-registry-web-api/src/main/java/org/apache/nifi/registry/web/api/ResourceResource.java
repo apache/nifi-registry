@@ -20,12 +20,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.nifi.registry.model.authorization.Resource;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.model.authorization.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,13 +57,6 @@ public class ResourceResource extends AuthorizableApplicationResource {
         super(authorizer, authorizationService);
     }
 
-    private void authorizeResource() {
-        authorizationService.authorizeAccess(lookup -> {
-            final Authorizable resource = lookup.getResourcesAuthorizable();
-            resource.authorize(authorizer, RequestAction.READ, NiFiUserUtils.getNiFiUser());
-        });
-    }
-
     /**
      * Gets the available resources that support access/authorization policies.
      *
@@ -88,4 +81,10 @@ public class ResourceResource extends AuthorizableApplicationResource {
         return generateOkResponse(resources).build();
     }
 
+    private void authorizeResource() {
+        authorizationService.authorizeAccess(lookup -> {
+            final Authorizable resource = lookup.getResourcesAuthorizable();
+            resource.authorize(authorizer, RequestAction.READ, NiFiUserUtils.getNiFiUser());
+        });
+    }
 }
