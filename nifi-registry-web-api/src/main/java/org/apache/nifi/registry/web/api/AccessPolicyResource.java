@@ -267,7 +267,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
 
         authorizeAccessToPolicy(RequestAction.WRITE, identifier);
 
-        AccessPolicy createdPolicy = authorizationService.createAccessPolicy(requestAccessPolicy);
+        AccessPolicy createdPolicy = authorizationService.updateAccessPolicy(requestAccessPolicy);
 
         String locationUri = generateAccessPolicyUri(createdPolicy);
         return generateCreatedResponse(URI.create(locationUri), createdPolicy).build();

@@ -31,13 +31,12 @@ public interface FlowClient {
     /**
      * Create the given flow in the given bucket.
      *
-     * @param bucketId a bucket id
      * @param flow the flow to create
      * @return the created flow with the identifier populated
      * @throws NiFiRegistryException if an error is encountered other than IOException
      * @throws IOException if an I/O error is encountered
      */
-    VersionedFlow create(String bucketId, VersionedFlow flow) throws NiFiRegistryException, IOException;
+    VersionedFlow create(VersionedFlow flow) throws NiFiRegistryException, IOException;
 
     /**
      * Gets the flow with the given id in the given bucket.

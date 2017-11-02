@@ -19,12 +19,20 @@ package org.apache.nifi.registry.authorization;
 import org.apache.nifi.registry.authorization.resource.Authorizable;
 
 public interface AuthorizableLookup {
+
     /**
      * Get the authorizable for retrieving resources.
      *
      * @return authorizable
      */
     Authorizable getResourcesAuthorizable();
+
+    /**
+     * Get the authorizable for /proxy.
+     *
+     * @return authorizable
+     */
+    Authorizable getProxyAuthorizable();
 
     /**
      * Get the authorizable for all tenants.

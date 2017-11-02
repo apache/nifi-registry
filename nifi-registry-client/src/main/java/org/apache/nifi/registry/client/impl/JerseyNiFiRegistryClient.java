@@ -16,16 +16,13 @@
  */
 package org.apache.nifi.registry.client.impl;
 
-import java.io.IOException;
-import java.net.URI;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.FlowClient;
 import org.apache.nifi.registry.client.FlowSnapshotClient;
@@ -36,21 +33,38 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A NiFiRegistryClient that uses Jersey Client.
  */
 public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
+    static final String PROXY_ENTITIES_CHAIN = "X-ProxiedEntitiesChain";
+
+    static final String GT = ">";
+    static final String ESCAPED_GT = "\\\\>";
+    static final String LT = "<";
+    static final String ESCAPED_LT = "\\\\<";
+
     static final String NIFI_REGISTRY_CONTEXT = "nifi-registry-api";
     static final int DEFAULT_CONNECT_TIMEOUT = 10000;
     static final int DEFAULT_READ_TIMEOUT = 10000;
 
     private final Client client;
+    private final WebTarget baseTarget;
+
     private final BucketClient bucketClient;
     private final FlowClient flowClient;
     private final FlowSnapshotClient flowSnapshotClient;
@@ -102,7 +116,7 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
         clientBuilder.withConfig(clientConfig);
         this.client = clientBuilder.build();
 
-        final WebTarget baseTarget = client.target(baseUrl);
+        this.baseTarget = client.target(baseUrl);
         this.bucketClient = new JerseyBucketClient(baseTarget);
         this.flowClient = new JerseyFlowClient(baseTarget);
         this.flowSnapshotClient = new JerseyFlowSnapshotClient(baseTarget);
@@ -127,6 +141,77 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     @Override
     public ItemsClient getItemsClient() {
         return this.itemsClient;
+    }
+
+    @Override
+    public BucketClient getBucketClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyBucketClient(baseTarget, headers);
+    }
+
+    @Override
+    public FlowClient getFlowClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyFlowClient(baseTarget, headers);
+    }
+
+    @Override
+    public FlowSnapshotClient getFlowSnapshotClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyFlowSnapshotClient(baseTarget, headers);
+    }
+
+    @Override
+    public ItemsClient getItemsClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyItemsClient(baseTarget, headers);
+    }
+
+    private Map<String,String> getHeaders(String[] proxiedEntities) {
+        final String proxiedEntitiesValue = getProxiedEntitesValue(proxiedEntities);
+
+        final Map<String,String> headers = new HashMap<>();
+        if (proxiedEntitiesValue != null) {
+            headers.put(PROXY_ENTITIES_CHAIN, proxiedEntitiesValue);
+        }
+        return headers;
+    }
+
+    private String getProxiedEntitesValue(String[] proxiedEntities) {
+        if (proxiedEntities == null) {
+            return null;
+        }
+
+        final List<String> proxiedEntityChain = Arrays.asList(proxiedEntities).stream().map(dn -> formatProxyDn(dn)).collect(Collectors.toList());
+        return StringUtils.join(proxiedEntityChain, "");
+    }
+
+    /**
+     * Formats the specified DN to be set as a HTTP header using well known conventions.
+     *
+     * @param dn raw dn
+     * @return the dn formatted as an HTTP header
+     */
+    private static String formatProxyDn(String dn) {
+        return LT + sanitizeDn(dn) + GT;
+    }
+
+    /**
+     * If a user provides a DN with the sequence '><', they could escape the tokenization process and impersonate another user.
+     * <p>
+     * Example:
+     * <p>
+     * Provided DN: {@code jdoe><alopresto} -> {@code <jdoe><alopresto><proxy...>} would allow the user to impersonate jdoe
+     *
+     * @param rawDn the unsanitized DN
+     * @return the sanitized DN
+     */
+    private static String sanitizeDn(String rawDn) {
+        if (StringUtils.isEmpty(rawDn)) {
+            return rawDn;
+        } else {
+            return rawDn.replaceAll(GT, ESCAPED_GT).replaceAll(LT, ESCAPED_LT);
+        }
     }
 
     @Override
@@ -173,6 +258,10 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
         mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory()));
         // Ignore unknown properties so that deployed client remain compatible with future versions of NiFi Registry that add new fields
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(BucketItem[].class, new BucketItemDeserializer());
+        mapper.registerModule(module);
 
         jacksonJaxbJsonProvider.setMapper(mapper);
         return jacksonJaxbJsonProvider;

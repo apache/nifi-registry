@@ -74,9 +74,26 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
         }
     };
 
+    private static final Authorizable PROXY_AUTHORIZABLE = new Authorizable() {
+        @Override
+        public Authorizable getParentAuthorizable() {
+            return null;
+        }
+
+        @Override
+        public Resource getResource() {
+            return ResourceFactory.getProxyResource();
+        }
+    };
+
     @Override
     public Authorizable getResourcesAuthorizable() {
         return RESOURCES_AUTHORIZABLE;
+    }
+
+    @Override
+    public Authorizable getProxyAuthorizable() {
+        return PROXY_AUTHORIZABLE;
     }
 
     @Override
@@ -206,6 +223,8 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
             case Tenant:
                 authorizable = getTenantsAuthorizable();
                 break;
+            case Proxy:
+                authorizable = getProxyAuthorizable();
         }
 
         if (authorizable == null) {

@@ -25,8 +25,10 @@ import org.apache.nifi.registry.params.SortParameter;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Jersey implementation of ItemsClient.
@@ -36,6 +38,11 @@ public class JerseyItemsClient extends AbstractJerseyClient implements ItemsClie
     private final WebTarget itemsTarget;
 
     public JerseyItemsClient(final WebTarget baseTarget) {
+        this(baseTarget, Collections.emptyMap());
+    }
+
+    public JerseyItemsClient(final WebTarget baseTarget, final Map<String,String> headers) {
+        super(headers);
         this.itemsTarget = baseTarget.path("/items");
     }
 
@@ -56,7 +63,8 @@ public class JerseyItemsClient extends AbstractJerseyClient implements ItemsClie
                 target = target.queryParam("sort", sortParam.toString());
             }
 
-            return target.request().get(List.class);
+            final BucketItem[] bucketItems = getRequestBuilder(target).get(BucketItem[].class);
+            return bucketItems == null ? Collections.emptyList() : Arrays.asList(bucketItems);
         });
     }
 
@@ -85,17 +93,16 @@ public class JerseyItemsClient extends AbstractJerseyClient implements ItemsClie
                 target = target.queryParam("sort", sortParam.toString());
             }
 
-            return target.request().get(List.class);
+            final BucketItem[] bucketItems = getRequestBuilder(target).get(BucketItem[].class);
+            return bucketItems == null ? Collections.emptyList() : Arrays.asList(bucketItems);
         });
     }
 
     @Override
     public Fields getFields() throws NiFiRegistryException, IOException {
         return executeAction("", () -> {
-            return itemsTarget
-                    .path("/fields")
-                    .request()
-                    .get(Fields.class);
+            final WebTarget target = itemsTarget.path("/fields");
+            return getRequestBuilder(target).get(Fields.class);
 
         });
     }
