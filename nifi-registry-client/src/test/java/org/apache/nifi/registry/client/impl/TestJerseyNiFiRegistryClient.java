@@ -30,6 +30,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.params.SortOrder;
 import org.apache.nifi.registry.params.SortParameter;
 import org.junit.Assert;
@@ -39,7 +40,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestJerseyNiFiRegistryClient {
 
@@ -89,6 +92,7 @@ public class TestJerseyNiFiRegistryClient {
             final List<Bucket> allBuckets = bucketClient.getAll();
             System.out.println("Retrieved buckets, size = " + allBuckets.size());
             Assert.assertEquals(numBuckets, allBuckets.size());
+            allBuckets.stream().forEach(b -> System.out.println("Retrieve bucket " + b.getIdentifier()));
 
             // get all buckets with sorting
             final SortParameter sortParam = new SortParameter("created", SortOrder.ASC);
@@ -148,6 +152,7 @@ public class TestJerseyNiFiRegistryClient {
             final List<VersionedFlow> flowsInBucket = flowClient.getByBucket(flowsBucket.getIdentifier());
             Assert.assertNotNull(flowsInBucket);
             Assert.assertEquals(2, flowsInBucket.size());
+            flowsInBucket.stream().forEach(f -> System.out.println("Flow in bucket, flow id " + f.getIdentifier()));
 
             // get flows in bucket with sorting
             final SortParameter flowsSortParam = new SortParameter("created", SortOrder.ASC);
@@ -187,6 +192,7 @@ public class TestJerseyNiFiRegistryClient {
             final List<VersionedFlowSnapshotMetadata> retrievedMetadata = snapshotClient.getSnapshotMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
             Assert.assertNotNull(retrievedMetadata);
             Assert.assertEquals(2, retrievedMetadata.size());
+            retrievedMetadata.stream().forEach(s -> System.out.println("Retrieved snapshot metadata " + s.getVersion()));
 
             // ---------------------- TEST ITEMS --------------------------//
 
@@ -200,6 +206,7 @@ public class TestJerseyNiFiRegistryClient {
             // get all items
             final List<BucketItem> allItems = itemsClient.getAll();
             Assert.assertEquals(2, allItems.size());
+            allItems.stream().forEach(i -> System.out.println("All items, item " + i.getIdentifier()));
 
             // get all items with sorting
             final SortParameter itemsSortParam = new SortParameter("created", SortOrder.ASC);
@@ -209,6 +216,7 @@ public class TestJerseyNiFiRegistryClient {
             // get items for bucket
             final List<BucketItem> bucketItems = itemsClient.getByBucket(flowsBucket.getIdentifier());
             Assert.assertEquals(2, bucketItems.size());
+            bucketItems.stream().forEach(i -> System.out.println("Items in bucket, item " + i.getIdentifier()));
 
             // get items for bucket with sorting
             final List<BucketItem> bucketItemsSorted = itemsClient.getByBucket(flowsBucket.getIdentifier(), Arrays.asList(itemsSortParam));
@@ -256,7 +264,8 @@ public class TestJerseyNiFiRegistryClient {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setName(bucket.getName() + " Flow #" + num);
         versionedFlow.setDescription("This is " + bucket.getName() + " flow #" + num);
-        return client.create(bucket.getIdentifier(), versionedFlow);
+        versionedFlow.setBucketIdentifier(bucket.getIdentifier());
+        return client.create(versionedFlow);
     }
 
     private static VersionedFlowSnapshot createSnapshot(FlowSnapshotClient client, VersionedFlow flow, int num) throws IOException, NiFiRegistryException {
@@ -267,13 +276,35 @@ public class TestJerseyNiFiRegistryClient {
         snapshotMetadata.setVersion(num);
         snapshotMetadata.setComments("This is snapshot #" + num);
 
-        final VersionedProcessGroup snapshotContents = new VersionedProcessGroup();
-        snapshotContents.setIdentifier("pg1");
-        snapshotContents.setName("Process Group 1");
+        final VersionedProcessGroup rootProcessGroup = new VersionedProcessGroup();
+        rootProcessGroup.setIdentifier("root-pg");
+        rootProcessGroup.setName("Root Process Group");
+
+        final VersionedProcessGroup subProcessGroup = new VersionedProcessGroup();
+        subProcessGroup.setIdentifier("sub-pg");
+        subProcessGroup.setName("Sub Process Group");
+        rootProcessGroup.getProcessGroups().add(subProcessGroup);
+
+        final Map<String,String> processorProperties = new HashMap<>();
+        processorProperties.put("Prop 1", "Val 1");
+        processorProperties.put("Prop 2", "Val 2");
+
+        final VersionedProcessor processor1 = new VersionedProcessor();
+        processor1.setIdentifier("p1");
+        processor1.setName("Processor 1");
+        processor1.setProperties(processorProperties);
+
+        final VersionedProcessor processor2 = new VersionedProcessor();
+        processor2.setIdentifier("p2");
+        processor2.setName("Processor 2");
+        processor2.setProperties(processorProperties);
+
+        subProcessGroup.getProcessors().add(processor1);
+        subProcessGroup.getProcessors().add(processor2);
 
         final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
         snapshot.setSnapshotMetadata(snapshotMetadata);
-        snapshot.setFlowContents(snapshotContents);
+        snapshot.setFlowContents(rootProcessGroup);
 
         return client.create(snapshot);
     }

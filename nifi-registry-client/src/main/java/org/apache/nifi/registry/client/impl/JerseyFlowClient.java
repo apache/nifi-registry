@@ -27,8 +27,10 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Jersey implementation of FlowClient.
@@ -39,12 +41,18 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
     private final WebTarget bucketFlowsTarget;
 
     public JerseyFlowClient(final WebTarget baseTarget) {
+        this(baseTarget, Collections.emptyMap());
+    }
+
+    public JerseyFlowClient(final WebTarget baseTarget, final Map<String,String> headers) {
+        super(headers);
         this.flowsTarget = baseTarget.path("/flows");
         this.bucketFlowsTarget = baseTarget.path("/buckets/{bucketId}/flows");
     }
 
     @Override
-    public VersionedFlow create(final String bucketId, final VersionedFlow flow) throws NiFiRegistryException, IOException {
+    public VersionedFlow create(final VersionedFlow flow) throws NiFiRegistryException, IOException {
+        final String bucketId = flow.getBucketIdentifier();
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
@@ -54,9 +62,10 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
         }
 
         return executeAction("Error creating flow", () -> {
-            return bucketFlowsTarget
-                    .resolveTemplate("bucketId", bucketId)
-                    .request()
+            final WebTarget target = bucketFlowsTarget
+                    .resolveTemplate("bucketId", bucketId);
+
+            return getRequestBuilder(target)
                     .post(
                             Entity.entity(flow, MediaType.APPLICATION_JSON),
                             VersionedFlow.class
@@ -75,12 +84,12 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
         }
 
         return executeAction("Error retrieving flow", () -> {
-            return bucketFlowsTarget
+            final WebTarget target = bucketFlowsTarget
                     .path("/{flowId}")
                     .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flowId)
-                    .request()
-                    .get(VersionedFlow.class);
+                    .resolveTemplate("flowId", flowId);
+
+            return  getRequestBuilder(target).get(VersionedFlow.class);
         });
     }
 
@@ -95,13 +104,13 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
         }
 
         return executeAction("Error retrieving flow", () -> {
-            return bucketFlowsTarget
+            final WebTarget target = bucketFlowsTarget
                     .path("/{flowId}")
                     .resolveTemplate("bucketId", bucketId)
                     .resolveTemplate("flowId", flowId)
-                    .queryParam("verbose", "true")
-                    .request()
-                    .get(VersionedFlow.class);
+                    .queryParam("verbose", "true");
+
+            return getRequestBuilder(target).get(VersionedFlow.class);
         });
     }
 
@@ -120,11 +129,12 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
         }
 
         return executeAction("Error updating flow", () -> {
-            return bucketFlowsTarget
+            final WebTarget target = bucketFlowsTarget
                     .path("/{flowId}")
                     .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flow.getIdentifier())
-                    .request()
+                    .resolveTemplate("flowId", flow.getIdentifier());
+
+            return  getRequestBuilder(target)
                     .put(
                             Entity.entity(flow, MediaType.APPLICATION_JSON),
                             VersionedFlow.class
@@ -143,22 +153,20 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
         }
 
         return executeAction("Error deleting flow", () -> {
-            return bucketFlowsTarget
+            final WebTarget target = bucketFlowsTarget
                     .path("/{flowId}")
                     .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flowId)
-                    .request()
-                    .delete(VersionedFlow.class);
+                    .resolveTemplate("flowId", flowId);
+
+            return getRequestBuilder(target).delete(VersionedFlow.class);
         });
     }
 
     @Override
     public Fields getFields() throws NiFiRegistryException, IOException {
         return executeAction("Error retrieving fields info for flows", () -> {
-            return flowsTarget
-                    .path("/fields")
-                    .request()
-                    .get(Fields.class);
+            final WebTarget target = flowsTarget.path("/fields");
+            return getRequestBuilder(target).get(Fields.class);
         });
     }
 
@@ -183,10 +191,10 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
                 target = target.queryParam("sort", sortParam.toString());
             }
 
-            return target
-                    .resolveTemplate("bucketId", bucketId)
-                    .request()
-                    .get(List.class);
+            target = target.resolveTemplate("bucketId", bucketId);
+
+            final VersionedFlow[] versionedFlows = getRequestBuilder(target).get(VersionedFlow[].class);
+            return  versionedFlows == null ? Collections.emptyList() : Arrays.asList(versionedFlows);
         });
     }
 

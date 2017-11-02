@@ -26,8 +26,10 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 /**
  * Jersey implementation of FlowSnapshotClient.
@@ -37,34 +39,38 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
     final WebTarget flowSnapshotTarget;
 
     public JerseyFlowSnapshotClient(final WebTarget baseTarget) {
+        this(baseTarget, Collections.emptyMap());
+    }
+
+    public JerseyFlowSnapshotClient(final WebTarget baseTarget, final Map<String,String> headers) {
+        super(headers);
         this.flowSnapshotTarget = baseTarget.path("/buckets/{bucketId}/flows/{flowId}/versions");
     }
 
-    @Override
-    public VersionedFlowSnapshot create(final VersionedFlowSnapshot snapshot) throws NiFiRegistryException, IOException {
-        Objects.requireNonNull(snapshot);
 
-        final VersionedFlowSnapshotMetadata metadata = snapshot.getSnapshotMetadata();
-        if (metadata == null) {
-            throw new IllegalArgumentException("Snapshot Metadata must be supplied.");
+    @Override
+    public VersionedFlowSnapshot create(final VersionedFlowSnapshot snapshot)
+            throws NiFiRegistryException, IOException {
+        if (snapshot.getSnapshotMetadata() == null) {
+            throw new IllegalArgumentException("Snapshot Metadata cannot be null");
         }
 
-        final String bucketId = metadata.getBucketIdentifier();
-        final String flowId = metadata.getFlowIdentifier();
-
+        final String bucketId = snapshot.getSnapshotMetadata().getBucketIdentifier();
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
 
+        final String flowId = snapshot.getSnapshotMetadata().getFlowIdentifier();
         if (StringUtils.isBlank(flowId)) {
             throw new IllegalArgumentException("Flow Identifier cannot be blank");
         }
 
         return executeAction("Error creating snapshot", () -> {
-            return flowSnapshotTarget
+            final WebTarget target = flowSnapshotTarget
                     .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flowId)
-                    .request()
+                    .resolveTemplate("flowId", flowId);
+
+            return  getRequestBuilder(target)
                     .post(
                             Entity.entity(snapshot, MediaType.APPLICATION_JSON),
                             VersionedFlowSnapshot.class
@@ -88,13 +94,13 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving flow snapshot", () -> {
-            return flowSnapshotTarget
+            final WebTarget target = flowSnapshotTarget
                     .path("/{version}")
                     .resolveTemplate("bucketId", bucketId)
                     .resolveTemplate("flowId", flowId)
-                    .resolveTemplate("version", version)
-                    .request()
-                    .get(VersionedFlowSnapshot.class);
+                    .resolveTemplate("version", version);
+
+            return getRequestBuilder(target).get(VersionedFlowSnapshot.class);
         });
     }
 
@@ -110,12 +116,12 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving latest snapshot", () -> {
-            return flowSnapshotTarget
+            final WebTarget target = flowSnapshotTarget
                     .path("/latest")
                     .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flowId)
-                    .request()
-                    .get(VersionedFlowSnapshot.class);
+                    .resolveTemplate("flowId", flowId);
+
+            return getRequestBuilder(target).get(VersionedFlowSnapshot.class);
         });
     }
 
@@ -132,11 +138,14 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving snapshot metadata", () -> {
-            return flowSnapshotTarget
+            final WebTarget target = flowSnapshotTarget
                     .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flowId)
-                    .request()
-                    .get(List.class);
+                    .resolveTemplate("flowId", flowId);
+
+            final VersionedFlowSnapshotMetadata[] snapshots = getRequestBuilder(target)
+                    .get(VersionedFlowSnapshotMetadata[].class);
+
+            return snapshots == null ? Collections.emptyList() : Arrays.asList(snapshots);
         });
     }
 

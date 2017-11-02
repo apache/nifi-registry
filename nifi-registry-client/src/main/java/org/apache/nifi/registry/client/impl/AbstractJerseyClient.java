@@ -18,12 +18,41 @@ package org.apache.nifi.registry.client.impl;
 
 import org.apache.nifi.registry.client.NiFiRegistryException;
 
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Base class for the client operations to share exception handling.
+ *
+ * Sub-classes should always execute a request from getRequestBuilder(target) to ensure proper headers are sent.
  */
 public class AbstractJerseyClient {
+
+    private final Map<String,String> headers;
+
+    public AbstractJerseyClient(final Map<String, String> headers) {
+        this.headers = headers == null ? Collections.emptyMap() : Collections.unmodifiableMap(new HashMap<>(headers));
+    }
+
+    protected Map<String,String> getHeaders() {
+        return headers;
+    }
+
+    /**
+     * Creates a new Invocation.Builder for the given WebTarget with the headers added to the builder.
+     *
+     * @param webTarget the target for the request
+     * @return the builder for the target with the headers added
+     */
+    protected Invocation.Builder getRequestBuilder(final WebTarget webTarget) {
+        final Invocation.Builder requestBuilder = webTarget.request();
+        headers.entrySet().stream().forEach(e -> requestBuilder.header(e.getKey(), e.getValue()));
+        return requestBuilder;
+    }
 
     /**
      * Executes the given action and returns the result.

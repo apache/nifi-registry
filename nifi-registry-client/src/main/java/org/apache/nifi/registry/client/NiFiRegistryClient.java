@@ -29,9 +29,19 @@ public interface NiFiRegistryClient extends Closeable {
     BucketClient getBucketClient();
 
     /**
+     * @return the client for interacting with buckets on behalf of the given proxied entities
+     */
+    BucketClient getBucketClient(String ... proxiedEntity);
+
+    /**
      * @return the client for interacting with flows
      */
     FlowClient getFlowClient();
+
+    /**
+     * @return the client for interacting with flows on behalf of the given proxied entities
+     */
+    FlowClient getFlowClient(String ... proxiedEntity);
 
     /**
      * @return the client for interacting with flows/snapshots
@@ -39,9 +49,19 @@ public interface NiFiRegistryClient extends Closeable {
     FlowSnapshotClient getFlowSnapshotClient();
 
     /**
+     * @return the client for interacting with flows/snapshots on behalf of the given proxied entities
+     */
+    FlowSnapshotClient getFlowSnapshotClient(String ... proxiedEntity);
+
+    /**
      * @return the client for interacting with bucket items
      */
     ItemsClient getItemsClient();
+
+    /**
+     * @return the client for interacting with bucket items on behalf of the given proxied entities
+     */
+    ItemsClient getItemsClient(String ... proxiedEntity);
 
     /**
      * The builder interface that implementations should provide for obtaining the client.

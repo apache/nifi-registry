@@ -123,6 +123,7 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             new ResourceActionPair("/buckets", READ_CODE),
             new ResourceActionPair("/buckets", WRITE_CODE),
             new ResourceActionPair("/buckets", DELETE_CODE),
+            new ResourceActionPair("/proxy", WRITE_CODE)
     };
 
     static final String PROP_NODE_IDENTITY_PREFIX = "Node Identity ";

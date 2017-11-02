@@ -28,7 +28,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Jersey implementation of BucketClient.
@@ -37,7 +39,13 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
 
     private final WebTarget bucketsTarget;
 
+
     public JerseyBucketClient(final WebTarget baseTarget) {
+        this(baseTarget, Collections.emptyMap());
+    }
+
+    public JerseyBucketClient(final WebTarget baseTarget, final Map<String,String> headers) {
+        super(headers);
         this.bucketsTarget = baseTarget.path("/buckets");
     }
 
@@ -48,7 +56,7 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
         }
 
         return executeAction("Error creating bucket", () -> {
-            return bucketsTarget.request()
+            return getRequestBuilder(bucketsTarget)
                     .post(
                             Entity.entity(bucket, MediaType.APPLICATION_JSON),
                             Bucket.class
@@ -64,11 +72,11 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
         }
 
         return executeAction("Error retrieving bucket", () -> {
-            return bucketsTarget
+            final WebTarget target = bucketsTarget
                     .path("/{bucketId}")
-                    .resolveTemplate("bucketId", bucketId)
-                    .request()
-                    .get(Bucket.class);
+                    .resolveTemplate("bucketId", bucketId);
+
+            return getRequestBuilder(target).get(Bucket.class);
         });
 
     }
@@ -84,10 +92,11 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
         }
 
         return executeAction("Error updating bucket", () -> {
-            return bucketsTarget
+            final WebTarget target = bucketsTarget
                     .path("/{bucketId}")
-                    .resolveTemplate("bucketId", bucket.getIdentifier())
-                    .request()
+                    .resolveTemplate("bucketId", bucket.getIdentifier());
+
+            return getRequestBuilder(target)
                     .put(
                             Entity.entity(bucket, MediaType.APPLICATION_JSON),
                             Bucket.class
@@ -103,28 +112,29 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
         }
 
         return executeAction("Error deleting bucket", () -> {
-            return bucketsTarget
+            final WebTarget target = bucketsTarget
                     .path("/{bucketId}")
-                    .resolveTemplate("bucketId", bucketId)
-                    .request()
-                    .delete(Bucket.class);
+                    .resolveTemplate("bucketId", bucketId);
+
+            return getRequestBuilder(target).delete(Bucket.class);
         });
     }
 
     @Override
     public Fields getFields() throws NiFiRegistryException, IOException {
         return executeAction("Error retrieving bucket field info", () -> {
-            return bucketsTarget
-                    .path("/fields")
-                    .request()
-                    .get(Fields.class);
+            final WebTarget target = bucketsTarget
+                    .path("/fields");
+
+            return getRequestBuilder(target).get(Fields.class);
         });
     }
 
     @Override
     public List<Bucket> getAll() throws NiFiRegistryException, IOException {
         return executeAction("Error retrieving all buckets", () -> {
-            return Arrays.asList(bucketsTarget.request().get(Bucket[].class));
+            final Bucket[] buckets = getRequestBuilder(bucketsTarget).get(Bucket[].class);
+            return buckets == null ? Collections.emptyList() : Arrays.asList(buckets);
         });
     }
 
@@ -140,7 +150,8 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
                 target = target.queryParam("sort", sortParam.toString());
             }
 
-            return Arrays.asList(target.request().get(Bucket[].class));
+            return getRequestBuilder(target).get(List.class);
         });
     }
+
 }
