@@ -20,68 +20,68 @@ var ngMaterial = require('@angular/material');
 var ngFlex = require('@angular/flex-layout');
 var ngCommon = require('@angular/common');
 var ngForms = require('@angular/forms');
-var fdsDialogComponentModule = require('@fluid-design-system/dialog-component');
-var fdsDialogServiceModule = require('@fluid-design-system/dialog-service');
-var FdsConfirmDialogComponent = require('@fluid-design-system/confirm-dialog-component');
+var fdsSnackBarComponentModule = require('@fluid-design-system/snackbar-component');
+var fdsSnackBarServiceModule = require('@fluid-design-system/snackbar-service');
+var FdsCoasterComponent = require('@fluid-design-system/coaster-component');
 
-var FDS_DIALOGS = [
-    fdsDialogComponentModule.FdsDialogComponent,
-    fdsDialogComponentModule.FdsDialogTitleDirective,
-    fdsDialogComponentModule.FdsDialogActionsDirective,
-    fdsDialogComponentModule.FdsDialogContentDirective,
-    FdsConfirmDialogComponent
+var FDS_SNACKBARS = [
+    fdsSnackBarComponentModule.FdsSnackBarComponent,
+    fdsSnackBarComponentModule.FdsSnackBarTitleDirective,
+    fdsSnackBarComponentModule.FdsSnackBarActionsDirective,
+    fdsSnackBarComponentModule.FdsSnackBarContentDirective,
+    FdsCoasterComponent
 ];
 
-var FDS_DIALOGS_ENTRY_COMPONENTS = [
-    FdsConfirmDialogComponent
+var FDS_SNACKBARS_ENTRY_COMPONENTS = [
+    FdsCoasterComponent
 ];
 
 /**
- * FdsDialogsModule constructor.
+ * FdsSnackBarsModule constructor.
  *
  * @constructor
  */
-function FdsDialogsModule() {
+function FdsSnackBarsModule() {
 
 };
 
-FdsDialogsModule.prototype = {
-    constructor: FdsDialogsModule
+FdsSnackBarsModule.prototype = {
+    constructor: FdsSnackBarsModule
 };
 
-FdsDialogsModule.annotations = [
+FdsSnackBarsModule.annotations = [
     new ngCore.NgModule({
         imports: [
             ngFlex.FlexLayoutModule,
             ngForms.FormsModule,
             ngCommon.CommonModule,
-            ngMaterial.MatDialogModule,
+            ngMaterial.MatSnackBarModule,
             ngMaterial.MatInputModule,
             ngMaterial.MatButtonModule,
             ngMaterial.MatIconModule
         ],
         declarations: [
-            FDS_DIALOGS
+            FDS_SNACKBARS
         ],
         exports: [
-            FDS_DIALOGS
+            FDS_SNACKBARS
         ],
         providers: [
-            fdsDialogServiceModule.FdsDialogService
+            fdsSnackBarServiceModule.FdsSnackBarService
         ],
         entryComponents: [
-            FDS_DIALOGS_ENTRY_COMPONENTS
+            FDS_SNACKBARS_ENTRY_COMPONENTS
         ]
     })
 ];
 
 module.exports = {
-    FdsDialogsModule: FdsDialogsModule,
-    IConfirmConfig: fdsDialogServiceModule.IConfirmConfig,
-    FdsDialogService: fdsDialogServiceModule.FdsDialogService,
-    FdsDialogComponent: fdsDialogComponentModule.FdsDialogComponent,
-    FdsDialogTitleDirective: fdsDialogComponentModule.FdsDialogTitleDirective,
-    FdsDialogContentDirective: fdsDialogComponentModule.FdsDialogContentDirective,
-    FdsDialogActionsDirective: fdsDialogComponentModule.FdsDialogActionsDirective,
-    FdsConfirmDialogComponent: FdsConfirmDialogComponent
+    FdsSnackBarsModule: FdsSnackBarsModule,
+    ICoasterConfig: fdsSnackBarServiceModule.ICoasterConfig,
+    FdsSnackBarService: fdsSnackBarServiceModule.FdsSnackBarService,
+    FdsSnackBarComponent: fdsSnackBarComponentModule.FdsSnackBarComponent,
+    FdsSnackBarTitleDirective: fdsSnackBarComponentModule.FdsSnackBarTitleDirective,
+    FdsSnackBarContentDirective: fdsSnackBarComponentModule.FdsSnackBarContentDirective,
+    FdsSnackBarActionsDirective: fdsSnackBarComponentModule.FdsSnackBarActionsDirective,
+    FdsCoasterComponent: FdsCoasterComponent
 };

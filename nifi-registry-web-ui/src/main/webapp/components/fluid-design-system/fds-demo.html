@@ -15,25 +15,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<md-sidenav-container>
-    <md-sidenav #sidenav mode="over" align="end" opened="false">
+<mat-sidenav-container>
+    <mat-sidenav #sidenav mode="over" align="end" opened="false">
         <div fxLayout="column" fxLayoutAlign="space-between center">
             <p>You can also open a dialog from a side nav.</p>
-            <button md-raised-button color="fds-primary" (click)="openDialog()">Show simple dialog</button>
+            <button mat-raised-button color="fds-primary" (click)="openDialog()">Show simple dialog</button>
         </div>
-    </md-sidenav>
+    </mat-sidenav>
     <div id="fds-demo">
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Fluid Design System</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content class="pad-top-sm">
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Fluid Design System</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content class="pad-top-sm">
                 <p>With the Fluid Design System module, we get an atomic, reusable component platform for the Apache Nifi Registry to consume, while collaborating in an open source model. This module packages the <a class="link" href="https://material.angular.io/components" target="_blank">Angular Material</a> module as well as the <a class="link" href="https://teradata.github.io/covalent/#/components" target="_blank">Teradata Covalent</a> module. These modules have been themed to match the FDS color palette.</p>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Setup</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Setup</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <p>Import the FDS Core NgModule into your AppModule</p>
                 <p>HTML:</p>
                 <pre lang="javascript">
@@ -67,607 +67,607 @@ limitations under the License.
         ]
         ]]>
     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Typography</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <p class="md-body-1">Angular Material provides <a class="link" href="https://material.io/guidelines/style/typography.html" target="_blank">typography</a> CSS classes you can use to create visual consistency across your application.</p>
-                <p class="md-body-1">
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Typography</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <p class="mat-body-1">Angular Material provides <a class="link" href="https://material.io/guidelines/style/typography.html" target="_blank">typography</a> CSS classes you can use to create visual consistency across your application.</p>
+                <p class="mat-body-1">
                     <strong>Note:</strong>
                     <span>Base font size is 10px for easy rem units (1.2rem = 12px). Body font size is 14px. sp = scalable pixels.</span>
                 </p>
-                <h3 class="md-title">Header Styles</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <p class="md-body-1">To preserve semantic structures, you can optionally style the <code>&lt;h1&gt;</code> - <code>&lt;h6&gt;</code> heading tags with the styling classes shown below:</p>
+                <h3 class="mat-title">Header Styles</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <p class="mat-body-1">To preserve semantic structures, you can optionally style the <code>&lt;h1&gt;</code> - <code>&lt;h6&gt;</code> heading tags with the styling classes shown below:</p>
                 <p>CSS:</p>
                 <div layout-align="center end">
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-display-4</code>
-                        <span class="md-display-4">Light 112px</span>
+                        <code flex="15">.mat-display-4</code>
+                        <span class="mat-display-4">Light 112px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-display-3</code>
-                        <span class="md-display-3">Regular 56px</span>
+                        <code flex="15">.mat-display-3</code>
+                        <span class="mat-display-3">Regular 56px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-display-2</code>
-                        <span class="md-display-2">Regular 45px</span>
+                        <code flex="15">.mat-display-2</code>
+                        <span class="mat-display-2">Regular 45px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-display-1</code>
-                        <span class="md-display-1">Regular 34px</span>
+                        <code flex="15">.mat-display-1</code>
+                        <span class="mat-display-1">Regular 34px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-headline</code>
-                        <span class="md-headline">Regular 24px</span>
+                        <code flex="15">.mat-headline</code>
+                        <span class="mat-headline">Regular 24px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-title</code>
-                        <span class="md-title">Medium 20px</span>
+                        <code flex="15">.mat-title</code>
+                        <span class="mat-title">Medium 20px</span>
                     </div>
                     <div layout="row" layout-align="start center">
                         <code flex="15">.md-subhead</code>
                         <span class="md-subhead">Regular 16px</span>
                     </div>
                 </div>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
     <![CDATA[
         <!-- Large Heading -->
-        <h1 class="md-display-4">Roboto is the standard typeface on Android.</h1>
-        <h2 class="md-display-3">Roboto and Noto are the standard typefaces on Android and Chrome.</h2>
-        <h3 class="md-display-2">Noto is the standard typeface for all languages on Chrome and Android for all languages not covered by Roboto.</h3>
+        <h1 class="mat-display-4">Roboto is the standard typeface on Android.</h1>
+        <h2 class="mat-display-3">Roboto and Noto are the standard typefaces on Android and Chrome.</h2>
+        <h3 class="mat-display-2">Noto is the standard typeface for all languages on Chrome and Android for all languages not covered by Roboto.</h3>
         <!-- Medium Heading -->
-        <h1 class="md-display-1">Roboto is the standard typeface on Android.</h1>
-        <h2 class="md-headline">Roboto and Noto are the standard typefaces on Android and Chrome.</h2>
+        <h1 class="mat-display-1">Roboto is the standard typeface on Android.</h1>
+        <h2 class="mat-headline">Roboto and Noto are the standard typefaces on Android and Chrome.</h2>
         <h3 class="md-subhead">Noto is the standard typeface for all languages on Chrome and Android for all languages not covered by Roboto.</h3>
     ]]>
     </pre>
-                <h3 class="md-title">Body Copy</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
+                <h3 class="mat-title">Body Copy</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
                 <p>CSS:</p>
-                <div class="md-body-1" layout-align="center end">
+                <div class="mat-body-1" layout-align="center end">
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-body-1</code>
-                        <span class="md-body-1">Regular 14px</span>
+                        <code flex="15">.mat-body-1</code>
+                        <span class="mat-body-1">Regular 14px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-body-2</code>
-                        <span class="md-body-2">Medium 14px</span>
+                        <code flex="15">.mat-body-2</code>
+                        <span class="mat-body-2">Medium 14px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-button</code>
-                        <span class="md-button md-raised">Medium 14px</span>
+                        <code flex="15">.mat-button</code>
+                        <span class="mat-button mat-raised">Medium 14px</span>
                     </div>
                     <div layout="row" layout-align="start center">
-                        <code flex="15">.md-caption</code>
-                        <span class="md-caption">Regular 12px</span>
+                        <code flex="15">.mat-caption</code>
+                        <span class="mat-caption">Regular 12px</span>
                     </div>
                 </div>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
     <![CDATA[
         <!-- body copy -->
-        <p class="md-body-1">Roboto is the standard typeface on Android.</p>
-        <p class="md-body-2">Roboto and Noto are the standard typefaces on Android and Chrome.</p>
-        <p class="md-button">Roboto and Noto are the standard typefaces on Android and Chrome.</p>
-        <p class="md-caption">Noto is the standard typeface for all languages on Chrome and Android for all languages not covered by Roboto.</p>
+        <p class="mat-body-1">Roboto is the standard typeface on Android.</p>
+        <p class="mat-body-2">Roboto and Noto are the standard typefaces on Android and Chrome.</p>
+        <p class="mat-button">Roboto and Noto are the standard typefaces on Android and Chrome.</p>
+        <p class="mat-caption">Noto is the standard typeface for all languages on Chrome and Android for all languages not covered by Roboto.</p>
     ]]>
     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Raised Buttons</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Raised Buttons</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <p>Tip: Use UPPERCASE text for 1-2 words, and Titlecase text for 3+ words.</p>
-                <button md-raised-button color="primary">Primary</button>
-                <button md-raised-button color="accent">Accent</button>
-                <button md-raised-button color="warn">Warn</button>
-                <button md-raised-button color="fds-primary">FDS Primary</button>
-                <button md-raised-button color="fds-secondary">FDS Secondary</button>
-                <button md-raised-button color="fds-regular">FDS regular</button>
-                <button md-raised-button color="fds-warn">FDS warn</button>
-                <button md-raised-button color="fds-critical">FDS critical</button>
-                <button md-raised-button disabled color="primary">Primary</button>
-                <button md-raised-button disabled color="accent">Accent</button>
-                <button md-raised-button disabled color="warn">Warn</button>
-                <button md-raised-button disabled color="fds-primary">FDS primary</button>
-                <button md-raised-button disabled color="fds-secondary">FDS Secondary</button>
-                <button md-raised-button disabled color="fds-regular">FDS regular</button>
-                <button md-raised-button disabled color="fds-warn">FDS warn</button>
-                <button md-raised-button disabled color="fds-critical">FDS critical</button>
-                <h3 class="md-title">Usage</h3>
+                <button mat-raised-button color="primary">Primary</button>
+                <button mat-raised-button color="accent">Accent</button>
+                <button mat-raised-button color="warn">Warn</button>
+                <button mat-raised-button color="fds-primary">FDS Primary</button>
+                <button mat-raised-button color="fds-secondary">FDS Secondary</button>
+                <button mat-raised-button color="fds-regular">FDS regular</button>
+                <button mat-raised-button color="fds-warn">FDS warn</button>
+                <button mat-raised-button color="fds-critical">FDS critical</button>
+                <button mat-raised-button disabled color="primary">Primary</button>
+                <button mat-raised-button disabled color="accent">Accent</button>
+                <button mat-raised-button disabled color="warn">Warn</button>
+                <button mat-raised-button disabled color="fds-primary">FDS primary</button>
+                <button mat-raised-button disabled color="fds-secondary">FDS Secondary</button>
+                <button mat-raised-button disabled color="fds-regular">FDS regular</button>
+                <button mat-raised-button disabled color="fds-warn">FDS warn</button>
+                <button mat-raised-button disabled color="fds-critical">FDS critical</button>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
     <![CDATA[
         <!-- Themed Raised Buttons -->
-        <button md-raised-button color="primary">Primary</button>
-        <button md-raised-button color="accent">Secondary</button>
-        <button md-raised-button color="warn">warn</button>
-        <button md-raised-button color="fds-primary">FDS Primary</button>
-        <button md-raised-button color="fds-secondary">FDS Secondary</button>
-        <button md-raised-button color="fds-regular">FDS regular</button>
-        <button md-raised-button color="fds-warn">FDS warn</button>
-        <button md-raised-button color="fds-critical">FDS critical</button>
+        <button mat-raised-button color="primary">Primary</button>
+        <button mat-raised-button color="accent">Secondary</button>
+        <button mat-raised-button color="warn">warn</button>
+        <button mat-raised-button color="fds-primary">FDS Primary</button>
+        <button mat-raised-button color="fds-secondary">FDS Secondary</button>
+        <button mat-raised-button color="fds-regular">FDS regular</button>
+        <button mat-raised-button color="fds-warn">FDS warn</button>
+        <button mat-raised-button color="fds-critical">FDS critical</button>
         <!-- Disabled Raised Buttons -->
-        <button md-raised-button disabled color="primary">Primary</button>
-        <button md-raised-button disabled color="accent">Secondary</button>
-        <button md-raised-button disabled color="warn">warn</button>
-        <button md-raised-button disabled color="fds-primary">FDS primary</button>
-        <button md-raised-button disabled color="fds-secondary">FDS Secondary</button>
-        <button md-raised-button disabled color="fds-regular">FDS regular</button>
-        <button md-raised-button disabled color="fds-warn">FDS warn</button>
-        <button md-raised-button disabled color="fds-critical">FDS critical</button>
+        <button mat-raised-button disabled color="primary">Primary</button>
+        <button mat-raised-button disabled color="accent">Secondary</button>
+        <button mat-raised-button disabled color="warn">warn</button>
+        <button mat-raised-button disabled color="fds-primary">FDS primary</button>
+        <button mat-raised-button disabled color="fds-secondary">FDS Secondary</button>
+        <button mat-raised-button disabled color="fds-regular">FDS regular</button>
+        <button mat-raised-button disabled color="fds-warn">FDS warn</button>
+        <button mat-raised-button disabled color="fds-critical">FDS critical</button>
     ]]>
     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Links</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Links</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <a class="link" href="https://material.angular.io" target="_blank">Angular Material</a>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
                 <![CDATA[
         <a class="link" href="https://material.angular.io" target="_blank">Angular Material</a>
                 ]]>
             </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Flat Buttons</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <md-card-actions>
-                    <button md-button>Defualt</button>
-                    <button md-button color="primary">Primary</button>
-                    <button md-button color="accent">Secondary</button>
-                    <button md-button color="warn">Warn</button>
-                    <button md-button disabled>Disabled Defualt</button>
-                    <button md-button disabled color="primary">Disabled Primary</button>
-                    <button md-button disabled color="accent">Disabled Secondary</button>
-                    <button md-button disabled color="warn">Disabled Warn</button>
-                </md-card-actions>
-                <h3 class="md-title">Usage</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Flat Buttons</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <mat-card-actions>
+                    <button mat-button>Defualt</button>
+                    <button mat-button color="primary">Primary</button>
+                    <button mat-button color="accent">Secondary</button>
+                    <button mat-button color="warn">Warn</button>
+                    <button mat-button disabled>Disabled Defualt</button>
+                    <button mat-button disabled color="primary">Disabled Primary</button>
+                    <button mat-button disabled color="accent">Disabled Secondary</button>
+                    <button mat-button disabled color="warn">Disabled Warn</button>
+                </mat-card-actions>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
     <![CDATA[
         <!-- Themed Flat Buttons -->
-        <button md-button>Defualt</button>
-        <button md-button color="primary">Primary</button>
-        <button md-button color="accent">Secondary</button>
-        <button md-button color="warn">warn</button>
+        <button mat-button>Defualt</button>
+        <button mat-button color="primary">Primary</button>
+        <button mat-button color="accent">Secondary</button>
+        <button mat-button color="warn">warn</button>
         <!-- Disabled Flat Buttons -->
-        <button md-button disabled>disabled Defualt</button>
-        <button md-button disabled color="primary">disabled primary</button>
-        <button md-button disabled color="accent">disabled Secondary</button>
-        <button md-button disabled color="warn">disabled warn</button>
+        <button mat-button disabled>disabled Defualt</button>
+        <button mat-button disabled color="primary">disabled primary</button>
+        <button mat-button disabled color="accent">disabled Secondary</button>
+        <button mat-button disabled color="warn">disabled warn</button>
     ]]>
     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Fab Buttons</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <md-card-actions class="pad-left-sm">
-                    <button md-mini-fab color="primary">P</button>
-                    <button md-mini-fab color="accent">A</button>
-                    <button md-mini-fab color="warn">W</button>
-                    <button md-mini-fab disabled color="primary">P</button>
-                    <button md-mini-fab disabled color="accent">A</button>
-                    <button md-mini-fab disabled color="warn">W</button>
-                </md-card-actions>
-                <h3 class="md-title">Usage</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Fab Buttons</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <mat-card-actions class="pad-left-sm">
+                    <button mat-mini-fab color="primary">P</button>
+                    <button mat-mini-fab color="accent">A</button>
+                    <button mat-mini-fab color="warn">W</button>
+                    <button mat-mini-fab disabled color="primary">P</button>
+                    <button mat-mini-fab disabled color="accent">A</button>
+                    <button mat-mini-fab disabled color="warn">W</button>
+                </mat-card-actions>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
     <![CDATA[
         <!-- Themed Fab Buttons -->
-        <button md-mini-fab color="primary">P</button>
-        <button md-mini-fab color="accent">A</button>
-        <button md-mini-fab color="warn">W</button>
+        <button mat-mini-fab color="primary">P</button>
+        <button mat-mini-fab color="accent">A</button>
+        <button mat-mini-fab color="warn">W</button>
         <!-- Disabled Fab Buttons -->
-        <button md-mini-fab disabled color="primary">P</button>
-        <button md-mini-fab disabled color="accent">A</button>
-        <button md-mini-fab disabled color="warn">W</button>
+        <button mat-mini-fab disabled color="primary">P</button>
+        <button mat-mini-fab disabled color="accent">A</button>
+        <button mat-mini-fab disabled color="warn">W</button>
     ]]>
     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Button Toggles</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <md-button-toggle-group name="alignment">
-                    <md-button-toggle value="left">
-                        <md-icon>format_align_left</md-icon>
-                    </md-button-toggle>
-                    <md-button-toggle value="center">
-                        <md-icon>format_align_center</md-icon>
-                    </md-button-toggle>
-                    <md-button-toggle value="right">
-                        <md-icon>format_align_right</md-icon>
-                    </md-button-toggle>
-                    <md-button-toggle value="justify">
-                        <md-icon>format_align_justify</md-icon>
-                    </md-button-toggle>
-                </md-button-toggle-group>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Button Toggles</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <mat-button-toggle-group name="alignment">
+                    <mat-button-toggle value="left">
+                        <mat-icon>format_align_left</mat-icon>
+                    </mat-button-toggle>
+                    <mat-button-toggle value="center">
+                        <mat-icon>format_align_center</mat-icon>
+                    </mat-button-toggle>
+                    <mat-button-toggle value="right">
+                        <mat-icon>format_align_right</mat-icon>
+                    </mat-button-toggle>
+                    <mat-button-toggle value="justify">
+                        <mat-icon>format_align_justify</mat-icon>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
                 <div fxLayout="row" class="pad-top-md pad-bot-md"></div>
-                <md-button-toggle-group name="onOffToggle" class="on-off-toggle-group">
-                    <md-button-toggle value="on" [checked]="true">
+                <mat-button-toggle-group name="onOffToggle" class="on-off-toggle-group">
+                    <mat-button-toggle value="on" [checked]="true">
                         ON
-                    </md-button-toggle>
-                    <md-button-toggle value="off" class="off-toggle">
+                    </mat-button-toggle>
+                    <mat-button-toggle value="off" class="off-toggle">
                         OFF
-                    </md-button-toggle>
-                </md-button-toggle-group>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
                 <div fxLayout="row" class="pad-top-md pad-bot-md"></div>
-                <md-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
-                    <md-button-toggle>
+                <mat-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
+                    <mat-button-toggle>
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">34</div>
                             <div class="pad-top-sm" fxFlex="45">Assets</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle>
+                    </mat-button-toggle>
+                    <mat-button-toggle>
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">300</div>
                             <div class="pad-top-sm" fxFlex="45">Extensions</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle>
+                    </mat-button-toggle>
+                    <mat-button-toggle>
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">5000</div>
                             <div class="pad-top-sm" fxFlex="45">Flows</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle>
+                    </mat-button-toggle>
+                    <mat-button-toggle>
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">0</div>
                             <div class="pad-top-sm" fxFlex="45">Certifications</div>
                         </div>
-                    </md-button-toggle>
-                </md-button-toggle-group>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
                 <div fxLayout="row" class="pad-top-md pad-bot-md"></div>
-                <md-button-toggle-group name="nifi-registry-administration-perspective" fxLayout="row" class="tab-toggle-group">
-                    <md-button-toggle value="general" class="uppercase">
+                <mat-button-toggle-group name="nifi-registry-administration-perspective" fxLayout="row" class="tab-toggle-group">
+                    <mat-button-toggle value="general" class="uppercase">
                         general
-                    </md-button-toggle>
+                    </mat-button-toggle>
                     <div fxLayout="row" class="pad-left-md"></div>
-                    <md-button-toggle value="users" class="uppercase">
+                    <mat-button-toggle value="users" class="uppercase">
                         Users
-                    </md-button-toggle>
+                    </mat-button-toggle>
                     <div fxLayout="row" class="pad-left-md"></div>
-                    <md-button-toggle value="workflow" class="uppercase">
+                    <mat-button-toggle value="workflow" class="uppercase">
                         Workflow
-                    </md-button-toggle>
-                </md-button-toggle-group>
-                <h3 class="md-title">Usage</h3>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-         <md-button-toggle-group name="alignment">
-            <md-button-toggle value="left">
-                <md-icon>format_align_left</md-icon>
-            </md-button-toggle>
-            <md-button-toggle value="center">
-                <md-icon>format_align_center</md-icon>
-            </md-button-toggle>
-            <md-button-toggle value="right">
-                <md-icon>format_align_right</md-icon>
-            </md-button-toggle>
-            <md-button-toggle value="justify">
-                <md-icon>format_align_justify</md-icon>
-            </md-button-toggle>
-        </md-button-toggle-group>
+         <mat-button-toggle-group name="alignment">
+            <mat-button-toggle value="left">
+                <mat-icon>format_align_left</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="center">
+                <mat-icon>format_align_center</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="right">
+                <mat-icon>format_align_right</mat-icon>
+            </mat-button-toggle>
+            <mat-button-toggle value="justify">
+                <mat-icon>format_align_justify</mat-icon>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
         <div fxLayout="row" class="pad-top-md pad-bot-md"></div>
-        <md-button-toggle-group name="onOffToggle" class="on-off-toggle-group">
-            <md-button-toggle value="on" [checked]="true">
+        <mat-button-toggle-group name="onOffToggle" class="on-off-toggle-group">
+            <mat-button-toggle value="on" [checked]="true">
                 ON
-            </md-button-toggle>
-            <md-button-toggle value="off" class="off-toggle">
+            </mat-button-toggle>
+            <mat-button-toggle value="off" class="off-toggle">
                 OFF
-            </md-button-toggle>
-        </md-button-toggle-group>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
         <div fxLayout="row" class="pad-top-md pad-bot-md"></div>
-        <md-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
-            <md-button-toggle>
+        <mat-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
+            <mat-button-toggle>
                 <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                     <div class="md-display-1 pad-top-sm" fxFlex="55">34</div>
                     <div class="pad-top-sm" fxFlex="45">Assets</div>
                 </div>
-            </md-button-toggle>
-            <md-button-toggle>
+            </mat-button-toggle>
+            <mat-button-toggle>
                 <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                     <div class="md-display-1 pad-top-sm" fxFlex="55">300</div>
                     <div class="pad-top-sm" fxFlex="45">Extensions</div>
                 </div>
-            </md-button-toggle>
-            <md-button-toggle>
+            </mat-button-toggle>
+            <mat-button-toggle>
                 <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                     <div class="md-display-1 pad-top-sm" fxFlex="55">5000</div>
                     <div class="pad-top-sm" fxFlex="45">Flows</div>
                 </div>
-            </md-button-toggle>
-            <md-button-toggle>
+            </mat-button-toggle>
+            <mat-button-toggle>
                 <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                     <div class="md-display-1 pad-top-sm" fxFlex="55">0</div>
                     <div class="pad-top-sm" fxFlex="45">Certifications</div>
                 </div>
-            </md-button-toggle>
-        </md-button-toggle-group>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
         <div fxLayout="row" class="pad-top-md pad-bot-md"></div>
-        <md-button-toggle-group name="nifi-registry-administration-perspective" fxLayout="row" class="tab-toggle-group">
-            <md-button-toggle value="general" class="uppercase">
+        <mat-button-toggle-group name="nifi-registry-administration-perspective" fxLayout="row" class="tab-toggle-group">
+            <mat-button-toggle value="general" class="uppercase">
                 general
-            </md-button-toggle>
+            </mat-button-toggle>
             <div fxLayout="row" class="pad-left-md"></div>
-            <md-button-toggle value="users" class="uppercase">
+            <mat-button-toggle value="users" class="uppercase">
                 Users
-            </md-button-toggle>
+            </mat-button-toggle>
             <div fxLayout="row" class="pad-left-md"></div>
-            <md-button-toggle value="workflow" class="uppercase">
+            <mat-button-toggle value="workflow" class="uppercase">
                 Workflow
-            </md-button-toggle>
-        </md-button-toggle-group>
+            </mat-button-toggle>
+        </mat-button-toggle-group>
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Input</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Input</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <form>
                     <div layout="row" layout-margin>
-                        <md-input-container floatPlaceholder="always" flex>
-                            <input mdInput placeholder="Company (disabled)" disabled value="Google">
-                        </md-input-container>
+                        <mat-input-container floatPlaceholder="always" flex>
+                            <input matInput placeholder="Company (disabled)" disabled value="Google">
+                        </mat-input-container>
                     </div>
                     <div layout="row" layout-margin>
-                        <md-input-container floatPlaceholder="always" flex>
-                            <input mdInput disabled placeholder="First name">
-                        </md-input-container>
-                        <md-input-container flex>
-                            <input mdInput placeholder="Long Last Name That Will Be Truncated">
-                        </md-input-container>
+                        <mat-input-container floatPlaceholder="always" flex>
+                            <input matInput disabled placeholder="First name">
+                        </mat-input-container>
+                        <mat-input-container flex>
+                            <input matInput placeholder="Long Last Name That Will Be Truncated">
+                        </mat-input-container>
                     </div>
                     <div layout="row" layout-margin>
                         <div flex fxLayoutAlign="start center">
-                            <md-input-container flex>
-                                <input mdInput placeholder="Button Addon with dropdown">
-                            </md-input-container>
-                            <button class="input-button" color="fds-regular" md-raised-button [mdMenuTriggerFor]="inputButtonDropdownAddonMenu">
+                            <mat-input-container flex>
+                                <input matInput placeholder="Button Addon with dropdown">
+                            </mat-input-container>
+                            <button class="input-button" color="fds-regular" mat-raised-button [matMenuTriggerFor]="inputButtonDropdownAddonMenu">
                                 Select<i class="fa fa-caret-down" aria-hidden="true"></i>
                             </button>
-                            <md-menu x-position="before" #inputButtonDropdownAddonMenu="mdMenu" [overlapTrigger]="false">
-                                <button md-menu-item> Refresh </button>
-                                <button md-menu-item> Settings </button>
-                                <button md-menu-item> Help </button>
-                                <button md-menu-item disabled> Sign Out </button>
-                            </md-menu>
+                            <mat-menu xPosition="before" #inputButtonDropdownAddonMenu="matMenu" [overlapTrigger]="false">
+                                <button mat-menu-item> Refresh </button>
+                                <button mat-menu-item> Settings </button>
+                                <button mat-menu-item> Help </button>
+                                <button mat-menu-item disabled> Sign Out </button>
+                            </mat-menu>
                         </div>
                         <div flex fxLayoutAlign="start center">
-                            <md-input-container floatPlaceholder="always" flex>
-                                <input mdInput placeholder="Button Addon">
-                            </md-input-container>
-                            <button class="input-button" color="fds-regular" md-raised-button>
+                            <mat-input-container floatPlaceholder="always" flex>
+                                <input matInput placeholder="Button Addon">
+                            </mat-input-container>
+                            <button class="input-button" color="fds-regular" mat-raised-button>
                                 Search
                             </button>
                         </div>
                     </div>
                     <div layout="row" layout-margin>
                         <div flex fxLayoutAlign="start center">
-                            <md-input-container floatPlaceholder="always" flex>
-                                <input disabled mdInput placeholder="Button Addon with dropdown">
-                            </md-input-container>
-                            <button disabled class="input-button" color="fds-regular" md-raised-button>
+                            <mat-input-container floatPlaceholder="always" flex>
+                                <input disabled matInput placeholder="Button Addon with dropdown">
+                            </mat-input-container>
+                            <button disabled class="input-button" color="fds-regular" mat-raised-button>
                                 Select<i class="fa fa-caret-down" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div flex fxLayoutAlign="start center">
-                            <md-input-container floatPlaceholder="always" flex>
-                                <input disabled mdInput placeholder="Button Addon">
-                            </md-input-container>
-                            <button disabled class="input-button" color="fds-regular" md-raised-button>
+                            <mat-input-container floatPlaceholder="always" flex>
+                                <input disabled matInput placeholder="Button Addon">
+                            </mat-input-container>
+                            <button disabled class="input-button" color="fds-regular" mat-raised-button>
                                 Search
                             </button>
                         </div>
                     </div>
                     <div layout="row" layout-margin>
-                        <md-input-container flex>
-                            <textarea mdInput placeholder="Address" value="1600 Amphitheatre Pkway"></textarea>
-                        </md-input-container>
+                        <mat-input-container flex>
+                            <textarea matInput placeholder="Address" value="1600 Amphitheatre Pkway"></textarea>
+                        </mat-input-container>
                     </div>
                     <div layout="row" layout-margin>
-                        <md-input-container floatPlaceholder="always" flex>
-                            <textarea disabled value="Address 2 Value" mdInput placeholder="Address 2"></textarea>
-                        </md-input-container>
+                        <mat-input-container floatPlaceholder="always" flex>
+                            <textarea disabled value="Address 2 Value" matInput placeholder="Address 2"></textarea>
+                        </mat-input-container>
                     </div>
                     <div layout="row" layout-margin>
-                        <md-input-container floatPlaceholder="always" flex>
-                            <input mdInput placeholder="City">
-                        </md-input-container>
-                        <md-input-container floatPlaceholder="always" flex>
-                            <input mdInput placeholder="State">
-                        </md-input-container>
-                        <md-input-container floatPlaceholder="always" flex>
-                            <input mdInput #postalCode maxlength="5" placeholder="Postal Code" value="94043">
-                            <md-hint align="end">{{postalCode.value.length}} / 5</md-hint>
-                        </md-input-container>
+                        <mat-input-container floatPlaceholder="always" flex>
+                            <input matInput placeholder="City">
+                        </mat-input-container>
+                        <mat-input-container floatPlaceholder="always" flex>
+                            <input matInput placeholder="State">
+                        </mat-input-container>
+                        <mat-input-container floatPlaceholder="always" flex>
+                            <input matInput #postalCode maxlength="5" placeholder="Postal Code" value="94043">
+                            <mat-hint align="end">{{postalCode.value.length}} / 5</mat-hint>
+                        </mat-input-container>
                     </div>
                 </form>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
     <![CDATA[
         <!-- Inputs -->
         <form>
             <div layout="row" layout-margin>
-                <md-input-container floatPlaceholder="always" flex>
-                    <input mdInput placeholder="Company (disabled)" disabled value="Google">
-                </md-input-container>
+                <mat-input-container floatPlaceholder="always" flex>
+                    <input matInput placeholder="Company (disabled)" disabled value="Google">
+                </mat-input-container>
             </div>
             <div layout="row" layout-margin>
-                <md-input-container floatPlaceholder="always" flex>
-                    <input mdInput disabled placeholder="First name">
-                </md-input-container>
-                <md-input-container flex>
-                    <input mdInput placeholder="Long Last Name That Will Be Truncated">
-                </md-input-container>
+                <mat-input-container floatPlaceholder="always" flex>
+                    <input matInput disabled placeholder="First name">
+                </mat-input-container>
+                <mat-input-container flex>
+                    <input matInput placeholder="Long Last Name That Will Be Truncated">
+                </mat-input-container>
             </div>
             <div layout="row" layout-margin>
                 <div flex fxLayoutAlign="start center">
-                    <md-input-container flex>
-                        <input mdInput placeholder="Button Addon with dropdown">
-                    </md-input-container>
-                    <button class="input-button" color="fds-regular" md-raised-button [mdMenuTriggerFor]="inputButtonDropdownAddonMenu">
+                    <mat-input-container flex>
+                        <input matInput placeholder="Button Addon with dropdown">
+                    </mat-input-container>
+                    <button class="input-button" color="fds-regular" mat-raised-button [matMenuTriggerFor]="inputButtonDropdownAddonMenu">
                         Select<i class="fa fa-caret-down" aria-hidden="true"></i>
                     </button>
-                    <md-menu x-position="before" #inputButtonDropdownAddonMenu="mdMenu" [overlapTrigger]="false">
-                        <button md-menu-item> Refresh </button>
-                        <button md-menu-item> Settings </button>
-                        <button md-menu-item> Help </button>
-                        <button md-menu-item disabled> Sign Out </button>
-                    </md-menu>
+                    <mat-menu xPosition="before" #inputButtonDropdownAddonMenu="matMenu" [overlapTrigger]="false">
+                        <button mat-menu-item> Refresh </button>
+                        <button mat-menu-item> Settings </button>
+                        <button mat-menu-item> Help </button>
+                        <button mat-menu-item disabled> Sign Out </button>
+                    </mat-menu>
                 </div>
                 <div flex fxLayoutAlign="start center">
-                    <md-input-container floatPlaceholder="always" flex>
-                        <input mdInput placeholder="Button Addon">
-                    </md-input-container>
-                    <button class="input-button" color="fds-regular" md-raised-button>
+                    <mat-input-container floatPlaceholder="always" flex>
+                        <input matInput placeholder="Button Addon">
+                    </mat-input-container>
+                    <button class="input-button" color="fds-regular" mat-raised-button>
                         Search
                     </button>
                 </div>
             </div>
             <div layout="row" layout-margin>
                 <div flex fxLayoutAlign="start center">
-                    <md-input-container floatPlaceholder="always" flex>
-                        <input disabled mdInput placeholder="Button Addon with dropdown">
-                    </md-input-container>
-                    <button disabled class="input-button" color="fds-regular" md-raised-button>
+                    <mat-input-container floatPlaceholder="always" flex>
+                        <input disabled matInput placeholder="Button Addon with dropdown">
+                    </mat-input-container>
+                    <button disabled class="input-button" color="fds-regular" mat-raised-button>
                         Select<i class="fa fa-caret-down" aria-hidden="true"></i>
                     </button>
                 </div>
                 <div flex fxLayoutAlign="start center">
-                    <md-input-container floatPlaceholder="always" flex>
-                        <input disabled mdInput placeholder="Button Addon">
-                    </md-input-container>
-                    <button disabled class="input-button" color="fds-regular" md-raised-button>
+                    <mat-input-container floatPlaceholder="always" flex>
+                        <input disabled matInput placeholder="Button Addon">
+                    </mat-input-container>
+                    <button disabled class="input-button" color="fds-regular" mat-raised-button>
                         Search
                     </button>
                 </div>
             </div>
             <div layout="row" layout-margin>
-                <md-input-container flex>
-                    <textarea mdInput placeholder="Address" value="1600 Amphitheatre Pkway"></textarea>
-                </md-input-container>
+                <mat-input-container flex>
+                    <textarea matInput placeholder="Address" value="1600 Amphitheatre Pkway"></textarea>
+                </mat-input-container>
             </div>
             <div layout="row" layout-margin>
-                <md-input-container floatPlaceholder="always" flex>
-                    <textarea disabled value="Address 2 Value" mdInput placeholder="Address 2"></textarea>
-                </md-input-container>
+                <mat-input-container floatPlaceholder="always" flex>
+                    <textarea disabled value="Address 2 Value" matInput placeholder="Address 2"></textarea>
+                </mat-input-container>
             </div>
             <div layout="row" layout-margin>
-                <md-input-container floatPlaceholder="always" flex>
-                    <input mdInput placeholder="City">
-                </md-input-container>
-                <md-input-container floatPlaceholder="always" flex>
-                    <input mdInput placeholder="State">
-                </md-input-container>
-                <md-input-container floatPlaceholder="always" flex>
-                    <input mdInput #postalCode maxlength="5" placeholder="Postal Code" value="94043">
-                    <md-hint align="end">{{postalCode.value.length}} / 5</md-hint>
-                </md-input-container>
+                <mat-input-container floatPlaceholder="always" flex>
+                    <input matInput placeholder="City">
+                </mat-input-container>
+                <mat-input-container floatPlaceholder="always" flex>
+                    <input matInput placeholder="State">
+                </mat-input-container>
+                <mat-input-container floatPlaceholder="always" flex>
+                    <input matInput #postalCode maxlength="5" placeholder="Postal Code" value="94043">
+                    <mat-hint align="end">{{postalCode.value.length}} / 5</mat-hint>
+                </mat-input-container>
             </div>
         </form>
     ]]>
     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Tabs</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <md-tab-group dynamicHeight>
-                    <md-tab>
-                        <ng-template md-tab-label>One</ng-template>
-                        <h3 class="md-title">First tab content</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Tabs</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <mat-tab-group dynamicHeight>
+                    <mat-tab>
+                        <ng-template mat-tab-label>One</ng-template>
+                        <h3 class="mat-title">First tab content</h3>
                         <p>Plaid echo park knausgaard normcore franzen cronut. Pickled humblebrag tofu hoodie, umami salvia farm-to-table schlitz try-hard food truck knausgaard pabst. Yuccie portland jean shorts, authentic mixtape waistcoat gentrify blue bottle. Fixie kickstarter church-key small batch seitan, shabby chic vegan listicle before they sold out. Hammock raw denim flannel tousled seitan you probably haven't heard of them. Trust fund man bun pug, kickstarter artisan selvage letterpress cornhole tote bag butcher locavore. Affogato try-hard kickstarter seitan, DIY pickled hella godard pork belly four loko ugh.</p>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Two</ng-template>
-                        <h3 class="md-title">Second tab content</h3>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Two</ng-template>
+                        <h3 class="mat-title">Second tab content</h3>
                         <p>Hashtag distillery skateboard man bun gochujang, salvia man braid art party meggings heirloom kitsch farm-to-table. Franzen beard fingerstache gentrify, heirloom portland ennui XOXO microdosing kitsch plaid. Chicharrones bushwick chia, banh mi irony tattooed hammock butcher shabby chic taxidermy semiotics marfa post-ironic. Blue bottle keffiyeh farm-to-table ennui, chambray pitchfork art party pinterest artisan pop-up. Etsy banjo marfa, blue bottle kombucha crucifix XOXO tousled beard. Tilde disrupt kale chips bicycle rights skateboard master cleanse hella shoreditch, meditation retro shabby chic vice heirloom. Etsy listicle vice actually, iPhone chia hoodie four loko.</p>
-                    </md-tab>
-                </md-tab-group>
-                <h3 class="md-title">Usage</h3>
+                    </mat-tab>
+                </mat-tab-group>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <md-tab-group dynamicHeight>
-          <md-tab>
-            <ng-template md-tab-label>First tab content</ng-template>
+        <mat-tab-group dynamicHeight>
+          <mat-tab>
+            <ng-template mat-tab-label>First tab content</ng-template>
             <h1>First content</h1>
             <p>...</p>
-          </md-tab>
-          <md-tab>
-            <ng-template md-tab-label>Second tab content</ng-template>
+          </mat-tab>
+          <mat-tab>
+            <ng-template mat-tab-label>Second tab content</ng-template>
             <h1>Second tab content</h1>
             <p>...</p>
-          </md-tab>
-        </md-tab-group>
+          </mat-tab>
+        </mat-tab-group>
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Autocomplete</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Autocomplete</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <div class="pad-top-sm" layout="row">
-                    <md-input-container flex="50">
-                        <input mdInput placeholder="State" [mdAutocomplete]="tdAuto" [(ngModel)]="currentState" #modelDir="ngModel" (ngModelChange)="this.tdStates = filterStates(currentState)" [disabled]="tdDisabled">
-                    </md-input-container>
+                    <mat-input-container flex="50">
+                        <input matInput placeholder="State" [matAutocomplete]="tdAuto" [(ngModel)]="currentState" #modelDir="ngModel" (ngModelChange)="this.tdStates = filterStates(currentState)" [disabled]="tdDisabled">
+                    </mat-input-container>
                 </div>
                 <div class="push-top">
-                    <button md-button (click)="modelDir.reset()" class="text-upper">Reset</button>
-                    <button md-button (click)="currentState='California'" class="text-upper">Set value</button>
-                    <button md-button (click)="tdDisabled=!tdDisabled" class="text-upper">Toggle disabled</button>
+                    <button mat-button (click)="modelDir.reset()" class="text-upper">Reset</button>
+                    <button mat-button (click)="currentState='California'" class="text-upper">Set value</button>
+                    <button mat-button (click)="tdDisabled=!tdDisabled" class="text-upper">Toggle disabled</button>
                 </div>
-                <md-autocomplete #tdAuto="mdAutocomplete">
-                    <md-option *ngFor="let state of tdStates" [value]="state.name">
+                <mat-autocomplete #tdAuto="matAutocomplete">
+                    <mat-option *ngFor="let state of tdStates" [value]="state.name">
                         <span>{{ state.name }}</span>
                         <span class="demo-secondary-text"> ({{state.code}}) </span>
-                    </md-option>
-                </md-autocomplete>
-                <h3 class="md-title">Usage</h3>
+                    </mat-option>
+                </mat-autocomplete>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
         <div class="pad-top-sm" layout="row">
-            <md-input-container flex="50">
-                <input mdInput placeholder="State" [mdAutocomplete]="tdAuto" [(ngModel)]="currentState" #modelDir="ngModel" (ngModelChange)="this.tdStates = filterStates(currentState)" [disabled]="tdDisabled">
-            </md-input-container>
+            <mat-input-container flex="50">
+                <input matInput placeholder="State" [matAutocomplete]="tdAuto" [(ngModel)]="currentState" #modelDir="ngModel" (ngModelChange)="this.tdStates = filterStates(currentState)" [disabled]="tdDisabled">
+            </mat-input-container>
         </div>
         <div class="push-top">
-            <button md-button (click)="modelDir.reset()" class="text-upper">Reset</button>
-            <button md-button (click)="currentState='California'" class="text-upper">Set value</button>
-            <button md-button (click)="tdDisabled=!tdDisabled" class="text-upper">Toggle disabled</button>
+            <button mat-button (click)="modelDir.reset()" class="text-upper">Reset</button>
+            <button mat-button (click)="currentState='California'" class="text-upper">Set value</button>
+            <button mat-button (click)="tdDisabled=!tdDisabled" class="text-upper">Toggle disabled</button>
         </div>
-        <md-autocomplete #tdAuto="mdAutocomplete">
-            <md-option *ngFor="let state of tdStates" [value]="state.name">
+        <mat-autocomplete #tdAuto="matAutocomplete">
+            <mat-option *ngFor="let state of tdStates" [value]="state.name">
                 <span>{ { state.name } }</span>
                 <span class="demo-secondary-text"> ({ {state.code} }) </span>
-            </md-option>
-        </md-autocomplete>
+            </mat-option>
+        </mat-autocomplete>
         ]]>
       </pre>
                 <p>Javascript:</p>
@@ -743,72 +743,25 @@ limitations under the License.
         ...
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Chips</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <h3 class="md-title">Chips (with colors)</h3>
-                <md-chip-list>
-                    <md-chip *ngFor="let chip of chips" [selected]="chip.selected" color="{{chip.color}}">
-                        {{chip.name}}<i class="fa fa-times" aria-hidden="true"></i>
-                    </md-chip>
-                </md-chip-list>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <h3 class="md-title">Chip Stacked (with colors)</h3>
-                <div layout-gt-xs="row">
-                    <md-chip-list flex-gt-xs="50" class="mat-chip-list-stacked">
-                        <md-chip *ngFor="let chip of chips" [selected]="chip.selected" color="{{chip.color}}">
-                            {{chip.name}}<i class="fa fa-times" aria-hidden="true"></i>
-                        </md-chip>
-                    </md-chip-list>
-                </div>
-                <h3 class="md-title">Usage</h3>
-                <p>HTML:</p>
-                <pre lang="html">
-      <![CDATA[
-        <md-chip-list>
-            <md-chip *ngFor="let chip of chips" [selected]="chip.selected" color="{ {chip.color} }">
-                { {chip.name} }<i class="fa fa-times" aria-hidden="true"></i>
-            </md-chip>
-        </md-chip-list>
-        ]]>
-      </pre>
-                <p>Javascript:</p>
-                <pre lang="javascript">
-      <![CDATA[
-        chips: [
-            { name: 'Default', color: '', selected: false },
-            { name: 'Default (selected)', color: '', selected: true },
-            { name: 'Primary', color: 'primary', selected: false },
-            { name: 'Primary (selected)', color: 'primary', selected: true },
-            { name: 'Accent', color: 'accent', selected: false },
-            { name: 'Accent (selected)', color: 'accent', selected: true },
-            { name: 'Warn', color: 'warn', selected: false },
-            { name: 'Warn (selected)', color: 'warn', selected: true },
-        ];
-        ]]>
-      </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Filter</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <h3 class="md-title">Autocomplete with chips and no custom inputs</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-tab-group md-stretch-tabs dynamicHeight>
-                    <md-tab>
-                        <ng-template md-tab-label>Demo</ng-template>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Filter</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <h3 class="mat-title">Autocomplete with chips and no custom inputs</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-tab-group mat-stretch-tabs dynamicHeight>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Demo</ng-template>
                         <div class="push">
-                            <div class="md-body-1">Type and select a preset option:</div>
+                            <div class="mat-body-1">Type and select a preset option:</div>
                             <td-chips [items]="items" [(ngModel)]="itemsRequireMatch" placeholder="Enter autocomplete strings" [readOnly]="readOnly" requireMatch></td-chips>
                         </div>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Code</ng-template>
-                        <md-card-content>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Code</ng-template>
+                        <mat-card-content>
                             <p>HTML:</p>
                             <pre lang="html">
                             <![CDATA[
@@ -845,28 +798,28 @@ limitations under the License.
         ...
           ]]>
                         </pre>
-                        </md-card-content>
-                    </md-tab>
-                </md-tab-group>
-                <md-divider></md-divider>
-                <md-card-actions>
-                    <button md-button color="primary" (click)="toggleReadOnly()" class="text-upper">Toggle ReadOnly</button>
-                </md-card-actions>
-            </md-card-content>
-            <md-card-content>
-                <h3 class="md-title">Autocomplete with custom inputs</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-tab-group md-stretch-tabs dynamicHeight>
-                    <md-tab>
-                        <ng-template md-tab-label>Demo</ng-template>
+                        </mat-card-content>
+                    </mat-tab>
+                </mat-tab-group>
+                <mat-divider></mat-divider>
+                <mat-card-actions>
+                    <button mat-button color="primary" (click)="toggleReadOnly()" class="text-upper">Toggle ReadOnly</button>
+                </mat-card-actions>
+            </mat-card-content>
+            <mat-card-content>
+                <h3 class="mat-title">Autocomplete with custom inputs</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-tab-group mat-stretch-tabs dynamicHeight>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Demo</ng-template>
                         <div class="push">
-                            <div class="md-body-1">Type and select option or enter custom text and press enter:</div>
+                            <div class="mat-body-1">Type and select option or enter custom text and press enter:</div>
                             <td-chips [items]="items" placeholder="Enter any string"></td-chips>
                         </div>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Code</ng-template>
-                        <md-card-content>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Code</ng-template>
+                        <mat-card-content>
                             <p>HTML:</p>
                             <pre lang="html">
                             <![CDATA[
@@ -891,88 +844,88 @@ limitations under the License.
         ];
           ]]>
                         </pre>
-                        </md-card-content>
-                    </md-tab>
-                </md-tab-group>
-            </md-card-content>
-            <md-card-content>
-                <h3 class="md-title">Demo allowing custom inputs for tags</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-tab-group md-stretch-tabs dynamicHeight>
-                    <md-tab>
-                        <ng-template md-tab-label>Demo</ng-template>
+                        </mat-card-content>
+                    </mat-tab>
+                </mat-tab-group>
+            </mat-card-content>
+            <mat-card-content>
+                <h3 class="mat-title">Demo allowing custom inputs for tags</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-tab-group mat-stretch-tabs dynamicHeight>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Demo</ng-template>
                         <div class="push">
-                            <div class="md-body-1">Type any test and press enter:</div>
+                            <div class="mat-body-1">Type any test and press enter:</div>
                             <td-chips placeholder="Enter any string"></td-chips>
                         </div>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Code</ng-template>
-                        <md-card-content>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Code</ng-template>
+                        <mat-card-content>
                             <p>HTML:</p>
                             <pre lang="html">
                             <![CDATA[
         <td-chips placeholder="Enter any string"></td-chips>
           ]]>
                         </pre>
-                        </md-card-content>
-                    </md-tab>
-                </md-tab-group>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Searchable/Filterable Expansion Panels</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <md-tab-group md-stretch-tabs>
-                    <md-tab>
-                        <ng-template md-tab-label>Demo</ng-template>
+                        </mat-card-content>
+                    </mat-tab>
+                </mat-tab-group>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Searchable/Filterable Expansion Panels</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <mat-tab-group mat-stretch-tabs>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Demo</ng-template>
                         <div class="pad-top-md pad-bottom-md pad-right-xxl pad-left-xxl">
                             <div class="pad-top-md pad-bottom-sm">
-                                <md-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
-                                    <md-button-toggle (change)="toggleDropletsFilter('type:asset')" [checked]="isDropletFilterChecked('type:asset')">
+                                <mat-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('type:asset')" [checked]="isDropletFilterChecked('type:asset')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletTypeCount('asset')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Assets</div>
                                         </div>
-                                    </md-button-toggle>
-                                    <md-button-toggle (change)="toggleDropletsFilter('type:extension')" [checked]="isDropletFilterChecked('type:extension')">
+                                    </mat-button-toggle>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('type:extension')" [checked]="isDropletFilterChecked('type:extension')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletTypeCount('extension')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Extensions</div>
                                         </div>
-                                    </md-button-toggle>
-                                    <md-button-toggle (change)="toggleDropletsFilter('type:flow')" [checked]="isDropletFilterChecked('type:flow')">
+                                    </mat-button-toggle>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('type:flow')" [checked]="isDropletFilterChecked('type:flow')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletTypeCount('flow')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Flows</div>
                                         </div>
-                                    </md-button-toggle>
-                                    <md-button-toggle (change)="toggleDropletsFilter('compliant.label:Compliant')" [checked]="isDropletFilterChecked('compliant.label:Compliant')">
+                                    </mat-button-toggle>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('compliant.label:Compliant')" [checked]="isDropletFilterChecked('compliant.label:Compliant')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletCertificationCount('compliant')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Compliant</div>
                                         </div>
-                                    </md-button-toggle>
-                                    <md-button-toggle (change)="toggleDropletsFilter('fleet.label:Fleet')" [checked]="isDropletFilterChecked('fleet.label:Fleet')">
+                                    </mat-button-toggle>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('fleet.label:Fleet')" [checked]="isDropletFilterChecked('fleet.label:Fleet')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletCertificationCount('fleet')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Fleet</div>
                                         </div>
-                                    </md-button-toggle>
-                                    <md-button-toggle (change)="toggleDropletsFilter('prod.label:Production Ready')" [checked]="isDropletFilterChecked('prod.label:Production Ready')">
+                                    </mat-button-toggle>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('prod.label:Production Ready')" [checked]="isDropletFilterChecked('prod.label:Production Ready')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletCertificationCount('prod')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Production Ready</div>
                                         </div>
-                                    </md-button-toggle>
-                                    <md-button-toggle (change)="toggleDropletsFilter('secure.label:Secure')" [checked]="isDropletFilterChecked('secure.label:Secure')">
+                                    </mat-button-toggle>
+                                    <mat-button-toggle (change)="toggleDropletsFilter('secure.label:Secure')" [checked]="isDropletFilterChecked('secure.label:Secure')">
                                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                                             <div class="md-display-1 pad-top-sm" fxFlex="55">{{getDropletCertificationCount('secure')}}</div>
                                             <div class="pad-top-sm" fxFlex="45">Secure</div>
                                         </div>
-                                    </md-button-toggle>
-                                </md-button-toggle-group>
+                                    </mat-button-toggle>
+                                </mat-button-toggle-group>
                                 <div id="nf-registry-droplet-filter-clear-grouping-button-container">
                                     <span *ngIf="dropletsSearchTerms.length > 0" (click)="dropletsSearchTerms = [];filterDroplets(activeColumn.name, activeColumn.sortOrder);"><i class="fa fa-plus-circle fa-rotate-45" aria-hidden="true"></i><span class="pad-left-sm link">Clear Grouping</span></span>
                                 </div>
@@ -980,16 +933,16 @@ limitations under the License.
                             <div layout="row" layout-align="space-between center">
                                 <div flex fxLayout="row" fxLayoutAlign="end center">
                                     <td-chips [(ngModel)]="dropletsSearchTerms" [items]="autoCompleteDroplets" (add)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" (remove)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" class="push-right-sm"></td-chips>
-                                    <span class="pad-right-sm">Sort by:</span>
-                                    <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="dropletGridSortMenu">
+                                    <span class="push-top-sm pad-right-sm">Sort by:</span>
+                                    <button class="push-top-sm" color="fds-primary" mat-raised-button [matMenuTriggerFor]="dropletGridSortMenu">
                                         {{getSortBy()}}<i class="fa fa-caret-down" aria-hidden="true"></i>
                                     </button>
                                 </div>
-                                <md-menu class="fds-primary-dropdown-button-menu" #dropletGridSortMenu="mdMenu" [overlapTrigger]="false">
+                                <mat-menu class="fds-primary-dropdown-button-menu" #dropletGridSortMenu="matMenu" [overlapTrigger]="false">
                                     <div *ngFor="let column of dropletColumns">
-                                        <button md-menu-item *ngIf="column.sortable" (click)="sortDroplets(column);">{{column.label}} {{(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'}}</button>
+                                        <button mat-menu-item *ngIf="column.sortable" (click)="sortDroplets(column);">{{column.label}} {{(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'}}</button>
                                     </div>
-                                </md-menu>
+                                </mat-menu>
                             </div>
                         </div>
                         <div class="pad-right-xxl pad-left-xxl">
@@ -997,7 +950,7 @@ limitations under the License.
                                 <td-expansion-panel class="mat-elevation-z5" label={{droplet.label}} sublabel={{droplet.sublabel}} [disabled]="disabled">
                                     <ng-template td-expansion-panel-label>
                                         <div fxLayout="column" fxLayoutAlign="space-between start">
-                                            <span class="md-title capitalize">{{droplet.displayName}}</span>
+                                            <span class="mat-title capitalize">{{droplet.displayName}}</span>
                                             <span class="md-subhead">{{droplet.type}}</span>
                                         </div>
                                     </ng-template>
@@ -1017,17 +970,17 @@ limitations under the License.
                                             </div>
                                         </div>
                                     </ng-template>
-                                    <div class="md-padding">
+                                    <div class="mat-padding">
                                         <div fxLayout="column" fxLayoutAlign="space-between stretch">
                                             <div class="pad-bottom-sm" fxLayout="row" fxLayoutAlign="end center">
-                                                <button color="fds-primary" [mdMenuTriggerFor]="primaryButtonDropdownMenu" md-raised-button>
+                                                <button color="fds-primary" [matMenuTriggerFor]="primaryButtonDropdownMenu" mat-raised-button>
                                                     Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
                                                 </button>
-                                                <md-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="mdMenu" [overlapTrigger]="false">
-                                                    <button md-menu-item *ngFor="let action of droplet.actions">
+                                                <mat-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="matMenu" [overlapTrigger]="false">
+                                                    <button mat-menu-item *ngFor="let action of droplet.actions">
                                                         <span>{{action.name}}</span>
                                                     </button>
-                                                </md-menu>
+                                                </mat-menu>
                                             </div>
                                             <div fxLayout="row">
                                                 <div fxFlex="25">
@@ -1035,11 +988,11 @@ limitations under the License.
                                                     <p>Blah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah bla</p>
                                                 </div>
                                                 <div fxFlex="50">
-                                                    <md-card fxFlex>
-                                                        <md-card-content class="pad-top-sm">
+                                                    <mat-card fxFlex>
+                                                        <mat-card-content class="pad-top-sm">
                                                             <img src="{{droplet.img}}">
-                                                        </md-card-content>
-                                                    </md-card>
+                                                        </mat-card-content>
+                                                    </mat-card>
                                                 </div>
                                                 <div fxFlex="25">
                                                     <span class="uppercase">Change Log</span>
@@ -1051,73 +1004,73 @@ limitations under the License.
                                 <div class="pad-bottom-sm"></div>
                             </div>
                         </div>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Code</ng-template>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Code</ng-template>
                         <p>HTML:</p>
                         <pre lang="html">
                         <![CDATA[
         <div class="pad-top-md pad-bottom-md pad-right-xxl pad-left-xxl">
             <div class="pad-top-md pad-bottom-sm">
-                <md-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
-                    <md-button-toggle (change)="toggleDropletsFilter('type:asset')" [checked]="isDropletFilterChecked('type:asset')">
+                <mat-button-toggle-group fxLayout="row" fxLayoutAlign="space-between center" class="expansion-panel-filter-toggle-group" multiple>
+                    <mat-button-toggle (change)="toggleDropletsFilter('type:asset')" [checked]="isDropletFilterChecked('type:asset')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletTypeCount('asset')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Assets</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle (change)="toggleDropletsFilter('type:extension')" [checked]="isDropletFilterChecked('type:extension')">
+                    </mat-button-toggle>
+                    <mat-button-toggle (change)="toggleDropletsFilter('type:extension')" [checked]="isDropletFilterChecked('type:extension')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletTypeCount('extension')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Extensions</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle (change)="toggleDropletsFilter('type:flow')" [checked]="isDropletFilterChecked('type:flow')">
+                    </mat-button-toggle>
+                    <mat-button-toggle (change)="toggleDropletsFilter('type:flow')" [checked]="isDropletFilterChecked('type:flow')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletTypeCount('flow')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Flows</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle (change)="toggleDropletsFilter('compliant.label:Compliant')" [checked]="isDropletFilterChecked('compliant.label:Compliant')">
+                    </mat-button-toggle>
+                    <mat-button-toggle (change)="toggleDropletsFilter('compliant.label:Compliant')" [checked]="isDropletFilterChecked('compliant.label:Compliant')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletCertificationCount('compliant')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Compliant</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle (change)="toggleDropletsFilter('fleet.label:Fleet')" [checked]="isDropletFilterChecked('fleet.label:Fleet')">
+                    </mat-button-toggle>
+                    <mat-button-toggle (change)="toggleDropletsFilter('fleet.label:Fleet')" [checked]="isDropletFilterChecked('fleet.label:Fleet')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletCertificationCount('fleet')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Fleet</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle (change)="toggleDropletsFilter('prod.label:Production Ready')" [checked]="isDropletFilterChecked('prod.label:Production Ready')">
+                    </mat-button-toggle>
+                    <mat-button-toggle (change)="toggleDropletsFilter('prod.label:Production Ready')" [checked]="isDropletFilterChecked('prod.label:Production Ready')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletCertificationCount('prod')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Production Ready</div>
                         </div>
-                    </md-button-toggle>
-                    <md-button-toggle (change)="toggleDropletsFilter('secure.label:Secure')" [checked]="isDropletFilterChecked('secure.label:Secure')">
+                    </mat-button-toggle>
+                    <mat-button-toggle (change)="toggleDropletsFilter('secure.label:Secure')" [checked]="isDropletFilterChecked('secure.label:Secure')">
                         <div fxFlex fxLayout="column" fxLayoutAlign="space-around stretch">
                             <div class="md-display-1 pad-top-sm" fxFlex="55">{ {getDropletCertificationCount('secure')} }</div>
                             <div class="pad-top-sm" fxFlex="45">Secure</div>
                         </div>
-                    </md-button-toggle>
-                </md-button-toggle-group>
-                <button *ngIf="activeColumn" md-button color="primary" (click)="dropletsSearchTerms = [];filterDroplets(activeColumn.name, activeColumn.sortOrder);">Clear Grouping</button>
+                    </mat-button-toggle>
+                </mat-button-toggle-group>
+                <button *ngIf="activeColumn" mat-button color="primary" (click)="dropletsSearchTerms = [];filterDroplets(activeColumn.name, activeColumn.sortOrder);">Clear Grouping</button>
             </div>
             <div layout="row" layout-align="space-between center">
                 <div flex fxLayout="row" fxLayoutAlign="end center">
                     <td-chips [(ngModel)]="dropletsSearchTerms" [items]="autoCompleteDroplets" (add)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" (remove)="nfRegistryService.filterDroplets(nfRegistryService.activeDropletColumn.name, nfRegistryService.activeDropletColumn.sortOrder);" class="push-right-sm"></td-chips>
                     <span class="pad-right-sm">Sort by:</span>
-                    <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="dropletGridSortMenu">
+                    <button color="fds-primary" mat-raised-button [matMenuTriggerFor]="dropletGridSortMenu">
                         { {getSortBy()} }<i class="fa fa-caret-down" aria-hidden="true"></i>
                     </button>
                 </div>
-                <md-menu class="fds-primary-dropdown-button-menu" #dropletGridSortMenu="mdMenu" [overlapTrigger]="false">
+                <mat-menu class="fds-primary-dropdown-button-menu" #dropletGridSortMenu="matMenu" [overlapTrigger]="false">
                     <div *ngFor="let column of dropletColumns">
-                        <button md-menu-item *ngIf="column.sortable" (click)="sortDroplets(column);">{ {column.label} } { {(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'} }</button>
+                        <button mat-menu-item *ngIf="column.sortable" (click)="sortDroplets(column);">{ {column.label} } { {(column.sortOrder === 'ASC') ? 'DESC' : 'ASC'} }</button>
                     </div>
-                </md-menu>
+                </mat-menu>
             </div>
         </div>
         <div class="pad-right-xxl pad-left-xxl">
@@ -1125,7 +1078,7 @@ limitations under the License.
                 <td-expansion-panel class="mat-elevation-z5" label={ {droplet.label} } sublabel={ {droplet.sublabel} } [disabled]="disabled">
                     <ng-template td-expansion-panel-label>
                         <div fxLayout="column" fxLayoutAlign="space-between start">
-                            <span class="md-title capitalize">{ {droplet.displayName} }</span>
+                            <span class="mat-title capitalize">{ {droplet.displayName} }</span>
                             <span class="md-subhead">{ {droplet.type} }</span>
                         </div>
                     </ng-template>
@@ -1145,17 +1098,17 @@ limitations under the License.
                             </div>
                         </div>
                     </ng-template>
-                    <div class="md-padding">
+                    <div class="mat-padding">
                         <div fxLayout="column" fxLayoutAlign="space-between stretch">
                             <div class="pad-bottom-sm" fxLayout="row" fxLayoutAlign="end center">
-                                <button color="fds-primary" [mdMenuTriggerFor]="primaryButtonDropdownMenu" md-raised-button>
+                                <button color="fds-primary" [matMenuTriggerFor]="primaryButtonDropdownMenu" mat-raised-button>
                                     Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
                                 </button>
-                                <md-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="mdMenu" [overlapTrigger]="false">
-                                    <button md-menu-item *ngFor="let action of droplet.actions">
+                                <mat-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="matMenu" [overlapTrigger]="false">
+                                    <button mat-menu-item *ngFor="let action of droplet.actions">
                                         <span>{ {action.name} }</span>
                                     </button>
-                                </md-menu>
+                                </mat-menu>
                             </div>
                             <div fxLayout="row">
                                 <div fxFlex="25">
@@ -1163,11 +1116,11 @@ limitations under the License.
                                     <p>Blah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah blaBlah blah bla, bla bla, blah blah bla</p>
                                 </div>
                                 <div fxFlex="50">
-                                    <md-card fxFlex>
-                                        <md-card-content class="pad-top-sm">
+                                    <mat-card fxFlex>
+                                        <mat-card-content class="pad-top-sm">
                                             <img src="{ {droplet.img} }">
-                                        </md-card-content>
-                                    </md-card>
+                                        </mat-card-content>
+                                    </mat-card>
                                 </div>
                                 <div fxFlex="25">
                                     <span class="uppercase">Change Log</span>
@@ -1478,44 +1431,44 @@ limitations under the License.
         ...
           ]]>
                     </pre>
-                    </md-tab>
-                </md-tab-group>
-            </md-card-content>
-            <md-divider class="pad-bottom-sm"></md-divider>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Table</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+                    </mat-tab>
+                </mat-tab-group>
+            </mat-card-content>
+            <mat-divider class="pad-bottom-sm"></mat-divider>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Table</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <p>Example table with: Paging Bar / Filter / Sortable Columns / Multi-select with available Actions</p>
-                <md-tab-group md-stretch-tabs>
-                    <md-tab>
-                        <ng-template md-tab-label>Demo</ng-template>
+                <mat-tab-group mat-stretch-tabs>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Demo</ng-template>
                         <div layout="row" layout-align="space-between center" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
                             <span class="table-title">
                             <span>Table title</span>
                             </span>
                             <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
                                 <td-chips [items]="autoCompleteData" (add)="searchAdd($event)" (remove)="searchRemove($event)"></td-chips>
-                                <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="dataTableActionMenu">
+                                <button class="push-top-sm" color="fds-primary" mat-raised-button [matMenuTriggerFor]="dataTableActionMenu">
                                     Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
                                 </button>
                             </div>
-                            <md-menu class="fds-primary-dropdown-button-menu" #dataTableActionMenu="mdMenu" [overlapTrigger]="false">
-                                <button md-menu-item> Option 1 </button>
-                                <button md-menu-item> Option 2 </button>
-                            </md-menu>
+                            <mat-menu class="fds-primary-dropdown-button-menu" #dataTableActionMenu="matMenu" [overlapTrigger]="false">
+                                <button mat-menu-item> Option 1 </button>
+                                <button mat-menu-item> Option 2 </button>
+                            </mat-menu>
                         </div>
                         <div class="pad-left-md pad-right-md">
                             <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table">
-                                <div class="td-data-table-column" (click)="sort($event, column)" [mdTooltip]="column.tooltip" *ngFor="let column of columns" fxFlex="{{column.width}}">
-                                    {{column.label}}
+                                <div class="td-data-table-column" (click)="sort($event, column)" [matTooltip]="column.tooltip" *ngFor="let column of columns" fxFlex="{{column.width}}">
                                     <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up" aria-hidden="true"></i>
                                     <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'" class="fa fa-caret-down" aria-hidden="true"></i>
+                                    {{column.label}}
                                 </div>
                                 <div class="td-data-table-column" fxFlex=10>
                                     <div fxLayout="row" fxLayoutAlign="end center">
-                                        <md-checkbox class="pad-left-sm" [(ngModel)]="allRowsSelected" (checked)="allRowsSelected" (change)="toggleSelectAll()"></md-checkbox>
+                                        <mat-checkbox class="pad-left-sm" [(ngModel)]="allRowsSelected" (checked)="allRowsSelected" (change)="toggleSelectAll()"></mat-checkbox>
                                     </div>
                                 </div>
                             </div>
@@ -1529,40 +1482,40 @@ limitations under the License.
                                     <div class="td-data-table-cell" fxFlex=10>
                                         <div *ngIf="row.actions">
                                             <div *ngIf="row.actions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
-                                                <button (click)="row.checked = !row.checked" *ngFor="let action of row.actions" mdTooltip="{{action.tooltip}}" md-icon-button color="accent" [disabled]="action.disabled ? '' : null">
+                                                <button (click)="row.checked = !row.checked" *ngFor="let action of row.actions" matTooltip="{{action.tooltip}}" mat-icon-button color="accent" [disabled]="action.disabled ? '' : null">
                                                     <i class="{{action.icon}}" aria-hidden="true"></i>
                                                 </button>
-                                                <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></md-checkbox>
+                                                <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></mat-checkbox>
                                             </div>
                                             <div *ngIf="row.actions.length > 4" fxLayout="row" fxLayoutAlign="end center">
-                                                <button (click)="row.checked = !row.checked" mdTooltip="Actions" md-icon-button color="accent" [mdMenuTriggerFor]="tableActionMenu">
+                                                <button (click)="row.checked = !row.checked" matTooltip="Actions" mat-icon-button color="accent" [matMenuTriggerFor]="tableActionMenu">
                                                     <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                                                 </button>
-                                                <md-menu #tableActionMenu="mdMenu" [overlapTrigger]="false">
-                                                    <button *ngFor="let action of row.actions" mdTooltip="{{action.tooltip}}" md-menu-item [disabled]="action.disabled ? '' : null">
+                                                <mat-menu #tableActionMenu="matMenu" [overlapTrigger]="false">
+                                                    <button *ngFor="let action of row.actions" matTooltip="{{action.tooltip}}" mat-menu-item [disabled]="action.disabled ? '' : null">
                                                         <i class="{{action.icon}}" aria-hidden="true"></i>
                                                         <span>{{action.name}}</span>
                                                     </button>
-                                                </md-menu>
-                                                <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></md-checkbox>
+                                                </mat-menu>
+                                                <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></mat-checkbox>
                                             </div>
                                         </div>
                                         <div *ngIf="!row.actions" fxLayout="row" fxLayoutAlign="end center">
-                                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></md-checkbox>
+                                            <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></mat-checkbox>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="md-padding" *ngIf="!filteredData.length > 0" layout="row" layout-align="center center">
+                            <div class="mat-padding" *ngIf="!filteredData.length > 0" layout="row" layout-align="center center">
                                 <h3>No results to display.</h3>
                             </div>
-                            <td-paging-bar #pagingBar [pageSizeAll]="true" [pageSizes]="[1, 2, 5, 50, 100, 200, 500, 1000, 2000]" [initialPage]="1" [pageSize]="pageSize" [total]="pageCount" (change)="page($event)">
-                                <span td-paging-bar-label hide-xs>Row per page:</span> {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+                            <td-paging-bar #pagingBar [initialPage]="1" [pageSize]="pageSize" [total]="pageCount" (change)="page($event)">
+                                <span hide-xs>Row per page:</span> {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
                             </td-paging-bar>
                         </div>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Code</ng-template>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Code</ng-template>
                         <p>HTML:</p>
                         <pre lang="html">
                         <![CDATA[
@@ -1572,25 +1525,25 @@ limitations under the License.
             </span>
             <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
                 <td-chips [items]="autoCompleteData" (add)="searchAdd($event)" (remove)="searchRemove($event)"></td-chips>
-                <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="dataTableActionMenu">
+                <button color="fds-primary" mat-raised-button [matMenuTriggerFor]="dataTableActionMenu">
                     Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
                 </button>
             </div>
-            <md-menu class="fds-primary-dropdown-button-menu" #dataTableActionMenu="mdMenu" [overlapTrigger]="false">
-                <button md-menu-item> Option 1 </button>
-                <button md-menu-item> Option 2 </button>
-            </md-menu>
+            <mat-menu class="fds-primary-dropdown-button-menu" #dataTableActionMenu="matMenu" [overlapTrigger]="false">
+                <button mat-menu-item> Option 1 </button>
+                <button mat-menu-item> Option 2 </button>
+            </mat-menu>
         </div>
         <div class="pad-left-md pad-right-md">
             <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table">
-                <div class="td-data-table-column" (click)="sort($event, column)" [mdTooltip]="column.tooltip" *ngFor="let column of columns" fxFlex="{ { column.width } }">
+                <div class="td-data-table-column" (click)="sort($event, column)" [matTooltip]="column.tooltip" *ngFor="let column of columns" fxFlex="{ { column.width } }">
                     { { column.label } }
                     <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up" aria-hidden="true"></i>
                     <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'" class="fa fa-caret-down" aria-hidden="true"></i>
                 </div>
                 <div class="td-data-table-column" fxFlex=10>
                     <div fxLayout="row" fxLayoutAlign="end center">
-                        <md-checkbox class="pad-left-sm" [(ngModel)]="allRowsSelected" (checked)="allRowsSelected" (change)="toggleSelectAll()"></md-checkbox>
+                        <mat-checkbox class="pad-left-sm" [(ngModel)]="allRowsSelected" (checked)="allRowsSelected" (change)="toggleSelectAll()"></mat-checkbox>
                     </div>
                 </div>
             </div>
@@ -1604,35 +1557,35 @@ limitations under the License.
                     <div class="td-data-table-cell" fxFlex=10>
                         <div *ngIf="row.actions">
                             <div *ngIf="row.actions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
-                                <button (click)="row.checked = !row.checked" *ngFor="let action of row.actions" mdTooltip="{ { action.tooltip } }" md-icon-button color="accent" [disabled]="action.disabled ? '' : null">
+                                <button (click)="row.checked = !row.checked" *ngFor="let action of row.actions" matTooltip="{ { action.tooltip } }" mat-icon-button color="accent" [disabled]="action.disabled ? '' : null">
                                     <i class="{ { action.icon } }" aria-hidden="true"></i>
                                 </button>
-                                <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></md-checkbox>
+                                <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></mat-checkbox>
                             </div>
                             <div *ngIf="row.actions.length > 4" fxLayout="row" fxLayoutAlign="end center">
-                                <button (click)="row.checked = !row.checked" mdTooltip="Actions" md-icon-button color="accent" [mdMenuTriggerFor]="tableActionMenu">
+                                <button (click)="row.checked = !row.checked" matTooltip="Actions" mat-icon-button color="accent" [matMenuTriggerFor]="tableActionMenu">
                                     <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                                 </button>
-                                <md-menu #tableActionMenu="mdMenu" [overlapTrigger]="false">
-                                    <button *ngFor="let action of row.actions" mdTooltip="{ { action.tooltip } }" md-menu-item [disabled]="action.disabled ? '' : null">
+                                <mat-menu #tableActionMenu="matMenu" [overlapTrigger]="false">
+                                    <button *ngFor="let action of row.actions" matTooltip="{ { action.tooltip } }" mat-menu-item [disabled]="action.disabled ? '' : null">
                                         <i class="{ { action.icon } }" aria-hidden="true"></i>
                                         <span>{ { action.name } }</span>
                                     </button>
-                                </md-menu>
-                                <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></md-checkbox>
+                                </mat-menu>
+                                <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></mat-checkbox>
                             </div>
                         </div>
                         <div *ngIf="!row.actions" fxLayout="row" fxLayoutAlign="end center">
-                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></md-checkbox>
+                            <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked" (change)="toggleSelect(row)" (click)="row.checked = !row.checked;toggleSelect(row)"></mat-checkbox>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="md-padding" *ngIf="!filteredData.length > 0" layout="row" layout-align="center center">
+            <div class="mat-padding" *ngIf="!filteredData.length > 0" layout="row" layout-align="center center">
                 <h3>No results to display.</h3>
             </div>
-            <td-paging-bar #pagingBar [pageSizeAll]="true" [pageSizes]="[1, 2, 5, 50, 100, 200, 500, 1000, 2000]" [initialPage]="1" [pageSize]="pageSize" [total]="pageCount" (change)="page($event)">
-                <span td-paging-bar-label hide-xs>Row per page:</span> { { pagingBar.range } } <span hide-xs>of { { pagingBar.total } }</span>
+            <td-paging-bar #pagingBar [initialPage]="1" [pageSize]="pageSize" [total]="pageCount" (change)="page($event)">
+                <span hide-xs>Row per page:</span> { { pagingBar.range } } <span hide-xs>of { { pagingBar.total } }</span>
             </td-paging-bar>
         </div>
           ]]>
@@ -2030,37 +1983,37 @@ limitations under the License.
         ...
           ]]>
                     </pre>
-                    </md-tab>
-                </md-tab-group>
-            </md-card-content>
-            <md-divider class="pad-bottom-sm"></md-divider>
-            <md-card-actions>
-                <button mdTooltip="Column field name tooltips toggle." md-button color="primary" (click)="toggleTooltips()" class="text-upper">
+                    </mat-tab>
+                </mat-tab-group>
+            </mat-card-content>
+            <mat-divider class="pad-bottom-sm"></mat-divider>
+            <mat-card-actions>
+                <button matTooltip="Column field name tooltips toggle." mat-button color="primary" (click)="toggleTooltips()" class="text-upper">
                     Tooltips ({{areTooltipsOn() ? 'ON' : 'OFF'}})
                 </button>
-            </md-card-actions>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Checkbox</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <h3 class="md-title">Basic Usage</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-list>
-                    <md-list-item *ngFor="let grocery of groceries">
-                        <md-checkbox [checked]="grocery.bought">
+            </mat-card-actions>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Checkbox</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <h3 class="mat-title">Basic Usage</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-list>
+                    <mat-list-item *ngFor="let grocery of groceries">
+                        <mat-checkbox [checked]="grocery.bought">
                             {{grocery.name}}
-                        </md-checkbox>
-                    </md-list-item>
-                </md-list>
-                <h3 class="md-title">Usage</h3>
+                        </mat-checkbox>
+                    </mat-list-item>
+                </mat-list>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
                         <![CDATA[
         <!-- Basic Usage -->
-        <md-checkbox [checked]="grocery.bought">
+        <mat-checkbox [checked]="grocery.bought">
             { {grocery.name} }
-        </md-checkbox>
+        </mat-checkbox>
                         ]]>
                     </pre>
                 <p>Javascript:</p>
@@ -2078,40 +2031,40 @@ limitations under the License.
         }, ];
                         ]]>
                     </pre>
-                <h3 class="md-title">Usage within Forms</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
+                <h3 class="mat-title">Usage within Forms</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
                 <form>
                     <div layout="row" layout-align="start center">
-                        <md-checkbox flex="initial" [(ngModel)]="user.agreesToTOS" name="agreesToTOS">
+                        <mat-checkbox flex="initial" [(ngModel)]="user.agreesToTOS" name="agreesToTOS">
                             I agree to the terms
-                        </md-checkbox>
-                        <button md-raised-button color="fds-secondary" [disabled]="!user.agreesToTOS" class="pad-right-sm" class="text-upper">Sign Up</button>
+                        </mat-checkbox>
+                        <button mat-raised-button color="fds-secondary" [disabled]="!user.agreesToTOS" class="pad-right-sm" class="text-upper">Sign Up</button>
                     </div>
-                    <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                    <md-checkbox labelPosition="after">
+                    <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                    <mat-checkbox labelPosition="after">
                         I come after my label.
-                    </md-checkbox>
-                    <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                    <md-checkbox labelPosition="before">I come before my label</md-checkbox>
+                    </mat-checkbox>
+                    <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                    <mat-checkbox labelPosition="before">I come before my label</mat-checkbox>
                 </form>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
         <![CDATA[
         <!-- Usage within Forms -->
         <form>
             <div layout="row" layout-align="start center">
-                <md-checkbox flex="initial" [(ngModel)]="user.agreesToTOS" name="agreesToTOS">
+                <mat-checkbox flex="initial" [(ngModel)]="user.agreesToTOS" name="agreesToTOS">
                     I agree to the terms
-                </md-checkbox>
-                <button md-raised-button color="fds-secondary" [disabled]="!user.agreesToTOS" class="pad-right-sm" class="text-upper">Sign Up</button>
+                </mat-checkbox>
+                <button mat-raised-button color="fds-secondary" [disabled]="!user.agreesToTOS" class="pad-right-sm" class="text-upper">Sign Up</button>
             </div>
-            <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-            <md-checkbox labelPosition="after">
+            <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+            <mat-checkbox labelPosition="after">
                 I come after my label.
-            </md-checkbox>
-            <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-            <md-checkbox labelPosition="before">I come before my label</md-checkbox>
+            </mat-checkbox>
+            <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+            <mat-checkbox labelPosition="before">I come before my label</mat-checkbox>
         </form>
         ]]>
         </pre>
@@ -2123,54 +2076,54 @@ limitations under the License.
         };
                         ]]>
                     </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Radios</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content layout="row">
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Radios</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content layout="row">
                 <div flex="48" class="pad-right">
                     <!-- Basic Radios -->
-                    <h3 class="md-title">Basic Radios</h3>
-                    <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                    <md-radio-group name="group1">
-                        <md-radio-button class="pad-right-sm" name="group1">Option 1 </md-radio-button>
-                        <md-radio-button class="pad-right-sm" name="group1">Option 2 </md-radio-button>
-                        <md-radio-button class="pad-right-sm" name="group1" disabled="true">Option 3 (disabled) </md-radio-button>
-                    </md-radio-group>
-                    <h3 class="md-title">Usage</h3>
+                    <h3 class="mat-title">Basic Radios</h3>
+                    <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                    <mat-radio-group name="group1">
+                        <mat-radio-button class="pad-right-sm" name="group1">Option 1 </mat-radio-button>
+                        <mat-radio-button class="pad-right-sm" name="group1">Option 2 </mat-radio-button>
+                        <mat-radio-button class="pad-right-sm" name="group1" disabled="true">Option 3 (disabled) </mat-radio-button>
+                    </mat-radio-group>
+                    <h3 class="mat-title">Usage</h3>
                     <p>HTML:</p>
                     <pre lang="html">
                 <![CDATA[
         <!-- Basic Radios -->
-        <md-radio-group name="group1">
-            <md-radio-button class="pad-right-sm" name="group1">Option 1 </md-radio-button>
-            <md-radio-button class="pad-right-sm" name="group1">Option 2 </md-radio-button>
-            <md-radio-button class="pad-right-sm" name="group1" disabled="true">Option 3 (disabled) </md-radio-button>
-        </md-radio-group>
+        <mat-radio-group name="group1">
+            <mat-radio-button class="pad-right-sm" name="group1">Option 1 </mat-radio-button>
+            <mat-radio-button class="pad-right-sm" name="group1">Option 2 </mat-radio-button>
+            <mat-radio-button class="pad-right-sm" name="group1" disabled="true">Option 3 (disabled) </mat-radio-button>
+        </mat-radio-group>
         ]]>
         </pre>
                 </div>
                 <div flex="48">
                     <!-- Dynamic Radios -->
-                    <h3 class="md-title">Dynamic Radios</h3>
-                    <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                    <md-radio-group name="more_options" [(ngModel)]="favoriteSeason">
-                        <md-radio-button class="fds-radio pad-right-sm" *ngFor="let season of seasonOptions" name="more_options" [value]="season">
+                    <h3 class="mat-title">Dynamic Radios</h3>
+                    <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                    <mat-radio-group name="more_options" [(ngModel)]="favoriteSeason">
+                        <mat-radio-button class="fds-radio pad-right-sm" *ngFor="let season of seasonOptions" name="more_options" [value]="season">
                             {{season}}
-                        </md-radio-button>
-                    </md-radio-group>
+                        </mat-radio-button>
+                    </mat-radio-group>
                     <p>Your favorite season is: <strong>{{favoriteSeason}}</strong></p>
-                    <h3 class="md-title">Usage</h3>
+                    <h3 class="mat-title">Usage</h3>
                     <p>HTML:</p>
                     <pre lang="html">
       <![CDATA[
         <!-- Dynamic Radios -->
-        <md-radio-group name="more_options" [(ngModel)]="favoriteSeason">
-          <md-radio-button class="fds-radio" *ngFor="let season of seasonOptions" name="more_options" [value]="season">
+        <mat-radio-group name="more_options" [(ngModel)]="favoriteSeason">
+          <mat-radio-button class="fds-radio" *ngFor="let season of seasonOptions" name="more_options" [value]="season">
             { {season} }
-          </md-radio-button>
-        </md-radio-group>
+          </mat-radio-button>
+        </mat-radio-group>
         <p>Your favorite season is: <strong>{ { favoriteSeason } }</strong></p>
       ]]>
       </pre>
@@ -2189,183 +2142,183 @@ limitations under the License.
       ]]>
       </pre>
                 </div>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Tooltips</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <button md-raised-button color="fds-primary" mdTooltip="I show above" mdTooltipPosition="above" class="text-upper">Above Tooltip</button>
-                <button md-raised-button color="fds-primary" mdTooltip="I show after" mdTooltipPosition="after" class="text-upper">After Tooltip</button>
-                <button md-raised-button color="fds-primary" mdTooltip="I show below" mdTooltipPosition="below" class="text-upper">Below Tooltip</button>
-                <button md-raised-button color="fds-primary" mdTooltip="I show before" mdTooltipPosition="before" class="text-upper">Before Tooltip</button>
-                <h3 class="md-title">Usage</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Tooltips</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <button mat-raised-button color="fds-primary" matTooltip="I show above" matTooltipPosition="above" class="text-upper">Above Tooltip</button>
+                <button mat-raised-button color="fds-primary" matTooltip="I show after" matTooltipPosition="after" class="text-upper">After Tooltip</button>
+                <button mat-raised-button color="fds-primary" matTooltip="I show below" matTooltipPosition="below" class="text-upper">Below Tooltip</button>
+                <button mat-raised-button color="fds-primary" matTooltip="I show before" matTooltipPosition="before" class="text-upper">Before Tooltip</button>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <button md-raised-button color="fds-primary" mdTooltip="I show above" mdTooltipPosition="above" class="text-upper">Bottom Tooltip</button>
-        <button md-raised-button color="fds-primary" mdTooltip="I show after" mdTooltipPosition="after" class="text-upper">Bottom Tooltip</button>
-        <button md-raised-button color="fds-primary" mdTooltip="I show below" mdTooltipPosition="below" class="text-upper">Bottom Tooltip</button>
-        <button md-raised-button color="fds-primary" mdTooltip="I show before" mdTooltipPosition="before" class="text-upper">Bottom Tooltip</button>
+        <button mat-raised-button color="fds-primary" matTooltip="I show above" matTooltipPosition="above" class="text-upper">Bottom Tooltip</button>
+        <button mat-raised-button color="fds-primary" matTooltip="I show after" matTooltipPosition="after" class="text-upper">Bottom Tooltip</button>
+        <button mat-raised-button color="fds-primary" matTooltip="I show below" matTooltipPosition="below" class="text-upper">Bottom Tooltip</button>
+        <button mat-raised-button color="fds-primary" matTooltip="I show before" matTooltipPosition="before" class="text-upper">Bottom Tooltip</button>
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Panels</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <h3 class="md-title">Standard Card</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-card>
-                    <button class="fds-panel-menu-button" mdTooltip="Standard Card Menu" md-icon-button [mdMenuTriggerFor]="standardCardMenu">
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Panels</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <h3 class="mat-title">Standard Card</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-card>
+                    <button class="fds-panel-menu-button" matTooltip="Standard Card Menu" mat-icon-button [matMenuTriggerFor]="standardCardMenu">
                         <i class="fa fa-ellipsis-v " aria-hidden="true"></i>
                     </button>
-                    <md-menu class="primary-icon-button-menu" #standardCardMenu="mdMenu" [overlapTrigger]="false">
-                        <button md-menu-item>
+                    <mat-menu class="primary-icon-button-menu" #standardCardMenu="matMenu" [overlapTrigger]="false">
+                        <button mat-menu-item>
                             <span>Option1</span>
                         </button>
-                        <button md-menu-item>
+                        <button mat-menu-item>
                             <span>Option2</span>
                         </button>
-                    </md-menu>
-                    <md-card-title class="pad-bottom-sm">
+                    </mat-menu>
+                    <mat-card-title class="pad-bottom-sm">
                         <span>Title</span>
-                    </md-card-title>
-                    <md-card-content>
+                    </mat-card-title>
+                    <mat-card-content>
                         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do tempor incididunt ut labore et dolore magna aliqua. Ut enim ad</p>
-                    </md-card-content>
-                    <md-card-actions fxLayout="row" fxLayoutAlign="end center">
-                        <button md-raised-button color="fds-primary" class="text-upper">Action</button>
-                    </md-card-actions>
-                </md-card>
-                <h3 class="md-title">Usage</h3>
+                    </mat-card-content>
+                    <mat-card-actions fxLayout="row" fxLayoutAlign="end center">
+                        <button mat-raised-button color="fds-primary" class="text-upper">Action</button>
+                    </mat-card-actions>
+                </mat-card>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
                 <![CDATA[
         <!-- Basic Card -->
-        <md-card>
-            <button class="fds-panel-menu-button" mdTooltip="Standard Card Menu" md-icon-button [mdMenuTriggerFor]="standardCardMenu">
+        <mat-card>
+            <button class="fds-panel-menu-button" matTooltip="Standard Card Menu" mat-icon-button [matMenuTriggerFor]="standardCardMenu">
                 <i class="fa fa-ellipsis-v " aria-hidden="true"></i>
             </button>
-            <md-menu class="primary-icon-button-menu" #standardCardMenu="mdMenu" [overlapTrigger]="false">
-                <button md-menu-item>
+            <mat-menu class="primary-icon-button-menu" #standardCardMenu="matMenu" [overlapTrigger]="false">
+                <button mat-menu-item>
                     <span>Option1</span>
                 </button>
-                <button md-menu-item>
+                <button mat-menu-item>
                     <span>Option2</span>
                 </button>
-            </md-menu>
-            <md-card-title class="pad-bottom-sm">
+            </mat-menu>
+            <mat-card-title class="pad-bottom-sm">
                 <span>Title</span>
-            </md-card-title>
-            <md-card-content>
+            </mat-card-title>
+            <mat-card-content>
                 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do tempor incididunt ut labore et dolore magna aliqua. Ut enim ad</p>
-            </md-card-content>
-            <md-card-actions fxLayout="row" fxLayoutAlign="end center">
-                <button md-raised-button color="fds-primary" class="text-upper">Action</button>
-            </md-card-actions>
-        </md-card>
+            </mat-card-content>
+            <mat-card-actions fxLayout="row" fxLayoutAlign="end center">
+                <button mat-raised-button color="fds-primary" class="text-upper">Action</button>
+            </mat-card-actions>
+        </mat-card>
     ]]>
             </pre>
-                <h3 class="md-title">Tabbed Card</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-card>
-                    <button class="fds-panel-menu-button" mdTooltip="Standard Card Menu" md-icon-button [mdMenuTriggerFor]="standardCardMenu">
+                <h3 class="mat-title">Tabbed Card</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-card>
+                    <button class="fds-panel-menu-button" matTooltip="Standard Card Menu" mat-icon-button [matMenuTriggerFor]="standardCardMenu">
                         <i class="fa fa-ellipsis-v " aria-hidden="true"></i>
                     </button>
-                    <md-menu class="primary-icon-button-menu" #standardCardMenu="mdMenu" [overlapTrigger]="false">
-                        <button md-menu-item>
+                    <mat-menu class="primary-icon-button-menu" #standardCardMenu="matMenu" [overlapTrigger]="false">
+                        <button mat-menu-item>
                             <span>Option1</span>
                         </button>
-                        <button md-menu-item>
+                        <button mat-menu-item>
                             <span>Option2</span>
                         </button>
-                    </md-menu>
-                    <md-card-content>
-                        <md-tab-group dynamicHeight>
-                            <md-tab>
-                                <ng-template md-tab-label>One</ng-template>
-                                <h3 class="md-title">First tab content</h3>
+                    </mat-menu>
+                    <mat-card-content>
+                        <mat-tab-group dynamicHeight>
+                            <mat-tab>
+                                <ng-template mat-tab-label>One</ng-template>
+                                <h3 class="mat-title">First tab content</h3>
                                 <p>Plaid echo park knausgaard normcore franzen cronut. Pickled humblebrag tofu hoodie, umami salvia farm-to-table schlitz try-hard food truck knausgaard pabst. Yuccie portland jean shorts, authentic mixtape waistcoat gentrify blue bottle. Fixie kickstarter church-key small batch seitan, shabby chic vegan listicle before they sold out. Hammock raw denim flannel tousled seitan you probably haven't heard of them. Trust fund man bun pug, kickstarter artisan selvage letterpress cornhole tote bag butcher locavore. Affogato try-hard kickstarter seitan, DIY pickled hella godard pork belly four loko ugh.</p>
-                            </md-tab>
-                            <md-tab>
-                                <ng-template md-tab-label>Two</ng-template>
-                                <h3 class="md-title">Second tab content</h3>
+                            </mat-tab>
+                            <mat-tab>
+                                <ng-template mat-tab-label>Two</ng-template>
+                                <h3 class="mat-title">Second tab content</h3>
                                 <p>Hashtag distillery skateboard man bun gochujang, salvia man braid art party meggings heirloom kitsch farm-to-table. Franzen beard fingerstache gentrify, heirloom portland ennui XOXO microdosing kitsch plaid. Chicharrones bushwick chia, banh mi irony tattooed hammock butcher shabby chic taxidermy semiotics marfa post-ironic. Blue bottle keffiyeh farm-to-table ennui, chambray pitchfork art party pinterest artisan pop-up. Etsy banjo marfa, blue bottle kombucha crucifix XOXO tousled beard. Tilde disrupt kale chips bicycle rights skateboard master cleanse hella shoreditch, meditation retro shabby chic vice heirloom. Etsy listicle vice actually, iPhone chia hoodie four loko.</p>
-                            </md-tab>
-                        </md-tab-group>
-                    </md-card-content>
-                    <md-card-actions fxLayout="row" fxLayoutAlign="end center">
-                        <button md-raised-button color="fds-primary" class="text-upper">Action</button>
-                    </md-card-actions>
-                </md-card>
-                <h3 class="md-title">Usage</h3>
+                            </mat-tab>
+                        </mat-tab-group>
+                    </mat-card-content>
+                    <mat-card-actions fxLayout="row" fxLayoutAlign="end center">
+                        <button mat-raised-button color="fds-primary" class="text-upper">Action</button>
+                    </mat-card-actions>
+                </mat-card>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
                 <![CDATA[
         <!-- Basic Card -->
-        <md-card>
-            <button class="fds-panel-menu-button" mdTooltip="Standard Card Menu" md-icon-button [mdMenuTriggerFor]="standardCardMenu">
+        <mat-card>
+            <button class="fds-panel-menu-button" matTooltip="Standard Card Menu" mat-icon-button [matMenuTriggerFor]="standardCardMenu">
                 <i class="fa fa-ellipsis-v " aria-hidden="true"></i>
             </button>
-            <md-menu class="primary-icon-button-menu" #standardCardMenu="mdMenu" [overlapTrigger]="false">
-                <button md-menu-item>
+            <mat-menu class="primary-icon-button-menu" #standardCardMenu="matMenu" [overlapTrigger]="false">
+                <button mat-menu-item>
                     <span>Option1</span>
                 </button>
-                <button md-menu-item>
+                <button mat-menu-item>
                     <span>Option2</span>
                 </button>
-            </md-menu>
-            <md-card-content>
-                <md-tab-group dynamicHeight>
-                    <md-tab>
-                        <ng-template md-tab-label>One</ng-template>
-                        <h3 class="md-title">First tab content</h3>
+            </mat-menu>
+            <mat-card-content>
+                <mat-tab-group dynamicHeight>
+                    <mat-tab>
+                        <ng-template mat-tab-label>One</ng-template>
+                        <h3 class="mat-title">First tab content</h3>
                         <p>Plaid echo park knausgaard normcore franzen cronut. Pickled humblebrag tofu hoodie, umami salvia farm-to-table schlitz try-hard food truck knausgaard pabst. Yuccie portland jean shorts, authentic mixtape waistcoat gentrify blue bottle. Fixie kickstarter church-key small batch seitan, shabby chic vegan listicle before they sold out. Hammock raw denim flannel tousled seitan you probably haven't heard of them. Trust fund man bun pug, kickstarter artisan selvage letterpress cornhole tote bag butcher locavore. Affogato try-hard kickstarter seitan, DIY pickled hella godard pork belly four loko ugh.</p>
-                    </md-tab>
-                    <md-tab>
-                        <ng-template md-tab-label>Two</ng-template>
-                        <h3 class="md-title">Second tab content</h3>
+                    </mat-tab>
+                    <mat-tab>
+                        <ng-template mat-tab-label>Two</ng-template>
+                        <h3 class="mat-title">Second tab content</h3>
                         <p>Hashtag distillery skateboard man bun gochujang, salvia man braid art party meggings heirloom kitsch farm-to-table. Franzen beard fingerstache gentrify, heirloom portland ennui XOXO microdosing kitsch plaid. Chicharrones bushwick chia, banh mi irony tattooed hammock butcher shabby chic taxidermy semiotics marfa post-ironic. Blue bottle keffiyeh farm-to-table ennui, chambray pitchfork art party pinterest artisan pop-up. Etsy banjo marfa, blue bottle kombucha crucifix XOXO tousled beard. Tilde disrupt kale chips bicycle rights skateboard master cleanse hella shoreditch, meditation retro shabby chic vice heirloom. Etsy listicle vice actually, iPhone chia hoodie four loko.</p>
-                    </md-tab>
-                </md-tab-group>
-            </md-card-content>
-            <md-card-actions fxLayout="row" fxLayoutAlign="end center">
-                <button md-raised-button color="fds-primary" class="text-upper">Action</button>
-            </md-card-actions>
-        </md-card>
+                    </mat-tab>
+                </mat-tab-group>
+            </mat-card-content>
+            <mat-card-actions fxLayout="row" fxLayoutAlign="end center">
+                <button mat-raised-button color="fds-primary" class="text-upper">Action</button>
+            </mat-card-actions>
+        </mat-card>
     ]]>
             </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Select</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Select</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <form>
                     <div layout="row" layout-margin>
-                        <md-select color="accent" floatPlaceholder="never" placeholder="Favorite food" [(ngModel)]="selectedValue" name="food">
-                            <md-option *ngFor="let food of foods" [value]="food.value">
+                        <mat-select color="accent" floatPlaceholder="never" placeholder="Favorite food" [(ngModel)]="selectedValue" name="food">
+                            <mat-option *ngFor="let food of foods" [value]="food.value">
                                 {{food.viewValue}}
-                            </md-option>
-                        </md-select>
+                            </mat-option>
+                        </mat-select>
                     </div>
                     <div layout="row" layout-margin>
                         <div flex> Selected food value: {{selectedValue}} </div>
                     </div>
                 </form>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
         <form>
             <div layout="row" layout-margin>
-                <md-select color="accent" floatPlaceholder="never" placeholder="Favorite food" [(ngModel)]="selectedValue" name="food">
-                    <md-option *ngFor="let food of foods" [value]="food.value">
+                <mat-select color="accent" floatPlaceholder="never" placeholder="Favorite food" [(ngModel)]="selectedValue" name="food">
+                    <mat-option *ngFor="let food of foods" [value]="food.value">
                         { {food.viewValue} }
-                    </md-option>
-                </md-select>
+                    </mat-option>
+                </mat-select>
             </div>
             <div layout="row" layout-margin>
                 <div flex> Selected food value: { {selectedValue} } </div>
@@ -2385,140 +2338,140 @@ limitations under the License.
         ];
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Menus (dropdowns)</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <button md-icon-button [mdMenuTriggerFor]="menu">
-                    <md-icon>more_vert</md-icon>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Menus (dropdowns)</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <button mat-icon-button [matMenuTriggerFor]="menu">
+                    <mat-icon>more_vert</mat-icon>
                 </button>
-                <md-menu #menu="mdMenu">
-                    <button md-menu-item> Refresh </button>
-                    <button md-menu-item> Settings </button>
-                    <button md-menu-item> Help </button>
-                    <button md-menu-item disabled> Sign Out </button>
-                </md-menu>
-                <button color="fds-regular" md-raised-button [mdMenuTriggerFor]="posXMenu">
+                <mat-menu #menu="matMenu">
+                    <button mat-menu-item> Refresh </button>
+                    <button mat-menu-item> Settings </button>
+                    <button mat-menu-item> Help </button>
+                    <button mat-menu-item disabled> Sign Out </button>
+                </mat-menu>
+                <button color="fds-regular" mat-raised-button [matMenuTriggerFor]="posXMenu">
                     Before<i class="fa fa-caret-down" aria-hidden="true"></i>
                 </button>
-                <md-menu x-position="before" #posXMenu="mdMenu">
-                    <button md-menu-item> Refresh </button>
-                    <button md-menu-item> Settings </button>
-                    <button md-menu-item> Help </button>
-                    <button md-menu-item disabled> Sign Out </button>
-                </md-menu>
-                <button color="fds-regular" md-raised-button [mdMenuTriggerFor]="aboveMenu">
+                <mat-menu xPosition="before" #posXMenu="matMenu">
+                    <button mat-menu-item> Refresh </button>
+                    <button mat-menu-item> Settings </button>
+                    <button mat-menu-item> Help </button>
+                    <button mat-menu-item disabled> Sign Out </button>
+                </mat-menu>
+                <button color="fds-regular" mat-raised-button [matMenuTriggerFor]="aboveMenu">
                     Above<i class="fa fa-caret-down" aria-hidden="true"></i>
                 </button>
-                <md-menu y-position="above" #aboveMenu="mdMenu">
-                    <button md-menu-item> Refresh </button>
-                    <button md-menu-item> Settings </button>
-                    <button md-menu-item> Help </button>
-                    <button md-menu-item disabled> Sign Out </button>
-                </md-menu>
-                <button color="fds-regular" md-raised-button [mdMenuTriggerFor]="iconsMenu">
+                <mat-menu yPosition="above" #aboveMenu="matMenu">
+                    <button mat-menu-item> Refresh </button>
+                    <button mat-menu-item> Settings </button>
+                    <button mat-menu-item> Help </button>
+                    <button mat-menu-item disabled> Sign Out </button>
+                </mat-menu>
+                <button color="fds-regular" mat-raised-button [matMenuTriggerFor]="iconsMenu">
                     Icons in Menu<i class="fa fa-caret-down" aria-hidden="true"></i>
                 </button>
-                <md-menu #iconsMenu="mdMenu" [overlapTrigger]="false">
-                    <button md-menu-item>
-                        <md-icon>dialpad</md-icon>
+                <mat-menu #iconsMenu="matMenu" [overlapTrigger]="false">
+                    <button mat-menu-item>
+                        <mat-icon>dialpad</mat-icon>
                         <span>Redial</span>
                     </button>
-                    <button md-menu-item disabled>
-                        <md-icon>voicemail</md-icon>
+                    <button mat-menu-item disabled>
+                        <mat-icon>voicemail</mat-icon>
                         <span>Check voicemail</span>
                     </button>
-                    <button md-menu-item>
-                        <md-icon>notifications_off</md-icon>
+                    <button mat-menu-item>
+                        <mat-icon>notifications_off</mat-icon>
                         <span>Disable alerts</span>
                     </button>
-                </md-menu>
-                <button color="fds-primary" [mdMenuTriggerFor]="primaryButtonDropdownMenu" md-raised-button>
+                </mat-menu>
+                <button color="fds-primary" [matMenuTriggerFor]="primaryButtonDropdownMenu" mat-raised-button>
                     FDS Primary<i class="fa fa-caret-down" aria-hidden="true"></i>
                 </button>
-                <md-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="mdMenu" [overlapTrigger]="false">
-                    <button md-menu-item>
+                <mat-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="matMenu" [overlapTrigger]="false">
+                    <button mat-menu-item>
                         <span>Option 1</span>
                     </button>
-                    <button md-menu-item disabled>
+                    <button mat-menu-item disabled>
                         <span>Option 2</span>
                     </button>
-                </md-menu>
-                <h3 class="md-title">Usage</h3>
+                </mat-menu>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <button md-icon-button [mdMenuTriggerFor]="menu">
-            <md-icon>more_vert</md-icon>
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+            <mat-icon>more_vert</mat-icon>
         </button>
-        <md-menu #menu="mdMenu">
-            <button md-menu-item> Refresh </button>
-            <button md-menu-item> Settings </button>
-            <button md-menu-item> Help </button>
-            <button md-menu-item disabled> Sign Out </button>
-        </md-menu>
-        <button color="fds-regular" md-raised-button [mdMenuTriggerFor]="posXMenu">
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item> Refresh </button>
+            <button mat-menu-item> Settings </button>
+            <button mat-menu-item> Help </button>
+            <button mat-menu-item disabled> Sign Out </button>
+        </mat-menu>
+        <button color="fds-regular" mat-raised-button [matMenuTriggerFor]="posXMenu">
             Before<i class="fa fa-caret-down" aria-hidden="true"></i>
         </button>
-        <md-menu x-position="before" #posXMenu="mdMenu">
-            <button md-menu-item> Refresh </button>
-            <button md-menu-item> Settings </button>
-            <button md-menu-item> Help </button>
-            <button md-menu-item disabled> Sign Out </button>
-        </md-menu>
-        <button color="fds-regular" md-raised-button [mdMenuTriggerFor]="aboveMenu">
+        <mat-menu xPosition="before" #posXMenu="matMenu">
+            <button mat-menu-item> Refresh </button>
+            <button mat-menu-item> Settings </button>
+            <button mat-menu-item> Help </button>
+            <button mat-menu-item disabled> Sign Out </button>
+        </mat-menu>
+        <button color="fds-regular" mat-raised-button [matMenuTriggerFor]="aboveMenu">
             Above<i class="fa fa-caret-down" aria-hidden="true"></i>
         </button>
-        <md-menu y-position="above" #aboveMenu="mdMenu">
-            <button md-menu-item> Refresh </button>
-            <button md-menu-item> Settings </button>
-            <button md-menu-item> Help </button>
-            <button md-menu-item disabled> Sign Out </button>
-        </md-menu>
-        <button color="fds-regular" md-raised-button [mdMenuTriggerFor]="iconsMenu">
+        <mat-menu yPosition="above" #aboveMenu="matMenu">
+            <button mat-menu-item> Refresh </button>
+            <button mat-menu-item> Settings </button>
+            <button mat-menu-item> Help </button>
+            <button mat-menu-item disabled> Sign Out </button>
+        </mat-menu>
+        <button color="fds-regular" mat-raised-button [matMenuTriggerFor]="iconsMenu">
             Icons in Menu<i class="fa fa-caret-down" aria-hidden="true"></i>
         </button>
-        <md-menu #iconsMenu="mdMenu" [overlapTrigger]="false">
-            <button md-menu-item>
-                <md-icon>dialpad</md-icon>
+        <mat-menu #iconsMenu="matMenu" [overlapTrigger]="false">
+            <button mat-menu-item>
+                <mat-icon>dialpad</mat-icon>
                 <span>Redial</span>
             </button>
-            <button md-menu-item disabled>
-                <md-icon>voicemail</md-icon>
+            <button mat-menu-item disabled>
+                <mat-icon>voicemail</mat-icon>
                 <span>Check voicemail</span>
             </button>
-            <button md-menu-item>
-                <md-icon>notifications_off</md-icon>
+            <button mat-menu-item>
+                <mat-icon>notifications_off</mat-icon>
                 <span>Disable alerts</span>
             </button>
-        </md-menu>
-        <button color="fds-primary" [mdMenuTriggerFor]="primaryButtonDropdownMenu" md-raised-button>
+        </mat-menu>
+        <button color="fds-primary" [matMenuTriggerFor]="primaryButtonDropdownMenu" mat-raised-button>
             FDS Primary<i class="fa fa-caret-down" aria-hidden="true"></i>
         </button>
-        <md-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="mdMenu" [overlapTrigger]="false">
-            <button md-menu-item>
+        <mat-menu class="fds-primary-dropdown-button-menu" #primaryButtonDropdownMenu="matMenu" [overlapTrigger]="false">
+            <button mat-menu-item>
                 <span>Option 1</span>
             </button>
-            <button md-menu-item disabled>
+            <button mat-menu-item disabled>
                 <span>Option 2</span>
             </button>
-        </md-menu>
+        </mat-menu>
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Dialog</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <button md-raised-button color="fds-primary" (click)="openDialog()">Show simple dialog</button>
-                <h3 class="md-title">Usage</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Dialog</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <button mat-raised-button color="fds-primary" (click)="openDialog()">Show simple dialog</button>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <button md-raised-button color="fds-primary" (click)="openDialog()">Show simple dialog</button>
+        <button mat-raised-button color="fds-primary" (click)="openDialog()">Show simple dialog</button>
       ]]>
     </pre>
                 <p>Javascript:</p>
@@ -2538,8 +2491,8 @@ limitations under the License.
 
         ...
 
-        constructor(MdDialog) {
-            this.dialog = MdDialog;
+        constructor(MatDialog) {
+            this.dialog = MatDialog;
         }
 
         ...
@@ -2555,20 +2508,20 @@ limitations under the License.
 
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Simple Dialogs</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Simple Dialogs</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <div class="pad-left-sm">
-                    <button md-raised-button color="fds-primary" (click)="openConfirm()" class="text-upper">Open Confirm</button>
+                    <button mat-raised-button color="fds-primary" (click)="openConfirm()" class="text-upper">Open Confirm</button>
                 </div>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <button md-button color="primary" (click)="openConfirm()" class="text-upper">Open Confirm</button>
+        <button mat-button color="primary" (click)="openConfirm()" class="text-upper">Open Confirm</button>
         ]]>
       </pre>
                 <p>Javascript:</p>
@@ -2594,18 +2547,24 @@ limitations under the License.
         ...
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Snack Bar</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <button md-raised-button color="fds-primary" (click)="showSnackBar()">Show Snack Bar</button>
-                <h3 class="md-title">Usage</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Snack Bars</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <button mat-raised-button color="fds-primary" (click)="showSuccessSnackBar()">Success Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showWarnSnackBar()">Warning Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showErrorSnackBar()">Error Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showRegularSnackBar()">Regular Snack Bar</button>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <button md-raised-button color="fds-primary" (click)="showSnackBar()">Show Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showSuccessSnackBar()">Success Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showWarnSnackBar()">Warning Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showErrorSnackBar()">Error Snack Bar</button>
+                <button mat-raised-button color="fds-primary" (click)="showRegularSnackBar()">Regular Snack Bar</button>
       ]]>
     </pre>
                 <p>Javascript:</p>
@@ -2613,146 +2572,142 @@ limitations under the License.
       <![CDATA[
         ...
 
-        constructor(MdSnackBar) {
-            this.snackBarService = MdSnackBar;
+        constructor(FdsSnackBarService) {
+            this.snackBarService = FdsSnackBarService;
         },
 
         ...
 
-        showSnackBar: function(){
-          var snackBarRef = this.snackBarService.open('Message', 'Action', { duration: 3000 });
-        }
+        /** Possible values for horizontalPosition on MatSnackBarConfig are 'start' | 'center' | 'end' | 'left' | 'right'. */
+        /** Possible values for verticalPosition on MatSnackBarConfig are 'top' | 'bottom'. */
+        /** Possible values for icon on MatSnackBarConfig are any available icons loaded on the page. */
+
+        showSuccessSnackBar: function () {
+            var snackBarRef = this.snackBarService.openCoaster({
+                title: 'Success',
+                message: 'Some help text regarding the successful event.',
+                verticalPosition: 'top',
+                horizontalPosition: 'right',
+                icon: 'fa fa-check-circle-o',
+                color: '#1EB475',
+                duration: 3000
+            });
+        },
+
+        showWarnSnackBar: function () {
+            var snackBarRef = this.snackBarService.openCoaster({
+                title: 'Warning',
+                message: 'Some help text regarding the warning.',
+                verticalPosition: 'top',
+                horizontalPosition: 'left',
+                icon: 'fa fa-exclamation-triangle',
+                color: '#E98A40',
+                duration: 3000
+            });
+        },
+
+        showErrorSnackBar: function () {
+            var snackBarRef = this.snackBarService.openCoaster({
+                title: 'Error',
+                message: 'Some help text regarding the critical error. This coaster will stay open until closed with the `x` or if another coaster is created.',
+                verticalPosition: 'bottom',
+                horizontalPosition: 'right',
+                icon: 'fa fa-times-circle-o',
+                color: '#EF6162'
+            });
+        },
+
+        showRegularSnackBar: function () {
+            var snackBarRef = this.snackBarService.openCoaster({
+                title: 'Regular',
+                message: 'Something interesting.',
+                verticalPosition: 'bottom',
+                horizontalPosition: 'left',
+                color: '#808793',
+                duration: 3000
+            });
+        },
 
         ...
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Expansion Panels</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Expansion Panels</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <p>Expand/Collapse Event for Expansion 1: {{expandCollapseExpansion1Msg}}</p>
                 <div>
-                    <button md-button color="primary" (click)="toggleDisabled()" class="text-upper">Toggle disable</button>
-                    <button md-button color="primary" (click)="toggleExpansion1()" class="text-upper">Toggle first</button>
+                    <button mat-button color="primary" (click)="toggleDisabled()" class="text-upper">Toggle disable</button>
+                    <button mat-button color="primary" (click)="toggleExpansion1()" class="text-upper">Toggle first</button>
                 </div>
                 <div layout-gt-xs="row" layout-align-gt-xs="center start">
                     <div flex-gt-xs="90">
                         <td-expansion-panel label="Google" sublabel="1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA" [expand]="expansion1" [disabled]="disabled" (expanded)="expandExpansion1Event()" (collapsed)="collapseExpansion1Event()">
                             <td-expansion-summary>
-                                <md-list>
-                                    <md-list-item>
-                                        <md-icon md-list-avatar>pin_drop</md-icon>
-                                        <h3 md-line>Google</h3>
-                                        <h4 md-line>Headquarters</h4>
-                                        <p md-line>
+                                <mat-list>
+                                    <mat-list-item>
+                                        <mat-icon mat-list-avatar>pin_drop</mat-icon>
+                                        <h3 mat-line>Google</h3>
+                                        <h4 mat-line>Headquarters</h4>
+                                        <p mat-line>
                                             1600 Amphitheatre Pkwy
                                             <br/>Mountain View, CA 94043, USA
                                         </p>
-                                    </md-list-item>
-                                </md-list>
+                                    </mat-list-item>
+                                </mat-list>
                             </td-expansion-summary>
-                            <div class="md-padding">
-                                <form class="md-padding" layout="column">
-                                    <md-input-container flex>
-                                        <input mdInput placeholder="Company (disabled)" disabled value="Google" />
-                                    </md-input-container>
-                                    <md-input-container flex>
-                                        <textarea mdInput placeholder="Description" rows="4"></textarea>
-                                    </md-input-container>
+                            <div class="mat-padding">
+                                <form class="mat-padding" layout="column">
+                                    <mat-input-container flex>
+                                        <input matInput placeholder="Company (disabled)" disabled value="Google" />
+                                    </mat-input-container>
+                                    <mat-input-container flex>
+                                        <textarea matInput placeholder="Description" rows="4"></textarea>
+                                    </mat-input-container>
                                 </form>
-                                <md-divider></md-divider>
+                                <mat-divider></mat-divider>
                                 <div layout="row" layout-margin layout-align="end center">
-                                    <button md-button class="text-upper">Cancel</button>
-                                    <button md-button color="accent" class="text-upper">Save</button>
+                                    <button mat-button class="text-upper">Cancel</button>
+                                    <button mat-button color="accent" class="text-upper">Save</button>
                                 </div>
-                            </div>
-                        </td-expansion-panel>
-                        <td-expansion-panel label="Label goes here" sublabel="sublabel goes here" [disabled]="disabled">
-                            <div class="md-padding">
-                                <h3 class="md-subhead">md-padding class</h3>
-                                <div>Demo 1</div>
-                                <div>Demo 2</div>
-                                <div>Demo 3</div>
-                                <div>Demo 4</div>
-                            </div>
-                        </td-expansion-panel>
-                        <td-expansion-panel label="Label goes here" sublabel="sublabel goes here" [disabled]="disabled">
-                            <ng-template td-expansion-panel-label>
-                                <md-icon>star</md-icon>
-                                <span>Custom Label (template)</span>
-                            </ng-template>
-                            <ng-template td-expansion-panel-sublabel>
-                                <md-icon>list</md-icon>
-                                <span>Custom Sublabel (template)</span>
-                            </ng-template>
-                            <div class="md-padding">
-                                <h3 class="md-subhead">md-padding class</h3>
-                                <div>Phase 1</div>
-                                <div>Phase 2</div>
-                                <div>Phase 3</div>
                             </div>
                         </td-expansion-panel>
                     </div>
                 </div>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
         <td-expansion-panel label="Google" sublabel="1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA" [expand]="expansion1" [disabled]="disabled" (expanded)="expandExpansion1Event()" (collapsed)="collapseExpansion1Event()">
             <td-expansion-summary>
-                <md-list>
-                    <md-list-item>
-                        <md-icon md-list-avatar>pin_drop</md-icon>
-                        <h3 md-line>Google</h3>
-                        <h4 md-line>Headquarters</h4>
-                        <p md-line>
+                <mat-list>
+                    <mat-list-item>
+                        <mat-icon mat-list-avatar>pin_drop</mat-icon>
+                        <h3 mat-line>Google</h3>
+                        <h4 mat-line>Headquarters</h4>
+                        <p mat-line>
                             1600 Amphitheatre Pkwy
                             <br/>Mountain View, CA 94043, USA
                         </p>
-                    </md-list-item>
-                </md-list>
+                    </mat-list-item>
+                </mat-list>
             </td-expansion-summary>
-            <div class="md-padding">
-                <form class="md-padding" layout="column">
-                    <md-input-container flex>
-                        <input mdInput placeholder="Company (disabled)" disabled value="Google" />
-                    </md-input-container>
-                    <md-input-container flex>
-                        <textarea mdInput placeholder="Description" rows="4"></textarea>
-                    </md-input-container>
+            <div class="mat-padding">
+                <form class="mat-padding" layout="column">
+                    <mat-input-container flex>
+                        <input matInput placeholder="Company (disabled)" disabled value="Google" />
+                    </mat-input-container>
+                    <mat-input-container flex>
+                        <textarea matInput placeholder="Description" rows="4"></textarea>
+                    </mat-input-container>
                 </form>
-                <md-divider></md-divider>
+                <mat-divider></mat-divider>
                 <div layout="row" layout-margin layout-align="end center">
-                    <button md-button class="text-upper">Cancel</button>
-                    <button md-button color="accent" class="text-upper">Save</button>
+                    <button mat-button class="text-upper">Cancel</button>
+                    <button mat-button color="accent" class="text-upper">Save</button>
                 </div>
-            </div>
-        </td-expansion-panel>
-        <td-expansion-panel label="Label goes here" sublabel="sublabel goes here" [disabled]="disabled">
-            <div class="md-padding">
-                <h3 class="md-subhead">md-padding class</h3>
-                <div>Demo 1</div>
-                <div>Demo 2</div>
-                <div>Demo 3</div>
-                <div>Demo 4</div>
-            </div>
-        </td-expansion-panel>
-        <td-expansion-panel label="Label goes here" sublabel="sublabel goes here" [disabled]="disabled">
-            <ng-template td-expansion-panel-label>
-                <md-icon>star</md-icon>
-                <span>Custom Label (template)</span>
-            </ng-template>
-            <ng-template td-expansion-panel-sublabel>
-                <md-icon>list</md-icon>
-                <span>Custom Sublabel (template)</span>
-            </ng-template>
-            <div class="md-padding">
-                <h3 class="md-subhead">md-padding class</h3>
-                <div>Phase 1</div>
-                <div>Phase 2</div>
-                <div>Phase 3</div>
             </div>
         </td-expansion-panel>
         ]]>
@@ -2787,144 +2742,144 @@ limitations under the License.
         ...
             ]]>
           </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Progress</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content layout="row">
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Progress</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content layout="row">
                 <div flex="48" class="pad-right">
-                    <h3 class="md-title">Progress Bars</h3>
-                    <md-divider class="push-top push-bottom"></md-divider>
+                    <h3 class="mat-title">Progress Bars</h3>
+                    <mat-divider class="push-top push-bottom"></mat-divider>
                     <h4>Determinate</h4>
-                    <md-progress-bar mode="determinate" value="40"></md-progress-bar>
+                    <mat-progress-bar mode="determinate" value="40"></mat-progress-bar>
                     <h4>Indeterminate</h4>
-                    <md-progress-bar mode="indeterminate"></md-progress-bar>
+                    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
                     <h4>Buffer</h4>
-                    <md-progress-bar mode="buffer" value="15" bufferValue="15"></md-progress-bar>
+                    <mat-progress-bar mode="buffer" value="15" bufferValue="15"></mat-progress-bar>
                     <h4>Query</h4>
-                    <md-progress-bar mode="query"></md-progress-bar>
+                    <mat-progress-bar mode="query"></mat-progress-bar>
                     <h4>Colors</h4>
-                    <md-progress-bar mode="indeterminate" color="primary"></md-progress-bar>
-                    <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                    <md-progress-bar mode="indeterminate" color="accent"></md-progress-bar>
-                    <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                    <md-progress-bar mode="indeterminate" color="warn"></md-progress-bar>
-                    <h3 class="md-title">Usage</h3>
+                    <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
+                    <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                    <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
+                    <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                    <mat-progress-bar mode="indeterminate" color="warn"></mat-progress-bar>
+                    <h3 class="mat-title">Usage</h3>
                     <p>HTML:</p>
                     <pre lang="html">
       <![CDATA[
         <!-- Determinate-->
-        <md-progress-bar mode="determinate" value="40"></md-progress-bar>
+        <mat-progress-bar mode="determinate" value="40"></mat-progress-bar>
 
         <!-- Indeterminate-->
-        <md-progress-bar mode="indeterminate"></md-progress-bar>
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 
         <!-- Buffer-->
-        <md-progress-bar mode="buffer" value="15" bufferValue="15"></md-progress-bar>
+        <mat-progress-bar mode="buffer" value="15" bufferValue="15"></mat-progress-bar>
 
         <!-- Query-->
-        <md-progress-bar mode="query"></md-progress-bar>
+        <mat-progress-bar mode="query"></mat-progress-bar>
 
         <!-- Colors-->
-        <md-progress-bar mode="indeterminate" color="primary"></md-progress-bar>
+        <mat-progress-bar mode="indeterminate" color="primary"></mat-progress-bar>
 
-        <md-progress-bar mode="indeterminate" color="accent"></md-progress-bar>
+        <mat-progress-bar mode="indeterminate" color="accent"></mat-progress-bar>
 
-        <md-progress-bar mode="indeterminate" color="warn"></md-progress-bar>
+        <mat-progress-bar mode="indeterminate" color="warn"></mat-progress-bar>
       ]]>
       </pre>
                 </div>
                 <div flex="48">
                     <!-- Progress circles-->
-                    <h3 class="md-title">Progress Spinner</h3>
-                    <md-divider class="push-top push-bottom"></md-divider>
+                    <h3 class="mat-title">Progress Spinner</h3>
+                    <mat-divider class="push-top push-bottom"></mat-divider>
                     <div layout="row">
                         <div>
                             <h4>Determinate</h4>
-                            <md-progress-spinner mode="determinate" value="66"></md-progress-spinner>
+                            <mat-progress-spinner mode="determinate" value="66"></mat-progress-spinner>
                         </div>
                         <div>
                             <h4>indeterminate</h4>
-                            <md-progress-spinner mode="indeterminate"></md-progress-spinner>
+                            <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
                         </div>
                         <div>
                             <h4>Spinner</h4>
-                            <md-spinner></md-spinner>
+                            <mat-spinner></mat-spinner>
                         </div>
                     </div>
                     <div>
                         <h4>Colors</h4>
                         <div layout="row">
-                            <md-progress-spinner mode="indeterminate" color="primary"></md-progress-spinner>
-                            <md-progress-spinner mode="indeterminate" color="accent"></md-progress-spinner>
-                            <md-progress-spinner mode="indeterminate" color="warn"></md-progress-spinner>
+                            <mat-progress-spinner mode="indeterminate" color="primary"></mat-progress-spinner>
+                            <mat-progress-spinner mode="indeterminate" color="accent"></mat-progress-spinner>
+                            <mat-progress-spinner mode="indeterminate" color="warn"></mat-progress-spinner>
                         </div>
                     </div>
-                    <h3 class="md-title">Usage</h3>
+                    <h3 class="mat-title">Usage</h3>
                     <p>HTML:</p>
                     <pre lang="html">
       <![CDATA[
         <!-- Determinate -->
-        <md-progress-spinner mode="determinate" value="66"></md-progress-spinner>
+        <mat-progress-spinner mode="determinate" value="66"></mat-progress-spinner>
         <!-- Indeterminate -->
-        <md-progress-spinner mode="indeterminate"></md-progress-spinner>
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
         <!-- Spinner -->
-        <md-spinner></md-spinner>
+        <mat-spinner></mat-spinner>
         <!-- Colors -->
-        <md-progress-spinner mode="indeterminate" color="primary"></md-progress-spinner>
-        <md-progress-spinner mode="indeterminate" color="accent"></md-progress-spinner>
-        <md-progress-spinner mode="indeterminate" color="warn"></md-progress-spinner>
+        <mat-progress-spinner mode="indeterminate" color="primary"></mat-progress-spinner>
+        <mat-progress-spinner mode="indeterminate" color="accent"></mat-progress-spinner>
+        <mat-progress-spinner mode="indeterminate" color="warn"></mat-progress-spinner>
       ]]>
       </pre>
                 </div>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Side Nav</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Side Nav</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
                 <p>The side nav can be opened at the `start` or `end` of a container and can be displayed in `over`, `side`, or `push` mode. You can also define its width.</p>
-                <button mdTooltip="Open side nav" md-raised-button color="fds-primary" (click)="sidenav.toggle()">
+                <button matTooltip="Open side nav" mat-raised-button color="fds-primary" (click)="sidenav.toggle()">
                     Open
                 </button>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
         <![CDATA[
         <!-- Basic Usage -->
-        <md-sidenav #sidenav mode="over" align="end" opened="false">
+        <mat-sidenav #sidenav mode="over" align="end" opened="false">
             ...
-        </md-sidenav>
+        </mat-sidenav>
         ]]>
         </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Slide Toggle</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <h3 class="md-title">Basic Usage</h3>
-                <md-divider class="push-top-sm push-bottom-sm"></md-divider>
-                <md-list>
-                    <md-list-item *ngFor="let system of systems">
-                        <md-slide-toggle [color]="system.color" [(ngModel)]="system.on">
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Slide Toggle</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <h3 class="mat-title">Basic Usage</h3>
+                <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
+                <mat-list>
+                    <mat-list-item *ngFor="let system of systems">
+                        <mat-slide-toggle [color]="system.color" [(ngModel)]="system.on">
                             {{system.name}}
-                        </md-slide-toggle>
-                    </md-list-item>
-                </md-list>
-                <h3 class="md-title">Usage</h3>
+                        </mat-slide-toggle>
+                    </mat-list-item>
+                </mat-list>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
         <![CDATA[
         <!-- Basic Usage -->
-        <md-list>
-            <md-list-item *ngFor="let system of systems">
-              <md-slide-toggle [color]="system.color" [(ngModel)]="system.on">
+        <mat-list>
+            <mat-list-item *ngFor="let system of systems">
+              <mat-slide-toggle [color]="system.color" [(ngModel)]="system.on">
                 { {system.name} }
-              </md-slide-toggle>
-            </md-list-item>
-        </md-list>
+              </mat-slide-toggle>
+            </mat-list-item>
+        </mat-list>
         ]]>
         </pre>
                 <p>Javascript:</p>
@@ -2945,42 +2900,42 @@ limitations under the License.
         }, ];
             ]]>
           </pre>
-                <h3 class="md-title">Usage within Forms</h3>
-                <md-divider class="push-top-sm push-bottom-sm"></md-divider>
+                <h3 class="mat-title">Usage within Forms</h3>
+                <mat-divider class="push-top-sm push-bottom-sm"></mat-divider>
                 <form>
-                    <md-list>
-                        <md-list-item>
-                            <md-slide-toggle color="accent" [(ngModel)]="house.lockHouse" name="lockHouse">
+                    <mat-list>
+                        <mat-list-item>
+                            <mat-slide-toggle color="accent" [(ngModel)]="house.lockHouse" name="lockHouse">
                                 Lock?
-                            </md-slide-toggle>
-                            <md-icon *ngIf="house.lockHouse" class="pad-right-sm">lock</md-icon>
-                        </md-list-item>
-                        <md-list-item>
-                            <md-slide-toggle disabled>
+                            </mat-slide-toggle>
+                            <mat-icon *ngIf="house.lockHouse" class="pad-right-sm">lock</mat-icon>
+                        </mat-list-item>
+                        <mat-list-item>
+                            <mat-slide-toggle disabled>
                                 I am disabled.
-                            </md-slide-toggle>
-                        </md-list-item>
-                    </md-list>
+                            </mat-slide-toggle>
+                        </mat-list-item>
+                    </mat-list>
                 </form>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
         <![CDATA[
         <!-- Usage within Forms -->
         <form>
-            <md-list>
-                <md-list-item>
-                    <md-slide-toggle color="accent" [(ngModel)]="house.lockHouse" name="lockHouse">
+            <mat-list>
+                <mat-list-item>
+                    <mat-slide-toggle color="accent" [(ngModel)]="house.lockHouse" name="lockHouse">
                         Lock?
-                    </md-slide-toggle>
-                    <md-icon *ngIf="house.lockHouse" class="pad-right-sm">lock</md-icon>
-                </md-list-item>
-                <md-list-item>
-                    <md-slide-toggle disabled>
+                    </mat-slide-toggle>
+                    <mat-icon *ngIf="house.lockHouse" class="pad-right-sm">lock</mat-icon>
+                </mat-list-item>
+                <mat-list-item>
+                    <mat-slide-toggle disabled>
                     I am disabled.
-                </md-slide-toggle>
-                </md-list-item>
-            </md-list>
+                </mat-slide-toggle>
+                </mat-list-item>
+            </mat-list>
         </form>
         ]]>
         </pre>
@@ -2992,61 +2947,47 @@ limitations under the License.
         };
             ]]>
           </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Ripples</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <button md-raised-button color="fds-primary" md-ripple [mdRippleColor]="'rgba(30, 136, 229, 0.2)'" class="text-upper">Click me</button>
-                <h3 class="md-title">Usage</h3>
+            </mat-card-content>
+        </mat-card>
+        <mat-card>
+            <mat-card-title class="pad-bottom-sm">Slider</mat-card-title>
+            <mat-divider></mat-divider>
+            <mat-card-content>
+                <h3 class="mat-title">Horizontal Slider</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-slider min="1" max="5" thumbLabel tickInterval="1" value="2" color="primary"></mat-slider>
+                <mat-slider step="5" thumbLabel tickInterval="5" value="20" color="accent"></mat-slider>
+                <mat-slider thumbLabel tick-interval="auto" value="2" color="warn"></mat-slider>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <button md-raised-button color="fds-primary" md-ripple [mdRippleColor]="'rgba(30, 136, 229, 0.2)'" class="text-upper">Click me</button>
+        <mat-slider min="1" max="5" thumbLabel tickInterval="1" value="2" color="primary"></mat-slider>
+        <mat-slider step="5" thumbLabel tickInterval="5" value="20" color="accent"></mat-slider>
+        <mat-slider thumbLabel tick-interval="auto" value="2" color="warn"></mat-slider>
         ]]>
       </pre>
-            </md-card-content>
-        </md-card>
-        <md-card>
-            <md-card-title class="pad-bottom-sm">Slider</md-card-title>
-            <md-divider></md-divider>
-            <md-card-content>
-                <h3 class="md-title">Horizontal Slider</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-slider min="1" max="5" thumbLabel tickInterval="1" value="2" color="primary"></md-slider>
-                <md-slider step="5" thumbLabel tickInterval="5" value="20" color="accent"></md-slider>
-                <md-slider thumbLabel tick-interval="auto" value="2" color="warn"></md-slider>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Vertical Slider</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-slider vertical min="1" max="100" thumbLabel tickInterval="10" value="2"></mat-slider>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <md-slider min="1" max="5" thumbLabel tickInterval="1" value="2" color="primary"></md-slider>
-        <md-slider step="5" thumbLabel tickInterval="5" value="20" color="accent"></md-slider>
-        <md-slider thumbLabel tick-interval="auto" value="2" color="warn"></md-slider>
+        <mat-slider vertical min="1" max="100" thumbLabel tickInterval="10" value="2"></mat-slider>
         ]]>
       </pre>
-                <h3 class="md-title">Vertical Slider</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-slider vertical min="1" max="100" thumbLabel tickInterval="10" value="2"></md-slider>
-                <h3 class="md-title">Usage</h3>
+                <h3 class="mat-title">Inverted Slider</h3>
+                <mat-divider class="push-top push-bottom"></mat-divider>
+                <mat-slider invert min="1" max="100" thumbLabel tickInterval="10" value="2"></mat-slider>
+                <h3 class="mat-title">Usage</h3>
                 <p>HTML:</p>
                 <pre lang="html">
       <![CDATA[
-        <md-slider vertical min="1" max="100" thumbLabel tickInterval="10" value="2"></md-slider>
+        <mat-slider invert min="1" max="100" thumbLabel tickInterval="10" value="2"></mat-slider>
         ]]>
       </pre>
-                <h3 class="md-title">Inverted Slider</h3>
-                <md-divider class="push-top push-bottom"></md-divider>
-                <md-slider invert min="1" max="100" thumbLabel tickInterval="10" value="2"></md-slider>
-                <h3 class="md-title">Usage</h3>
-                <p>HTML:</p>
-                <pre lang="html">
-      <![CDATA[
-        <md-slider invert min="1" max="100" thumbLabel tickInterval="10" value="2"></md-slider>
-        ]]>
-      </pre>
-            </md-card-content>
-        </md-card>
+            </mat-card-content>
+        </mat-card>
     </div>
-</md-sidenav-container>
+</mat-sidenav-container>

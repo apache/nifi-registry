@@ -207,6 +207,7 @@
                                             @fluid-design-system/dist/platform/core/common/styles/css/*
                                         </include>
                                         <include>@fluid-design-system/dist/platform/core/dialogs/**/*</include>
+                                        <include>@fluid-design-system/dist/platform/core/snackbars/**/*</include>
                                         <include>@fluid-design-system/dist/platform/core/LICENSE.md</include>
                                         <!-- font-awesome -->
                                         <include>font-awesome/css/font-awesome.css</include>
@@ -449,6 +450,71 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>development-mode</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <registry.filter>registry.properties</registry.filter>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <!--
+                                Stage client side node_modules dependencies for inclusion in .war.
+                            -->
+                            <execution>
+                                <id>copy-development-mode-client-side-deps</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${frontend.assets}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${frontend.working.dir}/node_modules</directory>
+                                            <filtering>false</filtering>
+                                            <includes>
+                                                <include>**/*</include>
+                                            </includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!--
+                        Speed up build time by excluding node, npm, and any node_modules from `mvn clean` since the front-end-maven plugin uses these
+                        directories as cache.
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>frontend-working-directory/node/**/*</exclude>
+                                        <exclude>frontend-working-directory/node_modules/**/*</exclude>
+                                    </excludes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

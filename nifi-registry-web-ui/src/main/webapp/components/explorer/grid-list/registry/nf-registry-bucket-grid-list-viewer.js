@@ -41,6 +41,7 @@ NfRegistryBucketGridListViewer.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.explorerViewType = 'grid-list';
+        this.nfRegistryService.droplet = {};
         this.route.params
             .switchMap(function (params) {
                 return new rxjs.Observable.forkJoin(
@@ -65,7 +66,7 @@ NfRegistryBucketGridListViewer.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        this.nfRegistryService.bucket = {};
+        this.nfRegistryService.explorerViewType = '';
         this.nfRegistryService.setBreadcrumbState('out');
     }
 };
@@ -77,6 +78,9 @@ NfRegistryBucketGridListViewer.annotations = [
     })
 ];
 
-NfRegistryBucketGridListViewer.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
+NfRegistryBucketGridListViewer.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute
+];
 
 module.exports = NfRegistryBucketGridListViewer;

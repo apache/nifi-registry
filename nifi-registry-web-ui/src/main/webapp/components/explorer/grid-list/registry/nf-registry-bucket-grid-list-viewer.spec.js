@@ -177,7 +177,6 @@ describe('NfRegistryBucketGridListViewer Component', function () {
         comp.ngOnDestroy();
 
         //assertions
-        expect(nfRegistryService.bucket.identifier).toBeUndefined();
         expect(nfRegistryService.breadCrumbState).toBe('out');
     }));
 });

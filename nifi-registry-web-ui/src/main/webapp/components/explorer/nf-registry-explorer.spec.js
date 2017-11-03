@@ -103,5 +103,8 @@ describe('NfRegistryExplorer Component', function () {
 
         //assertions
         expect(nfRegistryService.perspective).toBe('');
+        expect(nfRegistryService.buckets.length).toBe(0);
+        expect(nfRegistryService.droplet.identifier).toBeUndefined();
+        expect(nfRegistryService.bucket.identifier).toBeUndefined();
     });
 });

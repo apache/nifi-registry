@@ -92,6 +92,10 @@ NfRegistryWorkflowAdministration.annotations = [
     })
 ];
 
-NfRegistryWorkflowAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute, ngMaterial.MdDialog];
+NfRegistryWorkflowAdministration.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute,
+    ngMaterial.MatDialog
+];
 
 module.exports = NfRegistryWorkflowAdministration;

@@ -85,7 +85,7 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
         });
     });
 
-    it('should GET droplet snapshot metadata (verbose = true).', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
+    it('should GET droplet snapshot metadata.', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
         fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
         fixture.detectChanges();
         comp = fixture.componentInstance;
@@ -110,50 +110,13 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
         });
 
         // The function to test
-        nfRegistryService.api.getDropletSnapshotMetadata('flow/test', true).subscribe(function (snapshotMetadata) {
+        nfRegistryService.api.getDropletSnapshotMetadata('flow/test').subscribe(function (response) {
             //assertions
-            expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/flow/test?verbose=true');
-            expect(snapshotMetadata.length).toBe(1);
-            expect(snapshotMetadata[0].bucketIdentifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
-            expect(snapshotMetadata[0].version).toEqual(999);
+            expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/flow/test/versions');
         });
     }));
 
-    it('should GET droplet snapshot metadata (verbose = false).', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        //Spy
-        spyOn(nfRegistryService.api.http, 'get').and.callThrough();
-
-        //Setup the mock backend to return mock data
-        var mockResponse = {
-            snapshotMetadata: [
-                {bucketIdentifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', version: 999}
-            ]
-        };
-        mockBackend.connections.subscribe(function (connection) {
-            // This is called every time someone subscribes to an http call
-            connection.mockRespond(new ngHttp.Response(new ngHttp.ResponseOptions({
-                body: JSON.stringify(mockResponse)
-            })));
-        });
-
-        // The function to test
-        nfRegistryService.api.getDropletSnapshotMetadata('flow/test', false).subscribe(function (snapshotMetadata) {
-            //assertions
-            expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/flow/test');
-            expect(snapshotMetadata.length).toBe(1);
-            expect(snapshotMetadata[0].bucketIdentifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
-            expect(snapshotMetadata[0].version).toEqual(999);
-        });
-    }));
-
-    it('should GET droplet by type and ID (verbose = false).', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
+    it('should GET droplet by type and ID.', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
         fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
         fixture.detectChanges();
         comp = fixture.componentInstance;
@@ -189,54 +152,9 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
         });
 
         // The function to test
-        nfRegistryService.api.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', false).subscribe(function (droplet) {
+        nfRegistryService.api.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc').subscribe(function (droplet) {
             //assertions
             expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
-            expect(droplet.identifier).toEqual('2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
-            expect(droplet.type).toEqual('FLOW');
-            expect(droplet.name).toEqual('Flow #1');
-        });
-    }));
-
-    it('should GET droplet by type and ID (verbose = true).', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        //Spy
-        spyOn(nfRegistryService.api.http, 'get').and.callThrough();
-
-        //Setup the mock backend to return mock data
-        var mockResponse = {
-            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
-            'name': 'Flow #1',
-            'description': 'This is flow #1',
-            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'createdTimestamp': 1505931890999,
-            'modifiedTimestamp': 1505931890999,
-            'type': 'FLOW',
-            'snapshotMetadata': null,
-            'link': {
-                'params': {
-                    'rel': 'self'
-                },
-                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
-            }
-        };
-        mockBackend.connections.subscribe(function (connection) {
-            // This is called every time someone subscribes to an http call
-            connection.mockRespond(new ngHttp.Response(new ngHttp.ResponseOptions({
-                body: JSON.stringify(mockResponse)
-            })));
-        });
-
-        // The function to test
-        nfRegistryService.api.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', true).subscribe(function (droplet) {
-            //assertions
-            expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc?verbose=true');
             expect(droplet.identifier).toEqual('2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
             expect(droplet.type).toEqual('FLOW');
             expect(droplet.name).toEqual('Flow #1');
@@ -438,7 +356,7 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
         });
     }));
 
-    it('should GET bucket by ID (verbose = false).', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
+    it('should GET bucket by ID.', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
         fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
         fixture.detectChanges();
         comp = fixture.componentInstance;
@@ -462,41 +380,9 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
         });
 
         // The function to test
-        nfRegistryService.api.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', false).subscribe(function (bucket) {
+        nfRegistryService.api.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (bucket) {
             //assertions
             expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
-            expect(bucket.identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
-            expect(bucket.name).toEqual('Bucket #1');
-        });
-    }));
-
-    it('should GET bucket by ID (verbose = true).', ngCoreTesting.inject([ngHttp.XHRBackend], function (mockBackend) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        //Spy
-        spyOn(nfRegistryService.api.http, 'get').and.callThrough();
-
-        //Setup the mock backend to return mock data
-        var mockResponse = {
-            'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'name': 'Bucket #1'
-        };
-        mockBackend.connections.subscribe(function (connection) {
-            // This is called every time someone subscribes to an http call
-            connection.mockRespond(new ngHttp.Response(new ngHttp.ResponseOptions({
-                body: JSON.stringify(mockResponse)
-            })));
-        });
-
-        // The function to test
-        nfRegistryService.api.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', true).subscribe(function (bucket) {
-            //assertions
-            expect(nfRegistryService.api.http.get).toHaveBeenCalledWith('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc?verbose=true');
             expect(bucket.identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
             expect(bucket.name).toEqual('Bucket #1');
         });

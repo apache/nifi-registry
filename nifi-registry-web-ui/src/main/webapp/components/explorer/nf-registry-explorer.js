@@ -42,6 +42,12 @@ NfRegistryExplorer.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
+        this.nfRegistryService.bucket = {};
+        this.nfRegistryService.droplet = {};
+        this.nfRegistryService.explorerViewType = '';
+        this.nfRegistryService.buckets = [];
+        this.nfRegistryService.droplets = [];
+        this.nfRegistryService.filteredDroplets = [];
         this.nfRegistryService.perspective = '';
     }
 };
@@ -56,6 +62,8 @@ NfRegistryExplorer.annotations = [
     })
 ];
 
-NfRegistryExplorer.parameters = [NfRegistryService];
+NfRegistryExplorer.parameters = [
+    NfRegistryService
+];
 
 module.exports = NfRegistryExplorer;

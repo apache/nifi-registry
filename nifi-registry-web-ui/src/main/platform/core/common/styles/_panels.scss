@@ -17,7 +17,7 @@
 
 /* Panels */
 
-body[fds] .mat-card-title {
+body[fds] .md-card-title {
   font-size: 20px;
   color: $grey1;
   margin-bottom: 0px;
@@ -29,20 +29,20 @@ body[fds] md-card-title {
   padding-right: 20px;
 }
 
-body[fds] .mat-card-subtitle {
+body[fds] .md-card-subtitle {
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 10px;
   margin-bottom: 0px;
 }
 
-body[fds] .mat-card-content {
+body[fds] .md-card-content {
   color: $grey2;
   padding: 10px 20px 20px 20px;
   margin: 0px;
 }
 
-body[fds] .mat-card .mat-card-actions:last-child, body[fds] .mat-card .mat-card .mat-card-actions:last-child {
+body[fds] .md-card .md-card-actions:last-child, body[fds] .md-card .md-card .md-card-actions:last-child {
   padding: 0px 20px 20px 20px;
   margin: 0px;
 }
@@ -50,5 +50,5 @@ body[fds] .mat-card .mat-card-actions:last-child, body[fds] .mat-card .mat-card 
 body[fds] .fds-panel-menu-button {
   position: absolute;
   right: 0px;
-  top: 20px;
+  z-index: 2;
 }

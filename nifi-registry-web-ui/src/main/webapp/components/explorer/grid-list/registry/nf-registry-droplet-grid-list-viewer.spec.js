@@ -206,7 +206,6 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         comp.ngOnDestroy();
 
         //assertions
-        expect(nfRegistryService.droplet.identifier).toBeUndefined();
         expect(nfRegistryService.breadCrumbState).toBe('out');
     }));
 });

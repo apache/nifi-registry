@@ -22,6 +22,7 @@ var ngRouter = require('@angular/router');
 var ngMaterial = require('@angular/material');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 
 var NUMBER_FORMAT = function (v) {
     return v;
@@ -34,17 +35,17 @@ var date = new Date();
 /**
  * FdsDemo constructor.
  *
- * @param snackBarService       The angular material snack bar service module.
+ * @param FdsSnackBarService    The FDS snack bar service module.
  * @param dialog                The angular material dialog module.
  * @param TdDialogService       The covalent dialog service module.
  * @param TdDataTableService    The covalent data table service module.
  * @constructor
  */
-function FdsDemo(snackBarService, dialog, TdDataTableService, FdsDialogService) {
+function FdsDemo(FdsSnackBarService, dialog, TdDataTableService, FdsDialogService) {
 
     //<editor-fold desc="Snack Bars">
 
-    this.snackBarService = snackBarService;
+    this.snackBarService = FdsSnackBarService;
 
     //</editor-fold>
 
@@ -544,18 +545,6 @@ function FdsDemo(snackBarService, dialog, TdDataTableService, FdsDialogService) 
 
     //</editor-fold>
 
-    //<editor-fold desc="Chips">
-
-    this.chips = [
-        {name: 'Default', color: '', selected: false},
-        {name: 'Default (selected)', color: '', selected: true},
-        {name: 'Primary (selected)', color: 'primary', selected: true},
-        {name: 'Accent (selected)', color: 'accent', selected: true},
-        {name: 'Warn (selected)', color: 'warn', selected: true},
-    ];
-
-    //</editor-fold>
-
     //<editor-fold desc="Checkbox">
 
     this.user = {
@@ -617,8 +606,50 @@ FdsDemo.prototype = {
 
     //<editor-fold desc="Snack Bars">
 
-    showSnackBar: function () {
-        var snackBarRef = this.snackBarService.open('Message', 'Action', {duration: 3000});
+    showSuccessSnackBar: function () {
+        var snackBarRef = this.snackBarService.openCoaster({
+            title: 'Success',
+            message: 'Some help text regarding the successful event.',
+            verticalPosition: 'top',
+            horizontalPosition: 'right',
+            icon: 'fa fa-check-circle-o',
+            color: '#1EB475',
+            duration: 3000
+        });
+    },
+
+    showWarnSnackBar: function () {
+        var snackBarRef = this.snackBarService.openCoaster({
+            title: 'Warning',
+            message: 'Some help text regarding the warning.',
+            verticalPosition: 'top',
+            horizontalPosition: 'left',
+            icon: 'fa fa-exclamation-triangle',
+            color: '#E98A40',
+            duration: 3000
+        });
+    },
+
+    showErrorSnackBar: function () {
+        var snackBarRef = this.snackBarService.openCoaster({
+            title: 'Error',
+            message: 'Some help text regarding the critical error. This coaster will stay open until closed with the `x` or if another coaster is created.',
+            verticalPosition: 'bottom',
+            horizontalPosition: 'right',
+            icon: 'fa fa-times-circle-o',
+            color: '#EF6162'
+        });
+    },
+
+    showRegularSnackBar: function () {
+        var snackBarRef = this.snackBarService.openCoaster({
+            title: 'Regular',
+            message: 'Something interesting.',
+            verticalPosition: 'bottom',
+            horizontalPosition: 'left',
+            color: '#808793',
+            duration: 3000
+        });
     },
 
     //</editor-fold>
@@ -886,6 +917,7 @@ FdsDemo.prototype = {
         this.fromRow = pagingEvent.fromRow;
         this.currentPage = pagingEvent.page;
         this.pageSize = pagingEvent.pageSize;
+        this.allRowsSelected = false;
         this.filter();
     },
 
@@ -1016,6 +1048,11 @@ FdsDemo.annotations = [
     })
 ];
 
-FdsDemo.parameters = [ngMaterial.MdSnackBar, ngMaterial.MdDialog, covalentCore.TdDataTableService, fdsDialogsModule.FdsDialogService];
+FdsDemo.parameters = [
+    fdsSnackBarsModule.FdsSnackBarService,
+    ngMaterial.MatDialog,
+    covalentCore.TdDataTableService,
+    fdsDialogsModule.FdsDialogService
+];
 
 module.exports = FdsDemo;

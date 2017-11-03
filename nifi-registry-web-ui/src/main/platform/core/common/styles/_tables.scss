@@ -68,10 +68,6 @@ body[fds] .td-data-table-cell .mat-icon-button.badge[disabled] {
   opacity: .3;
 }
 
-// body[fds] .td-data-table-cell .mat-button-focus-overlay, body[fds] .td-data-table-cell .mat-button-ripple {
-//     display: none;
-// }
-
 body[fds] .td-data-table-column {
   font-size: 12px;
   color: $grey3;
@@ -79,8 +75,8 @@ body[fds] .td-data-table-column {
   line-height: 34px;
   padding: 0 28px;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 body[fds] .td-data-table-column .fa-caret-up, body[fds] .td-data-table-column .fa-caret-down {
@@ -93,7 +89,7 @@ body[fds] td-paging-bar {
   color: $grey3;
 }
 
-body[fds] td-paging-bar md-select .mat-select-value, body[fds] td-paging-bar md-select .mat-select-arrow {
+body[fds] td-paging-bar mat-select .mat-select-value, body[fds] td-paging-bar mat-select .mat-select-arrow {
   color: $blue-grey1;
 }
 
