@@ -27,6 +27,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Jersey implementation of FlowSnapshotClient.
@@ -40,8 +41,17 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
     }
 
     @Override
-    public VersionedFlowSnapshot create(final String bucketId, final String flowId, final VersionedFlowSnapshot snapshot)
-            throws NiFiRegistryException, IOException {
+    public VersionedFlowSnapshot create(final VersionedFlowSnapshot snapshot) throws NiFiRegistryException, IOException {
+        Objects.requireNonNull(snapshot);
+
+        final VersionedFlowSnapshotMetadata metadata = snapshot.getSnapshotMetadata();
+        if (metadata == null) {
+            throw new IllegalArgumentException("Snapshot Metadata must be supplied.");
+        }
+
+        final String bucketId = metadata.getBucketIdentifier();
+        final String flowId = metadata.getFlowIdentifier();
+
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
@@ -110,6 +120,7 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public List<VersionedFlowSnapshotMetadata> getSnapshotMetadata(final String bucketId, final String flowId)
             throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {

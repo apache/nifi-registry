@@ -33,14 +33,12 @@ public interface FlowSnapshotClient {
      * The snapshot object must have the version populated, and will receive an error if the submitted version is
      * not the next one-up version.
      *
-     * @param bucketId the bucket id
-     * @param flowId the flow id
      * @param snapshot the new snapshot
      * @return the created snapshot
      * @throws NiFiRegistryException if an error is encountered other than IOException
      * @throws IOException if an I/O error is encountered
      */
-    VersionedFlowSnapshot create(String bucketId, String flowId, VersionedFlowSnapshot snapshot) throws NiFiRegistryException, IOException;
+    VersionedFlowSnapshot create(VersionedFlowSnapshot snapshot) throws NiFiRegistryException, IOException;
 
     /**
      * Gets the snapshot for the given bucket, flow, and version.
