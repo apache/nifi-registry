@@ -64,6 +64,9 @@ NfRegistryCreateBucket.annotations = [
     })
 ];
 
-NfRegistryCreateBucket.parameters = [NfRegistryService, ngMaterial.MdDialogRef];
+NfRegistryCreateBucket.parameters = [
+    NfRegistryService,
+    ngMaterial.MatDialogRef
+];
 
 module.exports = NfRegistryCreateBucket;

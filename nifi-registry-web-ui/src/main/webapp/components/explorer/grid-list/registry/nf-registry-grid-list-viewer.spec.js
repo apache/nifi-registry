@@ -19,7 +19,6 @@ var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommon = require('@angular/common');
 var ngRouter = require('@angular/router');
-var ngPlatformBrowser = require('@angular/platform-browser');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
@@ -44,8 +43,6 @@ var ngHttp = require('@angular/http');
 describe('NfRegistryGridListViewer Component', function () {
     var comp;
     var fixture;
-    var de;
-    var el;
     var nfRegistryService;
     var nfRegistryApi;
 
@@ -162,7 +159,6 @@ describe('NfRegistryGridListViewer Component', function () {
 
         //assertions
         expect(nfRegistryService.explorerViewType).toBe('');
-        expect(nfRegistryService.buckets.length).toBe(0);
         expect(nfRegistryService.droplets.length).toBe(0);
         expect(nfRegistryService.filteredDroplets.length).toBe(0);
         expect(nfRegistryService.breadCrumbState).toBe('out');

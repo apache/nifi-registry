@@ -62,6 +62,9 @@ NfRegistryAdministration.annotations = [
     })
 ];
 
-NfRegistryAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
+NfRegistryAdministration.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute
+];
 
 module.exports = NfRegistryAdministration;

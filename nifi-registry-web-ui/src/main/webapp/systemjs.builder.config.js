@@ -54,6 +54,7 @@
             '@angular/cdk/table': 'npm:@angular/cdk/bundles/cdk-table.umd.js',
             '@angular/cdk/rxjs': 'npm:@angular/cdk/bundles/cdk-rxjs.umd.js',
             '@angular/cdk/scrolling': 'npm:@angular/cdk/bundles/cdk-scrolling.umd.js',
+            '@angular/cdk/stepper': 'npm:@angular/cdk/bundles/cdk-stepper.umd.js',
             '@angular/animations': 'npm:@angular/animations/bundles/animations.umd.js',
             '@angular/animations/browser': 'npm:@angular/animations/bundles/animations-browser.umd.js',
             '@angular/compiler': 'npm:@angular/compiler/bundles/compiler.umd.js',
@@ -62,7 +63,7 @@
             'hammerjs': 'npm:hammerjs/hammer.min.js',
 
             // Covalent
-            '@covalent/core': 'npm:@covalent/core/core.umd.js',
+            '@covalent/core': 'npm:@covalent/core/bundles/core.umd.min.js',
 
             // other libraries
             'rxjs': 'npm:rxjs',
@@ -80,6 +81,10 @@
             '@fluid-design-system/dialog-component': 'npm:@fluid-design-system/dist/platform/core/dialogs/fds-dialog.component.js',
             '@fluid-design-system/dialog-service': 'npm:@fluid-design-system/dist/platform/core/dialogs/services/dialog.service.js',
             '@fluid-design-system/confirm-dialog-component': 'npm:@fluid-design-system/dist/platform/core/dialogs/confirm-dialog/confirm-dialog.component.js',
+            '@fluid-design-system/snackbars': 'npm:@fluid-design-system/dist/platform/core/snackbars/fds-snackbars.module.js',
+            '@fluid-design-system/snackbar-component': 'npm:@fluid-design-system/dist/platform/core/snackbars/fds-snackbar.component.js',
+            '@fluid-design-system/snackbar-service': 'npm:@fluid-design-system/dist/platform/core/snackbars/services/snackbar.service.js',
+            '@fluid-design-system/coaster-component': 'npm:@fluid-design-system/dist/platform/core/snackbars/coaster/coaster.component.js',
 
             // Nifi Registry
             'nifi-registry/nf-registry.module.js': 'nf-registry.module.js',

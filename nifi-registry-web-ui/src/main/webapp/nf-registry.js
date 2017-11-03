@@ -50,6 +50,9 @@ NfRegistry.annotations = [
     })
 ];
 
-NfRegistry.parameters = [NfRegistryService, ngCore.ChangeDetectorRef];
+NfRegistry.parameters = [
+    NfRegistryService,
+    ngCore.ChangeDetectorRef
+];
 
 module.exports = NfRegistry;

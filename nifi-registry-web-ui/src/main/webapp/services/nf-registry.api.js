@@ -18,6 +18,7 @@
 var ngHttp = require('@angular/http');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var rxjs = require('rxjs/Rx');
+var ngRouter = require('@angular/router');
 
 var headers = new Headers({'Content-Type': 'application/json'});
 
@@ -26,11 +27,13 @@ var headers = new Headers({'Content-Type': 'application/json'});
  *
  * @param Http                  The angular http module.
  * @param FdsDialogService      The FDS dialog service.
+ * @param Router                The angular router module.
  * @constructor
  */
-function NfRegistryApi(Http, FdsDialogService) {
+function NfRegistryApi(Http, FdsDialogService, Router) {
     this.http = Http;
     this.dialogService = FdsDialogService;
+    this.router = Router;
 };
 
 NfRegistryApi.prototype = {
@@ -39,21 +42,16 @@ NfRegistryApi.prototype = {
     /**
      * Retrieves the snapshot metadata for an existing droplet the registry has stored.
      *
-     * If verbose is true, then the metadata about all snapshots for the droplet will also be returned.
-     *
-     * @param {string}  dropletType     The type of the droplet to request.
-     * @param {boolean} [verbose]       Flag to determine whether or not version children should be included in the response.
+     * @param {string}  dropletUri     The uri of the droplet to request.
      * @returns {*}
      */
-    getDropletSnapshotMetadata: function (dropletUri, verbose) {
+    getDropletSnapshotMetadata: function (dropletUri) {
         var self = this;
         var url = '/nifi-registry-api/' + dropletUri;
-        if (verbose) {
-            url += '?verbose=true';
-        }
+        url += '/versions';
         return this.http.get(url)
             .map(function (response) {
-                return response.json().snapshotMetadata || [];
+                return response.json() || [];
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -72,15 +70,11 @@ NfRegistryApi.prototype = {
      * @param {string}  bucketId        The id of the bucket to request.
      * @param {string}  dropletType     The type of the droplet to request.
      * @param {string}  dropletId       The id of the droplet to request.
-     * @param {boolean} [verbose]       Flag to determine whether or not version children should be included in the response.
      * @returns {*}
      */
-    getDroplet: function (bucketId, dropletType, dropletId, verbose) {
+    getDroplet: function (bucketId, dropletType, dropletId) {
         var self = this;
         var url = '/nifi-registry-api/buckets/' + bucketId + '/' + dropletType + '/' + dropletId;
-        if (verbose) {
-            url += '?verbose=true';
-        }
         return this.http.get(url)
             .map(function (response) {
                 return response.json() || {};
@@ -91,7 +85,12 @@ NfRegistryApi.prototype = {
                     message: error._body,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
-                });
+                }).afterClosed().subscribe(
+                    function (accept) {
+                        if (accept) {
+                            self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucketId);
+                        }
+                    });
                 return rxjs.Observable.throw(error._body);
             });
     },
@@ -206,22 +205,12 @@ NfRegistryApi.prototype = {
     /**
      * Get metadata for an existing bucket in the registry.
      *
-     * If verbose is set to true, then each bucket will be returned with the
-     * set of items in the bucket, but any further children (version snapshot metadata)
-     * of those items will not be included.
-     *
      * @param {string} bucketId     The identifier of the bucket to retrieve.
-     * @param {bool} [verbose]      Flag indicating whether to include the set of items
-     *                              (NiFi bucket objects such as flows and extension
-     *                              bundles...otherwise known as droplets) in the bucket.
      * @returns {*}
      */
-    getBucket: function (bucketId, verbose) {
+    getBucket: function (bucketId) {
         var self = this;
         var url = '/nifi-registry-api/buckets/' + bucketId;
-        if (verbose) {
-            url += '?verbose=true';
-        }
         return this.http.get(url)
             .map(function (response) {
                 return response.json() || {};
@@ -232,7 +221,12 @@ NfRegistryApi.prototype = {
                     message: error._body,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
-                });
+                }).afterClosed().subscribe(
+                    function (accept) {
+                        if (accept) {
+                            self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                        }
+                    });
                 return rxjs.Observable.throw(error._body);
             });
     },
@@ -422,6 +416,10 @@ NfRegistryApi.prototype = {
     }
 };
 
-NfRegistryApi.parameters = [ngHttp.Http, fdsDialogsModule.FdsDialogService];
+NfRegistryApi.parameters = [
+    ngHttp.Http,
+    fdsDialogsModule.FdsDialogService,
+    ngRouter.Router
+];
 
 module.exports = NfRegistryApi;

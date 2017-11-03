@@ -61,6 +61,9 @@ NfRegistryUserPermissions.annotations = [
     })
 ];
 
-NfRegistryUserPermissions.parameters = [NfRegistryService, ngRouter.Router];
+NfRegistryUserPermissions.parameters = [
+    NfRegistryService,
+    ngRouter.Router
+];
 
 module.exports = NfRegistryUserPermissions;

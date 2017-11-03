@@ -72,6 +72,10 @@ NfRegistryBucketPermissions.annotations = [
     })
 ];
 
-NfRegistryBucketPermissions.parameters = [NfRegistryService, ngRouter.ActivatedRoute, ngRouter.Router];
+NfRegistryBucketPermissions.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute,
+    ngRouter.Router
+];
 
 module.exports = NfRegistryBucketPermissions;

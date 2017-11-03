@@ -30,11 +30,6 @@ var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 function NfRegistryGridListViewer(nfRegistryService, ActivatedRoute) {
     this.route = ActivatedRoute;
     this.nfRegistryService = nfRegistryService;
-    this.dropletActions = [{
-        'name': 'Delete',
-        'icon': 'fa fa-trash',
-        'tooltip': 'Delete'
-    }];
 };
 
 NfRegistryGridListViewer.prototype = {
@@ -46,6 +41,7 @@ NfRegistryGridListViewer.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.explorerViewType = 'grid-list';
+        this.nfRegistryService.bucket = {};
         this.route.params
             .switchMap(function (params) {
                 return new rxjs.Observable.forkJoin(self.nfRegistryService.api.getDroplets(),
@@ -66,9 +62,6 @@ NfRegistryGridListViewer.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.explorerViewType = '';
-        this.nfRegistryService.buckets = [];
-        this.nfRegistryService.droplets = [];
-        this.nfRegistryService.filteredDroplets = [];
         this.nfRegistryService.setBreadcrumbState('out');
     }
 };
@@ -80,6 +73,9 @@ NfRegistryGridListViewer.annotations = [
     })
 ];
 
-NfRegistryGridListViewer.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
+NfRegistryGridListViewer.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute
+];
 
 module.exports = NfRegistryGridListViewer;

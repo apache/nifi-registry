@@ -64,13 +64,8 @@ body[fds] .mat-input-placeholder {
   font-weight: 300;
 }
 
-body[fds] .mat-input-placeholder-wrapper {
-  top: -20px;
-  padding-top: 33px;
-}
-
 body[fds] .mat-input-placeholder {
-  top: 20px;
+  top: 29px;
   left: 10px;
   white-space: nowrap;
   overflow: hidden;
@@ -78,16 +73,20 @@ body[fds] .mat-input-placeholder {
   width: calc(100% - 44px);
 }
 
-body[fds] md-input-container.mat-focused .mat-input-placeholder {
+body[fds] mat-input-container.mat-focused .mat-input-placeholder {
   transform: translateY(-26px) translateX(-10px) scale(0.75);
 }
 
-body[fds] .mat-input-placeholder.mat-float:not(.mat-empty) {
+body[fds] .mat-form-field-can-float.mat-form-field-should-float .mat-form-field-placeholder {
+  transform: translateY(-26px) translateX(-10px) scale(.75);
+}
+
+body[fds] .mat-form-field-can-float .mat-form-field-autofill-control:-webkit-autofill+.mat-form-field-placeholder-wrapper .mat-form-field-placeholder {
   transform: translateY(-26px) translateX(-10px) scale(.75);
 }
 
 body[fds] .input-button {
-  top: 3px;
+  top: 5px;
   left: -4px;
   border-left: none !important;
 }
@@ -96,26 +95,13 @@ body[fds] .input-button.mat-raised-button[disabled] {
   opacity: 1;
 }
 
-body[fds] .mat-input-infix {
-  padding: 7px 3px 0px 0px;
-}
-
 body[fds] td-chips .mat-input-placeholder-wrapper::after {
   content: '\f0b0';
   display: inline-table;
   font-family: FontAwesome;
   float: right;
-  margin: 2px 10px 0px 0px;
+  margin: 12px 10px 0px 0px;
   color: $grey3;
-}
-
-body[fds] td-chips input.mat-input-element {
-  border-radius: 2px;
-  color: $grey2;
-  border: 1px solid $grey8;
-  height: 32px;
-  padding: 0px 6px 0px 0px;
-  width: 100%;
 }
 
 body[fds] .mat-hint {

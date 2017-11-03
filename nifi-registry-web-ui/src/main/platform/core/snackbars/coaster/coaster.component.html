@@ -15,14 +15,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div fxFill>
-    <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-md pad-bottom-md pad-left-sm pad-right-sm">
-        <span class="md-card-title">User Details</span>
-        <button mat-icon-button (click)="closeSideNav()">
+<fds-snackbar>
+    <fds-snackbar-title *ngIf="title">
+        <button class="coaster-close-icon" mat-icon-button (click)="cancel()">
             <mat-icon color="primary">close</mat-icon>
         </button>
-    </div>
-    <button id="nf-registry-user-details-side-nav-container" mat-raised-button color="fds-primary"
-            (click)="closeSideNav()">Close
-    </button>
-</div>
+        <i *ngIf="icon" class="{{icon}} fds-coaster-icon" aria-hidden="true"></i>
+        <div class="ellipsis" fxLayout="row" title="{{title}}" fxLayoutAlign="space-between center">
+            {{title}}
+        </div>
+    </fds-snackbar-title>
+    <fds-snackbar-content title="{{message}}" class="fds-coaster-message ellipsis tc-grey-700">
+        {{message}}
+    </fds-snackbar-content>
+    <fds-snackbar-actions>
+    </fds-snackbar-actions>
+</fds-snackbar>
