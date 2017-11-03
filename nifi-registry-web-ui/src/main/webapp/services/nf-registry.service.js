@@ -18,6 +18,7 @@
 var covalentCore = require('@covalent/core');
 var ngRouter = require('@angular/router');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 require('rxjs/add/operator/catch');
 require('rxjs/add/operator/map');
@@ -53,11 +54,13 @@ function filterData(data, searchTerm, ignoreCase) {
  * @param NfRegistryApi         The registry API module.
  * @param Router                The angular router module.
  * @param FdsDialogService      The FDS dialog service.
+ * @param FdsSnackBarService    The FDS snack bar service module.
  * @constructor
  */
-function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogService) {
+function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogService, FdsSnackBarService) {
     this.router = Router;
     this.dialogService = FdsDialogService;
+    this.snackBarService = FdsSnackBarService;
     this.registry = {
         name: "Nifi Registry"
     };
@@ -75,6 +78,11 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.dataTableService = TdDataTableService;
 
     this.filteredDroplets = [];
+    this.dropletActions = [{
+        'name': 'Delete',
+        'icon': 'fa fa-trash',
+        'tooltip': 'Delete'
+    }];
     this.dropletColumns = [
         {name: 'name', label: 'Name', sortable: true},
         {name: 'updated', label: 'Updated', sortable: true}
@@ -182,11 +190,32 @@ NfRegistryService.prototype = {
             }).afterClosed().subscribe(
                 function (accept) {
                     if (accept) {
-                        self.api.deleteDroplet(droplet.link.href).subscribe(function () {
-                            self.droplets = self.droplets.filter(function (d) {
-                                return (d.identifier !== droplet.identifier) ? true : false
-                            });
-                            self.filterDroplets();
+                        self.api.deleteDroplet(droplet.link.href).subscribe(function (response) {
+                            if (response.link === null) {
+                                self.droplets = self.droplets.filter(function (d) {
+                                    return (d.identifier !== droplet.identifier) ? true : false
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'All versions of this ' + droplet.type.toLowerCase() + ' have been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.droplet = {};
+                                self.filterDroplets();
+                            } else {
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Error',
+                                    message: 'Error deleting ' + droplet.name + '.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-times-circle-o',
+                                    color: '#EF6162'
+                                });
+                            }
                         });
                     }
                 });
@@ -305,10 +334,31 @@ NfRegistryService.prototype = {
                     function (accept) {
                         if (accept) {
                             self.api.deleteBucket(bucket.identifier).subscribe(function (response) {
-                                self.buckets = self.buckets.filter(function (b) {
-                                    return b.identifier !== bucket.identifier;
-                                });
-                                self.filterBuckets();
+                                if (response.link === null) {
+                                    self.buckets = self.buckets.filter(function (b) {
+                                        return b.identifier !== bucket.identifier;
+                                    });
+                                    var snackBarRef = self.snackBarService.openCoaster({
+                                        title: 'Success',
+                                        message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-check-circle-o',
+                                        color: '#1EB475',
+                                        duration: 3000
+                                    });
+                                    self.bucket = {};
+                                    self.filterBuckets();
+                                } else {
+                                    var snackBarRef = self.snackBarService.openCoaster({
+                                        title: 'Error',
+                                        message: 'Error deleting ' + bucket.name + '.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-times-circle-o',
+                                        color: '#EF6162'
+                                    });
+                                }
                             });
                         }
                     });
@@ -419,7 +469,7 @@ NfRegistryService.prototype = {
                 selected++;
             }
             if (c.checked === undefined || c.checked === false) {
-                allSelected =false;
+                allSelected = false;
             }
         });
 
@@ -498,7 +548,7 @@ NfRegistryService.prototype = {
     /**
      * Deletes all versions of all flows of each selected bucket
      */
-    deleteSelectedBuckets: function() {
+    deleteSelectedBuckets: function () {
         var self = this;
         this.dialogService.openConfirm({
             title: 'Delete Buckets',
@@ -512,18 +562,36 @@ NfRegistryService.prototype = {
                     self.filteredBuckets.forEach(function (filteredBucket) {
                         if (filteredBucket.checked) {
                             self.api.deleteBucket(filteredBucket.identifier).subscribe(function (response) {
-                                self.buckets = self.buckets.filter(function (bucket) {
-                                    return bucket.identifier !== filteredBucket.identifier;
-                                });
-                                self.filterBuckets();
-                                self.determineAllBucketsSelectedState();
+                                if (response.link === null) {
+                                    self.buckets = self.buckets.filter(function (bucket) {
+                                        return bucket.identifier !== filteredBucket.identifier;
+                                    });
+                                    var snackBarRef = self.snackBarService.openCoaster({
+                                        title: 'Success',
+                                        message: 'All versions of all items in ' + filteredBucket.name + ' have been deleted.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-check-circle-o',
+                                        color: '#1EB475',
+                                        duration: 3000
+                                    });
+                                    self.filterBuckets();
+                                    self.allBucketsSelected = false;
+                                } else {
+                                    var snackBarRef = self.snackBarService.openCoaster({
+                                        title: 'Error',
+                                        message: 'Error deleting ' + filteredBucket.name + '.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-times-circle-o',
+                                        color: '#EF6162'
+                                    });
+                                }
                             });
                         }
                     });
-
                 }
             });
-
     },
 
     sortUsers: function (sortEvent, column) {
@@ -622,6 +690,12 @@ NfRegistryService.prototype = {
     //</editor-fold>
 };
 
-NfRegistryService.parameters = [covalentCore.TdDataTableService, NfRegistryApi, ngRouter.Router, fdsDialogsModule.FdsDialogService];
+NfRegistryService.parameters = [
+    covalentCore.TdDataTableService,
+    NfRegistryApi,
+    ngRouter.Router,
+    fdsDialogsModule.FdsDialogService,
+    fdsSnackBarsModule.FdsSnackBarService
+];
 
 module.exports = NfRegistryService;

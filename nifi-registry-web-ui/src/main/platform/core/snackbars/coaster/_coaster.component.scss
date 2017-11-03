@@ -15,56 +15,49 @@
  * limitations under the License.
  */
 
-.fa-rotate-45 {
-    -webkit-transform: rotate(45deg);
-    -moz-transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-    -o-transform: rotate(45deg);
-    transform: rotate(45deg);
+body[fds] snack-bar-container {
+  background: #FFFFFF;
+  padding: 0;
+  box-shadow: 0px 0px 3px 0px rgba(19, 145, 193, 1);
 }
 
-.capitalize {
-    text-transform: capitalize;
+fds-snackbar-title mat-icon.mat-icon.mat-primary.material-icons {
+  font-size: 10px;
+  height: 10px;
+  width: 10px;
+  line-height: 10px;
+  color: $grey3;
 }
 
-.uppercase {
-    text-transform: uppercase;
+.fds-coaster-message {
+  font-size: 12px;
 }
 
-.ellipsis {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block !important;
+.fds-snackbar-title {
+  font-size: 14px;
 }
 
-.info {
-    color: $blue8;
+.fds-snackbar-title i {
+  font-size: 24px;
 }
 
-.authorized {
-    color: $red2;
+.fds-coaster-icon {
+  position: absolute;
+  top: 24px;
+  left: 15px;
 }
 
-.suspended {
-    color: $green3;
+.coaster-close-icon {
+  height: 10px !important;
+  width: 10px !important;
+  line-height: 10px !important;
+  right: 10px;
+  position: absolute !important;
+  top: 10px;
 }
 
-.nf-registry-button-container {
-    position: absolute;
-    bottom: 0px;
-    height: 64px;
-    left: 0px;
-    right: 0px;
-    border-top: 1px solid $grey4;
-}
-
-.nf-registry-button-container .done-button {
-    float: right;
-    margin-right: 15px;
-    margin-top: 15px;
-}
-
-.td-expansion-content {
-    background: $grey6;
+.fds-snackbar-wrapper {
+  border-radius: 2px;
+  border-width: 1px;
+  border-style: solid;
 }

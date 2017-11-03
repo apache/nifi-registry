@@ -17,22 +17,22 @@ limitations under the License.
 
 <div id="nifi-registry-users-administration-perspective" class="mat-elevation-z5">
     <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-        <span class="mat-card-title">Authorized Users ({{nfRegistryService.users.length}})</span>
+        <span class="md-card-title">Authorized Users ({{nfRegistryService.users.length}})</span>
         <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
             <td-chips class="push-right-sm" [items]="nfRegistryService.autoCompleteUsers" (add)="nfRegistryService.usersSearchAdd($event)"
                       (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
-            <button class="push-right-sm" color="fds-secondary" md-raised-button (click)="execute({name: 'add'})">
+            <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="execute({name: 'add'})">
                 Add User
             </button>
-            <button color="fds-primary" md-raised-button [mdMenuTriggerFor]="userActionMenu">
+            <button class="push-top-sm" color="fds-primary" mat-raised-button [matMenuTriggerFor]="userActionMenu">
                 Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
             </button>
         </div>
-        <md-menu class="fds-primary-dropdown-button-menu" #userActionMenu="mdMenu" [overlapTrigger]="false">
-            <button md-menu-item> Need to loop over and provide list of all actions available to all currently selected
+        <mat-menu class="fds-primary-dropdown-button-menu" #userActionMenu="matMenu" [overlapTrigger]="false">
+            <button mat-menu-item> Need to loop over and provide list of all actions available to all currently selected
                 users
             </button>
-        </md-menu>
+        </mat-menu>
         <div id="nifi-registry-users-administration-list-container-column-header" fxLayout="row"
              fxLayoutAlign="space-between center" class="td-data-table">
             <div class="td-data-table-column" (click)="nfRegistryService.sortUsers($event, column)"
@@ -46,9 +46,9 @@ limitations under the License.
             </div>
             <div class="td-data-table-column">
                 <div fxLayout="row" fxLayoutAlign="end center">
-                    <md-checkbox class="pad-left-sm" [(ngModel)]="nfRegistryService.allUsersSelected"
+                    <mat-checkbox class="pad-left-sm" [(ngModel)]="nfRegistryService.allUsersSelected"
                                  (checked)="nfRegistryService.allUsersSelected"
-                                 (change)="nfRegistryService.toggleUsersSelectAll()"></md-checkbox>
+                                 (change)="nfRegistryService.toggleUsersSelectAll()"></mat-checkbox>
                 </div>
             </div>
         </div>
@@ -70,42 +70,42 @@ limitations under the License.
                     <div *ngIf="row.actions">
                         <div *ngIf="row.actions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
                             <button (click)="execute(action, row)" *ngFor="let action of row.actions"
-                                    mdTooltip="{{action.tooltip}}" md-icon-button color="accent"
+                                    matTooltip="{{action.tooltip}}" mat-icon-button color="accent"
                                     [disabled]="action.disabled ? '' : null">
                                 <i class="{{action.icon}}" aria-hidden="true"></i>
                             </button>
-                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                            <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
                                          (change)="nfRegistryService.toggleUserSelect(row)"
-                                         (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></md-checkbox>
+                                         (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></mat-checkbox>
                         </div>
                         <div *ngIf="row.actions.length > 4" fxLayout="row" fxLayoutAlign="end center">
-                            <button (click)="row.checked = !row.checked" mdTooltip="Actions" md-icon-button
-                                    [mdMenuTriggerFor]="userTableActionMenu">
+                            <button (click)="row.checked = !row.checked" matTooltip="Actions" mat-icon-button
+                                    [matMenuTriggerFor]="userTableActionMenu">
                                 <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                             </button>
-                            <md-menu #userTableActionMenu="mdMenu" [overlapTrigger]="false">
+                            <mat-menu #userTableActionMenu="matMenu" [overlapTrigger]="false">
                                 <button (click)="execute(action, row)" *ngFor="let action of row.actions"
-                                        mdTooltip="{{action.tooltip}}" md-menu-item
+                                        matTooltip="{{action.tooltip}}" mat-menu-item
                                         [disabled]="action.disabled ? '' : null"
                                         (click)="nfRegistryService.sidenav.toggle()">
                                     <i class="{{action.icon}}" aria-hidden="true"></i>
                                     <span>{{action.name}}</span>
                                 </button>
-                            </md-menu>
-                            <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                            </mat-menu>
+                            <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
                                          (change)="nfRegistryService.toggleUserSelect(row)"
-                                         (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></md-checkbox>
+                                         (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></mat-checkbox>
                         </div>
                     </div>
                     <div *ngIf="!row.actions" fxLayout="row" fxLayoutAlign="end center">
-                        <md-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
+                        <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
                                      (change)="nfRegistryService.toggleUserSelect(row)"
-                                     (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></md-checkbox>
+                                     (click)="row.checked = !row.checked;nfRegistryService.toggleUserSelect(row)"></mat-checkbox>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="md-padding" *ngIf="!nfRegistryService.filteredUsers.length > 0" layout="row"
+        <div class="mat-padding" *ngIf="!nfRegistryService.filteredUsers.length > 0" layout="row"
              layout-align="center center">
             <h3>No results to display.</h3>
         </div>

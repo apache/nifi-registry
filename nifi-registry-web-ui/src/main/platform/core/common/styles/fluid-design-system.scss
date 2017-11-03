@@ -36,6 +36,7 @@
 @import 'menus';
 @import 'tables';
 @import '../../dialogs/fds-dialog-component';
+@import '../../snackbars/coaster/coaster.component';
 // Include the base styles for Angular Material core. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 @include mat-core;

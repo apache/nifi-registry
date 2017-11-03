@@ -124,6 +124,11 @@ NfRegistryUsersAdministration.annotations = [
     })
 ];
 
-NfRegistryUsersAdministration.parameters = [NfRegistryService, ngRouter.ActivatedRoute, ngRouter.Router, fdsDialogsModule.FdsDialogService];
+NfRegistryUsersAdministration.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute,
+    ngRouter.Router,
+    fdsDialogsModule.FdsDialogService
+];
 
 module.exports = NfRegistryUsersAdministration;

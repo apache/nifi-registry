@@ -61,6 +61,9 @@ NfRegistryAddUser.annotations = [
     })
 ];
 
-NfRegistryAddUser.parameters = [NfRegistryService, ngRouter.Router];
+NfRegistryAddUser.parameters = [
+    NfRegistryService,
+    ngRouter.Router
+];
 
 module.exports = NfRegistryAddUser;

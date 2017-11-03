@@ -68,8 +68,7 @@ NfRegistryDropletGridListViewer.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        this.nfRegistryService.bucket = {};
-        this.nfRegistryService.droplet = {};
+        this.nfRegistryService.explorerViewType = '';
         this.nfRegistryService.setBreadcrumbState('out');
     }
 };
@@ -81,6 +80,9 @@ NfRegistryDropletGridListViewer.annotations = [
     })
 ];
 
-NfRegistryDropletGridListViewer.parameters = [NfRegistryService, ngRouter.ActivatedRoute];
+NfRegistryDropletGridListViewer.parameters = [
+    NfRegistryService,
+    ngRouter.ActivatedRoute
+];
 
 module.exports = NfRegistryDropletGridListViewer;

@@ -19,8 +19,8 @@ limitations under the License.
     <fds-dialog-title *ngIf="title">
         <div fxLayout="row" fxLayoutAlign="space-between center">
             {{title}}
-            <button md-icon-button (click)="cancel()">
-                <md-icon color="primary">close</md-icon>
+            <button mat-icon-button (click)="cancel()">
+                <mat-icon color="primary">close</mat-icon>
             </button>
         </div>
     </fds-dialog-title>
@@ -28,13 +28,13 @@ limitations under the License.
         {{message}}
     </fds-dialog-content>
     <fds-dialog-actions>
-        <button *ngIf="cancelButton" md-raised-button
+        <button *ngIf="cancelButton" mat-raised-button
                 color="{{cancelButtonColor}}"
                 #closeBtn
                 (keydown.arrowright)="acceptBtn.focus()"
                 (click)="cancel()">{{cancelButton}}
         </button>
-        <button *ngIf="acceptButton" md-raised-button
+        <button *ngIf="acceptButton" mat-raised-button
                 color="{{acceptButtonColor}}"
                 #acceptBtn
                 (keydown.arrowleft)="closeBtn.focus()"

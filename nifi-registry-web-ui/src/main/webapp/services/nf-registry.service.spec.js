@@ -468,7 +468,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             }
         });
         spyOn(nfRegistryService.api, 'deleteDroplet').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}));
+        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
         spyOn(nfRegistryService, 'filterDroplets').and.callFake(function () {
         });
 
@@ -614,7 +614,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             }
         });
         spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}));
+        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
         var bucket = {identifier: '999'};
@@ -717,7 +717,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             }
         });
         spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 999}));
+        }).and.returnValue(rxjs.Observable.of({identifier: 999, link: null}));
 
         // object to be updated by the test
         var bucket = {identifier: 999, checked: true};
@@ -747,7 +747,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets.calls.count()).toBe(1);
         expect(nfRegistryService.disableMultiBucketActions).toBe(true);
-        expect(nfRegistryService.determineAllBucketsSelectedState).toHaveBeenCalled();
+        expect(nfRegistryService.allBucketsSelected).toBe(false);
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
     }));

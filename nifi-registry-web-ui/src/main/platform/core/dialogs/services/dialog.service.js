@@ -20,7 +20,7 @@ var ngMaterial = require('@angular/material');
 var FdsConfirmDialogComponent = require('@fluid-design-system/confirm-dialog-component');
 
 var IDialogConfig = new ngCore.Class({
-    extends: ngMaterial.MdDialogConfig,
+    extends: ngMaterial.MatDialogConfig,
     constructor: function () {
         this.title = '';
         this.message = '';
@@ -50,30 +50,31 @@ function createConfig(config) {
 /**
  * FdsDialogService constructor.
  *
- * @param MdDialog      The angular material MdDialog.
+ * @param MatDialog      The angular material MatDialog.
  * @constructor
  */
-function FdsDialogService(MdDialog) {
-    this.dialogService = MdDialog;
+function FdsDialogService(MatDialog) {
+    this.dialogService = MatDialog;
 }
 
 FdsDialogService.prototype = {
     contstructor: FdsDialogService,
 
     /**
-     * Wrapper function over the open() method in MdDialog.
+     * Wrapper function over the open() method in MatDialog.
      * Opens a modal dialog containing the given component.
      *
      * @param component     The angular ComponentType<T>.
-     * @param config        The angular material MdDialogConfig.
+     * @param config        The angular material MatDialogConfig.
      *
+     * @returns {MatDialoRef}    The reference to the dialog.
      */
     open: function (component, config) {
         return this.dialogService.open(component, config);
     },
 
     /**
-     * Wrapper function over the closeAll() method in MdDialog.
+     * Wrapper function over the closeAll() method in MatDialog.
      * Closes all of the currently-open dialogs.
      */
     closeAll: function () {
@@ -82,17 +83,20 @@ FdsDialogService.prototype = {
 
     /**
      * Opens a confirm dialog with the provided config.
-     * Returns an MdDialogRef<TdConfirmDialogComponent> object.
      *
      * @param config     IConfirmConfig {
-     *                                      message: string;
+     *                                      message?: string;
      *                                      title?: string;
+     *                                      dialogRef?: MatDialoRef;
      *                                      viewContainerRef?: ViewContainerRef;
+     *                                      disableClose?: boolean;
      *                                      acceptButton?: string;
      *                                      acceptButtonColor?: string;
      *                                      cancelButton?: string;
      *                                      cancelButtonColor?: string;
      *                                   }
+     *
+     * @returns {MatDialoRef}    The reference to the dialog.
      */
     openConfirm: function (config) {
         var dialogConfig = createConfig(config);
@@ -121,7 +125,7 @@ FdsDialogService.prototype = {
     },
 }
 
-FdsDialogService.parameters = [ngMaterial.MdDialog];
+FdsDialogService.parameters = [ngMaterial.MatDialog];
 
 module.exports = {
     IDialogConfig: IDialogConfig,

@@ -15,14 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div fxFill>
-    <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-md pad-bottom-md pad-left-sm pad-right-sm">
-        <span class="md-card-title">User Details</span>
-        <button mat-icon-button (click)="closeSideNav()">
-            <mat-icon color="primary">close</mat-icon>
-        </button>
+<div class="fds-snackbar-wrapper">
+    <div class="fds-snackbar-title md-title" *ngIf="snackBarTitle.length > 0">
+        <ng-content select="fds-snackbar-title"></ng-content>
     </div>
-    <button id="nf-registry-user-details-side-nav-container" mat-raised-button color="fds-primary"
-            (click)="closeSideNav()">Close
-    </button>
+    <div class="fds-snackbar-content" *ngIf="snackBarContent.length > 0">
+        <ng-content select="fds-snackbar-content"></ng-content>
+    </div>
+    <div class="fds-snackbar-actions" *ngIf="snackBarActions.length > 0" layout="row">
+        <span flex></span>
+        <ng-content select="fds-snackbar-actions"></ng-content>
+    </div>
 </div>
