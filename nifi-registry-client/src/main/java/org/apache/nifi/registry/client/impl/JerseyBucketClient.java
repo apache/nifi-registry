@@ -150,7 +150,8 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
                 target = target.queryParam("sort", sortParam.toString());
             }
 
-            return getRequestBuilder(target).get(List.class);
+            final Bucket[] buckets = getRequestBuilder(target).get(Bucket[].class);
+            return buckets == null ? Collections.emptyList() : Arrays.asList(buckets);
         });
     }
 
