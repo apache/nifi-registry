@@ -99,6 +99,7 @@ public class TestJerseyNiFiRegistryClient {
             final List<Bucket> allBucketsSorted = bucketClient.getAll(Arrays.asList(sortParam));
             System.out.println("Retrieved sorted buckets, size = " + allBucketsSorted.size());
             Assert.assertEquals(numBuckets, allBucketsSorted.size());
+            allBucketsSorted.stream().forEach(b -> System.out.println("Retrieve bucket " + b.getIdentifier()));
 
             // update each bucket
             for (final Bucket bucket : createdBuckets) {
