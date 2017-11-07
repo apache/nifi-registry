@@ -29,6 +29,7 @@ import org.apache.nifi.registry.security.authentication.generated.Provider;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,7 +53,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup {
+public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup, DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginIdentityProviderFactory.class);
     private static final String LOGIN_IDENTITY_PROVIDERS_XSD = "/identity-providers.xsd";
@@ -123,6 +124,13 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
         }
 
         return loginIdentityProvider;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (loginIdentityProviders != null) {
+            loginIdentityProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+        }
     }
 
     private IdentityProviders loadLoginIdentityProvidersConfiguration() throws Exception {
