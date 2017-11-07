@@ -16,17 +16,17 @@
  */
 package org.apache.nifi.registry.service
 
-import org.apache.nifi.registry.authorization.AccessPolicy as AuthAccessPolicy
-import org.apache.nifi.registry.authorization.AuthorizableLookup
-import org.apache.nifi.registry.authorization.ConfigurableAccessPolicyProvider
-import org.apache.nifi.registry.authorization.ConfigurableUserGroupProvider
-import org.apache.nifi.registry.authorization.Group
-import org.apache.nifi.registry.authorization.RequestAction
-import org.apache.nifi.registry.authorization.StandardManagedAuthorizer
-import org.apache.nifi.registry.authorization.User as AuthUser
-import org.apache.nifi.registry.authorization.exception.AccessDeniedException
-import org.apache.nifi.registry.authorization.resource.Authorizable
-import org.apache.nifi.registry.authorization.resource.ResourceType
+import org.apache.nifi.registry.security.authorization.AccessPolicy as AuthAccessPolicy
+import org.apache.nifi.registry.security.authorization.AuthorizableLookup
+import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider
+import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider
+import org.apache.nifi.registry.security.authorization.Group
+import org.apache.nifi.registry.security.authorization.RequestAction
+import org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer
+import org.apache.nifi.registry.security.authorization.User as AuthUser
+import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException
+import org.apache.nifi.registry.security.authorization.resource.Authorizable
+import org.apache.nifi.registry.security.authorization.resource.ResourceType
 import org.apache.nifi.registry.bucket.Bucket
 import org.apache.nifi.registry.model.authorization.AccessPolicy
 import org.apache.nifi.registry.model.authorization.User

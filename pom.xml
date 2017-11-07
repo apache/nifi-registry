@@ -39,7 +39,6 @@
         <module>nifi-registry-resources</module>
         <module>nifi-registry-runtime</module>
         <module>nifi-registry-security-api</module>
-        <module>nifi-registry-security-api-impl</module>
         <module>nifi-registry-security-utils</module>
 	    <module>nifi-registry-framework</module>
         <module>nifi-registry-provider-api</module>
@@ -111,6 +110,7 @@
         <jax.rs.api.version>2.0.1</jax.rs.api.version>
         <jersey.version>2.25.1</jersey.version>
         <spring.boot.version>1.5.7.RELEASE</spring.boot.version>
+        <spring.security.version>4.2.3.RELEASE</spring.security.version>
         <flyway.version>4.2.0</flyway.version>
     </properties>
 

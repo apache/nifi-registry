@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.NiFiRegistryApiTestApplication;
+import org.apache.nifi.registry.NiFiRegistryTestApiApplication;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
@@ -31,7 +31,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-        classes = NiFiRegistryApiTestApplication.class,
+        classes = NiFiRegistryTestApiApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "spring.profiles.include=ITUnsecured")
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:db/clearDB.sql")

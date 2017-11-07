@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.NiFiRegistryApiTestApplication;
+import org.apache.nifi.registry.NiFiRegistryTestApiApplication;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-        classes = NiFiRegistryApiTestApplication.class,
+        classes = NiFiRegistryTestApiApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "spring.profiles.include=ITSecureFile")
 @Import(SecureITClientConfiguration.class)

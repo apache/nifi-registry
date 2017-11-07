@@ -62,3 +62,9 @@ insert into flow_snapshot (flow_id, version, created, comments)
 
 insert into flow_snapshot (flow_id, version, created, comments)
   values ('1', 3, parsedatetime('2017-09-11 12:59:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'This is flow 1 snapshot 3');
+
+
+-- test data for signing keys
+
+insert into signing_key (id, tenant_identity, key_value)
+  values ('1', 'unit_test_tenant_identity', '0123456789abcdef');
