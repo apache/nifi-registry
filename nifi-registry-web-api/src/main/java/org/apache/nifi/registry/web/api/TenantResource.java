@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -459,13 +458,13 @@ public class TenantResource extends AuthorizableApplicationResource {
 
     private void verifyAuthorizerIsManaged() {
         if (!AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer)) {
-            throw new NotAllowedException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
+            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
         }
     }
 
     private void verifyAuthorizerSupportsConfigurableUserGroups() {
         if (!AuthorizerCapabilityDetection.isConfigurableUserGroupProvider(authorizer)) {
-            throw new NotAllowedException(AuthorizationService.MSG_NON_CONFIGURABLE_USERS);
+            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_USERS);
         }
     }
 

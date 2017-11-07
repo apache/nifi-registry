@@ -16,9 +16,9 @@
   ~ limitations under the License.
   -->
 <!--
-    This file lists the login identity providers to use when running securely. In order
-    to use a specific provider it must be configured here and it's identifier
-    must be specified in the nifi.properties file.
+    This file lists the identity providers to use when running securely. In order
+    to use a specific provider it must be configured here and its identifier
+    must be specified in the nifi-registry.properties file.
 -->
 <identityProviders>
     <!--
@@ -65,24 +65,26 @@
             for. If the user never logs out, they will be required to log back in following
             this duration.
     -->
+    <!-- To enable the ldap-identity-provider remove 2 lines. This is 1 of 2.
     <provider>
         <identifier>ldap-identity-provider</identifier>
         <class>org.apache.nifi.registry.security.ldap.LdapIdentityProvider</class>
         <property name="Authentication Strategy">SIMPLE</property>
 
-        <property name="Manager DN">cn=read-only-admin,dc=example,dc=com</property>
-        <property name="Manager Password">password</property>
+        <property name="Manager DN"></property>
+        <property name="Manager Password"></property>
         
         <property name="Referral Strategy">FOLLOW</property>
         <property name="Connect Timeout">10 secs</property>
         <property name="Read Timeout">10 secs</property>
 
-        <property name="Url">ldap://localhost:8389</property>
-        <property name="User Search Base">dc=example,dc=com</property>
-        <property name="User Search Filter">(uid={0})</property>
+        <property name="Url"></property>
+        <property name="User Search Base"></property>
+        <property name="User Search Filter"></property>
 
         <property name="Identity Strategy">USE_USERNAME</property>
         <property name="Authentication Expiration">12 hours</property>
     </provider>
+    To enable the ldap-identity-provider remove 2 lines. This is 2 of 2. -->
 
 </identityProviders>

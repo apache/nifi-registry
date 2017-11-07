@@ -18,9 +18,7 @@ package org.apache.nifi.registry;
 
 import org.apache.nifi.registry.db.DataSourceFactory;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -43,14 +41,5 @@ import org.springframework.context.annotation.FilterType;
                         pattern = "org\\.apache\\.nifi\\.registry\\.NiFiRegistryPropertiesFactory"), // Avoid loading NiFiRegistryPropertiesFactory
         })
 public class SecureLdapTestApiApplication extends SpringBootServletInitializer {
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(SecureLdapTestApiApplication.class);
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.run(SecureLdapTestApiApplication.class, args);
-    }
 
 }

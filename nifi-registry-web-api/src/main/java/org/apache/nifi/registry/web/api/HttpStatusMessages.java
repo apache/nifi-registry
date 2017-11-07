@@ -23,7 +23,6 @@ class HttpStatusMessages {
     static final String MESSAGE_401 = "Client could not be authenticated.";
     static final String MESSAGE_403 = "Client is not authorized to make this request.";
     static final String MESSAGE_404 = "The specified resource could not be found.";
-    static final String MESSAGE_405 = "The HTTP method is not allowed for the specified resource for this NiFi Registry based to its configuration.";
     static final String MESSAGE_409 = "NiFi Registry was unable to complete the request because it assumes a server state that is not valid.";
 
     /* 5xx messages */

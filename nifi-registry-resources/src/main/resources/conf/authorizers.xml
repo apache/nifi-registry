@@ -107,7 +107,7 @@
     <!-- To enable the ldap-user-group-provider remove 2 lines. This is 1 of 2.
     <userGroupProvider>
         <identifier>ldap-user-group-provider</identifier>
-        <class>org.apache.nifi.ldap.tenants.LdapUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.ldap.tenants.LdapUserGroupProvider</class>
         <property name="Authentication Strategy">START_TLS</property>
 
         <property name="Manager DN"></property>

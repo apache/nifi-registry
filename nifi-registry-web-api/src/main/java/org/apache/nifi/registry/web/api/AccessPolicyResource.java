@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -92,8 +91,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
-            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might not be configured to use a ConfigurableAccessPolicyProvider.") })
     public Response createAccessPolicy(
             @Context final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The access policy configuration details.", required = true)
@@ -137,7 +135,6 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_409),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicies() {
 
@@ -167,7 +164,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicy(
             @ApiParam(value = "The access policy id.", required = true)
             @PathParam("id") final String identifier) {
@@ -206,7 +203,6 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicyForResource(
             @ApiParam(value = "The request action.", allowableValues = "read, write, delete", required = true)
@@ -250,8 +246,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
-            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might not be configured to use a ConfigurableAccessPolicyProvider.") })
     public Response updateAccessPolicy(
             @Context
             final HttpServletRequest httpServletRequest,
@@ -299,7 +294,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might not be configured to use a ConfigurableAccessPolicyProvider.") })
     public Response removeAccessPolicy(
             @Context final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The access policy id.", required = true)
@@ -315,13 +310,14 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
 
     private void verifyAuthorizerIsManaged() {
         if (!AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer)) {
-            throw new NotAllowedException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
+            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
         }
     }
 
     private void verifyAuthorizerSupportsConfigurablePolicies() {
         if (!AuthorizerCapabilityDetection.isConfigurableAccessPolicyProvider(authorizer)) {
-            throw new NotAllowedException(AuthorizationService.MSG_NON_CONFIGURABLE_POLICIES);
+            verifyAuthorizerIsManaged();
+            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_POLICIES);
         }
     }
 

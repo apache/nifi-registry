@@ -23,7 +23,7 @@ import org.apache.nifi.registry.security.authentication.LoginIdentityProviderLoo
 import org.apache.nifi.registry.security.authentication.annotation.LoginIdentityProviderContext;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.security.authentication.generated.LoginIdentityProviders;
+import org.apache.nifi.registry.security.authentication.generated.IdentityProviders;
 import org.apache.nifi.registry.security.authentication.generated.Property;
 import org.apache.nifi.registry.security.authentication.generated.Provider;
 import org.apache.nifi.registry.security.util.XmlUtils;
@@ -99,7 +99,7 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
 
             // ensure the login identity provider class name was specified
             if (StringUtils.isNotBlank(loginIdentityProviderIdentifier)) {
-                final LoginIdentityProviders loginIdentityProviderConfiguration = loadLoginIdentityProvidersConfiguration();
+                final IdentityProviders loginIdentityProviderConfiguration = loadLoginIdentityProvidersConfiguration();
 
                 // create each login identity provider
                 for (final Provider provider : loginIdentityProviderConfiguration.getProvider()) {
@@ -125,7 +125,7 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
         return loginIdentityProvider;
     }
 
-    private LoginIdentityProviders loadLoginIdentityProvidersConfiguration() throws Exception {
+    private IdentityProviders loadLoginIdentityProvidersConfiguration() throws Exception {
         final File loginIdentityProvidersConfigurationFile = properties.getIdentityProviderConfigurationFile();
 
         // load the users from the specified file
@@ -133,13 +133,13 @@ public class LoginIdentityProviderFactory implements LoginIdentityProviderLookup
             try {
                 // find the schema
                 final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                final Schema schema = schemaFactory.newSchema(LoginIdentityProviders.class.getResource(LOGIN_IDENTITY_PROVIDERS_XSD));
+                final Schema schema = schemaFactory.newSchema(IdentityProviders.class.getResource(LOGIN_IDENTITY_PROVIDERS_XSD));
 
                 // attempt to unmarshal
                 XMLStreamReader xsr = XmlUtils.createSafeReader(new StreamSource(loginIdentityProvidersConfigurationFile));
                 final Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
                 unmarshaller.setSchema(schema);
-                final JAXBElement<LoginIdentityProviders> element = unmarshaller.unmarshal(xsr, LoginIdentityProviders.class);
+                final JAXBElement<IdentityProviders> element = unmarshaller.unmarshal(xsr, IdentityProviders.class);
                 return element.getValue();
             } catch (SAXException | JAXBException e) {
                 throw new Exception("Unable to load the login identity provider configuration file at: " + loginIdentityProvidersConfigurationFile.getAbsolutePath());

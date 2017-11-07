@@ -55,7 +55,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -116,12 +115,11 @@ public class AccessResource extends ApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405),
-            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might be running unsecured.") })
     public Response getAccessStatus(@Context HttpServletRequest httpServletRequest) {
         // only consider user specific access over https
         if (!httpServletRequest.isSecure()) {
-            throw new NotAllowedException("User authentication/authorization is only supported when running over HTTPS.");
+            throw new IllegalStateException("User authentication/authorization is only supported when running over HTTPS.");
         }
 
         final AccessStatus accessStatus = new AccessStatus();
@@ -208,8 +206,8 @@ public class AccessResource extends ApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
-            @ApiResponse(code = 405, message = HttpStatusMessages.MESSAGE_405 + ". The NiFi Registry may not be configured to support username/password login."),
-            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_500) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry may not be configured to support username/password login."),
+            @ApiResponse(code = 500, message = HttpStatusMessages.MESSAGE_500) })
     public Response createAccessToken(
             @Context HttpServletRequest httpServletRequest,
             @FormParam("username") String username,
@@ -217,12 +215,12 @@ public class AccessResource extends ApplicationResource {
 
         // only support access tokens when communicating over HTTPS
         if (!httpServletRequest.isSecure()) {
-            throw new NotAllowedException("Access tokens are only issued over HTTPS");
+            throw new IllegalStateException("Access tokens are only issued over HTTPS");
         }
 
         // if not configuration for login, don't consider credentials
         if (loginIdentityProvider == null) {
-            throw new NotAllowedException("Username/Password login not supported by this NiFi");
+            throw new IllegalStateException("Username/Password login not supported by this NiFi");
         }
 
         final LoginAuthenticationToken loginAuthenticationToken;

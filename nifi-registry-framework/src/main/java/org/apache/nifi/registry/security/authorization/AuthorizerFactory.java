@@ -30,6 +30,7 @@ import org.apache.nifi.registry.security.authorization.generated.Prop;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,7 +59,7 @@ import java.util.Set;
  * NiFi's AuthorizerFactory and AuthorizerFactoryBean.
  */
 @Configuration("authorizerFactory")
-public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyProviderLookup, AuthorizerLookup {
+public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyProviderLookup, AuthorizerLookup, DisposableBean {
 
     private static final Logger logger = LoggerFactory.getLogger(StandardProviderFactory.class);
 
@@ -121,6 +122,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         return authorizers.get(identifier);
     }
 
+    /***** AuthorizerFactory / DisposableBean *****/
 
     @Bean
     public Authorizer getAuthorizer() throws AuthorizerFactoryException {
@@ -187,6 +189,21 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             }
         }
         return authorizer;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        if (authorizers != null) {
+            authorizers.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+        }
+
+        if (accessPolicyProviders != null) {
+            accessPolicyProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+        }
+
+        if (userGroupProviders != null) {
+            userGroupProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+        }
     }
 
     private Authorizers loadAuthorizersConfiguration() throws Exception {

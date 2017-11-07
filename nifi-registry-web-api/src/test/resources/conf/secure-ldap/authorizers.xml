@@ -141,7 +141,7 @@
         <property name="User Search Scope">ONE_LEVEL</property>
         <property name="User Search Filter">(uid=*)</property>
         <property name="User Identity Attribute">uid</property>
-        <!--<property name="User Group Name Attribute">ou</property>-->
+        <!--<property name="User Group Name Attribute"></property>-->
 
         <property name="Group Search Base">dc=example,dc=com</property>
         <property name="Group Object Class">groupOfUniqueNames</property>

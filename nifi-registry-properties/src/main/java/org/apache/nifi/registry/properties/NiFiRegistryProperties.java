@@ -49,7 +49,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_NEED_CLIENT_AUTH = "nifi.registry.security.needClientAuth";
     public static final String SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "nifi.registry.security.authorizers.configuration.file";
     public static final String SECURITY_AUTHORIZER = "nifi.registry.security.authorizer";
-    public static final String SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE = "nifi.registry.security.identity.provider.configuration.file";
+    public static final String SECURITY_IDENTITY_PROVIDERS_CONFIGURATION_FILE = "nifi.registry.security.identity.providers.configuration.file";
     public static final String SECURITY_IDENTITY_PROVIDER = "nifi.registry.security.identity.provider";
     public static final String SECURITY_IDENTITY_MAPPING_PATTERN_PREFIX = "nifi.registry.security.identity.mapping.pattern.";
     public static final String SECURITY_IDENTITY_MAPPING_VALUE_PREFIX = "nifi.registry.security.identity.mapping.value.";
@@ -182,7 +182,7 @@ public class NiFiRegistryProperties extends Properties {
     }
 
     public File getIdentityProviderConfigurationFile() {
-        final String value = getProperty(SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE);
+        final String value = getProperty(SECURITY_IDENTITY_PROVIDERS_CONFIGURATION_FILE);
         if (StringUtils.isBlank(value)) {
             return new File(DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE);
         } else {

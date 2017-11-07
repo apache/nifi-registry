@@ -28,9 +28,10 @@ public class KeyEntity {
     @Id
     private String id;
 
-    @Column(unique=true)
+    @Column(name = "TENANT_IDENTITY", unique = true, nullable = false)
     private String tenantIdentity;
 
+    @Column(name = "KEY_VALUE", nullable = false)
     private String keyValue;
 
     public String getId() {
