@@ -16,11 +16,11 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.RequestAction;
-import org.apache.nifi.registry.authorization.resource.Authorizable;
-import org.apache.nifi.registry.authorization.resource.ResourceType;
-import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.resource.Authorizable;
+import org.apache.nifi.registry.security.authorization.resource.ResourceType;
+import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.model.authorization.Resource;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -56,9 +56,9 @@ public class AuthorizableApplicationResource extends ApplicationResource {
         authorizeBucketAccess(actionType, bucketItem.getBucketIdentifier());
     }
 
-    protected Set<String> getAuthorizedBucketIds() {
+    protected Set<String> getAuthorizedBucketIds(RequestAction actionType) {
         return authorizationService
-                .getAuthorizedResources(RequestAction.READ, ResourceType.Bucket)
+                .getAuthorizedResources(actionType, ResourceType.Bucket)
                 .stream()
                 .map(AuthorizableApplicationResource::extractBucketIdFromResource)
                 .filter(Objects::nonNull)

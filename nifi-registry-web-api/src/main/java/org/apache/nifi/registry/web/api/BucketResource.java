@@ -22,19 +22,19 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.RequestAction;
-import org.apache.nifi.registry.authorization.resource.Authorizable;
-import org.apache.nifi.registry.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.service.QueryParameters;
-import org.apache.nifi.registry.params.SortParameter;
-import org.apache.nifi.registry.web.link.LinkService;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.params.SortParameter;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
+import org.apache.nifi.registry.security.authorization.resource.Authorizable;
+import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.service.QueryParameters;
+import org.apache.nifi.registry.service.RegistryService;
+import org.apache.nifi.registry.web.link.LinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +55,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -101,6 +104,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     public Response createBucket(final Bucket bucket) {
         authorizeAccess(RequestAction.WRITE);
         final Bucket createdBucket = registryService.createBucket(bucket);
+        populateBucketAuthorizedActions(createdBucket, RequestAction.WRITE);
         linkService.populateBucketLinks(createdBucket);
         return Response.status(Response.Status.OK).entity(createdBucket).build();
     }
@@ -122,9 +126,7 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
             @QueryParam("sort")
             final List<String> sortParameters) {
-        authorizeAccess(RequestAction.READ);
-
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds();
+        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
 
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
             // not authorized for any bucket, return empty list of items
@@ -137,6 +139,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         }
 
         final List<Bucket> buckets = registryService.getBuckets(paramsBuilder.build(), authorizedBucketIds);
+        populateBucketAuthorizedActions(buckets, RequestAction.READ);
         linkService.populateBucketLinks(buckets);
 
         return Response.status(Response.Status.OK).entity(buckets).build();
@@ -161,6 +164,7 @@ public class BucketResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final Bucket bucket = registryService.getBucket(bucketId);
+        populateBucketAuthorizedActions(bucket, RequestAction.READ);
         linkService.populateBucketLinks(bucket);
 
         if (bucket.getVersionedFlows() != null) {
@@ -206,6 +210,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         final Bucket updatedBucket = registryService.updateBucket(bucket);
+        populateBucketAuthorizedActions(updatedBucket, RequestAction.WRITE);
         linkService.populateBucketLinks(updatedBucket);
         return Response.status(Response.Status.OK).entity(updatedBucket).build();
     }
@@ -250,11 +255,57 @@ public class BucketResource extends AuthorizableApplicationResource {
         return Response.status(Response.Status.OK).entity(fields).build();
     }
 
-    private void authorizeAccess(RequestAction actionType) {
+    private void authorizeAccess(RequestAction actionType) throws AccessDeniedException {
         authorizationService.authorizeAccess(lookup -> {
             final Authorizable bucketsAuthorizable = lookup.getBucketsAuthorizable();
             bucketsAuthorizable.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
         });
+    }
+
+    private void populateBucketAuthorizedActions(Collection<Bucket> buckets, RequestAction... knownAuthorizedActions) {
+
+        EnumSet<RequestAction> knownActions = EnumSet.noneOf(RequestAction.class);
+        knownActions.addAll(Arrays.asList(knownAuthorizedActions));
+
+        EnumSet<RequestAction> unknownActions = EnumSet.allOf(RequestAction.class);
+        unknownActions.removeAll(knownActions);
+
+        // if the user has an authorized action on the top-level /buckets resource, that applies to all buckets
+        for (RequestAction action : unknownActions) {
+            try {
+                authorizeAccess(action);
+                knownActions.add(action);
+            } catch (AccessDeniedException e) {
+                // not authorized, do nothing
+            }
+        }
+
+        // now for each bucket, add the known actions and check if the user has additional authorized actions for that bucket
+        for (Bucket bucket : buckets) {
+            populateBucketAuthorizedActions(bucket, knownAuthorizedActions);
+        }
+    }
+
+    private void populateBucketAuthorizedActions(Bucket bucket, RequestAction... knownAuthorizedActions) {
+
+        EnumSet<RequestAction> knownActions = EnumSet.noneOf(RequestAction.class);
+        knownActions.addAll(Arrays.asList(knownAuthorizedActions));
+
+        EnumSet<RequestAction> unknownActions = EnumSet.allOf(RequestAction.class);
+        unknownActions.removeAll(knownActions);
+
+        for (RequestAction action : knownAuthorizedActions) {
+            bucket.addAuthorizedAction(action.toString());
+        }
+
+        for (RequestAction action : unknownActions) {
+            try {
+                authorizeBucketAccess(action, bucket.getIdentifier());
+                bucket.addAuthorizedAction(action.toString());
+            } catch (AccessDeniedException e) {
+                // not authorized, do nothing
+            }
+        }
     }
 
 }

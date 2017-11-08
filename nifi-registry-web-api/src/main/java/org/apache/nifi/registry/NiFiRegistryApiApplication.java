@@ -38,13 +38,13 @@ public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        final Properties fixedProps = new Properties();
-        fixedProps.setProperty("spring.jpa.hibernate.ddl-auto", "none");
-        fixedProps.setProperty("spring.jpa.hibernate.naming.physical-strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
+        final Properties defaultProperties = new Properties();
+        defaultProperties.setProperty("spring.jpa.hibernate.ddl-auto", "none");
+        defaultProperties.setProperty("spring.jpa.hibernate.naming.physical-strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
 
         return application
                 .sources(NiFiRegistryApiApplication.class)
-                .properties(fixedProps);
+                .properties(defaultProperties);
     }
 
     public static void main(String[] args) {

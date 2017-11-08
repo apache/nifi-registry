@@ -59,27 +59,4 @@ public class UserGroup extends Tenant {
         }
     }
 
-    /**
-     * @return The access policies set for this user group
-     */
-    @ApiModelProperty(
-            value = "The access policies granted to this user group.",
-            readOnly = true
-    )
-    public Set<AccessPolicySummary> getAccessPolicies() {
-        return accessPolicies;
-    }
-
-    public void setAccessPolicies(Set<AccessPolicySummary> accessPolicies) {
-        this.accessPolicies = accessPolicies;
-    }
-
-    public void addAccessPolicies(Collection<? extends AccessPolicySummary> accessPolicies) {
-        if (accessPolicies != null) {
-            if (this.accessPolicies == null) {
-                this.accessPolicies = new HashSet<>();
-            }
-            this.accessPolicies.addAll(accessPolicies);
-        }
-    }
 }

@@ -20,8 +20,10 @@ import org.apache.nifi.registry.security.util.KeyStoreUtils;
 import org.apache.nifi.registry.security.util.KeystoreType;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
@@ -111,11 +113,13 @@ public class NiFiRegistryClientConfig {
             trustManagerFactory = null;
         }
 
-        if (keyManagerFactory != null && trustManagerFactory != null) {
+        if (keyManagerFactory != null || trustManagerFactory != null) {
             try {
                 // initialize the ssl context
+                KeyManager[] keyManagers = keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
+                TrustManager[] trustManagers = trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
                 final SSLContext sslContext = SSLContext.getInstance("TLS");
-                sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), new SecureRandom());
+                sslContext.init(keyManagers, trustManagers, new SecureRandom());
                 sslContext.getDefaultSSLParameters().setNeedClientAuth(true);
 
                 return sslContext;

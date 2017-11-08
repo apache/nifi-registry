@@ -16,8 +16,14 @@
  */
 package org.apache.nifi.registry.web.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.glassfish.jersey.client.ClientConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
@@ -151,18 +157,35 @@ public abstract class IntegrationTestBase {
 
     private static Client createClientFromConfig(NiFiRegistryClientConfig registryClientConfig) {
 
-        final SSLContext sslContext = registryClientConfig.getSslContext();
-        final HostnameVerifier hostnameVerifier = registryClientConfig.getHostnameVerifier();
+        final ClientConfig clientConfig = new ClientConfig();
+        clientConfig.register(jacksonJaxbJsonProvider());
 
-        final ClientBuilder clientBuilder = ClientBuilder.newBuilder();
+        final ClientBuilder clientBuilder = ClientBuilder.newBuilder().withConfig(clientConfig);
+
+        final SSLContext sslContext = registryClientConfig.getSslContext();
         if (sslContext != null) {
             clientBuilder.sslContext(sslContext);
         }
+
+        final HostnameVerifier hostnameVerifier = registryClientConfig.getHostnameVerifier();
         if (hostnameVerifier != null) {
             clientBuilder.hostnameVerifier(hostnameVerifier);
         }
 
         return clientBuilder.build();
+    }
+
+    private static JacksonJaxbJsonProvider jacksonJaxbJsonProvider() {
+        JacksonJaxbJsonProvider jacksonJaxbJsonProvider = new JacksonJaxbJsonProvider();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPropertyInclusion(JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL));
+        mapper.setAnnotationIntrospector(new JaxbAnnotationIntrospector(mapper.getTypeFactory()));
+        // Ignore unknown properties so that deployed client remain compatible with future versions of NiFi Registry that add new fields
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        jacksonJaxbJsonProvider.setMapper(mapper);
+        return jacksonJaxbJsonProvider;
     }
 
 }

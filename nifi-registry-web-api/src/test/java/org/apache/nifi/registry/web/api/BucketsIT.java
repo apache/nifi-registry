@@ -59,16 +59,19 @@ public class BucketsIT extends UnsecuredITBase {
                 "\"name\":\"Bucket 1\"," +
                 "\"createdTimestamp\":1505091060000," +
                 "\"description\":\"This is test bucket 1\"," +
+                "\"authorizedActions\":[\"read\",\"write\",\"delete\"]," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1\"}}," +
                 "{\"identifier\":\"2\"," +
                 "\"name\":\"Bucket 2\"," +
                 "\"createdTimestamp\":1505091120000," +
                 "\"description\":\"This is test bucket 2\"," +
+                "\"authorizedActions\":[\"read\",\"write\",\"delete\"]," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/2\"}}," +
                 "{\"identifier\":\"3\"," +
                 "\"name\":\"Bucket 3\"," +
                 "\"createdTimestamp\":1505091180000," +
                 "\"description\":\"This is test bucket 3\"," +
+                "\"authorizedActions\":[\"read\",\"write\",\"delete\"]," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/3\"}}" +
                 "]";
 
@@ -82,6 +85,7 @@ public class BucketsIT extends UnsecuredITBase {
         // Then: the pre-populated list of buckets is returned
 
         JSONAssert.assertEquals(expected, bucketsJson, false);
+        assertTrue(!bucketsJson.contains("null")); // JSON serialization from the server should not include null fields, such as "versionedFlows": null
     }
 
     @Test
@@ -202,7 +206,8 @@ public class BucketsIT extends UnsecuredITBase {
         // Then: the body of the server response matches the bucket that was deleted
         //  and: the bucket is no longer accessible (resource not found)
 
-        createdBucket.setLink(null); // self URI will not be present in deletedBucket
+        createdBucket.setAuthorizedActions(null); // authorizedActions will not be present in deletedBucket
+        createdBucket.setLink(null); // links will not be present in deletedBucket
         assertBucketsEqual(createdBucket, deletedBucket, true);
 
         final Response response = client
@@ -239,6 +244,7 @@ public class BucketsIT extends UnsecuredITBase {
         if (checkServerSetFields) {
             assertEquals(expected.getIdentifier(), actual.getIdentifier());
             assertEquals(expected.getCreatedTimestamp(), actual.getCreatedTimestamp());
+            assertEquals(expected.getAuthorizedActions(), actual.getAuthorizedActions());
             assertEquals(expected.getLink(), actual.getLink());
         }
     }

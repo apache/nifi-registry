@@ -19,15 +19,15 @@ package org.apache.nifi.registry.web.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.nifi.registry.authorization.Authorizer;
-import org.apache.nifi.registry.authorization.RequestAction;
 import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.service.QueryParameters;
-import org.apache.nifi.registry.params.SortParameter;
-import org.apache.nifi.registry.web.link.LinkService;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.params.SortParameter;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.service.QueryParameters;
+import org.apache.nifi.registry.service.RegistryService;
+import org.apache.nifi.registry.web.link.LinkService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,7 +89,7 @@ public class ItemResource extends AuthorizableApplicationResource {
             @QueryParam("sort")
             final List<String> sortParameters) {
 
-        Set<String> authorizedBucketIds = getAuthorizedBucketIds();
+        Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
 
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
             // not authorized for any bucket, return empty list of items

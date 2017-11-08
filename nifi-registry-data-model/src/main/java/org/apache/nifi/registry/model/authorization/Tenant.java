@@ -19,6 +19,10 @@ package org.apache.nifi.registry.model.authorization;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A tenant of this NiFi Registry
  */
@@ -27,6 +31,7 @@ public class Tenant {
 
     private String identifier;
     private String identity;
+    private Set<AccessPolicySummary> accessPolicies;
 
     public Tenant() {}
 
@@ -58,4 +63,26 @@ public class Tenant {
     public void setIdentity(String identity) {
         this.identity = identity;
     }
+
+    @ApiModelProperty(
+            value = "The access policies granted to this tenant. This field is read only",
+            readOnly = true
+    )
+    public Set<AccessPolicySummary> getAccessPolicies() {
+        return accessPolicies;
+    }
+
+    public void setAccessPolicies(Set<AccessPolicySummary> accessPolicies) {
+        this.accessPolicies = accessPolicies;
+    }
+
+    public void addAccessPolicies(Collection<AccessPolicySummary> accessPolicies) {
+        if (accessPolicies != null) {
+            if (this.accessPolicies == null) {
+                this.accessPolicies = new HashSet<>();
+            }
+            this.accessPolicies.addAll(accessPolicies);
+        }
+    }
+
 }

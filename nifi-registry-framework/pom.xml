@@ -44,7 +44,11 @@
                             <goal>xjc</goal>
                         </goals>
                         <configuration>
+                            <sources>
+                                <source>src/main/xsd/providers.xsd</source>
+                            </sources>
                             <packageName>org.apache.nifi.registry.provider.generated</packageName>
+                            <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
                     <execution>
@@ -53,7 +57,36 @@
                             <goal>xjc</goal>
                         </goals>
                         <configuration>
-                            <packageName>org.apache.nifi.registry.authorization.generated</packageName>
+                            <sources>
+                                <source>src/main/xsd/authorizers.xsd</source>
+                            </sources>
+                            <packageName>org.apache.nifi.registry.security.authorization.generated</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>authorizations</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/authorizations.xsd</source>
+                            </sources>
+                            <packageName>org.apache.nifi.registry.security.authorization.file.generated</packageName>
+                            <clearOutputDir>false</clearOutputDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tenants</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/xsd/tenants.xsd</source>
+                            </sources>
+                            <packageName>org.apache.nifi.registry.security.authorization.file.tenants.generated</packageName>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
@@ -63,7 +96,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <configuration>
-                    <excludes>**/authorization/generated/*.java,**/provider/generated/*.java,</excludes>
+                    <excludes>**/generated/*.java</excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -120,13 +153,49 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-security-api-impl</artifactId>
+            <artifactId>nifi-registry-security-utils</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
             <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-ldap</artifactId>
+            <version>${spring.security.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-beans</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-tx</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.55</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -198,11 +267,6 @@
             <artifactId>cglib-nodep</artifactId>
             <version>2.2.2</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-security-utils</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

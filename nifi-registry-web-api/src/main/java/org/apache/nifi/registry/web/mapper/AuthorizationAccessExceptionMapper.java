@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.web.mapper;
 
-import org.apache.nifi.registry.authorization.exception.AuthorizationAccessException;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

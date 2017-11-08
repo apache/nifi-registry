@@ -27,7 +27,6 @@ import java.util.Set;
 public class User extends Tenant {
 
     private Set<Tenant> userGroups;
-    private Set<AccessPolicySummary> accessPolicies;
 
     public User() {}
 
@@ -53,27 +52,6 @@ public class User extends Tenant {
                 this.userGroups = new HashSet<>();
             }
             this.userGroups.addAll(userGroups);
-        }
-    }
-
-    @ApiModelProperty(
-            value = "The access policies granted to this user. This field is read only",
-            readOnly = true
-    )
-    public Set<AccessPolicySummary> getAccessPolicies() {
-        return accessPolicies;
-    }
-
-    public void setAccessPolicies(Set<AccessPolicySummary> accessPolicies) {
-        this.accessPolicies = accessPolicies;
-    }
-
-    public void addAccessPolicies(Collection<? extends AccessPolicySummary> accessPolicies) {
-        if (accessPolicies != null) {
-            if (this.accessPolicies == null) {
-                this.accessPolicies = new HashSet<>();
-            }
-            this.accessPolicies.addAll(accessPolicies);
         }
     }
 

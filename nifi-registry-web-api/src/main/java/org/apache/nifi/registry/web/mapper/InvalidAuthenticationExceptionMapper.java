@@ -17,7 +17,7 @@
 package org.apache.nifi.registry.web.mapper;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.web.security.InvalidAuthenticationException;
+import org.apache.nifi.registry.web.security.authentication.exception.InvalidAuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
