@@ -64,6 +64,16 @@ public interface NiFiRegistryClient extends Closeable {
     ItemsClient getItemsClient(String ... proxiedEntity);
 
     /**
+     * @return the client for obtaining information about the current user
+     */
+    UserClient getUserClient();
+
+    /**
+     * @return the client for obtaining information about the current user based on the given proxied entities
+     */
+    UserClient getUserClient(String ... proxiedEntity);
+
+    /**
      * The builder interface that implementations should provide for obtaining the client.
      */
     interface Builder {
