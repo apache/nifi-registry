@@ -70,7 +70,7 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
     }
 
     @Override
-    public synchronized void saveSnapshot(final FlowSnapshotContext context, final byte[] content) throws FlowPersistenceException {
+    public synchronized void saveFlowContent(final FlowSnapshotContext context, final byte[] content) throws FlowPersistenceException {
         final File bucketDir = new File(flowStorageDir, context.getBucketId());
         try {
             FileUtils.ensureDirectoryExistAndCanReadAndWrite(bucketDir);
@@ -111,7 +111,7 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
     }
 
     @Override
-    public synchronized byte[] getSnapshot(final String bucketId, final String flowId, final int version) throws FlowPersistenceException {
+    public synchronized byte[] getFlowContent(final String bucketId, final String flowId, final int version) throws FlowPersistenceException {
         final File snapshotFile = getSnapshotFile(bucketId, flowId, version);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Retrieving snapshot with filename {}", new Object[] {snapshotFile.getAbsolutePath()});
@@ -129,7 +129,7 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
     }
 
     @Override
-    public synchronized void deleteSnapshots(final String bucketId, final String flowId) throws FlowPersistenceException {
+    public synchronized void deleteAllFlowContent(final String bucketId, final String flowId) throws FlowPersistenceException {
         final File flowDir = new File(flowStorageDir, bucketId + "/" + flowId);
         if (!flowDir.exists()) {
             LOGGER.debug("Snapshot directory does not exist at {}", new Object[] {flowDir.getAbsolutePath()});
@@ -144,7 +144,7 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
     }
 
     @Override
-    public synchronized void deleteSnapshot(final String bucketId, final String flowId, final int version) throws FlowPersistenceException {
+    public synchronized void deleteFlowContent(final String bucketId, final String flowId, final int version) throws FlowPersistenceException {
         final File snapshotFile = getSnapshotFile(bucketId, flowId, version);
         if (!snapshotFile.exists()) {
             LOGGER.debug("Snapshot file does not exist at {}", new Object[] {snapshotFile.getAbsolutePath()});

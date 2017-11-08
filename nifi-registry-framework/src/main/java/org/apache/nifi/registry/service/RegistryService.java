@@ -30,6 +30,7 @@ import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class RegistryService {
 
     private final MetadataService metadataService;
     private final FlowPersistenceProvider flowPersistenceProvider;
-    private final Serializer<VersionedFlowSnapshot> snapshotSerializer;
+    private final Serializer<VersionedProcessGroup> processGroupSerializer;
     private final Validator validator;
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -78,15 +79,15 @@ public class RegistryService {
     @Autowired
     public RegistryService(final MetadataService metadataService,
                            final FlowPersistenceProvider flowPersistenceProvider,
-                           final Serializer<VersionedFlowSnapshot> snapshotSerializer,
+                           final Serializer<VersionedProcessGroup> processGroupSerializer,
                            final Validator validator) {
         this.metadataService = metadataService;
         this.flowPersistenceProvider = flowPersistenceProvider;
-        this.snapshotSerializer = snapshotSerializer;
+        this.processGroupSerializer = processGroupSerializer;
         this.validator = validator;
         Validate.notNull(this.metadataService);
         Validate.notNull(this.flowPersistenceProvider);
-        Validate.notNull(this.snapshotSerializer);
+        Validate.notNull(this.processGroupSerializer);
         Validate.notNull(this.validator);
     }
 
@@ -225,7 +226,7 @@ public class RegistryService {
 
             // for each flow in the bucket, delete all snapshots from the flow persistence provider
             for (final FlowEntity flowEntity : existingBucket.getFlows()) {
-                flowPersistenceProvider.deleteSnapshots(bucketIdentifier, flowEntity.getId());
+                flowPersistenceProvider.deleteAllFlowContent(bucketIdentifier, flowEntity.getId());
             }
 
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
@@ -449,7 +450,7 @@ public class RegistryService {
             }
 
             // delete all snapshots from the flow persistence provider
-            flowPersistenceProvider.deleteSnapshots(existingFlow.getBucket().getId(), existingFlow.getId());
+            flowPersistenceProvider.deleteAllFlowContent(existingFlow.getBucket().getId(), existingFlow.getId());
 
             // now delete the flow from the metadata provider
             metadataService.deleteFlow(existingFlow);
@@ -511,12 +512,12 @@ public class RegistryService {
 
             // serialize the snapshot
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
-            snapshotSerializer.serialize(flowSnapshot, out);
+            processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
 
             // save the serialized snapshot to the persistence provider
             final Bucket bucket = DataModelMapper.map(existingBucket, false);
             final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, snapshotMetadata).build();
-            flowPersistenceProvider.saveSnapshot(context, out.toByteArray());
+            flowPersistenceProvider.saveFlowContent(context, out.toByteArray());
 
             // create snapshot in the metadata provider
             metadataService.createFlowSnapshot(DataModelMapper.map(snapshotMetadata));
@@ -553,7 +554,7 @@ public class RegistryService {
             }
 
             // get the serialized bytes of the snapshot
-            final byte[] serializedSnapshot = flowPersistenceProvider.getSnapshot(bucketIdentifier, flowIdentifier, version);
+            final byte[] serializedSnapshot = flowPersistenceProvider.getFlowContent(bucketIdentifier, flowIdentifier, version);
 
             if (serializedSnapshot == null || serializedSnapshot.length == 0) {
                 throw new IllegalStateException("No serialized content found for snapshot with flow identifier "
@@ -561,7 +562,14 @@ public class RegistryService {
             }
 
             final InputStream input = new ByteArrayInputStream(serializedSnapshot);
-            return snapshotSerializer.deserialize(input);
+            final VersionedProcessGroup flowContents = processGroupSerializer.deserialize(input);
+
+            final VersionedFlowSnapshotMetadata snapshotMetadata = DataModelMapper.map(snapshotEntity);
+
+            final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
+            snapshot.setFlowContents(flowContents);
+            snapshot.setSnapshotMetadata(snapshotMetadata);
+            return snapshot;
         } finally {
             readLock.unlock();
         }
@@ -590,7 +598,7 @@ public class RegistryService {
             }
 
             // delete the content of the snapshot
-            flowPersistenceProvider.deleteSnapshot(bucketIdentifier, flowIdentifier, version);
+            flowPersistenceProvider.deleteFlowContent(bucketIdentifier, flowIdentifier, version);
 
             // delete the snapshot itself
             metadataService.deleteFlowSnapshot(snapshotEntity);

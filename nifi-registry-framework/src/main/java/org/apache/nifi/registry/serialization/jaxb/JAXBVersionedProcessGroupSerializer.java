@@ -16,15 +16,15 @@
  */
 package org.apache.nifi.registry.serialization.jaxb;
 
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.flow.VersionedProcessGroup;
 
 /**
  * A JAXB serializer for VersionedFlowSnapshots.
  */
-public class JAXBFlowSnapshotSerializer extends JAXBSerializer<VersionedFlowSnapshot> {
+public class JAXBVersionedProcessGroupSerializer extends JAXBSerializer<VersionedProcessGroup> {
 
-    public JAXBFlowSnapshotSerializer() {
-        super(VersionedFlowSnapshot.class);
+    public JAXBVersionedProcessGroupSerializer() {
+        super(VersionedProcessGroup.class);
     }
 
 }

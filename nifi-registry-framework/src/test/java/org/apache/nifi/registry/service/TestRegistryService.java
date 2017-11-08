@@ -28,7 +28,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.serialization.FlowSnapshotSerializer;
+import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class TestRegistryService {
 
     private MetadataService metadataService;
     private FlowPersistenceProvider flowPersistenceProvider;
-    private Serializer<VersionedFlowSnapshot> snapshotSerializer;
+    private Serializer<VersionedProcessGroup> snapshotSerializer;
     private Validator validator;
 
     private RegistryService registryService;
@@ -72,7 +72,7 @@ public class TestRegistryService {
     public void setup() {
         metadataService = mock(MetadataService.class);
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
-        snapshotSerializer = mock(FlowSnapshotSerializer.class);
+        snapshotSerializer = mock(VersionedProcessGroupSerializer.class);
 
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
@@ -275,7 +275,7 @@ public class TestRegistryService {
         assertEquals(bucketToDelete.getId(), deletedBucket.getIdentifier());
 
         verify(flowPersistenceProvider, times(1))
-                .deleteSnapshots(eq(bucketToDelete.getId()), eq(flowToDelete.getId()));
+                .deleteAllFlowContent(eq(bucketToDelete.getId()), eq(flowToDelete.getId()));
     }
 
     // ---------------------- Test VersionedFlow methods ---------------------------------------------
@@ -382,6 +382,7 @@ public class TestRegistryService {
         assertEquals(flowEntity.getName(), versionedFlow.getName());
         assertEquals(flowEntity.getDescription(), versionedFlow.getDescription());
         assertEquals(flowEntity.getBucket().getId(), versionedFlow.getBucketIdentifier());
+        assertEquals(flowEntity.getBucket().getName(), versionedFlow.getBucketName());
         assertEquals(flowEntity.getCreated().getTime(), versionedFlow.getCreatedTimestamp());
         assertEquals(flowEntity.getModified().getTime(), versionedFlow.getModifiedTimestamp());
     }
@@ -554,7 +555,7 @@ public class TestRegistryService {
         assertEquals(flowToDelete.getId(), deletedFlow.getIdentifier());
 
         verify(flowPersistenceProvider, times(1))
-                .deleteSnapshots(flowToDelete.getBucket().getId(), flowToDelete.getId());
+                .deleteAllFlowContent(flowToDelete.getBucket().getId(), flowToDelete.getId());
 
         verify(metadataService, times(1)).deleteFlow(flowToDelete);
     }
@@ -583,7 +584,7 @@ public class TestRegistryService {
     @Test(expected = ConstraintViolationException.class)
     public void testCreateSnapshotInvalidMetadata() {
         final VersionedFlowSnapshot snapshot = createSnapshot();
-        snapshot.getSnapshotMetadata().setFlowName(null);
+        snapshot.getSnapshotMetadata().setFlowIdentifier(null);
         registryService.createFlowSnapshot(snapshot);
     }
 
@@ -739,8 +740,8 @@ public class TestRegistryService {
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
         assertNotNull(createdSnapshot);
 
-        verify(snapshotSerializer, times(1)).serialize(eq(snapshot), any(OutputStream.class));
-        verify(flowPersistenceProvider, times(1)).saveSnapshot(any(), any());
+        verify(snapshotSerializer, times(1)).serialize(eq(snapshot.getFlowContents()), any(OutputStream.class));
+        verify(flowPersistenceProvider, times(1)).saveFlowContent(any(), any());
         verify(metadataService, times(1)).createFlowSnapshot(any(FlowSnapshotEntity.class));
     }
 
@@ -789,7 +790,7 @@ public class TestRegistryService {
 
         when(metadataService.getFlowSnapshot(bucketId, key.getFlowId(), key.getVersion())).thenReturn(existingSnapshot);
 
-        when(flowPersistenceProvider.getSnapshot(
+        when(flowPersistenceProvider.getFlowContent(
                 existingSnapshot.getFlow().getBucket().getId(),
                 existingSnapshot.getFlow().getId(),
                 existingSnapshot.getId().getVersion()
@@ -808,18 +809,29 @@ public class TestRegistryService {
                 .thenReturn(existingSnapshot);
 
         // return a non-null, non-zero-length array so something gets passed to the serializer
-        when(flowPersistenceProvider.getSnapshot(
+        when(flowPersistenceProvider.getFlowContent(
                 existingSnapshot.getFlow().getBucket().getId(),
                 existingSnapshot.getFlow().getId(),
                 existingSnapshot.getId().getVersion()
         )).thenReturn(new byte[10]);
 
         final VersionedFlowSnapshot snapshotToDeserialize = createSnapshot();
-        when(snapshotSerializer.deserialize(any(InputStream.class))).thenReturn(snapshotToDeserialize);
+        when(snapshotSerializer.deserialize(any(InputStream.class))).thenReturn(snapshotToDeserialize.getFlowContents());
 
         final VersionedFlowSnapshot returnedSnapshot = registryService.getFlowSnapshot(
                 bucketId, existingSnapshot.getFlow().getId(), existingSnapshot.getId().getVersion());
         assertNotNull(returnedSnapshot);
+        assertNotNull(returnedSnapshot.getSnapshotMetadata());
+
+        final VersionedFlowSnapshotMetadata snapshotMetadata = returnedSnapshot.getSnapshotMetadata();
+        assertEquals(key.getVersion().intValue(), snapshotMetadata.getVersion());
+        assertEquals(existingSnapshot.getFlow().getBucket().getId(), snapshotMetadata.getBucketIdentifier());
+        assertEquals(existingSnapshot.getFlow().getBucket().getName(), snapshotMetadata.getBucketName());
+        assertEquals(existingSnapshot.getFlow().getId(), snapshotMetadata.getFlowIdentifier());
+        assertEquals(existingSnapshot.getFlow().getName(), snapshotMetadata.getFlowName());
+        assertEquals(existingSnapshot.getFlow().getDescription(), snapshotMetadata.getFlowDescription());
+        assertEquals(existingSnapshot.getCreated(), new Date(snapshotMetadata.getTimestamp()));
+        assertEquals(existingSnapshot.getComments(), snapshotMetadata.getComments());
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -844,7 +856,7 @@ public class TestRegistryService {
         assertNotNull(deletedSnapshot);
         assertEquals(existingSnapshot.getId().getFlowId(), deletedSnapshot.getFlowIdentifier());
 
-        verify(flowPersistenceProvider, times(1)).deleteSnapshot(
+        verify(flowPersistenceProvider, times(1)).deleteFlowContent(
                 existingSnapshot.getFlow().getBucket().getId(),
                 existingSnapshot.getFlow().getId(),
                 existingSnapshot.getId().getVersion()

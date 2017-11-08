@@ -14,30 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.serialization;
+package org.apache.nifi.registry.serialization.jaxb;
 
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
+import org.apache.nifi.registry.serialization.SerializationException;
+import org.apache.nifi.registry.serialization.Serializer;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 
-public class TestFlowSnapshotSerializer {
+public class TestJAXBVersionedProcessGroupSerializer {
 
     @Test
     public void testSerializeDeserializeFlowSnapshot() throws SerializationException {
-        final Serializer<VersionedFlowSnapshot> serializer = new FlowSnapshotSerializer();
-
-        final VersionedFlowSnapshotMetadata snapshotMetadata = new VersionedFlowSnapshotMetadata();
-        snapshotMetadata.setFlowIdentifier("flow1");
-        snapshotMetadata.setFlowName("First Flow");
-        snapshotMetadata.setVersion(1);
-        snapshotMetadata.setComments("This is the first flow");
-        snapshotMetadata.setTimestamp(System.currentTimeMillis());
+        final Serializer<VersionedProcessGroup> serializer = new JAXBVersionedProcessGroupSerializer();
 
         final VersionedProcessGroup processGroup1 = new VersionedProcessGroup();
         processGroup1.setIdentifier("pg1");
@@ -50,23 +44,14 @@ public class TestFlowSnapshotSerializer {
         // make sure nested objects are serialized/deserialized
         processGroup1.getProcessors().add(processor1);
 
-        final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
-        snapshot.setSnapshotMetadata(snapshotMetadata);
-        snapshot.setFlowContents(processGroup1);
-
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        serializer.serialize(snapshot, out);
+        serializer.serialize(processGroup1, out);
+
+        final String snapshotStr = new String(out.toByteArray(), StandardCharsets.UTF_8);
+        //System.out.println(snapshotStr);
 
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        final VersionedFlowSnapshot deserializedSnapshot = serializer.deserialize(in);
-        final VersionedFlowSnapshotMetadata deserializedMetadata = deserializedSnapshot.getSnapshotMetadata();
-        final VersionedProcessGroup deserializedProcessGroup1 = deserializedSnapshot.getFlowContents();
-
-        Assert.assertEquals(snapshotMetadata.getFlowIdentifier(), deserializedMetadata.getFlowIdentifier());
-        Assert.assertEquals(snapshotMetadata.getFlowName(), deserializedMetadata.getFlowName());
-        Assert.assertEquals(snapshotMetadata.getVersion(), deserializedMetadata.getVersion());
-        Assert.assertEquals(snapshotMetadata.getComments(), deserializedMetadata.getComments());
-        Assert.assertEquals(snapshotMetadata.getTimestamp(), deserializedMetadata.getTimestamp());
+        final VersionedProcessGroup deserializedProcessGroup1 = serializer.deserialize(in);
 
         Assert.assertEquals(processGroup1.getIdentifier(), deserializedProcessGroup1.getIdentifier());
         Assert.assertEquals(processGroup1.getName(), deserializedProcessGroup1.getName());
@@ -76,6 +61,6 @@ public class TestFlowSnapshotSerializer {
         final VersionedProcessor deserializedProcessor1 = deserializedProcessGroup1.getProcessors().iterator().next();
         Assert.assertEquals(processor1.getIdentifier(), deserializedProcessor1.getIdentifier());
         Assert.assertEquals(processor1.getName(), deserializedProcessor1.getName());
-
     }
+
 }

@@ -19,7 +19,10 @@ package org.apache.nifi.registry.flow;
 import org.apache.nifi.registry.provider.Provider;
 
 /**
- * A service that can store and retrieve versioned flow snapshots.
+ * A service that can store and retrieve flow contents.
+ *
+ * The flow contents will be a serialized VersionProcessGroup which came from the flowContents
+ * field of a VersionedFlowSnapshot.
  *
  * NOTE: Although this interface is intended to be an extension point, it is not yet considered stable and thus may
  * change across releases until the registry matures.
@@ -27,42 +30,42 @@ import org.apache.nifi.registry.provider.Provider;
 public interface FlowPersistenceProvider extends Provider {
 
     /**
-     * Persists a serialized versioned flow snapshot.
+     * Persists the serialized content.
      *
-     * @param context the context for the snapshot being persisted
-     * @param content the serialized snapshot to persist
-     * @throws FlowPersistenceException if the snapshot could not be persisted
+     * @param context the context for the content being persisted
+     * @param content the serialized flow content to persist
+     * @throws FlowPersistenceException if the content could not be persisted
      */
-    void saveSnapshot(FlowSnapshotContext context, byte[] content) throws FlowPersistenceException;
+    void saveFlowContent(FlowSnapshotContext context, byte[] content) throws FlowPersistenceException;
 
     /**
-     * Retrieves a versioned flow snapshot.
+     * Retrieves the serialized content.
      *
-     * @param bucketId the bucket id where the snapshot is located
+     * @param bucketId the bucket id where the flow snapshot is located
      * @param flowId the id of the versioned flow the snapshot belongs to
      * @param version the version of the snapshot
      * @return the bytes for the requested snapshot, or null if not found
      * @throws FlowPersistenceException if the snapshot could not be retrieved due to an error in underlying provider
      */
-    byte[] getSnapshot(String bucketId, String flowId, int version) throws FlowPersistenceException;
+    byte[] getFlowContent(String bucketId, String flowId, int version) throws FlowPersistenceException;
 
     /**
-     * Deletes all snapshots for the versioned flow with the given id.
+     * Deletes all content for the versioned flow with the given id in the given bucket.
      *
      * @param bucketId the bucket the versioned flow belongs to
      * @param flowId the id of the versioned flow
      * @throws FlowPersistenceException if the snapshots could not be deleted due to an error in underlying provider
      */
-    void deleteSnapshots(String bucketId, String flowId) throws FlowPersistenceException;
+    void deleteAllFlowContent(String bucketId, String flowId) throws FlowPersistenceException;
 
     /**
-     * Deletes the given snapshot.
+     * Deletes the content for the given snapshot.
      *
      * @param bucketId the bucket id where the snapshot is located
      * @param flowId the id of the versioned flow the snapshot belongs to
      * @param version the version of the snapshot
      * @throws FlowPersistenceException if the snapshot could not be deleted due to an error in underlying provider
      */
-    void deleteSnapshot(String bucketId, String flowId, int version) throws FlowPersistenceException;
+    void deleteFlowContent(String bucketId, String flowId, int version) throws FlowPersistenceException;
 
 }
