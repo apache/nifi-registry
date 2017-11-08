@@ -32,22 +32,22 @@ public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
     }
 
     @Override
-    public void saveSnapshot(FlowSnapshotContext context, byte[] content) throws FlowPersistenceException {
+    public void saveFlowContent(FlowSnapshotContext context, byte[] content) throws FlowPersistenceException {
 
     }
 
     @Override
-    public byte[] getSnapshot(String bucketId, String flowId, int version) throws FlowPersistenceException {
+    public byte[] getFlowContent(String bucketId, String flowId, int version) throws FlowPersistenceException {
         return new byte[0];
     }
 
     @Override
-    public void deleteSnapshots(String bucketId, String flowId) throws FlowPersistenceException {
+    public void deleteAllFlowContent(String bucketId, String flowId) throws FlowPersistenceException {
 
     }
 
     @Override
-    public void deleteSnapshot(String bucketId, String flowId, int version) throws FlowPersistenceException {
+    public void deleteFlowContent(String bucketId, String flowId, int version) throws FlowPersistenceException {
 
     }
 

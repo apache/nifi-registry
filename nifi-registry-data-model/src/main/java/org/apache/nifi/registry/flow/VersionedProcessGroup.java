@@ -24,7 +24,9 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement
 public class VersionedProcessGroup extends VersionedComponent {
 
     // It is important that all of these components be held in LinkedHashSets because if a VersionedProcessGroup
