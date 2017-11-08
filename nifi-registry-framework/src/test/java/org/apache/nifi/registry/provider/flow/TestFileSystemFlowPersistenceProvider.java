@@ -89,12 +89,12 @@ public class TestFileSystemFlowPersistenceProvider {
         when(context.getVersion()).thenReturn(1);
 
         final byte[] content = "flow1v1".getBytes(StandardCharsets.UTF_8);
-        fileSystemFlowProvider.saveSnapshot(context, content);
+        fileSystemFlowProvider.saveFlowContent(context, content);
 
         // save new content for an existing version
         final byte[] content2 = "XXX".getBytes(StandardCharsets.UTF_8);
         try {
-            fileSystemFlowProvider.saveSnapshot(context, content2);
+            fileSystemFlowProvider.saveFlowContent(context, content2);
             Assert.fail("Should have thrown exception");
         } catch (Exception e) {
 
@@ -112,16 +112,16 @@ public class TestFileSystemFlowPersistenceProvider {
         createAndSaveSnapshot(fileSystemFlowProvider,"bucket1", "flow1", 1, "flow1v1");
         createAndSaveSnapshot(fileSystemFlowProvider,"bucket1", "flow1", 2, "flow1v2");
 
-        final byte[] flow1v1 = fileSystemFlowProvider.getSnapshot("bucket1", "flow1", 1);
+        final byte[] flow1v1 = fileSystemFlowProvider.getFlowContent("bucket1", "flow1", 1);
         Assert.assertEquals("flow1v1", new String(flow1v1, StandardCharsets.UTF_8));
 
-        final byte[] flow1v2 = fileSystemFlowProvider.getSnapshot("bucket1", "flow1", 2);
+        final byte[] flow1v2 = fileSystemFlowProvider.getFlowContent("bucket1", "flow1", 2);
         Assert.assertEquals("flow1v2", new String(flow1v2, StandardCharsets.UTF_8));
     }
 
     @Test
     public void testGetWhenDoesNotExist() {
-        final byte[] flow1v1 = fileSystemFlowProvider.getSnapshot("bucket1", "flow1", 1);
+        final byte[] flow1v1 = fileSystemFlowProvider.getFlowContent("bucket1", "flow1", 1);
         Assert.assertNull(flow1v1);
     }
 
@@ -133,19 +133,19 @@ public class TestFileSystemFlowPersistenceProvider {
         createAndSaveSnapshot(fileSystemFlowProvider, bucketId, flowId, 1, "flow1v1");
         createAndSaveSnapshot(fileSystemFlowProvider, bucketId, flowId, 2, "flow1v2");
 
-        Assert.assertNotNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 1));
-        Assert.assertNotNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 2));
+        Assert.assertNotNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 1));
+        Assert.assertNotNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 2));
 
-        fileSystemFlowProvider.deleteSnapshots(bucketId, flowId);
+        fileSystemFlowProvider.deleteAllFlowContent(bucketId, flowId);
 
-        Assert.assertNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 1));
-        Assert.assertNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 2));
+        Assert.assertNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 1));
+        Assert.assertNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 2));
 
         // delete a flow that doesn't exist
-        fileSystemFlowProvider.deleteSnapshots(bucketId, "some-other-flow");
+        fileSystemFlowProvider.deleteAllFlowContent(bucketId, "some-other-flow");
 
         // delete a bucket that doesn't exist
-        fileSystemFlowProvider.deleteSnapshots("some-other-bucket", flowId);
+        fileSystemFlowProvider.deleteAllFlowContent("some-other-bucket", flowId);
     }
 
     @Test
@@ -156,27 +156,27 @@ public class TestFileSystemFlowPersistenceProvider {
         createAndSaveSnapshot(fileSystemFlowProvider, bucketId, flowId, 1, "flow1v1");
         createAndSaveSnapshot(fileSystemFlowProvider, bucketId, flowId, 2, "flow1v2");
 
-        Assert.assertNotNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 1));
-        Assert.assertNotNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 2));
+        Assert.assertNotNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 1));
+        Assert.assertNotNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 2));
 
-        fileSystemFlowProvider.deleteSnapshot(bucketId, flowId, 1);
+        fileSystemFlowProvider.deleteFlowContent(bucketId, flowId, 1);
 
-        Assert.assertNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 1));
-        Assert.assertNotNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 2));
+        Assert.assertNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 1));
+        Assert.assertNotNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 2));
 
-        fileSystemFlowProvider.deleteSnapshot(bucketId, flowId, 2);
+        fileSystemFlowProvider.deleteFlowContent(bucketId, flowId, 2);
 
-        Assert.assertNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 1));
-        Assert.assertNull(fileSystemFlowProvider.getSnapshot(bucketId, flowId, 2));
+        Assert.assertNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 1));
+        Assert.assertNull(fileSystemFlowProvider.getFlowContent(bucketId, flowId, 2));
 
         // delete a version that doesn't exist
-        fileSystemFlowProvider.deleteSnapshot(bucketId, flowId, 3);
+        fileSystemFlowProvider.deleteFlowContent(bucketId, flowId, 3);
 
         // delete a flow that doesn't exist
-        fileSystemFlowProvider.deleteSnapshot(bucketId, "some-other-flow", 1);
+        fileSystemFlowProvider.deleteFlowContent(bucketId, "some-other-flow", 1);
 
         // delete a bucket that doesn't exist
-        fileSystemFlowProvider.deleteSnapshot("some-other-bucket", flowId, 1);
+        fileSystemFlowProvider.deleteFlowContent("some-other-bucket", flowId, 1);
     }
 
     private void createAndSaveSnapshot(final FlowPersistenceProvider flowPersistenceProvider, final String bucketId, final String flowId, final int version,
@@ -187,7 +187,7 @@ public class TestFileSystemFlowPersistenceProvider {
         when(context.getVersion()).thenReturn(version);
 
         final byte[] content = contentString.getBytes(StandardCharsets.UTF_8);
-        flowPersistenceProvider.saveSnapshot(context, content);
+        flowPersistenceProvider.saveFlowContent(context, content);
     }
 
     private void verifySnapshot(final File flowStorageDir, final String bucketId, final String flowId, final int version,

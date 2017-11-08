@@ -33,8 +33,8 @@ import java.util.Objects;
  * version of the flow, the timestamp when it was saved, the contents of the flow, etc.
  * </p>
  */
-@XmlRootElement
 @ApiModel(value = "versionedFlowSnapshot")
+@XmlRootElement
 public class VersionedFlowSnapshot {
 
     @Valid

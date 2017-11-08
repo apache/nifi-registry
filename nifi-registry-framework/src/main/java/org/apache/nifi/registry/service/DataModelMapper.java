@@ -90,6 +90,7 @@ public class DataModelMapper {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowEntity.getId());
         versionedFlow.setBucketIdentifier(flowEntity.getBucket().getId());
+        versionedFlow.setBucketName(flowEntity.getBucket().getName());
         versionedFlow.setName(flowEntity.getName());
         versionedFlow.setDescription(flowEntity.getDescription());
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());
@@ -122,7 +123,9 @@ public class DataModelMapper {
         metadata.setFlowIdentifier(flowSnapshotEntity.getId().getFlowId());
         metadata.setVersion(flowSnapshotEntity.getId().getVersion());
         metadata.setBucketIdentifier(flowSnapshotEntity.getFlow().getBucket().getId());
+        metadata.setBucketName(flowSnapshotEntity.getFlow().getBucket().getName());
         metadata.setFlowName(flowSnapshotEntity.getFlow().getName());
+        metadata.setFlowDescription(flowSnapshotEntity.getFlow().getDescription());
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
         return metadata;

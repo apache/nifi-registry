@@ -34,11 +34,17 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
     @NotBlank
     private String bucketIdentifier;
 
+    // read-only
+    private String bucketName;
+
     @NotBlank
     private String flowIdentifier;
 
-    @NotBlank
+    // read-only
     private String flowName;
+
+    // read-only
+    private String flowDescription;
 
     @Min(1)
     private int version;
@@ -58,6 +64,15 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.bucketIdentifier = bucketIdentifier;
     }
 
+    @ApiModelProperty(value = "The name of the bucket this snapshot belongs to.", readOnly = true)
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
     @ApiModelProperty("The identifier of the flow this snapshot belongs to.")
     public String getFlowIdentifier() {
         return flowIdentifier;
@@ -67,13 +82,22 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.flowIdentifier = flowIdentifier;
     }
 
-    @ApiModelProperty("The name of the flow this snapshot belongs to.")
+    @ApiModelProperty(value = "The name of the flow this snapshot belongs to.", readOnly = true)
     public String getFlowName() {
         return flowName;
     }
 
     public void setFlowName(String flowName) {
         this.flowName = flowName;
+    }
+
+    @ApiModelProperty(value = "The description of the flow this snapshot belongs to.", readOnly = true)
+    public String getFlowDescription() {
+        return flowDescription;
+    }
+
+    public void setFlowDescription(String flowDescription) {
+        this.flowDescription = flowDescription;
     }
 
     @ApiModelProperty("The version of this snapshot of the flow.")
