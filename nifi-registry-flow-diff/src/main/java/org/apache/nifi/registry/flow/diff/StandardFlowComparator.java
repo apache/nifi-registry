@@ -17,6 +17,7 @@
 
 package org.apache.nifi.registry.flow.diff;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,10 +41,12 @@ public class StandardFlowComparator implements FlowComparator {
 
     private final ComparableDataFlow flowA;
     private final ComparableDataFlow flowB;
+    private final DifferenceDescriptor differenceDescriptor;
 
-    public StandardFlowComparator(final ComparableDataFlow flowA, final ComparableDataFlow flowB) {
+    public StandardFlowComparator(final ComparableDataFlow flowA, final ComparableDataFlow flowB, final DifferenceDescriptor differenceDescriptor) {
         this.flowA = flowA;
         this.flowB = flowB;
+        this.differenceDescriptor = differenceDescriptor;
     }
 
     @Override
@@ -133,7 +136,7 @@ public class StandardFlowComparator implements FlowComparator {
         addIfDifferent(differences, DifferenceType.EXECUTION_MODE_CHANGED, processorA, processorB, p -> p.getExecutionNode());
         addIfDifferent(differences, DifferenceType.PENALTY_DURATION_CHANGED, processorA, processorB, p -> p.getPenaltyDuration());
         addIfDifferent(differences, DifferenceType.RUN_DURATION_CHANGED, processorA, processorB, p -> p.getRunDurationMillis());
-        addIfDifferent(differences, DifferenceType.SCHEDULING_STRATEGY_CHANGED, processorA, processorB, p -> p.getSchedulingPeriod());
+        addIfDifferent(differences, DifferenceType.SCHEDULING_PERIOD_CHANGED, processorA, processorB, p -> p.getSchedulingPeriod());
         addIfDifferent(differences, DifferenceType.SCHEDULING_STRATEGY_CHANGED, processorA, processorB, p -> p.getSchedulingStrategy());
         addIfDifferent(differences, DifferenceType.STYLE_CHANGED, processorA, processorB, p -> p.getStyle());
         addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, processorA, processorB, p -> p.getYieldDuration());
@@ -327,36 +330,20 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
+        // We don't want to disambiguate between an empty collection and null.
+        if ((valueA == null || valueA instanceof Collection) && (valueB == null || valueB instanceof Collection) && isEmpty((Collection<?>) valueA) && isEmpty((Collection<?>) valueB)) {
+            return;
+        }
+
         differences.add(difference(type, componentA, componentB, valueA, valueB));
     }
 
+    private boolean isEmpty(final Collection<?> collection) {
+        return collection == null || collection.isEmpty();
+    }
+
     private FlowDifference difference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB, final Object valueA, final Object valueB) {
-        final String description;
-
-        switch (type) {
-            case COMPONENT_ADDED:
-                description = String.format("%s with ID %s exists in %s but not in %s",
-                    componentB.getComponentType().getTypeName(), componentB.getIdentifier(), flowB.getName(), flowA.getName());
-                break;
-            case COMPONENT_REMOVED:
-                description = String.format("%s with ID %s exists in %s but not in %s",
-                    componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowA.getName(), flowB.getName());
-                break;
-            case PROPERTY_ADDED:
-                description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
-                    valueB, componentB.getComponentType().getTypeName(), componentB.getIdentifier(), flowB.getName(), flowA.getName());
-                break;
-            case PROPERTY_REMOVED:
-                description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
-                    valueA, componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowA.getName(), flowB.getName());
-                break;
-            default:
-                description = String.format("%s for %s with ID %s; flow '%s' has value %s; flow '%s' has value %s",
-                    type.getDescription(), componentA.getComponentType().getTypeName(), componentA.getIdentifier(),
-                    flowA.getName(), valueA, flowB.getName(), valueB);
-                break;
-        }
-
+        final String description = differenceDescriptor.describeDifference(type, flowA.getName(), flowB.getName(), componentA, componentB, valueA, valueB);
         return new StandardFlowDifference(type, componentA, componentB, valueA, valueB, description);
     }
 

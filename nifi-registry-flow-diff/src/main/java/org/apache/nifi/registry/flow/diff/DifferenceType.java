@@ -79,6 +79,11 @@ public enum DifferenceType {
     SCHEDULING_STRATEGY_CHANGED("Scheduling Strategy Changed"),
 
     /**
+     * The component has a different scheduling period in each of the flows
+     */
+    SCHEDULING_PERIOD_CHANGED("Scheduling Period Changed"),
+
+    /**
      * The component has a different maximum number of concurrent tasks in each of the flows
      */
     CONCURRENT_TASKS_CHANGED("Concurrent Tasks Changed"),
