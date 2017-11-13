@@ -115,6 +115,7 @@ public class DataModelMapper {
         flowSnapshotEntity.setId(key);
         flowSnapshotEntity.setComments(versionedFlowSnapshot.getComments());
         flowSnapshotEntity.setCreated(new Date(versionedFlowSnapshot.getTimestamp()));
+        flowSnapshotEntity.setCreatedBy(versionedFlowSnapshot.getAuthor());
         return flowSnapshotEntity;
     }
 
@@ -128,6 +129,7 @@ public class DataModelMapper {
         metadata.setFlowDescription(flowSnapshotEntity.getFlow().getDescription());
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
+        metadata.setAuthor(flowSnapshotEntity.getCreatedBy());
         return metadata;
     }
 

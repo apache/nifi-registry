@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -33,6 +34,9 @@ public class FlowSnapshotEntity {
     private FlowSnapshotEntityKey id;
 
     private Date created;
+
+    @Column(name = "CREATED_BY")
+    private String createdBy;
 
     private String comments;
 
@@ -54,6 +58,14 @@ public class FlowSnapshotEntity {
 
     public void setCreated(Date created) {
         this.created = created;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     public String getComments() {

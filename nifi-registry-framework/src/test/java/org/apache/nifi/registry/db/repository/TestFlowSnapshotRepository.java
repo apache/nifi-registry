@@ -71,6 +71,7 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
         assertNotNull(flowSnapshot);
         assertEquals(key, flowSnapshot.getId());
         assertNotNull(flowSnapshot.getFlow());
+        assertEquals("user1", flowSnapshot.getCreatedBy());
     }
 
     @Test

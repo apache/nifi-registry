@@ -52,6 +52,9 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
     @Min(1)
     private long timestamp;
 
+    @NotBlank
+    private String author;
+
     private String comments;
 
 
@@ -116,6 +119,15 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @ApiModelProperty("The user that created this snapshot of the flow.")
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     @ApiModelProperty("The comments provided by the user when creating the snapshot.")

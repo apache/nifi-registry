@@ -569,6 +569,7 @@ public class TestRegistryService {
         snapshotMetadata.setVersion(1);
         snapshotMetadata.setComments("This is the first snapshot");
         snapshotMetadata.setBucketIdentifier("b1");
+        snapshotMetadata.setAuthor("user1");
 
         final VersionedProcessGroup processGroup = new VersionedProcessGroup();
         processGroup.setIdentifier("pg1");

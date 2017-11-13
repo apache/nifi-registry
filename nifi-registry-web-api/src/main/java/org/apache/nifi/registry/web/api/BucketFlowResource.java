@@ -29,6 +29,7 @@ import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.QueryParameters;
@@ -265,6 +266,10 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         setSnaphotMetadataIfMissing(bucketId, flowId, snapshot);
+
+        final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
+        snapshot.getSnapshotMetadata().setAuthor(userIdentity);
+
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
         if (createdSnapshot.getSnapshotMetadata() != null) {
             linkService.populateSnapshotLinks(createdSnapshot.getSnapshotMetadata());

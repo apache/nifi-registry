@@ -43,8 +43,8 @@ insert into flow (id) values ('3');
 
 -- test data for flow snapshots
 
-insert into flow_snapshot (flow_id, version, created, comments)
-  values ('1', 1, parsedatetime('2017-09-11 12:57:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'This is flow 1 snapshot 1');
+insert into flow_snapshot (flow_id, version, created, created_by, comments)
+  values ('1', 1, parsedatetime('2017-09-11 12:57:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'user1', 'This is flow 1 snapshot 1');
 
-insert into flow_snapshot (flow_id, version, created, comments)
-  values ('1', 2, parsedatetime('2017-09-11 12:58:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'This is flow 1 snapshot 2');
+insert into flow_snapshot (flow_id, version, created, created_by, comments)
+  values ('1', 2, parsedatetime('2017-09-11 12:58:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'user2', 'This is flow 1 snapshot 2');

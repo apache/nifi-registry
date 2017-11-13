@@ -272,6 +272,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"flowName\":\"Flow 1\"," +
                 "\"version\":1," +
                 "\"timestamp\":1505091420000," +
+                "\"createdBy\" : \"user1\"," +
                 "\"comments\":\"This is flow 1 snapshot 1\"," +
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/1\"}}," +
                 "{\"bucketIdentifier\":\"1\"," +
@@ -279,6 +280,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"flowName\":\"Flow 1\"," +
                 "\"version\":2," +
                 "\"timestamp\":1505091480000," +
+                "\"createdBy\" : \"user2\"," +
                 "\"comments\":\"This is flow 1 snapshot 2\"," +
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/2\"}}]";
 
@@ -346,6 +348,7 @@ public class FlowsIT extends UnsecuredITBase {
 
         assertFlowSnapshotsEqual(flowSnapshot, createdFlowSnapshot, false);
         assertTrue(createdFlowSnapshot.getSnapshotMetadata().getTimestamp() - testStartTime > 0L); // both server and client in same JVM, so there shouldn't be skew
+        assertEquals("anonymous", createdFlowSnapshot.getSnapshotMetadata().getAuthor());
         assertNotNull(createdFlowSnapshot.getSnapshotMetadata().getLink());
         assertNotNull(createdFlowSnapshot.getSnapshotMetadata().getLink().getUri());
 
