@@ -18,10 +18,8 @@ package org.apache.nifi.registry.bucket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.link.LinkableEntity;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.xml.bind.annotation.XmlRootElement;

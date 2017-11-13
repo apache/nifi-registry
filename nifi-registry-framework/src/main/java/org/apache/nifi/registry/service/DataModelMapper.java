@@ -18,7 +18,6 @@ package org.apache.nifi.registry.service;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
@@ -29,10 +28,6 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.security.key.Key;
 
 import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Utility for mapping between Provider API and the registry data model.
@@ -74,7 +69,7 @@ public class DataModelMapper {
         return flowEntity;
     }
 
-    public static VersionedFlow map(final FlowEntity flowEntity, boolean mapChildren) {
+    public static VersionedFlow map(final FlowEntity flowEntity) {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowEntity.getId());
         versionedFlow.setBucketIdentifier(flowEntity.getBucket().getId());
@@ -84,13 +79,6 @@ public class DataModelMapper {
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());
         versionedFlow.setModifiedTimestamp(flowEntity.getModified().getTime());
         versionedFlow.setVersionCount(flowEntity.getSnapshotCount());
-
-        if (mapChildren && flowEntity.getSnapshots() != null) {
-            final SortedSet<VersionedFlowSnapshotMetadata> snapshots = new TreeSet<>();
-            flowEntity.getSnapshots().stream().forEach(s -> snapshots.add(map(s)));
-            versionedFlow.setSnapshotMetadata(snapshots);
-        }
-
         return versionedFlow;
     }
 

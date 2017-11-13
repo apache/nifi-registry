@@ -385,7 +385,6 @@ public class FlowsIT extends UnsecuredITBase {
         assertEquals(expected.getName(), actual.getName());
         assertEquals(expected.getDescription(), actual.getDescription());
         assertEquals(expected.getBucketIdentifier(), actual.getBucketIdentifier());
-        assertEquals(expected.getSnapshotMetadata(), actual.getSnapshotMetadata());
         if (checkServerSetFields) {
             assertEquals(expected.getIdentifier(), actual.getIdentifier());
             assertEquals(expected.getVersionCount(), actual.getVersionCount());

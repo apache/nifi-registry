@@ -165,12 +165,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
-        final VersionedFlow flow = registryService.getFlow(bucketId, flowId, false);
-
+        final VersionedFlow flow = registryService.getFlow(bucketId, flowId);
         linkService.populateFlowLinks(flow);
-        if (flow.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(flow.getSnapshotMetadata());
-        }
 
         return Response.status(Response.Status.OK).entity(flow).build();
     }
@@ -205,9 +201,6 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         final VersionedFlow updatedFlow = registryService.updateFlow(flow);
         linkService.populateFlowLinks(updatedFlow);
-        if (updatedFlow.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(updatedFlow.getSnapshotMetadata());
-        }
 
         return Response.status(Response.Status.OK).entity(updatedFlow).build();
     }
@@ -300,13 +293,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
                 final String flowId) {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
-        final VersionedFlow flow = registryService.getFlow(bucketId, flowId, true);
 
-        if (flow.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(flow.getSnapshotMetadata());
+        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
+        if (snapshots != null ) {
+            linkService.populateSnapshotLinks(snapshots);
         }
 
-        return Response.status(Response.Status.OK).entity(flow.getSnapshotMetadata()).build();
+        return Response.status(Response.Status.OK).entity(snapshots).build();
     }
 
     @GET
@@ -331,9 +324,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
                 final String flowId) {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
-        final VersionedFlow flow = registryService.getFlow(bucketId, flowId, true);
 
-        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = flow.getSnapshotMetadata();
+        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
         if (snapshots == null || snapshots.size() == 0) {
             throw new ResourceNotFoundException("Not flow versions found for flow with id " + flowId);
         }
