@@ -51,24 +51,12 @@ public class DataModelMapper {
         return bucketEntity;
     }
 
-    public static Bucket map(final BucketEntity bucketEntity, final boolean mapChildren) {
+    public static Bucket map(final BucketEntity bucketEntity) {
         final Bucket bucket = new Bucket();
         bucket.setIdentifier(bucketEntity.getId());
         bucket.setName(bucketEntity.getName());
         bucket.setDescription(bucketEntity.getDescription());
         bucket.setCreatedTimestamp(bucketEntity.getCreated().getTime());
-
-        if (mapChildren && bucketEntity.getItems() != null) {
-            final Set<VersionedFlow> flows = new LinkedHashSet<>();
-            for (final BucketItemEntity itemEntity : bucketEntity.getItems()) {
-                if (BucketItemEntityType.FLOW == itemEntity.getType()) {
-                    // we never return the snapshots when retrieving a bucket
-                    flows.add(map((FlowEntity) itemEntity, false));
-                }
-            }
-            bucket.setVersionedFlows(flows);
-        }
-
         return bucket;
     }
 

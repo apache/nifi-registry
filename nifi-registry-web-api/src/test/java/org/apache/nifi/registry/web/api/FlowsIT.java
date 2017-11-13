@@ -272,7 +272,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"flowName\":\"Flow 1\"," +
                 "\"version\":1," +
                 "\"timestamp\":1505091420000," +
-                "\"createdBy\" : \"user1\"," +
+                "\"author\" : \"user1\"," +
                 "\"comments\":\"This is flow 1 snapshot 1\"," +
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/1\"}}," +
                 "{\"bucketIdentifier\":\"1\"," +
@@ -280,7 +280,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"flowName\":\"Flow 1\"," +
                 "\"version\":2," +
                 "\"timestamp\":1505091480000," +
-                "\"createdBy\" : \"user2\"," +
+                "\"author\" : \"user2\"," +
                 "\"comments\":\"This is flow 1 snapshot 2\"," +
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/2\"}}]";
 

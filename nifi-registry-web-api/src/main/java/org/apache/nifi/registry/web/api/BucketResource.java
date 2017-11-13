@@ -167,10 +167,6 @@ public class BucketResource extends AuthorizableApplicationResource {
         populateBucketAuthorizedActions(bucket, RequestAction.READ);
         linkService.populateBucketLinks(bucket);
 
-        if (bucket.getVersionedFlows() != null) {
-            linkService.populateFlowLinks(bucket.getVersionedFlows());
-        }
-
         return Response.status(Response.Status.OK).entity(bucket).build();
     }
 

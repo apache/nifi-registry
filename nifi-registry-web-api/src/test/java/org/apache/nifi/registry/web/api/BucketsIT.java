@@ -122,9 +122,6 @@ public class BucketsIT extends UnsecuredITBase {
         assertTrue(createdBucket.getCreatedTimestamp() - testStartTime > 0L); // both server and client in same JVM, so there shouldn't be skew
         assertNotNull(createdBucket.getLink());
         assertNotNull(createdBucket.getLink().getUri());
-        if (createdBucket.getVersionedFlows() != null) {
-            assertEquals(0L, createdBucket.getVersionedFlows().size());
-        }
 
         // And when /buckets is queried, then the newly created bucket is returned in the list
 

@@ -46,9 +46,6 @@ public class Bucket extends LinkableEntity {
 
     private Set<String> authorizedActions;
 
-    @Valid
-    private Set<VersionedFlow> versionedFlows;
-
     @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
         return identifier;
@@ -85,7 +82,7 @@ public class Bucket extends LinkableEntity {
         this.description = description;
     }
 
-    @ApiModelProperty("A list of actions the client is authorized to perform for this bucket.")
+    @ApiModelProperty(value = "A list of actions the client is authorized to perform for this bucket.", readOnly = true)
     public Set<String> getAuthorizedActions() {
         return authorizedActions;
     }
@@ -101,15 +98,6 @@ public class Bucket extends LinkableEntity {
             }
             authorizedActions.add(action);
         }
-    }
-
-    @ApiModelProperty(value = "The versioned flows in the bucket.", readOnly = true)
-    public Set<VersionedFlow> getVersionedFlows() {
-        return versionedFlows;
-    }
-
-    public void setVersionedFlows(Set<VersionedFlow> versionedFlows) {
-        this.versionedFlows = versionedFlows;
     }
 
     @Override

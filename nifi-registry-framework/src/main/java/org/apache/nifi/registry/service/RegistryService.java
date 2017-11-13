@@ -108,7 +108,6 @@ public class RegistryService {
         // set an id, the created time, and clear out the flows since its read-only
         bucket.setIdentifier(UUID.randomUUID().toString());
         bucket.setCreatedTimestamp(System.currentTimeMillis());
-        bucket.setVersionedFlows(null);
 
         validate(bucket, "Bucket is not valid");
 
@@ -120,7 +119,7 @@ public class RegistryService {
             }
 
             final BucketEntity createdBucket = metadataService.createBucket(DataModelMapper.map(bucket));
-            return DataModelMapper.map(createdBucket, false);
+            return DataModelMapper.map(createdBucket);
         } finally {
             writeLock.unlock();
         }
@@ -138,7 +137,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
             }
 
-            return DataModelMapper.map(bucket, false);
+            return DataModelMapper.map(bucket);
         } finally {
             readLock.unlock();
         }
@@ -148,7 +147,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getAllBuckets();
-            return buckets.stream().map(b -> DataModelMapper.map(b, false)).collect(Collectors.toList());
+            return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -158,7 +157,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getBuckets(queryParameters, bucketIds);
-            return buckets.stream().map(b -> DataModelMapper.map(b, false)).collect(Collectors.toList());
+            return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -205,7 +204,7 @@ public class RegistryService {
 
             // perform the actual update
             final BucketEntity updatedBucket = metadataService.updateBucket(existingBucketById);
-            return DataModelMapper.map(updatedBucket, false);
+            return DataModelMapper.map(updatedBucket);
         } finally {
             writeLock.unlock();
         }
@@ -232,7 +231,7 @@ public class RegistryService {
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
             metadataService.deleteBucket(existingBucket);
 
-            return DataModelMapper.map(existingBucket, false);
+            return DataModelMapper.map(existingBucket);
         } finally {
             writeLock.unlock();
         }
@@ -515,7 +514,7 @@ public class RegistryService {
             processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
 
             // save the serialized snapshot to the persistence provider
-            final Bucket bucket = DataModelMapper.map(existingBucket, false);
+            final Bucket bucket = DataModelMapper.map(existingBucket);
             final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, snapshotMetadata).build();
             flowPersistenceProvider.saveFlowContent(context, out.toByteArray());
 
