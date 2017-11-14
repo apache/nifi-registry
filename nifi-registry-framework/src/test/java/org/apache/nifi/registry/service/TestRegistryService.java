@@ -669,7 +669,7 @@ public class TestRegistryService {
 
         existingFlow.setSnapshots(Collections.singleton(existingSnapshot));
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         registryService.createFlowSnapshot(snapshot);
     }
@@ -708,7 +708,7 @@ public class TestRegistryService {
 
         existingFlow.setSnapshots(Collections.singleton(existingSnapshot));
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         // set the version to something that is not the next one-up version
         snapshot.getSnapshotMetadata().setVersion(100);
@@ -736,11 +736,13 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucket(existingBucket);
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
         assertNotNull(createdSnapshot);
         assertNotNull(createdSnapshot.getSnapshotMetadata());
+        assertNotNull(createdSnapshot.getFlow());
+        assertNotNull(createdSnapshot.getBucket());
 
         verify(snapshotSerializer, times(1)).serialize(eq(snapshot.getFlowContents()), any(OutputStream.class));
         verify(flowPersistenceProvider, times(1)).saveFlowContent(any(), any());
@@ -768,7 +770,7 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucket(existingBucket);
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         // set the first version to something other than 1
         snapshot.getSnapshotMetadata().setVersion(100);

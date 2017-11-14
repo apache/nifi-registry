@@ -487,8 +487,8 @@ public class RegistryService {
                 throw new ResourceNotFoundException("Bucket does not exist for identifier: " + snapshotMetadata.getBucketIdentifier());
             }
 
-            // ensure the flow exists
-            final FlowEntity existingFlow = metadataService.getFlowById(snapshotMetadata.getBucketIdentifier(), snapshotMetadata.getFlowIdentifier());
+            // ensure the flow exists, we need to use "with counts" here so we can return this is a part of the response
+            final FlowEntity existingFlow = metadataService.getFlowByIdWithSnapshotCounts(snapshotMetadata.getBucketIdentifier(), snapshotMetadata.getFlowIdentifier());
             if (existingFlow == null) {
                 throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + snapshotMetadata.getFlowIdentifier());
             }
@@ -533,6 +533,8 @@ public class RegistryService {
             existingFlow.setModified(new Date());
             metadataService.updateFlow(existingFlow);
 
+            flowSnapshot.setBucket(bucket);
+            flowSnapshot.setFlow(versionedFlow);
             return flowSnapshot;
         } finally {
             writeLock.unlock();
