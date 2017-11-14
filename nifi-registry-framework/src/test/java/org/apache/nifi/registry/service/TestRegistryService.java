@@ -383,6 +383,7 @@ public class TestRegistryService {
         assertEquals(flowEntity.getName(), versionedFlow.getName());
         assertEquals(flowEntity.getDescription(), versionedFlow.getDescription());
         assertEquals(flowEntity.getBucket().getId(), versionedFlow.getBucketIdentifier());
+        assertEquals(flowEntity.getBucket().getName(), versionedFlow.getBucketName());
         assertEquals(flowEntity.getCreated().getTime(), versionedFlow.getCreatedTimestamp());
         assertEquals(flowEntity.getModified().getTime(), versionedFlow.getModifiedTimestamp());
     }

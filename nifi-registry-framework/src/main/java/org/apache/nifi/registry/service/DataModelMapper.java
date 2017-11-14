@@ -71,6 +71,7 @@ public class DataModelMapper {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowEntity.getId());
         versionedFlow.setBucketIdentifier(flowEntity.getBucket().getId());
+        versionedFlow.setBucketName(flowEntity.getBucket().getName());
         versionedFlow.setName(flowEntity.getName());
         versionedFlow.setDescription(flowEntity.getDescription());
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());

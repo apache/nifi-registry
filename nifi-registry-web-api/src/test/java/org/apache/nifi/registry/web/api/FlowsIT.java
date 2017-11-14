@@ -122,6 +122,7 @@ public class FlowsIT extends UnsecuredITBase {
 
         assertFlowsEqual(flow, createdFlow, false);
         assertNotNull(createdFlow.getIdentifier());
+        assertNotNull(createdFlow.getBucketName());
         assertEquals(0, createdFlow.getVersionCount());
         assertEquals(createdFlow.getType(), BucketItemType.FLOW);
         assertTrue(createdFlow.getCreatedTimestamp() - testStartTime > 0L); // both server and client in same JVM, so there shouldn't be skew

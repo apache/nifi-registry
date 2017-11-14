@@ -39,6 +39,9 @@ public abstract class BucketItem extends LinkableEntity {
     @NotBlank
     private String bucketIdentifier;
 
+    // read-only
+    private String bucketName;
+
     @Min(1)
     private long createdTimestamp;
 
@@ -80,7 +83,6 @@ public abstract class BucketItem extends LinkableEntity {
         this.description = description;
     }
 
-
     @ApiModelProperty("The identifier of the bucket this items belongs to.")
     public String getBucketIdentifier() {
         return bucketIdentifier;
@@ -88,6 +90,15 @@ public abstract class BucketItem extends LinkableEntity {
 
     public void setBucketIdentifier(String bucketIdentifier) {
         this.bucketIdentifier = bucketIdentifier;
+    }
+
+    @ApiModelProperty(value = "The name of the bucket this items belongs to.", readOnly = true)
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
     }
 
     @ApiModelProperty("The timestamp of when the item was created.")
