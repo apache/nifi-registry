@@ -349,6 +349,8 @@ public class FlowsIT extends UnsecuredITBase {
         assertEquals("anonymous", createdFlowSnapshot.getSnapshotMetadata().getAuthor());
         assertNotNull(createdFlowSnapshot.getSnapshotMetadata().getLink());
         assertNotNull(createdFlowSnapshot.getSnapshotMetadata().getLink().getUri());
+        assertNotNull(createdFlowSnapshot.getFlow());
+        assertNotNull(createdFlowSnapshot.getBucket());
 
         // And when .../flows/{id}/versions is queried, then the newly created flow snapshot is returned in the list
 
@@ -372,6 +374,8 @@ public class FlowsIT extends UnsecuredITBase {
 
         final VersionedFlowSnapshot flowSnapshotByVersionNumber = clientRequestTarget.path("/1").request().get(VersionedFlowSnapshot.class);
         assertFlowSnapshotsEqual(createdFlowSnapshot, flowSnapshotByVersionNumber, true);
+        assertNotNull(flowSnapshotByVersionNumber.getFlow());
+        assertNotNull(flowSnapshotByVersionNumber.getBucket());
 
         // And when the latest URI is queried, then the newly created flow snapshot is returned
 
