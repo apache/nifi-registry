@@ -136,7 +136,6 @@ public class TestRestAPI {
         final VersionedFlowSnapshotMetadata snapshotMetadata1 = new VersionedFlowSnapshotMetadata();
         snapshotMetadata1.setBucketIdentifier(flow.getBucketIdentifier());
         snapshotMetadata1.setFlowIdentifier(flow.getIdentifier());
-        snapshotMetadata1.setFlowName(flow.getName());
         snapshotMetadata1.setVersion(num);
         snapshotMetadata1.setComments("This is snapshot #" + num);
 

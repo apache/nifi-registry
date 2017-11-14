@@ -331,11 +331,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         }
 
         final VersionedFlowSnapshotMetadata lastSnapshotMetadata = snapshots.last();
-        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, lastSnapshotMetadata.getVersion());
 
-        if (lastSnapshot.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(lastSnapshot.getSnapshotMetadata());
-        }
+        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, lastSnapshotMetadata.getVersion());
+        populateLinks(lastSnapshot);
 
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
     }
@@ -365,11 +363,26 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The version number")
                 final Integer versionNumber) {
         authorizeBucketAccess(RequestAction.READ, bucketId);
+
         final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
+        populateLinks(snapshot);
+
+        return Response.status(Response.Status.OK).entity(snapshot).build();
+    }
+
+    private void populateLinks(VersionedFlowSnapshot snapshot) {
         if (snapshot.getSnapshotMetadata() != null) {
             linkService.populateSnapshotLinks(snapshot.getSnapshotMetadata());
         }
-        return Response.status(Response.Status.OK).entity(snapshot).build();
+
+        if (snapshot.getFlow() != null) {
+            linkService.populateFlowLinks(snapshot.getFlow());
+        }
+
+        if (snapshot.getBucket() != null) {
+            linkService.populateBucketLinks(snapshot.getBucket());
+        }
+
     }
 
     private static void verifyPathParamsMatchBody(String bucketIdParam, BucketItem bodyBucketItem) throws BadRequestException {

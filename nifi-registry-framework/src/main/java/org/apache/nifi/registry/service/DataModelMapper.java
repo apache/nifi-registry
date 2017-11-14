@@ -34,15 +34,14 @@ import java.util.Date;
  */
 public class DataModelMapper {
 
+    // --- Map buckets
+
     public static BucketEntity map(final Bucket bucket) {
         final BucketEntity bucketEntity = new BucketEntity();
         bucketEntity.setId(bucket.getIdentifier());
         bucketEntity.setName(bucket.getName());
         bucketEntity.setDescription(bucket.getDescription());
         bucketEntity.setCreated(new Date(bucket.getCreatedTimestamp()));
-
-        // don't map items on the way in
-
         return bucketEntity;
     }
 
@@ -55,6 +54,8 @@ public class DataModelMapper {
         return bucket;
     }
 
+    // --- Map flows
+
     public static FlowEntity map(final VersionedFlow versionedFlow) {
         final FlowEntity flowEntity = new FlowEntity();
         flowEntity.setId(versionedFlow.getIdentifier());
@@ -63,9 +64,6 @@ public class DataModelMapper {
         flowEntity.setCreated(new Date(versionedFlow.getCreatedTimestamp()));
         flowEntity.setModified(new Date(versionedFlow.getModifiedTimestamp()));
         flowEntity.setType(BucketItemEntityType.FLOW);
-
-        // don't map snapshots on the way in
-
         return flowEntity;
     }
 
@@ -73,7 +71,6 @@ public class DataModelMapper {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowEntity.getId());
         versionedFlow.setBucketIdentifier(flowEntity.getBucket().getId());
-        versionedFlow.setBucketName(flowEntity.getBucket().getName());
         versionedFlow.setName(flowEntity.getName());
         versionedFlow.setDescription(flowEntity.getDescription());
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());
@@ -81,6 +78,8 @@ public class DataModelMapper {
         versionedFlow.setVersionCount(flowEntity.getSnapshotCount());
         return versionedFlow;
     }
+
+    // --- Map snapshots
 
     public static FlowSnapshotEntity map(final VersionedFlowSnapshotMetadata versionedFlowSnapshot) {
         final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey();
@@ -100,14 +99,13 @@ public class DataModelMapper {
         metadata.setFlowIdentifier(flowSnapshotEntity.getId().getFlowId());
         metadata.setVersion(flowSnapshotEntity.getId().getVersion());
         metadata.setBucketIdentifier(flowSnapshotEntity.getFlow().getBucket().getId());
-        metadata.setBucketName(flowSnapshotEntity.getFlow().getBucket().getName());
-        metadata.setFlowName(flowSnapshotEntity.getFlow().getName());
-        metadata.setFlowDescription(flowSnapshotEntity.getFlow().getDescription());
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
         metadata.setAuthor(flowSnapshotEntity.getCreatedBy());
         return metadata;
     }
+
+    // --- Map keys
 
     public static Key map(final KeyEntity keyEntity) {
         final Key key = new Key();

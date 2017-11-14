@@ -269,7 +269,6 @@ public class FlowsIT extends UnsecuredITBase {
         final String expected = "[" +
                 "{\"bucketIdentifier\":\"1\"," +
                 "\"flowIdentifier\":\"1\"," +
-                "\"flowName\":\"Flow 1\"," +
                 "\"version\":1," +
                 "\"timestamp\":1505091420000," +
                 "\"author\" : \"user1\"," +
@@ -277,7 +276,6 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/1\"}}," +
                 "{\"bucketIdentifier\":\"1\"," +
                 "\"flowIdentifier\":\"1\"," +
-                "\"flowName\":\"Flow 1\"," +
                 "\"version\":2," +
                 "\"timestamp\":1505091480000," +
                 "\"author\" : \"user2\"," +
@@ -321,7 +319,6 @@ public class FlowsIT extends UnsecuredITBase {
         final VersionedFlowSnapshotMetadata flowSnapshotMetadata = new VersionedFlowSnapshotMetadata();
         flowSnapshotMetadata.setBucketIdentifier("2");
         flowSnapshotMetadata.setFlowIdentifier(flowId);
-        flowSnapshotMetadata.setFlowName(createdFlow.getName());
         flowSnapshotMetadata.setComments("This is snapshot 1, created by an integration test.");
         final VersionedFlowSnapshot flowSnapshot = new VersionedFlowSnapshot();
         flowSnapshot.setSnapshotMetadata(flowSnapshotMetadata);
@@ -367,6 +364,8 @@ public class FlowsIT extends UnsecuredITBase {
                 .request()
                 .get(VersionedFlowSnapshot.class);
         assertFlowSnapshotsEqual(createdFlowSnapshot, flowSnapshotByLink, true);
+        assertNotNull(flowSnapshotByLink.getFlow());
+        assertNotNull(flowSnapshotByLink.getBucket());
 
         // And when the bucket is queried by .../versions/{v}, then the newly created flow snapshot is returned
 
@@ -377,6 +376,8 @@ public class FlowsIT extends UnsecuredITBase {
 
         final VersionedFlowSnapshot flowSnapshotByLatest = clientRequestTarget.path("/latest").request().get(VersionedFlowSnapshot.class);
         assertFlowSnapshotsEqual(createdFlowSnapshot, flowSnapshotByLatest, true);
+        assertNotNull(flowSnapshotByLatest.getFlow());
+        assertNotNull(flowSnapshotByLatest.getBucket());
 
     }
 
@@ -416,7 +417,6 @@ public class FlowsIT extends UnsecuredITBase {
         assertEquals(expected.getBucketIdentifier(), actual.getBucketIdentifier());
         assertEquals(expected.getFlowIdentifier(), actual.getFlowIdentifier());
         assertEquals(expected.getVersion(), actual.getVersion());
-        assertEquals(expected.getFlowName(), actual.getFlowName());
         assertEquals(expected.getComments(), actual.getComments());
         if (checkServerSetFields) {
             assertEquals(expected.getTimestamp(), actual.getTimestamp());

@@ -19,6 +19,7 @@ package org.apache.nifi.registry.provider.flow;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
+import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 
 /**
@@ -103,11 +104,11 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
 
         }
 
-        public Builder(final Bucket bucket, final VersionedFlowSnapshotMetadata snapshotMetadata) {
+        public Builder(final Bucket bucket, final VersionedFlow versionedFlow, final VersionedFlowSnapshotMetadata snapshotMetadata) {
             bucketId(bucket.getIdentifier());
             bucketName(bucket.getName());
             flowId(snapshotMetadata.getFlowIdentifier());
-            flowName(snapshotMetadata.getFlowName());
+            flowName(versionedFlow.getName());
             version(snapshotMetadata.getVersion());
             comments(snapshotMetadata.getComments());
             snapshotTimestamp(snapshotMetadata.getTimestamp());

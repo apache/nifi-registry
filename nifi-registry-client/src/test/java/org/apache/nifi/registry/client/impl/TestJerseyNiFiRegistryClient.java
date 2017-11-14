@@ -177,16 +177,19 @@ public class TestJerseyNiFiRegistryClient {
             // get snapshot
             final VersionedFlowSnapshot retrievedSnapshot1 = snapshotClient.get(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier(), 1);
             Assert.assertNotNull(retrievedSnapshot1);
+            Assert.assertFalse(retrievedSnapshot1.isLatest());
             System.out.println("Retrieved snapshot # 1 with version " + retrievedSnapshot1.getSnapshotMetadata().getVersion());
 
             final VersionedFlowSnapshot retrievedSnapshot2 = snapshotClient.get(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier(), 2);
             Assert.assertNotNull(retrievedSnapshot2);
+            Assert.assertTrue(retrievedSnapshot2.isLatest());
             System.out.println("Retrieved snapshot # 2 with version " + retrievedSnapshot2.getSnapshotMetadata().getVersion());
 
             // get latest
             final VersionedFlowSnapshot retrievedSnapshotLatest = snapshotClient.getLatest(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
             Assert.assertNotNull(retrievedSnapshotLatest);
             Assert.assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
+            Assert.assertTrue(retrievedSnapshotLatest.isLatest());
             System.out.println("Retrieved latest snapshot with version " + retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
 
             // get metadata
@@ -273,7 +276,6 @@ public class TestJerseyNiFiRegistryClient {
         final VersionedFlowSnapshotMetadata snapshotMetadata = new VersionedFlowSnapshotMetadata();
         snapshotMetadata.setBucketIdentifier(flow.getBucketIdentifier());
         snapshotMetadata.setFlowIdentifier(flow.getIdentifier());
-        snapshotMetadata.setFlowName(flow.getName());
         snapshotMetadata.setVersion(num);
         snapshotMetadata.setComments("This is snapshot #" + num);
 

@@ -471,6 +471,10 @@ public class RegistryService {
             flowSnapshot.getSnapshotMetadata().setTimestamp(System.currentTimeMillis());
         }
 
+        // these fields aren't used for creation
+        flowSnapshot.setFlow(null);
+        flowSnapshot.setBucket(null);
+
         validate(flowSnapshot, "VersionedFlowSnapshot is not valid");
 
         writeLock.lock();
@@ -518,7 +522,8 @@ public class RegistryService {
 
             // save the serialized snapshot to the persistence provider
             final Bucket bucket = DataModelMapper.map(existingBucket);
-            final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, snapshotMetadata).build();
+            final VersionedFlow versionedFlow = DataModelMapper.map(existingFlow);
+            final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, versionedFlow, snapshotMetadata).build();
             flowPersistenceProvider.saveFlowContent(context, out.toByteArray());
 
             // create snapshot in the metadata provider
@@ -549,6 +554,12 @@ public class RegistryService {
 
         readLock.lock();
         try {
+            // we need to populate the version count here so we have to do this retrieval instead of snapshotEntity.getFlow()
+            final FlowEntity flowEntityWithCount = metadataService.getFlowByIdWithSnapshotCounts(bucketIdentifier, flowIdentifier);
+            if (flowEntityWithCount == null) {
+                throw new ResourceNotFoundException("VersionedFlow does not exist for flow " + flowIdentifier);
+            }
+
             // ensure the snapshot exists
             final FlowSnapshotEntity snapshotEntity = metadataService.getFlowSnapshot(bucketIdentifier, flowIdentifier, version);
             if (snapshotEntity == null) {
@@ -563,14 +574,21 @@ public class RegistryService {
                         + flowIdentifier + " and version " + version);
             }
 
+            // deserialize the contents
             final InputStream input = new ByteArrayInputStream(serializedSnapshot);
             final VersionedProcessGroup flowContents = processGroupSerializer.deserialize(input);
 
+            // map entities to data model
+            final Bucket bucket = DataModelMapper.map(flowEntityWithCount.getBucket());
+            final VersionedFlow versionedFlow = DataModelMapper.map(flowEntityWithCount);
             final VersionedFlowSnapshotMetadata snapshotMetadata = DataModelMapper.map(snapshotEntity);
 
+            // create the snapshot to return
             final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
             snapshot.setFlowContents(flowContents);
             snapshot.setSnapshotMetadata(snapshotMetadata);
+            snapshot.setFlow(versionedFlow);
+            snapshot.setBucket(bucket);
             return snapshot;
         } finally {
             readLock.unlock();

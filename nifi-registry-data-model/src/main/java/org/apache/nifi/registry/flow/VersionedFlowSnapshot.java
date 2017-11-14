@@ -19,10 +19,12 @@ package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.nifi.registry.bucket.Bucket;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import java.util.Objects;
 
 /**
@@ -45,6 +47,12 @@ public class VersionedFlowSnapshot {
     @NotNull
     private VersionedProcessGroup flowContents;
 
+    // read-only, only populated from retrieval of a snapshot
+    private VersionedFlow flow;
+
+    // read-only, only populated from retrieval of a snapshot
+    private Bucket bucket;
+
 
     @ApiModelProperty("The metadata for this snapshot")
     public VersionedFlowSnapshotMetadata getSnapshotMetadata() {
@@ -62,6 +70,35 @@ public class VersionedFlowSnapshot {
 
     public void setFlowContents(VersionedProcessGroup flowContents) {
         this.flowContents = flowContents;
+    }
+
+    @ApiModelProperty(value = "The flow this snapshot is for", readOnly = true)
+    public VersionedFlow getFlow() {
+        return flow;
+    }
+
+    public void setFlow(VersionedFlow flow) {
+        this.flow = flow;
+    }
+
+    @ApiModelProperty(value = "The bucket where the flow is located", readOnly = true)
+    public Bucket getBucket() {
+        return bucket;
+    }
+
+    public void setBucket(Bucket bucket) {
+        this.bucket = bucket;
+    }
+
+    /**
+     * This is a convenience method that will return true when flow is populated and when the flow's versionCount
+     * is equal to the version of this snapshot.
+     *
+     * @return true if flow is populated and if this snapshot is the latest version for the flow at the time of retrieval
+     */
+    @XmlTransient
+    public boolean isLatest() {
+        return flow != null && snapshotMetadata != null && flow.getVersionCount() == getSnapshotMetadata().getVersion();
     }
 
     @Override
@@ -84,7 +121,8 @@ public class VersionedFlowSnapshot {
 
     @Override
     public String toString() {
-        return "VersionedFlowSnapshot[flowId=" + snapshotMetadata.getFlowIdentifier() + ", flowName=" + snapshotMetadata.getFlowName()
+        final String flowName = (flow == null ? "null" : flow.getName());
+        return "VersionedFlowSnapshot[flowId=" + snapshotMetadata.getFlowIdentifier() + ", flowName=" + flowName
             + ", version=" + snapshotMetadata.getVersion() + ", comments=" + snapshotMetadata.getComments() + "]";
     }
 }
