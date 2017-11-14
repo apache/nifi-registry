@@ -34,23 +34,17 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
     @NotBlank
     private String bucketIdentifier;
 
-    // read-only
-    private String bucketName;
-
     @NotBlank
     private String flowIdentifier;
-
-    // read-only
-    private String flowName;
-
-    // read-only
-    private String flowDescription;
 
     @Min(1)
     private int version;
 
     @Min(1)
     private long timestamp;
+
+    @NotBlank
+    private String author;
 
     private String comments;
 
@@ -64,15 +58,6 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.bucketIdentifier = bucketIdentifier;
     }
 
-    @ApiModelProperty(value = "The name of the bucket this snapshot belongs to.", readOnly = true)
-    public String getBucketName() {
-        return bucketName;
-    }
-
-    public void setBucketName(String bucketName) {
-        this.bucketName = bucketName;
-    }
-
     @ApiModelProperty("The identifier of the flow this snapshot belongs to.")
     public String getFlowIdentifier() {
         return flowIdentifier;
@@ -80,24 +65,6 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
 
     public void setFlowIdentifier(String flowIdentifier) {
         this.flowIdentifier = flowIdentifier;
-    }
-
-    @ApiModelProperty(value = "The name of the flow this snapshot belongs to.", readOnly = true)
-    public String getFlowName() {
-        return flowName;
-    }
-
-    public void setFlowName(String flowName) {
-        this.flowName = flowName;
-    }
-
-    @ApiModelProperty(value = "The description of the flow this snapshot belongs to.", readOnly = true)
-    public String getFlowDescription() {
-        return flowDescription;
-    }
-
-    public void setFlowDescription(String flowDescription) {
-        this.flowDescription = flowDescription;
     }
 
     @ApiModelProperty("The version of this snapshot of the flow.")
@@ -116,6 +83,15 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    @ApiModelProperty("The user that created this snapshot of the flow.")
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
     }
 
     @ApiModelProperty("The comments provided by the user when creating the snapshot.")

@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -108,7 +110,6 @@ public class RegistryService {
         // set an id, the created time, and clear out the flows since its read-only
         bucket.setIdentifier(UUID.randomUUID().toString());
         bucket.setCreatedTimestamp(System.currentTimeMillis());
-        bucket.setVersionedFlows(null);
 
         validate(bucket, "Bucket is not valid");
 
@@ -120,7 +121,7 @@ public class RegistryService {
             }
 
             final BucketEntity createdBucket = metadataService.createBucket(DataModelMapper.map(bucket));
-            return DataModelMapper.map(createdBucket, false);
+            return DataModelMapper.map(createdBucket);
         } finally {
             writeLock.unlock();
         }
@@ -138,7 +139,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
             }
 
-            return DataModelMapper.map(bucket, false);
+            return DataModelMapper.map(bucket);
         } finally {
             readLock.unlock();
         }
@@ -148,7 +149,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getAllBuckets();
-            return buckets.stream().map(b -> DataModelMapper.map(b, false)).collect(Collectors.toList());
+            return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -158,7 +159,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getBuckets(queryParameters, bucketIds);
-            return buckets.stream().map(b -> DataModelMapper.map(b, false)).collect(Collectors.toList());
+            return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -205,7 +206,7 @@ public class RegistryService {
 
             // perform the actual update
             final BucketEntity updatedBucket = metadataService.updateBucket(existingBucketById);
-            return DataModelMapper.map(updatedBucket, false);
+            return DataModelMapper.map(updatedBucket);
         } finally {
             writeLock.unlock();
         }
@@ -232,7 +233,7 @@ public class RegistryService {
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
             metadataService.deleteBucket(existingBucket);
 
-            return DataModelMapper.map(existingBucket, false);
+            return DataModelMapper.map(existingBucket);
         } finally {
             writeLock.unlock();
         }
@@ -278,7 +279,7 @@ public class RegistryService {
     private void addBucketItem(final List<BucketItem> bucketItems, final BucketItemEntity itemEntity) {
         if (itemEntity instanceof FlowEntity) {
             final FlowEntity flowEntity = (FlowEntity) itemEntity;
-            bucketItems.add(DataModelMapper.map(flowEntity, false));
+            bucketItems.add(DataModelMapper.map(flowEntity));
         } else {
             LOGGER.error("Unknown type of BucketItemEntity: " + itemEntity.getClass().getCanonicalName());
         }
@@ -309,9 +310,6 @@ public class RegistryService {
         versionedFlow.setCreatedTimestamp(timestamp);
         versionedFlow.setModifiedTimestamp(timestamp);
 
-        // clear out the snapshots since they are read-only
-        versionedFlow.setSnapshotMetadata(null);
-
         validate(versionedFlow, "VersionedFlow is not valid");
 
         writeLock.lock();
@@ -334,13 +332,13 @@ public class RegistryService {
 
             // persist the flow and return the created entity
             final FlowEntity createdFlow = metadataService.createFlow(flowEntity);
-            return DataModelMapper.map(createdFlow, false);
+            return DataModelMapper.map(createdFlow);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public VersionedFlow getFlow(final String bucketIdentifier, final String flowIdentifier, final boolean verbose) {
+    public VersionedFlow getFlow(final String bucketIdentifier, final String flowIdentifier) {
         if (StringUtils.isBlank(bucketIdentifier)) {
             throw new IllegalArgumentException("Bucket Identifier Identifier cannot be null or blank");
         }
@@ -356,7 +354,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
             }
 
-            return DataModelMapper.map(flowEntity, verbose);
+            return DataModelMapper.map(flowEntity);
         } finally {
             readLock.unlock();
         }
@@ -376,7 +374,7 @@ public class RegistryService {
 
             // return non-verbose set of flows for the given bucket
             final List<FlowEntity> flows = metadataService.getFlowsByBucket(existingBucket);
-            return flows.stream().map(f -> DataModelMapper.map(f, false)).collect(Collectors.toList());
+            return flows.stream().map(f -> DataModelMapper.map(f)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -427,7 +425,7 @@ public class RegistryService {
 
             // perform the actual update
             final FlowEntity updatedFlow = metadataService.updateFlow(existingFlow);
-            return DataModelMapper.map(updatedFlow, false);
+            return DataModelMapper.map(updatedFlow);
         } finally {
             writeLock.unlock();
         }
@@ -455,7 +453,7 @@ public class RegistryService {
             // now delete the flow from the metadata provider
             metadataService.deleteFlow(existingFlow);
 
-            return DataModelMapper.map(existingFlow, false);
+            return DataModelMapper.map(existingFlow);
         } finally {
             writeLock.unlock();
         }
@@ -473,6 +471,10 @@ public class RegistryService {
             flowSnapshot.getSnapshotMetadata().setTimestamp(System.currentTimeMillis());
         }
 
+        // these fields aren't used for creation
+        flowSnapshot.setFlow(null);
+        flowSnapshot.setBucket(null);
+
         validate(flowSnapshot, "VersionedFlowSnapshot is not valid");
 
         writeLock.lock();
@@ -485,17 +487,21 @@ public class RegistryService {
                 throw new ResourceNotFoundException("Bucket does not exist for identifier: " + snapshotMetadata.getBucketIdentifier());
             }
 
-            // ensure the flow exists
-            final FlowEntity existingFlow = metadataService.getFlowById(snapshotMetadata.getBucketIdentifier(), snapshotMetadata.getFlowIdentifier());
+            // ensure the flow exists, we need to use "with counts" here so we can return this is a part of the response
+            final FlowEntity existingFlow = metadataService.getFlowByIdWithSnapshotCounts(snapshotMetadata.getBucketIdentifier(), snapshotMetadata.getFlowIdentifier());
             if (existingFlow == null) {
                 throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + snapshotMetadata.getFlowIdentifier());
             }
 
-            final VersionedFlow versionedFlow = DataModelMapper.map(existingFlow, true);
+            // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata
+            final SortedSet<VersionedFlowSnapshotMetadata> existingSnapshots = new TreeSet<>();
+            if (existingFlow.getSnapshots() != null) {
+                existingFlow.getSnapshots().stream().forEach(s -> existingSnapshots.add(DataModelMapper.map(s)));
+            }
 
             // if we already have snapshots we need to verify the new one has the correct version
-            if (versionedFlow.getSnapshotMetadata() != null && versionedFlow.getSnapshotMetadata().size() > 0) {
-                final VersionedFlowSnapshotMetadata lastSnapshot = versionedFlow.getSnapshotMetadata().last();
+            if (existingSnapshots != null && existingSnapshots.size() > 0) {
+                final VersionedFlowSnapshotMetadata lastSnapshot = existingSnapshots.last();
 
                 if (snapshotMetadata.getVersion() <= lastSnapshot.getVersion()) {
                     throw new IllegalStateException("A VersionedFlowSnapshot with the same version already exists: " + snapshotMetadata.getVersion());
@@ -515,8 +521,9 @@ public class RegistryService {
             processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
 
             // save the serialized snapshot to the persistence provider
-            final Bucket bucket = DataModelMapper.map(existingBucket, false);
-            final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, snapshotMetadata).build();
+            final Bucket bucket = DataModelMapper.map(existingBucket);
+            final VersionedFlow versionedFlow = DataModelMapper.map(existingFlow);
+            final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, versionedFlow, snapshotMetadata).build();
             flowPersistenceProvider.saveFlowContent(context, out.toByteArray());
 
             // create snapshot in the metadata provider
@@ -526,6 +533,8 @@ public class RegistryService {
             existingFlow.setModified(new Date());
             metadataService.updateFlow(existingFlow);
 
+            flowSnapshot.setBucket(bucket);
+            flowSnapshot.setFlow(versionedFlow);
             return flowSnapshot;
         } finally {
             writeLock.unlock();
@@ -547,6 +556,12 @@ public class RegistryService {
 
         readLock.lock();
         try {
+            // we need to populate the version count here so we have to do this retrieval instead of snapshotEntity.getFlow()
+            final FlowEntity flowEntityWithCount = metadataService.getFlowByIdWithSnapshotCounts(bucketIdentifier, flowIdentifier);
+            if (flowEntityWithCount == null) {
+                throw new ResourceNotFoundException("VersionedFlow does not exist for flow " + flowIdentifier);
+            }
+
             // ensure the snapshot exists
             final FlowSnapshotEntity snapshotEntity = metadataService.getFlowSnapshot(bucketIdentifier, flowIdentifier, version);
             if (snapshotEntity == null) {
@@ -561,15 +576,58 @@ public class RegistryService {
                         + flowIdentifier + " and version " + version);
             }
 
+            // deserialize the contents
             final InputStream input = new ByteArrayInputStream(serializedSnapshot);
             final VersionedProcessGroup flowContents = processGroupSerializer.deserialize(input);
 
+            // map entities to data model
+            final Bucket bucket = DataModelMapper.map(flowEntityWithCount.getBucket());
+            final VersionedFlow versionedFlow = DataModelMapper.map(flowEntityWithCount);
             final VersionedFlowSnapshotMetadata snapshotMetadata = DataModelMapper.map(snapshotEntity);
 
+            // create the snapshot to return
             final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
             snapshot.setFlowContents(flowContents);
             snapshot.setSnapshotMetadata(snapshotMetadata);
+            snapshot.setFlow(versionedFlow);
+            snapshot.setBucket(bucket);
             return snapshot;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<VersionedFlowSnapshotMetadata> getFlowSnapshots(final String bucketIdentifier, final String flowIdentifier) {
+        if (StringUtils.isBlank(bucketIdentifier)) {
+            throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(flowIdentifier)) {
+            throw new IllegalArgumentException("Flow identifier cannot be null or blank");
+        }
+
+        readLock.lock();
+        try {
+            // ensure the bucket exists
+            final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
+            if (existingBucket == null) {
+                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
+            }
+
+            // ensure the flow exists
+            final FlowEntity existingFlow = metadataService.getFlowById(bucketIdentifier, flowIdentifier);
+            if (existingFlow == null) {
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
+            }
+
+            // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata
+            final SortedSet<VersionedFlowSnapshotMetadata> existingSnapshots = new TreeSet<>();
+            if (existingFlow.getSnapshots() != null) {
+                existingFlow.getSnapshots().stream().forEach(s -> existingSnapshots.add(DataModelMapper.map(s)));
+            }
+
+            return existingSnapshots;
+
         } finally {
             readLock.unlock();
         }

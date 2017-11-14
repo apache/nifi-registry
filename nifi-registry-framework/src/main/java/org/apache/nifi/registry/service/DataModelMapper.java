@@ -18,7 +18,6 @@ package org.apache.nifi.registry.service;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
@@ -29,15 +28,13 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.security.key.Key;
 
 import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Utility for mapping between Provider API and the registry data model.
  */
 public class DataModelMapper {
+
+    // --- Map buckets
 
     public static BucketEntity map(final Bucket bucket) {
         final BucketEntity bucketEntity = new BucketEntity();
@@ -45,32 +42,19 @@ public class DataModelMapper {
         bucketEntity.setName(bucket.getName());
         bucketEntity.setDescription(bucket.getDescription());
         bucketEntity.setCreated(new Date(bucket.getCreatedTimestamp()));
-
-        // don't map items on the way in
-
         return bucketEntity;
     }
 
-    public static Bucket map(final BucketEntity bucketEntity, final boolean mapChildren) {
+    public static Bucket map(final BucketEntity bucketEntity) {
         final Bucket bucket = new Bucket();
         bucket.setIdentifier(bucketEntity.getId());
         bucket.setName(bucketEntity.getName());
         bucket.setDescription(bucketEntity.getDescription());
         bucket.setCreatedTimestamp(bucketEntity.getCreated().getTime());
-
-        if (mapChildren && bucketEntity.getItems() != null) {
-            final Set<VersionedFlow> flows = new LinkedHashSet<>();
-            for (final BucketItemEntity itemEntity : bucketEntity.getItems()) {
-                if (BucketItemEntityType.FLOW == itemEntity.getType()) {
-                    // we never return the snapshots when retrieving a bucket
-                    flows.add(map((FlowEntity) itemEntity, false));
-                }
-            }
-            bucket.setVersionedFlows(flows);
-        }
-
         return bucket;
     }
+
+    // --- Map flows
 
     public static FlowEntity map(final VersionedFlow versionedFlow) {
         final FlowEntity flowEntity = new FlowEntity();
@@ -80,13 +64,10 @@ public class DataModelMapper {
         flowEntity.setCreated(new Date(versionedFlow.getCreatedTimestamp()));
         flowEntity.setModified(new Date(versionedFlow.getModifiedTimestamp()));
         flowEntity.setType(BucketItemEntityType.FLOW);
-
-        // don't map snapshots on the way in
-
         return flowEntity;
     }
 
-    public static VersionedFlow map(final FlowEntity flowEntity, boolean mapChildren) {
+    public static VersionedFlow map(final FlowEntity flowEntity) {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowEntity.getId());
         versionedFlow.setBucketIdentifier(flowEntity.getBucket().getId());
@@ -96,15 +77,10 @@ public class DataModelMapper {
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());
         versionedFlow.setModifiedTimestamp(flowEntity.getModified().getTime());
         versionedFlow.setVersionCount(flowEntity.getSnapshotCount());
-
-        if (mapChildren && flowEntity.getSnapshots() != null) {
-            final SortedSet<VersionedFlowSnapshotMetadata> snapshots = new TreeSet<>();
-            flowEntity.getSnapshots().stream().forEach(s -> snapshots.add(map(s)));
-            versionedFlow.setSnapshotMetadata(snapshots);
-        }
-
         return versionedFlow;
     }
+
+    // --- Map snapshots
 
     public static FlowSnapshotEntity map(final VersionedFlowSnapshotMetadata versionedFlowSnapshot) {
         final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey();
@@ -115,6 +91,7 @@ public class DataModelMapper {
         flowSnapshotEntity.setId(key);
         flowSnapshotEntity.setComments(versionedFlowSnapshot.getComments());
         flowSnapshotEntity.setCreated(new Date(versionedFlowSnapshot.getTimestamp()));
+        flowSnapshotEntity.setCreatedBy(versionedFlowSnapshot.getAuthor());
         return flowSnapshotEntity;
     }
 
@@ -123,13 +100,13 @@ public class DataModelMapper {
         metadata.setFlowIdentifier(flowSnapshotEntity.getId().getFlowId());
         metadata.setVersion(flowSnapshotEntity.getId().getVersion());
         metadata.setBucketIdentifier(flowSnapshotEntity.getFlow().getBucket().getId());
-        metadata.setBucketName(flowSnapshotEntity.getFlow().getBucket().getName());
-        metadata.setFlowName(flowSnapshotEntity.getFlow().getName());
-        metadata.setFlowDescription(flowSnapshotEntity.getFlow().getDescription());
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
+        metadata.setAuthor(flowSnapshotEntity.getCreatedBy());
         return metadata;
     }
+
+    // --- Map keys
 
     public static Key map(final KeyEntity keyEntity) {
         final Key key = new Key();

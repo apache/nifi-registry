@@ -47,6 +47,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -355,7 +356,7 @@ public class TestRegistryService {
     @Test(expected = ResourceNotFoundException.class)
     public void testGetFlowDoesNotExist() {
         when(metadataService.getFlowById(any(String.class), any(String.class))).thenReturn(null);
-        registryService.getFlow("bucket1","flow1", false);
+        registryService.getFlow("bucket1","flow1");
     }
 
     @Test
@@ -376,7 +377,7 @@ public class TestRegistryService {
 
         when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), flowEntity.getId())).thenReturn(flowEntity);
 
-        final VersionedFlow versionedFlow = registryService.getFlow(existingBucket.getId(), flowEntity.getId(), false);
+        final VersionedFlow versionedFlow = registryService.getFlow(existingBucket.getId(), flowEntity.getId());
         assertNotNull(versionedFlow);
         assertEquals(flowEntity.getId(), versionedFlow.getIdentifier());
         assertEquals(flowEntity.getName(), versionedFlow.getName());
@@ -565,10 +566,10 @@ public class TestRegistryService {
     private VersionedFlowSnapshot createSnapshot() {
         final VersionedFlowSnapshotMetadata snapshotMetadata = new VersionedFlowSnapshotMetadata();
         snapshotMetadata.setFlowIdentifier("flow1");
-        snapshotMetadata.setFlowName("First Flow");
         snapshotMetadata.setVersion(1);
         snapshotMetadata.setComments("This is the first snapshot");
         snapshotMetadata.setBucketIdentifier("b1");
+        snapshotMetadata.setAuthor("user1");
 
         final VersionedProcessGroup processGroup = new VersionedProcessGroup();
         processGroup.setIdentifier("pg1");
@@ -668,7 +669,7 @@ public class TestRegistryService {
 
         existingFlow.setSnapshots(Collections.singleton(existingSnapshot));
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         registryService.createFlowSnapshot(snapshot);
     }
@@ -707,7 +708,7 @@ public class TestRegistryService {
 
         existingFlow.setSnapshots(Collections.singleton(existingSnapshot));
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         // set the version to something that is not the next one-up version
         snapshot.getSnapshotMetadata().setVersion(100);
@@ -735,10 +736,13 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucket(existingBucket);
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
         assertNotNull(createdSnapshot);
+        assertNotNull(createdSnapshot.getSnapshotMetadata());
+        assertNotNull(createdSnapshot.getFlow());
+        assertNotNull(createdSnapshot.getBucket());
 
         verify(snapshotSerializer, times(1)).serialize(eq(snapshot.getFlowContents()), any(OutputStream.class));
         verify(flowPersistenceProvider, times(1)).saveFlowContent(any(), any());
@@ -766,11 +770,93 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucket(existingBucket);
 
-        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
 
         // set the first version to something other than 1
         snapshot.getSnapshotMetadata().setVersion(100);
         registryService.createFlowSnapshot(snapshot);
+    }
+
+    @Test
+    public void testGetFlowSnapshots() {
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
+
+        final FlowSnapshotEntityKey existingSnapshotKey1 = new FlowSnapshotEntityKey();
+        existingSnapshotKey1.setVersion(1);
+        existingSnapshotKey1.setFlowId(existingFlow.getId());
+
+        final FlowSnapshotEntity existingSnapshot1 = new FlowSnapshotEntity();
+        existingSnapshot1.setId(existingSnapshotKey1);
+        existingSnapshot1.setCreatedBy("user1");
+        existingSnapshot1.setCreated(new Date());
+        existingSnapshot1.setComments("This is snapshot 1");
+        existingSnapshot1.setFlow(existingFlow);
+
+        final FlowSnapshotEntityKey existingSnapshotKey2 = new FlowSnapshotEntityKey();
+        existingSnapshotKey2.setVersion(2);
+        existingSnapshotKey2.setFlowId(existingFlow.getId());
+
+        final FlowSnapshotEntity existingSnapshot2 = new FlowSnapshotEntity();
+        existingSnapshot2.setId(existingSnapshotKey2);
+        existingSnapshot2.setCreatedBy("user2");
+        existingSnapshot2.setCreated(new Date());
+        existingSnapshot2.setComments("This is snapshot 2");
+        existingSnapshot2.setFlow(existingFlow);
+
+        final Set<FlowSnapshotEntity> snapshots = new HashSet<>();
+        snapshots.add(existingSnapshot1);
+        snapshots.add(existingSnapshot2);
+        existingFlow.setSnapshots(snapshots);
+
+        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+
+        final SortedSet<VersionedFlowSnapshotMetadata> retrievedSnapshots = registryService.getFlowSnapshots(existingBucket.getId(), existingFlow.getId());
+        assertNotNull(retrievedSnapshots);
+        assertEquals(2, retrievedSnapshots.size());
+    }
+
+    @Test
+    public void testGetFlowSnapshotsWhenNoSnapshots() {
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucket(existingBucket);
+
+        final Set<FlowSnapshotEntity> snapshots = new HashSet<>();
+        existingFlow.setSnapshots(snapshots);
+
+        when(metadataService.getFlowById(existingBucket.getId(), existingFlow.getId())).thenReturn(existingFlow);
+
+        final SortedSet<VersionedFlowSnapshotMetadata> retrievedSnapshots = registryService.getFlowSnapshots(existingBucket.getId(), existingFlow.getId());
+        assertNotNull(retrievedSnapshots);
+        assertEquals(0, retrievedSnapshots.size());
     }
 
     @Test(expected = ResourceNotFoundException.class)
@@ -788,6 +874,12 @@ public class TestRegistryService {
         final FlowSnapshotEntityKey key = existingSnapshot.getId();
         final String bucketId = existingSnapshot.getFlow().getBucket().getId();
 
+        final FlowEntity existingFlowWithCounts = existingSnapshot.getFlow();
+        existingFlowWithCounts.setSnapshotCount(10);
+
+        when(metadataService.getFlowByIdWithSnapshotCounts(bucketId, key.getFlowId()))
+                .thenReturn(existingFlowWithCounts);
+
         when(metadataService.getFlowSnapshot(bucketId, key.getFlowId(), key.getVersion())).thenReturn(existingSnapshot);
 
         when(flowPersistenceProvider.getFlowContent(
@@ -804,6 +896,12 @@ public class TestRegistryService {
         final FlowSnapshotEntity existingSnapshot = createFlowSnapshotEntity();
         final FlowSnapshotEntityKey key = existingSnapshot.getId();
         final String bucketId = existingSnapshot.getFlow().getBucket().getId();
+
+        final FlowEntity existingFlowWithCounts = existingSnapshot.getFlow();
+        existingFlowWithCounts.setSnapshotCount(10);
+
+        when(metadataService.getFlowByIdWithSnapshotCounts(bucketId, key.getFlowId()))
+                .thenReturn(existingFlowWithCounts);
 
         when(metadataService.getFlowSnapshot(bucketId, key.getFlowId(), key.getVersion()))
                 .thenReturn(existingSnapshot);
@@ -826,12 +924,17 @@ public class TestRegistryService {
         final VersionedFlowSnapshotMetadata snapshotMetadata = returnedSnapshot.getSnapshotMetadata();
         assertEquals(key.getVersion().intValue(), snapshotMetadata.getVersion());
         assertEquals(existingSnapshot.getFlow().getBucket().getId(), snapshotMetadata.getBucketIdentifier());
-        assertEquals(existingSnapshot.getFlow().getBucket().getName(), snapshotMetadata.getBucketName());
         assertEquals(existingSnapshot.getFlow().getId(), snapshotMetadata.getFlowIdentifier());
-        assertEquals(existingSnapshot.getFlow().getName(), snapshotMetadata.getFlowName());
-        assertEquals(existingSnapshot.getFlow().getDescription(), snapshotMetadata.getFlowDescription());
         assertEquals(existingSnapshot.getCreated(), new Date(snapshotMetadata.getTimestamp()));
         assertEquals(existingSnapshot.getComments(), snapshotMetadata.getComments());
+
+        final VersionedFlow versionedFlow = returnedSnapshot.getFlow();
+        assertNotNull(versionedFlow);
+        assertNotNull(versionedFlow.getVersionCount());
+        assertTrue(versionedFlow.getVersionCount() > 0);
+
+        final Bucket bucket = returnedSnapshot.getBucket();
+        assertNotNull(bucket);
     }
 
     @Test(expected = ResourceNotFoundException.class)

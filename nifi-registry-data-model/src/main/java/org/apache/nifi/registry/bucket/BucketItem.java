@@ -39,6 +39,7 @@ public abstract class BucketItem extends LinkableEntity {
     @NotBlank
     private String bucketIdentifier;
 
+    // read-only
     private String bucketName;
 
     @Min(1)
@@ -81,7 +82,6 @@ public abstract class BucketItem extends LinkableEntity {
     public void setDescription(String description) {
         this.description = description;
     }
-
 
     @ApiModelProperty("The identifier of the bucket this items belongs to.")
     public String getBucketIdentifier() {
