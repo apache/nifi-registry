@@ -29,6 +29,7 @@ import org.apache.nifi.registry.client.FlowSnapshotClient;
 import org.apache.nifi.registry.client.ItemsClient;
 import org.apache.nifi.registry.client.NiFiRegistryClient;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
+import org.apache.nifi.registry.client.UserClient;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -165,6 +166,17 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     public ItemsClient getItemsClient(String... proxiedEntity) {
         final Map<String,String> headers = getHeaders(proxiedEntity);
         return new JerseyItemsClient(baseTarget, headers);
+    }
+
+    @Override
+    public UserClient getUserClient() {
+        return new JerseyUserClient(baseTarget);
+    }
+
+    @Override
+    public UserClient getUserClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyUserClient(baseTarget, headers);
     }
 
     private Map<String,String> getHeaders(String[] proxiedEntities) {
