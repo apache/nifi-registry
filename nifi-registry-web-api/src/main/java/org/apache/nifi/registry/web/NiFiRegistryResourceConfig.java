@@ -66,7 +66,14 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(ResourceResource.class);
         register(TenantResource.class);
 
+        // include bean validation errors in response
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
+
+        // this is necessary for the /access/token/kerberos endpoint to work correctly
+        // when sending 401 Unauthorized with a WWW-Authenticate: Negotiate header.
+        // if this value needs to be changed, kerberos authentication needs to move to filter chain
+        // so it can directly set the HttpServletResponse instead of indirectly through a JAX-RS Response
+        property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
     }
 
     // Disable default SpringMVC filter beans that are not compatible with Jersey

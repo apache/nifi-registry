@@ -29,4 +29,107 @@ public interface IdentityProviderUsage {
      */
     String getText();
 
+    /**
+     * If the identity provider follows an HTTP standard auth
+     * scheme, this provides which scheme is being used
+     * (or "Other" if the identity provider follows its own scheme).
+     *
+     * In the case the scheme is well understood, such as HTTP
+     * "Basic" Auth, this may be sufficient. In other cases,
+     * {@link #getText()} should provider detailed human-readable
+     * instructions about how a client should interact with
+     * the {@link IdentityProvider}.
+     *
+     * @return an enum for the auth
+     */
+    AuthType getAuthType();
+
+    /**
+     * Standard auth types as maintained by IANA:
+     * https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml
+     *
+     * Note, draft and experimental standards are not included, nor are app-specific custom schemes.
+     * To create an enum for such a scheme, use OTHER with a custom httpAuthScheme string, e.g.:
+     *
+     * <code>AuthType myAuthType = AuthType.OTHER.httpAuthScheme("my-auth-scheme");</code>
+     */
+    enum AuthType {
+
+        /**
+         * Indicates the AuthType is unknown. Can be used in places where an AuthType is required but unknown by default.
+         */
+        UNKNOWN(0, "Unknown"),
+
+        /**
+         * HTTP Basic Auth as defined by RFC7617.
+         */
+        BASIC(1, "Basic"),
+
+        /**
+         * HTTP Bearer Auth as defined by RFC6750.
+         */
+        BEARER(2, "Bearer"),
+
+        /**
+         * HTTP Digest Auth as defined by RFC7616.
+         */
+        DIGEST(3, "Digest"),
+
+        /**
+         * HTTP Negotiate (SPNEGO) Auth as defined by RFC4559.
+         */
+        NEGOTIATE(4, "Negotiate"),
+
+        /**
+         * HTTP OAuth as defined by RFC5849
+         */
+        OAUTH(5, "OAuth"),
+
+        /**
+         * A distinct AuthType for which there is not yet a defined enumeration value.
+         * If a HTTP Auth Scheme should be set (e.g., for use in a WWW-Authenticate challenge list)
+         * use the setter, i.e.:
+         * <code>AuthType myAuthType = AuthType.OTHER.httpAuthScheme("my-auth-scheme");</code>
+         */
+        OTHER(99, "Other"),
+        ;
+
+        private final int code;
+        private String httpAuthScheme;
+
+        private AuthType(int statusCode, String httpAuthScheme) {
+            this.code = statusCode;
+            this.httpAuthScheme = httpAuthScheme;
+        }
+
+        public int getStatusCode() {
+            return this.code;
+        }
+
+        public String getHttpAuthScheme() {
+            return this.toString();
+        }
+
+        public AuthType httpAuthScheme(String httpAuthScheme) {
+            if (httpAuthScheme != null) {
+                this.httpAuthScheme = httpAuthScheme;
+            }
+            return this;
+        }
+
+        public String toString() {
+            return this.httpAuthScheme;
+        }
+
+        public static AuthType fromCode(int code) {
+            AuthType[] enumTypes = values();
+            for (AuthType s : enumTypes) {
+                if (s.code == code) {
+                    return s;
+                }
+            }
+            return null;
+        }
+    }
+
 }

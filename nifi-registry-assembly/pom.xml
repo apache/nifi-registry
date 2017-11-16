@@ -163,6 +163,13 @@
         <!-- nifi-registry.properties: database properties -->
         <nifi.registry.db.directory>./database</nifi.registry.db.directory>
         <nifi.registry.db.url.append>;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE</nifi.registry.db.url.append>
+
+        <!-- nifi-registry.properties: kerberos properties -->
+        <nifi.registry.kerberos.krb5.file />
+        <nifi.registry.kerberos.spnego.principal />
+        <nifi.registry.kerberos.spnego.keytab.location />
+        <nifi.registry.kerberos.spnego.authentication.expiration>12 hours</nifi.registry.kerberos.spnego.authentication.expiration>
+
     </properties>
 
     <profiles>

@@ -37,6 +37,11 @@ public abstract class BasicAuthIdentityProvider implements IdentityProvider {
                     "That is: 'Authorization: Basic <credentials>', " +
                     "where <credentials> is the base64 encoded value of '<username>:<password>'.";
         }
+
+        @Override
+        public AuthType getAuthType() {
+            return AuthType.BASIC;
+        }
     };
 
     @Override
@@ -57,15 +62,15 @@ public abstract class BasicAuthIdentityProvider implements IdentityProvider {
             return null;
         }
 
+        final String authorization = servletRequest.getHeader(AUTHORIZATION);
+        if (authorization == null || !authorization.startsWith(BASIC)) {
+            logger.debug("HTTP Basic Auth credentials not present. Not attempting to extract credentials for authentication.");
+            return null;
+        }
+
         AuthenticationRequest authenticationRequest;
 
         try {
-
-            final String authorization = servletRequest.getHeader(AUTHORIZATION);
-            if (authorization == null || !authorization.startsWith(BASIC)) {
-                logger.debug("HTTP Basic Auth credentials not present. Not attempting to extract credentials for authentication.");
-                return null;
-            }
 
             // Authorization: Basic {base64credentials}
             String base64Credentials = authorization.substring(BASIC.length()).trim();
