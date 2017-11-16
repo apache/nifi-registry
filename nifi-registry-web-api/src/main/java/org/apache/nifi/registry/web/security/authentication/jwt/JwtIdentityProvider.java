@@ -54,14 +54,23 @@ public class JwtIdentityProvider extends BearerAuthIdentityProvider implements I
 
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest authenticationRequest) throws InvalidCredentialsException, IdentityAccessException {
-        try {
-            String jwtAuthToken = (String) authenticationRequest.getCredentials();
-            final String jwtPrincipal = jwtService.getAuthenticationFromToken(jwtAuthToken);
 
-            return new AuthenticationResponse(jwtPrincipal, jwtPrincipal, expiration, issuer);
-        } catch (ClassCastException e) {
-            // token String in credentials Object
+        if (authenticationRequest == null) {
+            logger.info("Cannot authenticate null authenticationRequest, returning null.");
             return null;
+        }
+
+        final Object credentials = authenticationRequest.getCredentials();
+        String jwtAuthToken = credentials != null && credentials instanceof String ? (String) credentials : null;
+
+        if (credentials == null) {
+            logger.info("JWT not found in authenticationRequest credentials, returning null.");
+            return null;
+        }
+
+        try {
+            final String jwtPrincipal = jwtService.getAuthenticationFromToken(jwtAuthToken);
+            return new AuthenticationResponse(jwtPrincipal, jwtPrincipal, expiration, issuer);
         } catch (JwtException e) {
             throw new InvalidAuthenticationException(e.getMessage(), e);
         }

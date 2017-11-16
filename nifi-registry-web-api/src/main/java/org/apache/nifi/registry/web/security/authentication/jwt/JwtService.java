@@ -28,7 +28,6 @@ import io.jsonwebtoken.SignatureException;
 import io.jsonwebtoken.SigningKeyResolverAdapter;
 import io.jsonwebtoken.UnsupportedJwtException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.exception.AdministrationException;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.key.Key;
 import org.apache.nifi.registry.security.key.KeyService;
@@ -104,7 +103,7 @@ public class JwtService {
                     return key.getKey().getBytes(StandardCharsets.UTF_8);
                 }
             }).parseClaimsJws(base64EncodedToken);
-        } catch (final MalformedJwtException | UnsupportedJwtException | SignatureException | ExpiredJwtException | IllegalArgumentException | AdministrationException e) {
+        } catch (final MalformedJwtException | UnsupportedJwtException | SignatureException | ExpiredJwtException | IllegalArgumentException e) {
             // TODO: Exercise all exceptions to ensure none leak key material to logs
             final String errorMessage = "Unable to validate the access token.";
             throw new JwtException(errorMessage, e);
@@ -112,59 +111,66 @@ public class JwtService {
     }
 
     /**
-     * Generates a signed JWT token from the provided (Spring Security) login authentication token.
+     * Generates a signed JWT token from the provided IdentityProvider AuthenticationResponse
      *
-     * @param authenticationResponse an instance of the Spring Security token after login credentials have been verified against the respective information source
+     * @param authenticationResponse an instance issued by an IdentityProvider after identity claim has been verified as authentic
      * @return a signed JWT containing the user identity and the identity provider, Base64-encoded
      * @throws JwtException if there is a problem generating the signed token
      */
     public String generateSignedToken(final AuthenticationResponse authenticationResponse) throws JwtException {
         if (authenticationResponse == null) {
-            throw new IllegalArgumentException("Cannot generate a JWT for a null authentication token");
+            throw new IllegalArgumentException("Cannot generate a JWT for a null authenticationResponse");
         }
 
-        // Set expiration from the token
-        final Calendar now = Calendar.getInstance();
-        long expirationMillisRelativeToNow = validateTokenExpiration(authenticationResponse.getExpiration(), authenticationResponse.getIdentity());
-        long expirationMillis = now.getTimeInMillis() + expirationMillisRelativeToNow;
-        final Calendar expiration = new Calendar.Builder().setInstant(expirationMillis).build();
+        return generateSignedToken(
+                authenticationResponse.getIdentity(),
+                authenticationResponse.getUsername(),
+                authenticationResponse.getIssuer(),
+                authenticationResponse.getIssuer(),
+                authenticationResponse.getExpiration());
+    }
 
-        final Object principal = authenticationResponse.getIdentity();
-        if (principal == null || StringUtils.isEmpty(principal.toString())) {
-            final String errorMessage = "Cannot generate a JWT for a token with an empty identity issued by " + authenticationResponse.getIssuer();
+    public String generateSignedToken(String identity, String preferredUsername, String issuer, String audience, long expirationMillis) throws JwtException {
+
+        if (identity == null || StringUtils.isEmpty(identity)) {
+            String errorMessage = "Cannot generate a JWT for a token with an empty identity";
+            errorMessage = issuer != null ? errorMessage + " issued by " + issuer + "." : ".";
             logger.error(errorMessage);
-            throw new JwtException(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
 
-        // Create a JWT with the specified authentication
-        final String identity = principal.toString();
-        final String username = authenticationResponse.getUsername();
+        // Compute expiration
+        final Calendar now = Calendar.getInstance();
+        long expirationMillisRelativeToNow = validateTokenExpiration(expirationMillis, identity);
+        long expirationMillisSinceEpoch = now.getTimeInMillis() + expirationMillisRelativeToNow;
+        final Calendar expiration = new Calendar.Builder().setInstant(expirationMillisSinceEpoch).build();
 
         try {
             // Get/create the key for this user
             final Key key = keyService.getOrCreateKey(identity);
             final byte[] keyBytes = key.getKey().getBytes(StandardCharsets.UTF_8);
 
-            logger.trace("Generating JWT for " + describe(authenticationResponse));
+            //logger.trace("Generating JWT for " + describe(authenticationResponse));
 
             // TODO: Implement "jti" claim with nonce to prevent replay attacks and allow blacklisting of revoked tokens
             // Build the token
             return Jwts.builder().setSubject(identity)
-                    .setIssuer(authenticationResponse.getIssuer())
-                    .setAudience(authenticationResponse.getIssuer())
-                    .claim(USERNAME_CLAIM, username)
+                    .setIssuer(issuer)
+                    .setAudience(audience)
+                    .claim(USERNAME_CLAIM, preferredUsername)
                     .claim(KEY_ID_CLAIM, key.getId())
                     .setIssuedAt(now.getTime())
                     .setExpiration(expiration.getTime())
                     .signWith(SIGNATURE_ALGORITHM, keyBytes).compact();
-        } catch (NullPointerException | AdministrationException e) {
+        } catch (NullPointerException e) {
             final String errorMessage = "Could not retrieve the signing key for JWT for " + identity;
             logger.error(errorMessage, e);
             throw new JwtException(errorMessage, e);
         }
+
     }
 
-    private long validateTokenExpiration(long proposedTokenExpiration, String identity) {
+    private static long validateTokenExpiration(long proposedTokenExpiration, String identity) {
         final long maxExpiration = TimeUnit.MILLISECONDS.convert(12, TimeUnit.HOURS);
         final long minExpiration = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);
 

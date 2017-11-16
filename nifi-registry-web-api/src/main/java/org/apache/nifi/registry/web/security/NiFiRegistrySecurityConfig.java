@@ -46,17 +46,21 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistrySecurityConfig.class);
 
-    @Autowired private NiFiRegistryProperties properties;
+    @Autowired
+    private NiFiRegistryProperties properties;
 
-    @Autowired private Authorizer authorizer;
+    @Autowired
+    private Authorizer authorizer;
 
     private AnonymousIdentityFilter anonymousAuthenticationFilter = new AnonymousIdentityFilter();
 
-    @Autowired private X509IdentityProvider x509IdentityProvider;
+    @Autowired
+    private X509IdentityProvider x509IdentityProvider;
     private IdentityFilter x509AuthenticationFilter;
     private IdentityAuthenticationProvider x509AuthenticationProvider;
 
-    @Autowired private JwtIdentityProvider jwtIdentityProvider;
+    @Autowired
+    private JwtIdentityProvider jwtIdentityProvider;
     private IdentityFilter jwtAuthenticationFilter;
     private IdentityAuthenticationProvider jwtAuthenticationProvider;
 
@@ -67,7 +71,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         // allow any client to access the endpoint for logging in to generate an access token
-        webSecurity.ignoring().antMatchers( "/access/token/*");
+        webSecurity.ignoring().antMatchers( "/access/token/**");
     }
 
     @Override

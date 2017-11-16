@@ -61,12 +61,19 @@ public class NiFiRegistryProperties extends Properties {
     public static final String DATABASE_DIRECTORY = "nifi.registry.db.directory";
     public static final String DATABASE_URL_APPEND = "nifi.registry.db.url.append";
 
+    // Kerberos properties
+    public static final String KERBEROS_KRB5_FILE = "nifi.registry.kerberos.krb5.file";
+    public static final String KERBEROS_SPNEGO_PRINCIPAL = "nifi.registry.kerberos.spnego.principal";
+    public static final String KERBEROS_SPNEGO_KEYTAB_LOCATION = "nifi.registry.kerberos.spnego.keytab.location";
+    public static final String KERBEROS_SPNEGO_AUTHENTICATION_EXPIRATION = "nifi.registry.kerberos.spnego.authentication.expiration";
+
     // Defaults
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
     public static final String DEFAULT_WAR_DIR = "./lib";
     public static final String DEFAULT_PROVIDERS_CONFIGURATION_FILE = "./conf/providers.xml";
     public static final String DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "./conf/authorizers.xml";
     public static final String DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE = "./conf/identity-providers.xml";
+    public static final String DEFAULT_AUTHENTICATION_EXPIRATION = "12 hours";
 
     public int getWebThreads() {
         int webThreads = 200;
@@ -79,15 +86,7 @@ public class NiFiRegistryProperties extends Properties {
     }
 
     public Integer getPort() {
-        final String rawPort = getProperty(WEB_HTTP_PORT);
-        if (StringUtils.isBlank(rawPort)) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(rawPort);
-        } catch (final NumberFormatException nfe) {
-            throw new IllegalStateException(String.format("%s must be an integer value.", WEB_HTTP_PORT));
-        }
+        return getPropertyAsInteger(WEB_HTTP_PORT);
     }
 
     public String getHttpHost() {
@@ -95,15 +94,7 @@ public class NiFiRegistryProperties extends Properties {
     }
 
     public Integer getSslPort() {
-        final String rawPort = getProperty(WEB_HTTPS_PORT);
-        if (StringUtils.isBlank(rawPort)) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(rawPort);
-        } catch (final NumberFormatException nfe) {
-            throw new IllegalStateException(String.format("%s must be an integer value.", WEB_HTTPS_PORT));
-        }
+        return getPropertyAsInteger(WEB_HTTPS_PORT);
     }
 
     public String getHttpsHost() {
@@ -156,12 +147,7 @@ public class NiFiRegistryProperties extends Properties {
     }
 
     public File getProvidersConfigurationFile() {
-        final String value = getProperty(PROVIDERS_CONFIGURATION_FILE);
-        if (StringUtils.isBlank(value)) {
-            return new File(DEFAULT_PROVIDERS_CONFIGURATION_FILE);
-        } else {
-            return new File(value);
-        }
+        return getPropertyAsFile(PROVIDERS_CONFIGURATION_FILE, DEFAULT_PROVIDERS_CONFIGURATION_FILE);
     }
 
     public String getDatabaseDirectory() {
@@ -173,21 +159,31 @@ public class NiFiRegistryProperties extends Properties {
     }
 
     public File getAuthorizersConfigurationFile() {
-        final String value = getProperty(SECURITY_AUTHORIZERS_CONFIGURATION_FILE);
-        if (StringUtils.isBlank(value)) {
-            return new File(DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE);
-        } else {
-            return new File(value);
-        }
+        return getPropertyAsFile(SECURITY_AUTHORIZERS_CONFIGURATION_FILE, DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE);
     }
 
     public File getIdentityProviderConfigurationFile() {
-        final String value = getProperty(SECURITY_IDENTITY_PROVIDERS_CONFIGURATION_FILE);
-        if (StringUtils.isBlank(value)) {
-            return new File(DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE);
-        } else {
-            return new File(value);
-        }
+        return getPropertyAsFile(SECURITY_IDENTITY_PROVIDERS_CONFIGURATION_FILE, DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE);
+    }
+
+    public File getKerberosConfigurationFile() {
+        return getPropertyAsFile(KERBEROS_KRB5_FILE);
+    }
+
+    public String getKerberosSpnegoAuthenticationExpiration() {
+        return getProperty(KERBEROS_SPNEGO_AUTHENTICATION_EXPIRATION, DEFAULT_AUTHENTICATION_EXPIRATION);
+    }
+
+    public String getKerberosSpnegoPrincipal() {
+        return getPropertyAsTrimmedString(KERBEROS_SPNEGO_PRINCIPAL);
+    }
+
+    public String getKerberosSpnegoKeytabLocation() {
+        return getPropertyAsTrimmedString(KERBEROS_SPNEGO_KEYTAB_LOCATION);
+    }
+
+    public boolean isKerberosSpnegoSupportEnabled() {
+        return !StringUtils.isBlank(getKerberosSpnegoPrincipal()) && !StringUtils.isBlank(getKerberosSpnegoKeytabLocation());
     }
 
     public Set<String> getExtensionsDirs() {
@@ -210,4 +206,46 @@ public class NiFiRegistryProperties extends Properties {
 
         return propertyNames;
     }
+
+    // Helper functions for common ways of interpreting property values
+
+    private String getPropertyAsTrimmedString(String key) {
+        final String value = getProperty(key);
+        if (!StringUtils.isBlank(value)) {
+            return value.trim();
+        } else {
+            return null;
+        }
+    }
+
+    private Integer getPropertyAsInteger(String key) {
+        final String value = getProperty(key);
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(value);
+        } catch (final NumberFormatException nfe) {
+            throw new IllegalStateException(String.format("%s must be an integer value.", key));
+        }
+    }
+
+    private File getPropertyAsFile(String key) {
+        final String filePath = getProperty(key);
+        if (filePath != null && filePath.trim().length() > 0) {
+            return new File(filePath.trim());
+        } else {
+            return null;
+        }
+    }
+
+    private File getPropertyAsFile(String propertyKey, String defaultFileLocation) {
+        final String value = getProperty(propertyKey);
+        if (StringUtils.isBlank(value)) {
+            return new File(defaultFileLocation);
+        } else {
+            return new File(value);
+        }
+    }
+
 }
