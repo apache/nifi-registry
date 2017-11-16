@@ -89,8 +89,12 @@ public class JettyServer {
         final Configuration.ClassList classlist = Configuration.ClassList.setServerDefault(server);
         classlist.addBefore(JettyWebXmlConfiguration.class.getName(), AnnotationConfiguration.class.getName());
 
-        configureConnectors();
-        loadWars();
+        try {
+            configureConnectors();
+            loadWars();
+        } catch (final Throwable t) {
+            startUpFailure(t);
+        }
     }
 
     private void configureConnectors() {
@@ -195,7 +199,7 @@ public class JettyServer {
         return contextFactory;
     }
 
-    private void loadWars() {
+    private void loadWars() throws IOException {
         final File warDirectory = properties.getWarLibDirectory();
         final File[] wars = warDirectory.listFiles(WAR_FILTER);
 
@@ -243,7 +247,7 @@ public class JettyServer {
         server.setHandler(handlers);
     }
 
-    private WebAppContext loadWar(final File warFile, final String contextPath) {
+    private WebAppContext loadWar(final File warFile, final String contextPath) throws IOException {
         final WebAppContext webappContext = new WebAppContext(warFile.getPath(), contextPath);
         webappContext.setContextPath(contextPath);
         webappContext.setDisplayName(contextPath);
@@ -275,47 +279,40 @@ public class JettyServer {
         // configure the max form size (3x the default)
         webappContext.setMaxFormContentSize(600000);
 
-        try {
-            webappContext.setClassLoader(new WebAppClassLoader(ClassLoader.getSystemClassLoader(), webappContext));
-        } catch (final IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        webappContext.setClassLoader(new WebAppClassLoader(ClassLoader.getSystemClassLoader(), webappContext));
+
         logger.info("Loading WAR: " + warFile.getAbsolutePath() + " with context path set to " + contextPath);
         return webappContext;
     }
 
-    private ContextHandler createDocsWebApp(final String contextPath) {
-        try {
-            final ResourceHandler resourceHandler = new ResourceHandler();
-            resourceHandler.setDirectoriesListed(false);
+    private ContextHandler createDocsWebApp(final String contextPath) throws IOException {
+        final ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirectoriesListed(false);
 
-            // load the docs directory
-            final File docsDir = Paths.get("docs").toRealPath().toFile();
-            final Resource docsResource = Resource.newResource(docsDir);
+        // load the docs directory
+        final File docsDir = Paths.get("docs").toRealPath().toFile();
+        final Resource docsResource = Resource.newResource(docsDir);
 
-            // load the rest documentation
-            final File webApiDocsDir = new File(webApiContext.getTempDirectory(), "webapp/docs");
-            if (!webApiDocsDir.exists()) {
-                final boolean made = webApiDocsDir.mkdirs();
-                if (!made) {
-                    throw new RuntimeException(webApiDocsDir.getAbsolutePath() + " could not be created");
-                }
+        // load the rest documentation
+        final File webApiDocsDir = new File(webApiContext.getTempDirectory(), "webapp/docs");
+        if (!webApiDocsDir.exists()) {
+            final boolean made = webApiDocsDir.mkdirs();
+            if (!made) {
+                throw new RuntimeException(webApiDocsDir.getAbsolutePath() + " could not be created");
             }
-            final Resource webApiDocsResource = Resource.newResource(webApiDocsDir);
-
-            // create resources for both docs locations
-            final ResourceCollection resources = new ResourceCollection(docsResource, webApiDocsResource);
-            resourceHandler.setBaseResource(resources);
-
-            // create the context handler
-            final ContextHandler handler = new ContextHandler(contextPath);
-            handler.setHandler(resourceHandler);
-
-            logger.info("Loading documents web app with context path set to " + contextPath);
-            return handler;
-        } catch (Exception ex) {
-            throw new IllegalStateException("Resource directory paths are malformed: " + ex.getMessage());
         }
+        final Resource webApiDocsResource = Resource.newResource(webApiDocsDir);
+
+        // create resources for both docs locations
+        final ResourceCollection resources = new ResourceCollection(docsResource, webApiDocsResource);
+        resourceHandler.setBaseResource(resources);
+
+        // create the context handler
+        final ContextHandler handler = new ContextHandler(contextPath);
+        handler.setHandler(resourceHandler);
+
+        logger.info("Loading documents web app with context path set to " + contextPath);
+        return handler;
     }
 
     public void start() {
@@ -332,15 +329,22 @@ public class JettyServer {
                     // see if this webapp had any exceptions that would
                     // cause it to be unavailable
                     if (context.getUnavailableException() != null) {
-                        throw context.getUnavailableException();
+                        startUpFailure(context.getUnavailableException());
                     }
                 }
             }
 
             dumpUrls();
         } catch (final Throwable t) {
-            throw new RuntimeException("Unable to start up: " + t, t);
+            startUpFailure(t);
         }
+    }
+
+    private void startUpFailure(Throwable t) {
+        System.err.println("Failed to start web server: " + t.getMessage());
+        System.err.println("Shutting down...");
+        logger.warn("Failed to start web server... shutting down.", t);
+        System.exit(1);
     }
 
     private void dumpUrls() throws SocketException {
