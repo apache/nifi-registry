@@ -70,11 +70,15 @@ limitations under the License.
             <button *ngIf="false" matTooltip="Alerts" mat-icon-button>
                 <i class="fa fa-bell" aria-hidden="true"></i>
             </button>
-            <button mat-ripple [@flyInOut] *ngIf="nfRegistryService.perspective === 'explorer'" mat-icon-button
+            <div *ngIf="nfRegistryService.user.identity" fxLayout="column" fxLayoutAlign="space-around end" class="push-right-sm">
+                <div id="current-user" matTooltip="{{nfRegistryService.user.identity}}">{{nfRegistryService.user.identity}}</div>
+                <a id="logout-link-container" *ngIf="nfRegistryService.user.canLogout" class="link" routerLink="/nifi-registry/logout">logout</a>
+            </div>
+            <button mat-ripple *ngIf="nfRegistryService.perspective === 'explorer'" mat-icon-button
                     routerLink="/nifi-registry/administration/users">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
-            <button mat-ripple [@flyInOut] *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
+            <button mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
                     routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                 <mat-icon color="primary">close</mat-icon>
             </button>

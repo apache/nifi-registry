@@ -76,6 +76,24 @@ body {
     overflow: auto;
 }
 
+#current-user {
+    font-family: 'Roboto Slab';
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    max-width: 250px;
+    text-overflow: ellipsis;
+    line-height: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    color: $grey5;
+}
+
+#logout-link-container {
+    font-size: 12px;
+    text-transform:uppercase;
+}
+
 mat-sidenav {
     width: 40%;
     min-width: 418px;

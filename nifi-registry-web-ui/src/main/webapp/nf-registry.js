@@ -16,11 +16,28 @@
  */
 
 var ngCore = require('@angular/core');
+var ngCommonHttp = require('@angular/common/http');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 
-function NfRegistry(nfRegistryService, changeDetectorRef) {
+/**
+ * NfRegistry constructor.
+ *
+ * @param http                  The angular http module.
+ * @param fdsDialogService      The FDS dialog service.
+ * @param router                The angular router module.
+ * @param nfStorage             A wrapper for the browser's local storage.
+ * @param nfRegistryService     The registry service.
+ * @param changeDetectorRef     The change detector ref.
+ * @constructor
+ */
+function NfRegistry(http, nfStorage, nfRegistryService, nfRegistryApi, changeDetectorRef) {
+    this.http = http;
+    this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.cd = changeDetectorRef;
 };
 
@@ -28,7 +45,27 @@ NfRegistry.prototype = {
     constructor: NfRegistry,
 
     ngOnInit: function () {
+        var self = this;
         this.nfRegistryService.sidenav = this.sidenav; //ngCore.ViewChild
+
+        // attempt kerberos authentication
+        this.nfRegistryApi.ticketExchange().subscribe(function (response) {
+            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                // if the user is logged, we want to determine if they were logged in using a certificate
+                if (currentUser.status !== "UNKNOWN") {
+                    // render the users name
+                    self.nfRegistryService.user = currentUser;
+
+                    // render the logout button if there is a token locally
+                    if (self.nfStorage.getItem('jwt') !== null) {
+                        self.nfRegistryService.user.canLogout = true;
+                    }
+                } else {
+                    // set the anonymous user label
+                    self.nfRegistryService.user.identity = 'Anonymous';
+                }
+            });
+        });
     },
 
     ngAfterViewChecked: function () {
@@ -51,7 +88,10 @@ NfRegistry.annotations = [
 ];
 
 NfRegistry.parameters = [
+    ngCommonHttp.HttpClient,
+    NfStorage,
     NfRegistryService,
+    NfRegistryApi,
     ngCore.ChangeDetectorRef
 ];
 

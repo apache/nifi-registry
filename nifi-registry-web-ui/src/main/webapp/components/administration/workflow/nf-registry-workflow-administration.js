@@ -26,7 +26,7 @@ var ngMaterial = require('@angular/material');
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
- * @param matDialogRef          The angular material dialog ref.
+ * @param matDialog          The angular material dialog module.
  * @constructor
  */
 function NfRegistryWorkflowAdministration(nfRegistryService, ActivatedRoute, matDialog) {

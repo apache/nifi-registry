@@ -70,6 +70,7 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.droplet = {};
     this.droplets = [];
     this.user = {};
+    this.group = {};
     this.users = [];
     this.alerts = [];
     this.explorerViewType = '';
@@ -98,18 +99,19 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.autoCompleteBuckets = [];
     this.selectedBuckets = [];
     this.bucketsSearchTerms = [];
-    this.disableMultiBucketActions = true;
+    this.isMultiBucketActionsDisabled = true;
 
     this.filteredUsers = [];
+    this.filteredUserGroups = [];
     this.userColumns = [
-        {name: 'status', label: 'Status', sortable: true, tooltip: 'User Status.', width: 18},
-        {name: 'name', label: 'Name', sortable: true, tooltip: 'User name.', width: 30},
-        {name: 'provider', label: 'Provider', sortable: true, tooltip: 'Authentication provider.', width: 30}
+        {name: 'identity', label: 'Display Name', sortable: true, tooltip: 'User name.', width: 100}
     ];
-    this.allUsersSelected = false;
-    this.autoCompleteUsers = [];
+    this.allUsersAndGroupsSelected = false;
+    this.autoCompleteUsersAndGroups = [];
     this.selectedUsers = [];
     this.usersSearchTerms = [];
+    this.isMultiUserActionsDisabled = true;
+    this.isMultiUserGroupActionsDisabled = false;
 };
 
 NfRegistryService.prototype = {
@@ -191,31 +193,20 @@ NfRegistryService.prototype = {
                 function (accept) {
                     if (accept) {
                         self.api.deleteDroplet(droplet.link.href).subscribe(function (response) {
-                            if (response.link === null) {
-                                self.droplets = self.droplets.filter(function (d) {
-                                    return (d.identifier !== droplet.identifier) ? true : false
-                                });
-                                var snackBarRef = self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'All versions of this ' + droplet.type.toLowerCase() + ' have been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.droplet = {};
-                                self.filterDroplets();
-                            } else {
-                                var snackBarRef = self.snackBarService.openCoaster({
-                                    title: 'Error',
-                                    message: 'Error deleting ' + droplet.name + '.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-times-circle-o',
-                                    color: '#EF6162'
-                                });
-                            }
+                            self.droplets = self.droplets.filter(function (d) {
+                                return (d.identifier !== droplet.identifier) ? true : false
+                            });
+                            var snackBarRef = self.snackBarService.openCoaster({
+                                title: 'Success',
+                                message: 'All versions of this ' + droplet.type.toLowerCase() + ' have been deleted.',
+                                verticalPosition: 'bottom',
+                                horizontalPosition: 'right',
+                                icon: 'fa fa-check-circle-o',
+                                color: '#1EB475',
+                                duration: 3000
+                            });
+                            self.droplet = {};
+                            self.filterDroplets();
                         });
                     }
                 });
@@ -326,7 +317,7 @@ NfRegistryService.prototype = {
             case 'delete':
                 this.dialogService.openConfirm({
                     title: 'Delete Bucket',
-                    message: 'All versions of all items will be deleted.',
+                    message: 'All items stored in this bucket will be deleted as well.',
                     cancelButton: 'Cancel',
                     acceptButton: 'Delete',
                     acceptButtonColor: 'fds-warn'
@@ -334,31 +325,20 @@ NfRegistryService.prototype = {
                     function (accept) {
                         if (accept) {
                             self.api.deleteBucket(bucket.identifier).subscribe(function (response) {
-                                if (response.link === null) {
-                                    self.buckets = self.buckets.filter(function (b) {
-                                        return b.identifier !== bucket.identifier;
-                                    });
-                                    var snackBarRef = self.snackBarService.openCoaster({
-                                        title: 'Success',
-                                        message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
-                                        verticalPosition: 'bottom',
-                                        horizontalPosition: 'right',
-                                        icon: 'fa fa-check-circle-o',
-                                        color: '#1EB475',
-                                        duration: 3000
-                                    });
-                                    self.bucket = {};
-                                    self.filterBuckets();
-                                } else {
-                                    var snackBarRef = self.snackBarService.openCoaster({
-                                        title: 'Error',
-                                        message: 'Error deleting ' + bucket.name + '.',
-                                        verticalPosition: 'bottom',
-                                        horizontalPosition: 'right',
-                                        icon: 'fa fa-times-circle-o',
-                                        color: '#EF6162'
-                                    });
-                                }
+                                self.buckets = self.buckets.filter(function (b) {
+                                    return b.identifier !== bucket.identifier;
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.bucket = {};
+                                self.filterBuckets();
                             });
                         }
                     });
@@ -418,7 +398,7 @@ NfRegistryService.prototype = {
             }
         });
 
-        this.disableMultiBucketActions = (selected > 0) ? false : true;
+        this.isMultiBucketActionsDisabled = (selected > 0) ? false : true;
 
         this.getAutoCompleteBuckets();
     },
@@ -473,7 +453,7 @@ NfRegistryService.prototype = {
             }
         });
 
-        this.disableMultiBucketActions = (selected > 0) ? false : true;
+        this.isMultiBucketActionsDisabled = (selected > 0) ? false : true;
         return allSelected;
     },
 
@@ -508,7 +488,7 @@ NfRegistryService.prototype = {
         this.filteredBuckets.forEach(function (c) {
             c.checked = true;
         });
-        this.disableMultiBucketActions = false;
+        this.isMultiBucketActionsDisabled = false;
     },
 
     /**
@@ -518,7 +498,7 @@ NfRegistryService.prototype = {
         this.filteredBuckets.forEach(function (c) {
             c.checked = false;
         });
-        this.disableMultiBucketActions = true;
+        this.isMultiBucketActionsDisabled = true;
     },
 
     /**
@@ -533,6 +513,7 @@ NfRegistryService.prototype = {
             this.bucketsSearchTerms.splice(index, 1);
         }
         this.filterBuckets();
+        this.determineAllBucketsSelectedState();
     },
 
     /**
@@ -543,6 +524,7 @@ NfRegistryService.prototype = {
     bucketsSearchAdd: function (searchTerm) {
         this.bucketsSearchTerms.push(searchTerm);
         this.filterBuckets();
+        this.determineAllBucketsSelectedState();
     },
 
     /**
@@ -562,34 +544,25 @@ NfRegistryService.prototype = {
                     self.filteredBuckets.forEach(function (filteredBucket) {
                         if (filteredBucket.checked) {
                             self.api.deleteBucket(filteredBucket.identifier).subscribe(function (response) {
-                                if (response.link === null) {
-                                    self.buckets = self.buckets.filter(function (bucket) {
-                                        return bucket.identifier !== filteredBucket.identifier;
-                                    });
-                                    var snackBarRef = self.snackBarService.openCoaster({
-                                        title: 'Success',
-                                        message: 'All versions of all items in ' + filteredBucket.name + ' have been deleted.',
-                                        verticalPosition: 'bottom',
-                                        horizontalPosition: 'right',
-                                        icon: 'fa fa-check-circle-o',
-                                        color: '#1EB475',
-                                        duration: 3000
-                                    });
-                                    self.filterBuckets();
-                                    self.allBucketsSelected = false;
-                                } else {
-                                    var snackBarRef = self.snackBarService.openCoaster({
-                                        title: 'Error',
-                                        message: 'Error deleting ' + filteredBucket.name + '.',
-                                        verticalPosition: 'bottom',
-                                        horizontalPosition: 'right',
-                                        icon: 'fa fa-times-circle-o',
-                                        color: '#EF6162'
-                                    });
-                                }
+                                self.buckets = self.buckets.filter(function (bucket) {
+                                    return bucket.identifier !== filteredBucket.identifier;
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'All versions of all items in ' + filteredBucket.name + ' have been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterBuckets();
+                                self.allBucketsSelected = false;
                             });
                         }
                     });
+                    // if all buckets have been deleted reset the `allBucketsSelected`
+                    self.allBucketsSelected = (self.filteredBuckets.length === 0) ? false : true;
                 }
             });
     },
@@ -598,7 +571,7 @@ NfRegistryService.prototype = {
         if (column.sortable) {
             var sortBy = column.name;
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
-            this.filterUsers(sortBy, sortOrder);
+            this.filterUsersAndGroups(sortBy, sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
             this.userColumns.forEach(function (c) {
@@ -615,77 +588,257 @@ NfRegistryService.prototype = {
         if (index !== -1) {
             this.usersSearchTerms.splice(index, 1);
         }
-        this.filterUsers();
+        this.filterUsersAndGroups();
+        this.determineAllUsersAndGroupsSelectedState();
     },
 
     usersSearchAdd: function (searchTerm) {
         this.usersSearchTerms.push(searchTerm);
-        this.filterUsers();
+        this.filterUsersAndGroups();
+        this.determineAllUsersAndGroupsSelectedState();
     },
 
-    filterUsers: function (sortBy, sortOrder) {
-        if (this.allUsersSelected) {
-            this.toggleUsersSelectAll();
-        }
-        this.deselectAllUsers();
-        var newData = this.users;
+    filterUsersAndGroups: function (sortBy, sortOrder) {
+        // this.deselectAllUsersAndGroups();
+        var newUsersData = this.users;
+        var newUserGroupsData = this.groups;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newData = filterData(newData, this.usersSearchTerms[i], true);
+            newUsersData = filterData(newUsersData, this.usersSearchTerms[i], true);
         }
-        newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
-        newData = this.dataTableService.pageData(newData, this.usersFromRow, this.usersCurrentPage * this.usersPageSize);
-        this.filteredUsers = newData;
-        this.getAutoCompleteUsers();
-    },
 
-    toggleUserSelect: function (row) {
-        if (this.allFilteredUsersSelected()) {
-            this.allUsersSelected = true;
-        } else {
-            this.allUsersSelected = false;
+        newUsersData = this.dataTableService.sortData(newUsersData, sortBy, sortOrder);
+        newUsersData = this.dataTableService.pageData(newUsersData, this.usersFromRow, this.usersCurrentPage * this.usersPageSize);
+        this.filteredUsers = newUsersData;
+
+        for (var i = 0; i < this.usersSearchTerms.length; i++) {
+            newUserGroupsData = filterData(newUserGroupsData, this.usersSearchTerms[i], true);
         }
+
+        newUserGroupsData = this.dataTableService.sortData(newUserGroupsData, sortBy, sortOrder);
+        newUserGroupsData = this.dataTableService.pageData(newUserGroupsData, this.usersFromRow, this.usersCurrentPage * this.usersPageSize);
+        this.filteredUserGroups = newUserGroupsData;
+
+        this.getAutoCompleteUserAndGroups();
     },
 
-    toggleUsersSelectAll: function () {
-        if (this.allUsersSelected) {
-            this.selectAllUsers();
-        } else {
-            this.deselectAllUsers();
-        }
-    },
-
-    selectAllUsers: function () {
-        this.filteredUsers.forEach(function (c) {
-            c.checked = true;
-        });
-    },
-
-    deselectAllUsers: function () {
-        this.filteredUsers.forEach(function (c) {
-            c.checked = false;
-        });
-    },
-    allFilteredUsersSelected: function () {
-        var allFilteredUsersSelected = true;
-        this.filteredUsers.forEach(function (c) {
+    determineAllUsersAndGroupsSelectedState: function (row) {
+        var selected = 0;
+        var allSelected = true;
+        this.isMultiUserGroupActionsDisabled = false;
+        this.filteredUserGroups.forEach(function (c) {
+            if (c.checked) {
+                selected++;
+            }
             if (c.checked === undefined || c.checked === false) {
-                allFilteredUsersSelected = false;
+                allSelected = false;
             }
         });
 
-        return allFilteredUsersSelected;
+        if (selected > 0) {
+            this.isMultiUserGroupActionsDisabled = true;
+        }
+
+        this.filteredUsers.forEach(function (c) {
+            if (c.checked) {
+                selected++;
+            }
+            if (c.checked === undefined || c.checked === false) {
+                allSelected = false;
+            }
+        });
+        this.isMultiUserActionsDisabled = (selected > 0) ? false : true;
+        this.allUsersAndGroupsSelected = allSelected;
     },
 
-    getAutoCompleteUsers: function () {
+    toggleUsersSelectAll: function () {
+        if (this.allUsersAndGroupsSelected) {
+            this.selectAllUsersAndGroups();
+        } else {
+            this.deselectAllUsersAndGroups();
+        }
+    },
+
+    selectAllUsersAndGroups: function () {
+        this.filteredUsers.forEach(function (c) {
+            c.checked = true;
+        });
+        this.filteredUserGroups.forEach(function (c) {
+            c.checked = true;
+        });
+        this.isMultiUserGroupActionsDisabled = (this.filteredUserGroups.length > 0) ? true : false;
+        this.allUsersAndGroupsSelected = true;
+        this.isMultiUserActionsDisabled = false;
+    },
+
+    deselectAllUsersAndGroups: function () {
+        this.filteredUsers.forEach(function (c) {
+            c.checked = false;
+        });
+        this.filteredUserGroups.forEach(function (c) {
+            c.checked = false;
+        });
+        this.allUsersAndGroupsSelected = false;
+        this.isMultiUserGroupActionsDisabled = false;
+        this.isMultiUserActionsDisabled = true;
+    },
+
+    getAutoCompleteUserAndGroups: function () {
         var self = this;
-        this.autoCompleteUsers = [];
+        this.autoCompleteUsersAndGroups = [];
         this.userColumns.forEach(function (c) {
-            self.filteredUsers.forEach(function (r) {
-                (r[c.name.toLowerCase()]) ? self.autoCompleteUsers.push(r[c.name.toLowerCase()].toString()) : '';
+            var usersAndGroups = self.filteredUsers.concat(self.filteredUserGroups);
+            usersAndGroups.forEach(function (r) {
+                (r[c.name.toLowerCase()]) ? self.autoCompleteUsersAndGroups.push(r[c.name.toLowerCase()].toString()) : '';
             });
         });
     },
+
+    /**
+     * Execute the given user action.
+     *
+     * @param action        The action object.
+     * @param user          The user object the `action` will act upon.
+     */
+    executeUserAction: function (action, user) {
+        var self = this;
+        this.user = user;
+        switch (action.name.toLowerCase()) {
+            case 'delete':
+                this.dialogService.openConfirm({
+                    title: 'Delete User',
+                    message: 'This user will lose all access to the registry.',
+                    cancelButton: 'Cancel',
+                    acceptButton: 'Delete',
+                    acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(
+                    function (accept) {
+                        if (accept) {
+                            self.api.deleteUser(user.identifier).subscribe(function (response) {
+                                self.users = self.users.filter(function (u) {
+                                    return u.identifier !== user.identifier;
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'User: ' + user.identity + ' has been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterUsersAndGroups();
+                            });
+                        }
+                    });
+                break;
+            case 'permissions':
+                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':user/' + action.name + '/' + user.identifier + ')');
+                break;
+        }
+    },
+
+    /**
+     * Execute the given group action.
+     *
+     * @param action        The action object.
+     * @param group          The group object the `action` will act upon.
+     */
+    executeGroupAction: function (action, group) {
+        var self = this;
+        this.group = group;
+        switch (action.name.toLowerCase()) {
+            case 'delete':
+                this.dialogService.openConfirm({
+                    title: 'Delete Group',
+                    message: 'All policies granted to this group will be deleted as well.',
+                    cancelButton: 'Cancel',
+                    acceptButton: 'Delete',
+                    acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(
+                    function (accept) {
+                        if (accept) {
+                            self.api.deleteUserGroup(group.identifier).subscribe(function (response) {
+                                self.groups = self.groups.filter(function (u) {
+                                    return u.identifier !== group.identifier;
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'Group: ' + group.identity + ' has been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterUsersAndGroups();
+                            });
+                        }
+                    });
+                break;
+            case 'permissions':
+                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':group/' + action.name + '/' + group.identifier + ')');
+                break;
+        }
+    },
+
+    /**
+     * Deletes all selected users and groups
+     */
+    deleteSelectedUsersAndGroups: function () {
+        var self = this;
+        this.dialogService.openConfirm({
+            title: 'Delete Users/Groups',
+            message: 'The selected users will lose all access to the registry and all policies granted to the selected groups will be deleted.',
+            cancelButton: 'Cancel',
+            acceptButton: 'Delete',
+            acceptButtonColor: 'fds-warn'
+        }).afterClosed().subscribe(
+            function (accept) {
+                if (accept) {
+                    self.filteredUserGroups.forEach(function (filteredUserGroup) {
+                        if (filteredUserGroup.checked) {
+                            self.api.deleteUserGroup(filteredUserGroup.identifier).subscribe(function (response) {
+                                self.groups = self.groups.filter(function (u) {
+                                    return u.identifier !== filteredUserGroup.identifier;
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'User group: ' + filteredUserGroup.identity + ' has been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterUsersAndGroups();
+                            });
+                        }
+                    });
+                    self.filteredUsers.forEach(function (filteredUser) {
+                        if (filteredUser.checked) {
+                            self.api.deleteUser(filteredUser.identifier).subscribe(function (response) {
+                                self.users = self.users.filter(function (u) {
+                                    return u.identifier !== filteredUser.identifier;
+                                });
+                                var snackBarRef = self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'User: ' + filteredUser.identity + ' has been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterUsersAndGroups();
+                            });
+                        }
+                    });
+                    // if there are no users and no groups left set the `allUsersAndGroupsSelected` to false
+                    self.allUsersAndGroupsSelected = (self.filteredUsers.length === 0 && self.filteredUserGroups.lenght === 0) ? false : true;
+                }
+            });
+    }
 
     //</editor-fold>
 };

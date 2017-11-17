@@ -14,41 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var ngMaterial = require('@angular/material');
 
 /**
- * NfRegistryCreateBucket constructor.
+ * NfRegistryAddSelectedToGroup constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryCreateBucket(nfRegistryService, matDialogRef) {
+function NfRegistryAddSelectedToGroup(nfRegistryService, matDialogRef) {
     this.nfRegistryService = nfRegistryService;
     this.dialogRef = matDialogRef;
-    this.keepDialogOpen = false;
+    this.selectedGroups = [];
 };
 
-NfRegistryCreateBucket.prototype = {
-    constructor: NfRegistryCreateBucket,
+NfRegistryAddSelectedToGroup.prototype = {
+    constructor: NfRegistryAddSelectedToGroup,
 
     /**
-     * Create a new bucket.
+     * Add selected users and groups to an existing group.
      *
-     * @param newBucketInput     The newBucketInput element.
+     * @param groupIds     The group ids .
      */
-    createBucket: function (newBucketInput) {
-        var self = this;
-        this.nfRegistryService.api.createBucket(newBucketInput.value).subscribe(function (bucket) {
-            self.nfRegistryService.buckets.push(bucket);
-            self.nfRegistryService.filterBuckets();
-            self.nfRegistryService.allBucketsSelected = false;
-            if (self.keepDialogOpen !== true) {
-                self.dialogRef.close();
-            }
-        })
+    addSelectedToGroup: function (groupIds) {
+        if(!this.nfRegistryService.isMultiUserGroupActionsDisabled) {
+            var self = this;
+            var selectedUsers = this.nfRegistryService.filteredUsers.filter(function (filteredUser) {
+                return filteredUser.checked;
+            });
+
+            groupIds.forEach(function (groupId) {
+                this.nfRegistryService.api.getUserGroup(groupId).subscribe(function (group) {
+                    this.nfRegistryService.api.updateUserGroup(groupId, selectedUsers.concat(group.users));
+                });
+            });
+        }
     },
 
     /**
@@ -59,15 +63,15 @@ NfRegistryCreateBucket.prototype = {
     }
 };
 
-NfRegistryCreateBucket.annotations = [
+NfRegistryAddSelectedToGroup.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-create-bucket.html!text')
+        template: require('./nf-registry-add-selected-to-group.html!text')
     })
 ];
 
-NfRegistryCreateBucket.parameters = [
+NfRegistryAddSelectedToGroup.parameters = [
     NfRegistryService,
     ngMaterial.MatDialogRef
 ];
 
-module.exports = NfRegistryCreateBucket;
+module.exports = NfRegistryAddSelectedToGroup;

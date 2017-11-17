@@ -19,19 +19,19 @@ var NfRegistryService = require('nifi-registry/services/nf-registry.service.js')
 var ngRouter = require('@angular/router');
 
 /**
- * NfRegistryUserPermissions constructor.
+ * NfRegistryUserGroupsPermissions constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param Router                The angular router module.
  * @constructor
  */
-function NfRegistryUserPermissions(nfRegistryService, Router) {
+function NfRegistryUserGroupsPermissions(nfRegistryService, Router) {
     this.nfRegistryService = nfRegistryService;
     this.router = Router;
 };
 
-NfRegistryUserPermissions.prototype = {
-    constructor: NfRegistryUserPermissions,
+NfRegistryUserGroupsPermissions.prototype = {
+    constructor: NfRegistryUserGroupsPermissions,
 
     /**
      * Initialize the component.
@@ -44,7 +44,7 @@ NfRegistryUserPermissions.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        this.nfRegistryService.user = {};
+        this.nfRegistryService.group = {};
         this.nfRegistryService.sidenav.close();
     },
 
@@ -56,15 +56,15 @@ NfRegistryUserPermissions.prototype = {
     }
 };
 
-NfRegistryUserPermissions.annotations = [
+NfRegistryUserGroupsPermissions.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-user-permissions.html!text')
+        template: require('./nf-registry-user-group-permissions.html!text')
     })
 ];
 
-NfRegistryUserPermissions.parameters = [
+NfRegistryUserGroupsPermissions.parameters = [
     NfRegistryService,
     ngRouter.Router
 ];
 
-module.exports = NfRegistryUserPermissions;
+module.exports = NfRegistryUserGroupsPermissions;

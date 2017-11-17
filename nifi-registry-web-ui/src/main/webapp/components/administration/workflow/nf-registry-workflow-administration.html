@@ -24,7 +24,7 @@ limitations under the License.
             <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="createBucket()">
                 New Bucket
             </button>
-            <button class="push-top-sm" [disabled]="nfRegistryService.disableMultiBucketActions" color="fds-primary" mat-raised-button [matMenuTriggerFor]="bucketActionMenu">
+            <button class="push-top-sm" [disabled]="nfRegistryService.isMultiBucketActionsDisabled" color="fds-primary" mat-raised-button [matMenuTriggerFor]="bucketActionMenu">
                 Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
             </button>
         </div>
@@ -48,8 +48,8 @@ limitations under the License.
             <div class="td-data-table-column">
                 <div fxLayout="row" fxLayoutAlign="end center">
                     <mat-checkbox class="pad-left-sm" [(ngModel)]="nfRegistryService.allBucketsSelected"
-                                 (checked)="nfRegistryService.allBucketsSelected"
-                                 (change)="nfRegistryService.toggleBucketsSelectAll()"></mat-checkbox>
+                                  (checked)="nfRegistryService.allBucketsSelected"
+                                  (change)="nfRegistryService.toggleBucketsSelectAll()"></mat-checkbox>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@ limitations under the License.
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()">
                 <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.bucketColumns"
                      fxFlex="{{column.width}}">
-                    <div>
+                    <div matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
                         {{column.format ? column.format(row[column.name]) : row[column.name]}}
                     </div>
                 </div>
@@ -73,8 +73,8 @@ limitations under the License.
                                 <i class="{{action.icon}}" aria-hidden="true"></i>
                             </button>
                             <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
-                                         (change)="nfRegistryService.determineAllBucketsSelectedState()"
-                                         (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
+                                          (change)="nfRegistryService.determineAllBucketsSelectedState()"
+                                          (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
                         </div>
                         <div *ngIf="bucketActions.length > 4" fxLayout="row" fxLayoutAlign="end center">
                             <button (click)="row.checked = !row.checked" matTooltip="Actions" mat-icon-button
@@ -91,14 +91,14 @@ limitations under the License.
                                 </button>
                             </mat-menu>
                             <mat-checkbox [(ngModel)]="row.checked" [checked]="row.checked"
-                                         (change)="nfRegistryService.determineAllBucketsSelectedState()"
-                                         (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
+                                          (change)="nfRegistryService.determineAllBucketsSelectedState()"
+                                          (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
                         </div>
                     </div>
                     <div *ngIf="!bucketActions" fxLayout="row" fxLayoutAlign="end center">
                         <mat-checkbox [(ngModel)]="row.checked" [checked]="row.checked"
-                                     (change)="nfRegistryService.determineAllBucketsSelectedState(row)"
-                                     (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
+                                      (change)="nfRegistryService.determineAllBucketsSelectedState(row)"
+                                      (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
                     </div>
                 </div>
             </div>

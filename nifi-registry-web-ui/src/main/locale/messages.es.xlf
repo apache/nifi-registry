@@ -41,6 +41,42 @@
         <note priority="1" from="description">A button for creating a new bucket in the registry.@@nf-admin-workflow-create-bucket-button.</note>
         <note priority="1" from="meaning">Create new bucket button</note>
        </trans-unit>
+      <trans-unit id="nf-admin-workflow-add-user-button" datatype="html">
+         <source>Add</source>
+         <target state="new">añadir</target>
+        <note priority="1" from="description">A button for adding a new user in the registry.@@nf-admin-workflow-add-user-button.</note>
+        <note priority="1" from="meaning">Add new user button</note>
+       </trans-unit>
+      <trans-unit id="nf-admin-workflow-cancel-add-user-button" datatype="html">
+         <source>Cancel</source>
+         <target state="new">Cancelar</target>
+        <note priority="1" from="description">A button for cancelling the creation of a new user in the registry.@@nf-admin-workflow-add-user-button.</note>
+        <note priority="1" from="meaning">Cancel creation of new user</note>
+       </trans-unit>
+      <trans-unit id="nf-admin-workflow-create-new-group-button" datatype="html">
+         <source>Create</source>
+         <target state="new">Crear</target>
+        <note priority="1" from="description">A button for creating a new group in the registry.@@nf-admin-workflow-create-new-group-button.</note>
+        <note priority="1" from="meaning">Create new group button</note>
+       </trans-unit>
+      <trans-unit id="nf-admin-workflow-cancel-create-new-group-button" datatype="html">
+         <source>Cancel</source>
+         <target state="new">Cancelar</target>
+        <note priority="1" from="description">A button for cancelling the creation of a new group in the registry.@@nf-admin-workflow-cancel-create-new-group-button.</note>
+        <note priority="1" from="meaning">Cancel creation of new group</note>
+       </trans-unit>
+      <trans-unit id="nf-admin-workflow-add-selected-to-group-button" datatype="html">
+         <source>Add</source>
+         <target state="new">añadir</target>
+        <note priority="1" from="description">A button for adding users to an existing group in the registry.@@nf-admin-workflow-create-new-group-button.</note>
+        <note priority="1" from="meaning">Add selected users to group button</note>
+       </trans-unit>
+      <trans-unit id="nf-admin-workflow-cancel-add-selected-to-group-button" datatype="html">
+         <source>Cancel</source>
+         <target state="new">Cancelar</target>
+        <note priority="1" from="description">A button for cancelling the addition of selected users to a group in the registry.@@nf-admin-workflow-cancel-create-new-group-button.</note>
+        <note priority="1" from="meaning">Cancel addition of selected users to group</note>
+       </trans-unit>
     </body>
   </file>
 </xliff>
