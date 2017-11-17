@@ -15,25 +15,35 @@
  * limitations under the License.
  */
 
-var ngHttp = require('@angular/http');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+var ngCommonHttp = require('@angular/common/http');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var rxjs = require('rxjs/Rx');
 var ngRouter = require('@angular/router');
-
+var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
+
+var config = {
+    urls: {
+        currentUser: '/nifi-registry-api/access',
+        kerberos: '/nifi-registry-api/access/token/kerberos'
+    }
+};
 
 /**
  * NfRegistryApi constructor.
  *
- * @param Http                  The angular http module.
- * @param FdsDialogService      The FDS dialog service.
- * @param Router                The angular router module.
+ * @param nfStorage             A wrapper for the browser's local storage.
+ * @param http                  The angular http module.
+ * @param fdsDialogService      The FDS dialog service.
+ * @param router                The angular router module.
  * @constructor
  */
-function NfRegistryApi(Http, FdsDialogService, Router) {
-    this.http = Http;
-    this.dialogService = FdsDialogService;
-    this.router = Router;
+function NfRegistryApi(nfStorage, http, fdsDialogService, router) {
+    this.nfStorage = nfStorage;
+    this.http = http;
+    this.dialogService = fdsDialogService;
+    this.router = router;
 };
 
 NfRegistryApi.prototype = {
@@ -51,16 +61,16 @@ NfRegistryApi.prototype = {
         url += '/versions';
         return this.http.get(url)
             .map(function (response) {
-                return response.json() || [];
+                return response || [];
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -77,12 +87,12 @@ NfRegistryApi.prototype = {
         var url = '/nifi-registry-api/buckets/' + bucketId + '/' + dropletType + '/' + dropletId;
         return this.http.get(url)
             .map(function (response) {
-                return response.json() || {};
+                return response || {};
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 }).afterClosed().subscribe(
@@ -91,7 +101,7 @@ NfRegistryApi.prototype = {
                             self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucketId);
                         }
                     });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -112,16 +122,16 @@ NfRegistryApi.prototype = {
         }
         return this.http.get(url)
             .map(function (response) {
-                return response.json() || [];
+                return response || [];
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -140,17 +150,16 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.delete('/nifi-registry-api/' + dropletUri, headers)
             .map(function (response) {
-                var body = response.json();
-                return response.json() || {};
+                return response || {};
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -164,17 +173,16 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.post('/nifi-registry-api/buckets', {'name': name}, headers)
             .map(function (response) {
-                var body = response.json();
-                return response.json() || {};
+                return response || {};
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -188,17 +196,16 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.delete('/nifi-registry-api/buckets/' + bucketId, headers)
             .map(function (response) {
-                var body = response.json();
-                return response.json() || {};
+                return response || {};
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -213,12 +220,12 @@ NfRegistryApi.prototype = {
         var url = '/nifi-registry-api/buckets/' + bucketId;
         return this.http.get(url)
             .map(function (response) {
-                return response.json() || {};
+                return response || {};
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 }).afterClosed().subscribe(
@@ -227,7 +234,7 @@ NfRegistryApi.prototype = {
                             self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
                         }
                     });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -244,17 +251,16 @@ NfRegistryApi.prototype = {
         var url = '/nifi-registry-api/buckets';
         return this.http.get(url)
             .map(function (response) {
-                var body = response.json();
-                return response.json() || [];
+                return response || [];
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
@@ -263,161 +269,268 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.get('/nifi-registry-api/users/' + userId)
             .map(function (response) {
-                return response.json() || {};
+                return response || {};
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error._body,
+                    message: error.message,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error._body);
+                return rxjs.Observable.throw(error.message);
             });
     },
 
-    //TODO: REST call to API to get users.
-    getUsers: function (userIds, bucketId) {
+    /**
+     * Creates a user.
+     *
+     * @param {string} identifier   The identifier of the user.
+     * @param {string} identity     The identity of the user.
+     * @returns {*}
+     */
+    addUser: function (identifier, identity) {
         var self = this;
-        return new Promise(
-            function (resolve) {
-                resolve([{
-                    id: '23f6cc59-0156-1000-06b4-2b0810089090',
-                    name: 'Scotty 2 Hotty',
-                    status: 'authorized',
-                    provider: 'Friendly LDAP Provider',
-                    type: 'user',
-                    activities: [{
-                        id: '25fd6vv87-3249-0001-05g6-4d4767890765',
-                        description: 'Saved something...',
-                        created: new Date().setDate(new Date().getDate() - 1),
-                        updated: new Date()
-                    }],
-                    actions: [{
-                        'name': 'details',
-                        'icon': 'fa fa-info-circle',
-                        'tooltip': 'User Details',
-                        'type': 'sidenav',
-
-                    }, {
-                        'name': 'permissions',
-                        'icon': 'fa fa-key',
-                        'tooltip': 'Manage User Policies',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'Delete',
-                        'icon': 'fa fa-trash',
-                        'tooltip': 'Delete User'
-                    }, {
-                        'name': 'Suspend',
-                        'icon': 'fa fa-ban',
-                        'tooltip': 'Suspend User'
-                    }]
-                }, {
-                    id: '25fd6vv87-3249-0001-05g6-4d4767890765',
-                    name: 'Group 1',
-                    status: 'suspended',
-                    provider: 'IOAT',
-                    type: 'group',
-                    actions: [{
-                        'name': 'details',
-                        'icon': 'fa fa-info-circle',
-                        'tooltip': 'User Details',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'permissions',
-                        'icon': 'fa fa-key',
-                        'tooltip': 'Manage User Policies',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'Delete',
-                        'icon': 'fa fa-trash',
-                        'tooltip': 'Delete User'
-                    }, {
-                        'name': 'Reauthorize',
-                        'icon': 'fa fa-check-circle',
-                        'tooltip': 'Reauthorize User'
-                    }]
-                }, {
-                    id: '98f6cc59-0156-1000-06b4-2b0810089090',
-                    name: 'G$',
-                    status: 'authorized',
-                    provider: 'Friendly LDAP Provider',
-                    type: 'user',
-                    actions: [{
-                        'name': 'details',
-                        'icon': 'fa fa-info-circle',
-                        'tooltip': 'User Details',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'permissions',
-                        'icon': 'fa fa-key',
-                        'tooltip': 'Manage User Policies',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'Delete',
-                        'icon': 'fa fa-trash',
-                        'tooltip': 'Delete User'
-                    }, {
-                        'name': 'Suspend',
-                        'icon': 'fa fa-ban',
-                        'tooltip': 'Suspend User'
-                    }]
-                }, {
-                    id: '65fd6vv87-3249-0001-05g6-4d4767890765',
-                    name: 'Group 2',
-                    status: 'suspended',
-                    provider: 'IOAT',
-                    type: 'group',
-                    actions: [{
-                        'name': 'details',
-                        'icon': 'fa fa-info-circle',
-                        'tooltip': 'User Details',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'permissions',
-                        'icon': 'fa fa-key',
-                        'tooltip': 'Manage User Policies',
-                        'type': 'sidenav'
-                    }, {
-                        'name': 'Delete',
-                        'icon': 'fa fa-trash',
-                        'tooltip': 'Delete User'
-                    }, {
-                        'name': 'Reauthorize',
-                        'icon': 'fa fa-check-circle',
-                        'tooltip': 'Reauthorize User'
-                    }]
-                }]);
+        return this.http.post('/nifi-registry-api/tenants/users', {
+            'identifier': identifier,
+            'identity': identity
+        }, headers)
+            .map(function (response) {
+                return response || {};
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
             });
-        // return this.http.get('/nifi-registry-api/users/?bucket=' + bucketId)
-        //     .map(function (response) {
-        //         return response.json() || [];
-        //     })
-        //     .catch(function (error) {
-        //     self.dialogService.openConfirm({
-        //         title: 'Error',
-        //         message: error._body,
-        //         acceptButton: 'Ok',
-        //         acceptButtonColor: 'fds-warn'
-        //     });
-        //     return rxjs.Observable.throw(error._body);
-        // });
     },
 
-    //TODO: REST call to API to delete user by id.
-    deleteUser: function (id) {
+    /**
+     * Gets all users.
+     *
+     * @returns {*}
+     */
+    getUsers: function () {
         var self = this;
+        return this.http.get('nifi-registry-api/tenants/users')
+            .map(function (response) {
+                return response || [];
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
     },
 
-    //TODO: REST call to API to suspend user by id.
-    suspendUser: function (id) {
+    /**
+     * Delete an existing user from the registry.
+     *
+     * @param {string} userId     The identifier of the user to be deleted.
+     * @returns {*}
+     */
+    deleteUser: function (userId) {
         var self = this;
+        return this.http.delete('/nifi-registry-api/tenants/users/' + userId, headers)
+            .map(function (response) {
+                return response || {};
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
+    },
+
+    /**
+     * Gets all user groups.
+     *
+     * @returns {*}
+     */
+    getUserGroups: function () {
+        var self = this;
+        return this.http.get('nifi-registry-api/tenants/user-groups')
+            .map(function (response) {
+                return response || [];
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
+    },
+
+    /**
+     * Get user group.
+     *
+     * @param {string} groupId  The id of the group to retrieve.
+     * @returns {*}
+     */
+    getUserGroup: function (groupId) {
+        var self = this;
+        return this.http.get('/nifi-registry-api/tenants/user-groups/' + groupId)
+            .map(function (response) {
+                return response || {};
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
+    },
+
+    /**
+     * Delete an existing user group from the registry.
+     *
+     * @param {string} userGroupId     The identifier of the user group to be deleted.
+     * @returns {*}
+     */
+    deleteUserGroup: function (userGroupId) {
+        var self = this;
+        return this.http.delete('/nifi-registry-api/tenants/user-groups/' + userGroupId, headers)
+            .map(function (response) {
+                return response || {};
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
+    },
+
+    /**
+     * Creates a new group.
+     *
+     * @param {string} identifier   The identifier of the user.
+     * @param {string} identity     The identity of the user.
+     * @param {array} users         The array of users to be added to the new group.
+     * @returns {*}
+     */
+    createNewGroup: function (identifier, identity, users) {
+        var self = this;
+        return this.http.post('/nifi-registry-api/tenants/user-groups', {
+            'identifier': identifier,
+            'identity': identity,
+            'users': users
+        }, headers)
+            .map(function (response) {
+                return response || {};
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
+    },
+
+    /**
+     * Updates a group.
+     *
+     * @param {string} identifier   The identifier of the group.
+     * @param {string} identity     The identity of the group.
+     * @param {array} users         The array of users in the new group.
+     * @returns {*}
+     */
+    updateUserGroup: function (identifier, identity, users) {
+        var self = this;
+        return this.http.put('/nifi-registry-api/tenants/user-groups/' + identifier, {
+            'identifier': identifier,
+            'identity': identity,
+            'users': users
+        }, headers)
+            .map(function (response) {
+                return response || {};
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.throw(error.message);
+            });
+    },
+
+    /**
+     * Kerberos ticket exchange.
+     *
+     * @returns {*}
+     */
+    ticketExchange: function () {
+        var self = this;
+        if (this.nfStorage.hasItem('jwt')) {
+            return rxjs.Observable.of(self.nfStorage.getItem('jwt'));
+        } else {
+            return this.http.post(config.urls.kerberos, null, {responseType: 'text'})
+                .map(function (jwt) {
+                    // get the payload and store the token with the appropriate expiration
+                    var token = self.nfStorage.getJwtPayload(jwt);
+                    if(token) {
+                        var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
+                        self.nfStorage.setItem('jwt', jwt, expiration);
+                    }
+                    return jwt;
+                })
+                .catch(function (error) {
+                    return rxjs.Observable.of('');
+                });
+        }
+    },
+
+    /**
+     * Loads the current user and updates the current user locally.
+     *
+     * @returns xhr
+     */
+    loadCurrentUser: function () {
+        var self = this;
+        // get the current user
+        return this.http.get(config.urls.currentUser)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                if (error.status === 401) {
+                    self.router.navigateByUrl('/nifi-registry/login');
+                }
+                return rxjs.Observable.of({});
+            });
     }
 };
 
 NfRegistryApi.parameters = [
-    ngHttp.Http,
+    NfStorage,
+    ngCommonHttp.HttpClient,
     fdsDialogsModule.FdsDialogService,
     ngRouter.Router
 ];

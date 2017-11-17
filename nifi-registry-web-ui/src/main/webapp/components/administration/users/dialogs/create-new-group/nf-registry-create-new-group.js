@@ -14,44 +14,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
 
 /**
- * NfRegistryCreateBucket constructor.
+ * NfRegistryCreateNewGroup constructor.
  *
  * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryCreateBucket(nfRegistryApi, nfRegistryService, matDialogRef) {
+function NfRegistryCreateNewGroup(nfRegistryApi, nfRegistryService, matDialogRef) {
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.keepDialogOpen = false;
 };
 
-NfRegistryCreateBucket.prototype = {
-    constructor: NfRegistryCreateBucket,
+NfRegistryCreateNewGroup.prototype = {
+    constructor: NfRegistryCreateNewGroup,
 
     /**
-     * Create a new bucket.
+     * Create a new group.
      *
-     * @param newBucketInput     The newBucketInput element.
+     * @param createNewGroupInput     The createNewGroupInput element.
      */
-    createBucket: function (newBucketInput) {
-        var self = this;
-        this.nfRegistryApi.createBucket(newBucketInput.value).subscribe(function (bucket) {
-            self.nfRegistryService.buckets.push(bucket);
-            self.nfRegistryService.filterBuckets();
-            self.nfRegistryService.allBucketsSelected = false;
-            if (self.keepDialogOpen !== true) {
-                self.dialogRef.close();
-            }
-        })
+    createNewGroup: function (createNewGroupInput) {
+        if(!this.nfRegistryService.isMultiUserGroupActionsDisabled) {
+            var self = this;
+            var selectedUsers = this.nfRegistryService.filteredUsers.filter(function (filteredUser) {
+                return filteredUser.checked;
+            });
+            var selectedUserGroups = this.nfRegistryService.filteredUserGroups.filter(function (filteredUserGroup) {
+                return filteredUserGroup.checked;
+            });
+
+            this.nfRegistryApi.createNewGroup(null, createNewGroupInput.value, selectedUsers.concat(selectedUserGroups)).subscribe(function (group) {
+                self.nfRegistryService.groups.push(group);
+                self.nfRegistryService.filterUsersAndGroups();
+                self.nfRegistryService.allUsersAndGroupsSelected = false;
+                if (self.keepDialogOpen !== true) {
+                    self.dialogRef.close();
+                }
+            });
+        }
     },
 
     /**
@@ -62,16 +72,16 @@ NfRegistryCreateBucket.prototype = {
     }
 };
 
-NfRegistryCreateBucket.annotations = [
+NfRegistryCreateNewGroup.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-create-bucket.html!text')
+        template: require('./nf-registry-create-new-group.html!text')
     })
 ];
 
-NfRegistryCreateBucket.parameters = [
+NfRegistryCreateNewGroup.parameters = [
     NfRegistryApi,
     NfRegistryService,
     ngMaterial.MatDialogRef
 ];
 
-module.exports = NfRegistryCreateBucket;
+module.exports = NfRegistryCreateNewGroup;

@@ -65,6 +65,7 @@ module.exports = function (config) {
             'node_modules/hammerjs/hammer.js',
             'node_modules/moment/moment.js',
             'node_modules/superagent/superagent.js',
+            'node_modules/tslib/tslib.js',
 
             // RxJs
             {pattern: 'node_modules/rxjs/**/*.js', included: false, watched: false},

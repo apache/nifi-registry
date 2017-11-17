@@ -16,70 +16,55 @@
  */
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngRouter = require('@angular/router');
 
 /**
- * NfRegistryBucketPermissions constructor.
+ * NfRegistryUserGroupsPermissions constructor.
  *
- * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
- * @param ActivatedRoute        The angular activated route module.
  * @param Router                The angular router module.
  * @constructor
  */
-function NfRegistryBucketPermissions(nfRegistryApi, nfRegistryService, ActivatedRoute, Router) {
+function NfRegistryUserGroupsPermissions(nfRegistryService, Router) {
     this.nfRegistryService = nfRegistryService;
-    this.nfRegistryApi = nfRegistryApi;
-    this.route = ActivatedRoute;
     this.router = Router;
 };
 
-NfRegistryBucketPermissions.prototype = {
-    constructor: NfRegistryBucketPermissions,
+NfRegistryUserGroupsPermissions.prototype = {
+    constructor: NfRegistryUserGroupsPermissions,
 
     /**
      * Initialize the component.
      */
     ngOnInit: function () {
-        var self = this;
         this.nfRegistryService.sidenav.open();
-        this.route.params
-            .switchMap(function (params) {
-                return self.nfRegistryApi.getBucket(params['bucketId']);
-            })
-            .subscribe(function (bucket) {
-                self.nfRegistryService.bucket = bucket;
-            });
     },
 
     /**
      * Destroy the component.
      */
     ngOnDestroy: function () {
+        this.nfRegistryService.group = {};
         this.nfRegistryService.sidenav.close();
-        this.nfRegistryService.bucket = {};
     },
 
     /**
-     * Navigate to administer the buckets of the current registry.
+     * Navigate to administer users for current registry.
      */
     closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/workflow');
+        this.router.navigateByUrl('/nifi-registry/administration/users');
     }
 };
 
-NfRegistryBucketPermissions.annotations = [
+NfRegistryUserGroupsPermissions.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-bucket-permissions.html!text')
+        template: require('./nf-registry-user-group-permissions.html!text')
     })
 ];
 
-NfRegistryBucketPermissions.parameters = [
-    NfRegistryApi,
+NfRegistryUserGroupsPermissions.parameters = [
     NfRegistryService,
-    ngRouter.ActivatedRoute,
     ngRouter.Router
 ];
 
-module.exports = NfRegistryBucketPermissions;
+module.exports = NfRegistryUserGroupsPermissions;

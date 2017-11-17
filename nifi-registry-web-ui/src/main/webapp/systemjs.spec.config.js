@@ -32,6 +32,8 @@
             // Angular
             '@angular/core': 'npm:@angular/core/bundles/core.umd.js',
             '@angular/common': 'npm:@angular/common/bundles/common.umd.js',
+            '@angular/common/http': 'npm:@angular/common/bundles/common-http.umd.js',
+            '@angular/common/http/testing': 'npm:@angular/common/bundles/common-http-testing.umd.js',
             '@angular/platform-browser': 'npm:@angular/platform-browser/bundles/platform-browser.umd.js',
             '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd.js',
             '@angular/http': 'npm:@angular/http/bundles/http.umd.js',
@@ -73,6 +75,7 @@
             'core-js': 'npm:core-js/client/shim.min.js',
             'superagent': 'npm:superagent/superagent.js',
             'querystring': 'npm:querystring',
+            'tslib': 'npm:tslib/tslib.js',
 
             // Fluid Design System
             '@fluid-design-system/core': 'npm:@fluid-design-system/dist/platform/core/fluid-design-system.module.js',
