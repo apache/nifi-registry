@@ -103,7 +103,7 @@ limitations under the License.
                 </div>
             </div>
         </div>
-        <div class="mat-padding" *ngIf="!nfRegistryService.filteredBuckets.length > 0" layout="row"
+        <div class="mat-padding" *ngIf="nfRegistryService.filteredBuckets.length === 0" layout="row"
              layout-align="center center">
             <h3>No results to display.</h3>
         </div>

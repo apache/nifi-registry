@@ -23,30 +23,6 @@ var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 require('rxjs/add/operator/catch');
 require('rxjs/add/operator/map');
 
-function filterData(data, searchTerm, ignoreCase) {
-    var field = '';
-    if (searchTerm.indexOf(":") > -1) {
-        field = searchTerm.split(':')[0].trim();
-        searchTerm = searchTerm.split(':')[1].trim();
-    }
-    var filter = searchTerm ? (ignoreCase ? searchTerm.toLowerCase() : searchTerm) : '';
-
-    if (filter) {
-        data = data.filter(function (item) {
-            var res = Object.keys(item).find(function (key) {
-                if (key !== field && field !== '') {
-                    return false;
-                }
-                var preItemValue = ('' + item[key]);
-                var itemValue = ignoreCase ? preItemValue.toLowerCase() : preItemValue;
-                return itemValue.indexOf(filter) > -1;
-            });
-            return !(typeof res === 'undefined');
-        });
-    }
-    return data;
-};
-
 /**
  * NfRegistryService constructor.
  *
@@ -72,6 +48,7 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.user = {};
     this.group = {};
     this.users = [];
+    this.groups = [];
     this.alerts = [];
     this.explorerViewType = '';
     this.perspective = '';
@@ -80,20 +57,33 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
 
     this.filteredDroplets = [];
     this.dropletActions = [{
-        'name': 'Delete',
-        'icon': 'fa fa-trash',
-        'tooltip': 'Delete'
+        name: 'Delete',
+        icon: 'fa fa-trash',
+        tooltip: 'Delete'
     }];
     this.dropletColumns = [
-        {name: 'name', label: 'Name', sortable: true},
-        {name: 'updated', label: 'Updated', sortable: true}
+        {
+            name: 'name',
+            label: 'Name',
+            sortable: true
+        },
+        {
+            name: 'updated',
+            label: 'Updated',
+            sortable: true
+        }
     ];
     this.autoCompleteDroplets = [];
     this.dropletsSearchTerms = [];
 
     this.filteredBuckets = [];
     this.bucketColumns = [
-        {name: 'name', label: 'Bucket Name', sortable: true, tooltip: 'Sort Buckets by name.'}
+        {
+            name: 'name',
+            label: 'Bucket Name',
+            sortable: true,
+            tooltip: 'Sort Buckets by name.'
+        }
     ];
     this.allBucketsSelected = false;
     this.autoCompleteBuckets = [];
@@ -104,7 +94,13 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.filteredUsers = [];
     this.filteredUserGroups = [];
     this.userColumns = [
-        {name: 'identity', label: 'Display Name', sortable: true, tooltip: 'User name.', width: 100}
+        {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true,
+            tooltip: 'User name.',
+            width: 100
+        }
     ];
     this.allUsersAndGroupsSelected = false;
     this.autoCompleteUsersAndGroups = [];
@@ -118,9 +114,9 @@ NfRegistryService.prototype = {
     constructor: NfRegistryService,
 
     /**
-     * Set the state for the breadcrumb animations.
+     * Set the `breadCrumbState` for the breadcrumb animations.
      *
-     * @param {string} state The state. Valid values are 'in' or 'out'.
+     * @param {string} state    The state. Valid values are 'in' or 'out'.
      */
     setBreadcrumbState: function (state) {
         this.breadCrumbState = state;
@@ -158,7 +154,7 @@ NfRegistryService.prototype = {
     /**
      * Generates the droplet grid-list explorer component's sorting menu options.
      *
-     * @param col   One of the available `dropletColumns`.
+     * @param col           One of the available `dropletColumns`.
      * @returns {string}
      */
     generateSortMenuLabels: function (col) {
@@ -225,7 +221,7 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Sort `droplets` by `column`.
+     * Sort `filteredDroplets` by `column`.
      *
      * @param column    The column to sort by.
      */
@@ -261,7 +257,6 @@ NfRegistryService.prototype = {
             for (var i = 0; i < arrayLength; i++) {
                 if (this.dropletColumns[i].sortable === true) {
                     sortBy = this.dropletColumns[i].name;
-                    this.activeDropletColumn = this.dropletColumns[i];
                     //only one column can be actively sorted so we reset all to inactive
                     this.dropletColumns.forEach(function (c) {
                         c.active = false;
@@ -284,7 +279,7 @@ NfRegistryService.prototype = {
         }
 
         for (var i = 0; i < this.dropletsSearchTerms.length; i++) {
-            newData = filterData(newData, this.dropletsSearchTerms[i], true, this.activeDropletColumn.name);
+            newData = this.filterData(newData, this.dropletsSearchTerms[i], true, sortBy);
         }
 
         newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
@@ -293,7 +288,7 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Generates the auto complete options for the droplet filter.
+     * Generates the `autoCompleteDroplets` options for the droplet filter.
      */
     getAutoCompleteDroplets: function () {
         var self = this;
@@ -352,7 +347,7 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Filter buckets.
+     * Filter buckets and sets the `isMultiBucketActionsDisabled` property accordingly.
      *
      * @param {string} sortBy       The column name to sort `bucketColumns` by.
      * @param {string} sortOrder    The order. Either 'ASC' or 'DES'
@@ -369,7 +364,6 @@ NfRegistryService.prototype = {
             for (var i = 0; i < arrayLength; i++) {
                 if (this.bucketColumns[i].sortable === true) {
                     sortBy = this.bucketColumns[i].name;
-                    this.activeBucketColumn = this.bucketColumns[i];
                     //only one column can be actively sorted so we reset all to inactive
                     this.bucketColumns.forEach(function (c) {
                         c.active = false;
@@ -385,7 +379,7 @@ NfRegistryService.prototype = {
         var newData = this.buckets;
 
         for (var i = 0; i < this.bucketsSearchTerms.length; i++) {
-            newData = filterData(newData, this.bucketsSearchTerms[i], true, this.activeBucketColumn.name);
+            newData = this.filterData(newData, this.bucketsSearchTerms[i], true, sortBy);
         }
 
         newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
@@ -404,7 +398,7 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Generates the auto complete options for the bucket filter.
+     * Generates the `autoCompleteBuckets` options for the bucket filter.
      */
     getAutoCompleteBuckets: function () {
         var self = this;
@@ -417,7 +411,7 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Sort `buckets` by `column`.
+     * Sort `filteredBuckets` by `column`.
      *
      * @param column    The column to sort by.
      */
@@ -426,7 +420,6 @@ NfRegistryService.prototype = {
             // toggle column sort order
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
             this.filterBuckets(column.name, sortOrder);
-            this.activeBucketsColumn = column;
             //only one column can be actively sorted so we reset all to inactive
             this.bucketColumns.forEach(function (c) {
                 c.active = false;
@@ -437,7 +430,8 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Returns true if each bucket in the `filteredBuckets` are selected.
+     * Returns true if each bucket in the `filteredBuckets` are selected and sets the `isMultiBucketActionsDisabled`
+     * property accordingly.
      *
      * @returns {boolean}
      */
@@ -458,7 +452,7 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Checks all filtered buckets checked state and sets the `allBucketsSelected`
+     * Checks each of the `filteredBuckets`'s `checked` property state and sets the `allBucketsSelected`
      * property accordingly.
      */
     determineAllBucketsSelectedState: function () {
@@ -482,7 +476,8 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Sets the `checked` property of each filtered bucket to true.
+     * Sets the `checked` property of each filtered bucket to true and sets
+     * the `isMultiBucketActionsDisabled` property accordingly.
      */
     selectAllBuckets: function () {
         this.filteredBuckets.forEach(function (c) {
@@ -492,7 +487,8 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Sets the `checked` property of each filtered bucket to false.
+     * Sets the `checked` property of each filtered bucket to false and sets
+     * the `isMultiBucketActionsDisabled` property accordingly.
      */
     deselectAllBuckets: function () {
         this.filteredBuckets.forEach(function (c) {
@@ -567,7 +563,12 @@ NfRegistryService.prototype = {
             });
     },
 
-    sortUsers: function (sortEvent, column) {
+    /**
+     * Sort `users` and `groups` by `column`.
+     *
+     * @param column    The column to sort by.
+     */
+    sortUsersAndGroups: function (sortEvent, column) {
         if (column.sortable) {
             var sortBy = column.name;
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -582,6 +583,11 @@ NfRegistryService.prototype = {
         }
     },
 
+    /**
+     * Adds a `searchTerm` to the `usersSearchTerms` and filters the `users` amd `groups`.
+     *
+     * @param {string} searchTerm   The search term to add.
+     */
     usersSearchRemove: function (searchTerm) {
         //only remove the first occurrence of the search term
         var index = this.usersSearchTerms.indexOf(searchTerm);
@@ -592,37 +598,72 @@ NfRegistryService.prototype = {
         this.determineAllUsersAndGroupsSelectedState();
     },
 
+    /**
+     * Removes a `searchTerm` from the `usersSearchTerms` and filters the `users` amd `groups`.
+     *
+     * @param {string} searchTerm   The search term to remove.
+     */
     usersSearchAdd: function (searchTerm) {
         this.usersSearchTerms.push(searchTerm);
         this.filterUsersAndGroups();
         this.determineAllUsersAndGroupsSelectedState();
     },
 
+    /**
+     * Filter users and groups.
+     *
+     * @param {string} [sortBy]       The column name to sort `userGroupsColumns` by.
+     * @param {string} [sortOrder]    The order. Either 'ASC' or 'DES'
+     */
     filterUsersAndGroups: function (sortBy, sortOrder) {
-        // this.deselectAllUsersAndGroups();
+        // if `sortOrder` is `undefined` then use 'ASC'
+        if (sortOrder === undefined) {
+            sortOrder = 'ASC'
+        }
+        // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
+        if (sortBy === undefined) {
+            var arrayLength = this.userColumns.length;
+            for (var i = 0; i < arrayLength; i++) {
+                if (this.userColumns[i].sortable === true) {
+                    sortBy = this.userColumns[i].name;
+                    //only one column can be actively sorted so we reset all to inactive
+                    this.userColumns.forEach(function (c) {
+                        c.active = false;
+                    });
+                    //and set this column as the actively sorted column
+                    this.userColumns[i].active = true;
+                    this.userColumns[i].sortOrder = sortOrder;
+                    break;
+                }
+            }
+        }
+
         var newUsersData = this.users;
         var newUserGroupsData = this.groups;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newUsersData = filterData(newUsersData, this.usersSearchTerms[i], true);
+            newUsersData = this.filterData(newUsersData, this.usersSearchTerms[i], true);
         }
 
         newUsersData = this.dataTableService.sortData(newUsersData, sortBy, sortOrder);
-        newUsersData = this.dataTableService.pageData(newUsersData, this.usersFromRow, this.usersCurrentPage * this.usersPageSize);
         this.filteredUsers = newUsersData;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newUserGroupsData = filterData(newUserGroupsData, this.usersSearchTerms[i], true);
+            newUserGroupsData = this.filterData(newUserGroupsData, this.usersSearchTerms[i], true);
         }
 
         newUserGroupsData = this.dataTableService.sortData(newUserGroupsData, sortBy, sortOrder);
-        newUserGroupsData = this.dataTableService.pageData(newUserGroupsData, this.usersFromRow, this.usersCurrentPage * this.usersPageSize);
         this.filteredUserGroups = newUserGroupsData;
 
         this.getAutoCompleteUserAndGroups();
     },
 
-    determineAllUsersAndGroupsSelectedState: function (row) {
+    /**
+     * Checks each of the `filteredUsers` and each of the `filteredUserGroups` `checked` property state and sets
+     * the `allUsersAndGroupsSelected`, `isMultiUserGroupActionsDisabled`, and the `isMultiUserActionsDisabled`
+     * properties accordingly.
+     */
+    determineAllUsersAndGroupsSelectedState: function () {
         var selected = 0;
         var allSelected = true;
         this.isMultiUserGroupActionsDisabled = false;
@@ -651,6 +692,10 @@ NfRegistryService.prototype = {
         this.allUsersAndGroupsSelected = allSelected;
     },
 
+    /**
+     * Checks the `allUsersAndGroupsSelected` property state and either selects
+     * or deselects all `filteredUsers` and each `filteredUserGroups`.
+     */
     toggleUsersSelectAll: function () {
         if (this.allUsersAndGroupsSelected) {
             this.selectAllUsersAndGroups();
@@ -659,6 +704,11 @@ NfRegistryService.prototype = {
         }
     },
 
+    /**
+     * Sets the `checked` property of each `filteredUsers` and each `filteredUserGroups` to true and sets
+     * the `allUsersAndGroupsSelected`, `isMultiUserGroupActionsDisabled`, and the `isMultiUserActionsDisabled`
+     * properties accordingly.
+     */
     selectAllUsersAndGroups: function () {
         this.filteredUsers.forEach(function (c) {
             c.checked = true;
@@ -671,6 +721,11 @@ NfRegistryService.prototype = {
         this.isMultiUserActionsDisabled = false;
     },
 
+    /**
+     * Sets the `checked` property of each `filteredUsers` and each `filteredUserGroups` to false and sets
+     * the `allUsersAndGroupsSelected`, `isMultiUserGroupActionsDisabled`, and the `isMultiUserActionsDisabled`
+     * properties accordingly.
+     */
     deselectAllUsersAndGroups: function () {
         this.filteredUsers.forEach(function (c) {
             c.checked = false;
@@ -683,6 +738,9 @@ NfRegistryService.prototype = {
         this.isMultiUserActionsDisabled = true;
     },
 
+    /**
+     * Generates the `autoCompleteUsersAndGroups` options for the users and groups data table filter.
+     */
     getAutoCompleteUserAndGroups: function () {
         var self = this;
         this.autoCompleteUsersAndGroups = [];
@@ -702,7 +760,6 @@ NfRegistryService.prototype = {
      */
     executeUserAction: function (action, user) {
         var self = this;
-        this.user = user;
         switch (action.name.toLowerCase()) {
             case 'delete':
                 this.dialogService.openConfirm({
@@ -783,7 +840,8 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Deletes all selected users and groups
+     * Deletes all selected `filteredUserGroups` and `filteredUsers` and sets the `allUsersAndGroupsSelected`
+     * property accordingly.
      */
     deleteSelectedUsersAndGroups: function () {
         var self = this;
@@ -834,10 +892,41 @@ NfRegistryService.prototype = {
                             });
                         }
                     });
-                    // if there are no users and no groups left set the `allUsersAndGroupsSelected` to false
-                    self.allUsersAndGroupsSelected = (self.filteredUsers.length === 0 && self.filteredUserGroups.lenght === 0) ? false : true;
+                    self.determineAllUsersAndGroupsSelectedState();
                 }
             });
+    },
+
+    /**
+     * Utility method that performs the custom search capability for data tables.
+     *
+     * @param data          The data to search.
+     * @param searchTerm    The term we are looking for.
+     * @param ignoreCase    Ignore case.
+     * @returns {*}
+     */
+    filterData: function(data, searchTerm, ignoreCase) {
+        var field = '';
+        if (searchTerm.indexOf(":") > -1) {
+            field = searchTerm.split(':')[0].trim();
+            searchTerm = searchTerm.split(':')[1].trim();
+        }
+        var filter = searchTerm ? (ignoreCase ? searchTerm.toLowerCase() : searchTerm) : '';
+
+        if (filter) {
+            data = data.filter(function (item) {
+                var res = Object.keys(item).find(function (key) {
+                    if (key !== field && field !== '') {
+                        return false;
+                    }
+                    var preItemValue = ('' + item[key]);
+                    var itemValue = ignoreCase ? preItemValue.toLowerCase() : preItemValue;
+                    return itemValue.indexOf(filter) > -1;
+                });
+                return !(typeof res === 'undefined');
+            });
+        }
+        return data;
     }
 
     //</editor-fold>

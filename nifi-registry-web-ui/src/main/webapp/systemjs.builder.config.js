@@ -105,7 +105,7 @@
             'nifi-registry/components/administration/users/nf-registry-users-administration.js': 'components/administration/users/nf-registry-users-administration.js',
             'nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js': 'components/administration/users/dialogs/add-user/nf-registry-add-user.js',
             'nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js': 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js',
-            'nifi-registry/components/administration/users/dialogs/add-selected-to-group/nf-registry-add-selected-to-group.js': 'components/administration/users/dialogs/add-selected-to-group/nf-registry-add-selected-to-group.js',
+            'nifi-registry/components/administration/users/dialogs/add-selected-users-to-group/nf-registry-add-selected-users-to-group.js': 'components/administration/users/dialogs/add-selected-users-to-group/nf-registry-add-selected-users-to-group.js',
             'nifi-registry/components/administration/users/details/nf-registry-user-details.js': 'components/administration/users/details/nf-registry-user-details.js',
             'nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js': 'components/administration/users/permissions/nf-registry-user-permissions.js',
             'nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js': 'components/administration/user-group/permissions/nf-registry-user-group-permissions.js',

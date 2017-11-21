@@ -44,7 +44,6 @@ NfRegistryUserPermissions.prototype = {
      * Destroy the component.
      */
     ngOnDestroy: function () {
-        this.nfRegistryService.user = {};
         this.nfRegistryService.sidenav.close();
     },
 

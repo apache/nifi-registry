@@ -20,41 +20,44 @@ var NfRegistryService = require('nifi-registry/services/nf-registry.service.js')
 var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var ngMaterial = require('@angular/material');
+var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
-var NfRegistryAddSelectedToGroup = require('nifi-registry/components/administration/users/dialogs/add-selected-to-group/nf-registry-add-selected-to-group.js');
+var NfRegistryAddSelectedUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-selected-users-to-group/nf-registry-add-selected-users-to-group.js');
 
 /**
  * NfRegistryUsersAdministration constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
- * @param ActivatedRoute        The angular activated route module.
- * @param matDialog          The angular material dialog module.
+ * @param activatedRoute        The angular activated route module.
+ * @param fdsDialogService      The FDS dialog service.
+ * @param matDialog             The angular material dialog module.
  * @constructor
  */
-function NfRegistryUsersAdministration(nfRegistryService, ActivatedRoute, matDialog) {
-    this.route = ActivatedRoute;
+function NfRegistryUsersAdministration(nfRegistryService, activatedRoute, fdsDialogService, matDialog) {
+    this.route = activatedRoute;
     this.nfRegistryService = nfRegistryService;
+    this.dialogService = fdsDialogService;
     this.dialog = matDialog;
     this.usersActions = [{
-        'name': 'permissions',
-        'icon': 'fa fa-pencil',
-        'tooltip': 'Manage User Policies',
-        'type': 'sidenav'
+        name: 'permissions',
+        icon: 'fa fa-pencil',
+        tooltip: 'Manage User Policies',
+        type: 'sidenav'
     }, {
-        'name': 'Delete',
-        'icon': 'fa fa-trash',
-        'tooltip': 'Delete User'
+        name: 'Delete',
+        icon: 'fa fa-trash',
+        tooltip: 'Delete User'
     }];
     this.userGroupsActions = [{
-        'name': 'permissions',
-        'icon': 'fa fa-pencil',
-        'tooltip': 'Manage User Group Policies',
-        'type': 'sidenav'
+        name: 'permissions',
+        icon: 'fa fa-pencil',
+        tooltip: 'Manage User Group Policies',
+        type: 'sidenav'
     }, {
-        'name': 'Delete',
-        'icon': 'fa fa-trash',
-        'tooltip': 'Delete User Group'
+        name: 'Delete',
+        icon: 'fa fa-trash',
+        tooltip: 'Delete User Group'
     }];
 };
 
@@ -91,6 +94,8 @@ NfRegistryUsersAdministration.prototype = {
         this.nfRegistryService.users = this.nfRegistryService.filteredUsers = [];
         this.nfRegistryService.groups = this.nfRegistryService.filteredUserGroups = [];
         this.nfRegistryService.allUsersAndGroupsSelected = false;
+        this.nfRegistryService.isMultiUserActionsDisabled = true;
+        this.nfRegistryService.isMultiUserGroupActionsDisabled = false;
     },
 
     /**
@@ -110,8 +115,24 @@ NfRegistryUsersAdministration.prototype = {
     /**
      * Opens the add selected users to group dialog.
      */
-    addSelectedToGroup: function () {
-        this.dialog.open(NfRegistryAddSelectedToGroup);
+    addSelectedUsersToGroup: function () {
+        // the menu button that calls this method should be disabled if a group is selected
+        // let's just make sure
+        var selectedUserGroups = this.nfRegistryService.filteredUserGroups.filter(function (filteredUserGroup) {
+            return filteredUserGroup.checked;
+        });
+
+        if (selectedUserGroups.length > 0) {
+            self.dialogService.openConfirm({
+                title: 'Error: Groups may not be added to a group. Please deselect any groups and try again',
+                message: error.message,
+                acceptButton: 'Ok',
+                acceptButtonColor: 'fds-warn'
+            });
+        } else {
+            // ok...only users are currently selected...go ahead and open the dialog to select groups
+            this.dialog.open(NfRegistryAddSelectedUsersToGroup);
+        }
     }
 };
 
@@ -128,6 +149,7 @@ NfRegistryUsersAdministration.annotations = [
 NfRegistryUsersAdministration.parameters = [
     NfRegistryService,
     ngRouter.ActivatedRoute,
+    fdsDialogsModule.FdsDialogService,
     ngMaterial.MatDialog
 ];
 
