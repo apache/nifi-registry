@@ -18,8 +18,9 @@ package org.apache.nifi.registry.security.authorization.exception;
 
 /**
  * Represents the exceptional case when an Authorizer fails destruction.
- *
+ * @deprecated Migrate to use SecurityProviderDestructionException
  */
+@Deprecated // TODO migrate all usages to SecurityProviderDestructionException
 public class AuthorizerDestructionException extends RuntimeException {
 
     public AuthorizerDestructionException() {

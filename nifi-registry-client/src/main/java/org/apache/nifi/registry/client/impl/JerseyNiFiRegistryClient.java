@@ -30,6 +30,7 @@ import org.apache.nifi.registry.client.ItemsClient;
 import org.apache.nifi.registry.client.NiFiRegistryClient;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.client.UserClient;
+import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -51,13 +52,6 @@ import java.util.stream.Collectors;
  * A NiFiRegistryClient that uses Jersey Client.
  */
 public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
-
-    static final String PROXY_ENTITIES_CHAIN = "X-ProxiedEntitiesChain";
-
-    static final String GT = ">";
-    static final String ESCAPED_GT = "\\\\>";
-    static final String LT = "<";
-    static final String ESCAPED_LT = "\\\\<";
 
     static final String NIFI_REGISTRY_CONTEXT = "nifi-registry-api";
     static final int DEFAULT_CONNECT_TIMEOUT = 10000;
@@ -184,7 +178,7 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
         final Map<String,String> headers = new HashMap<>();
         if (proxiedEntitiesValue != null) {
-            headers.put(PROXY_ENTITIES_CHAIN, proxiedEntitiesValue);
+            headers.put(ProxiedEntitiesUtils.PROXY_ENTITIES_CHAIN, proxiedEntitiesValue);
         }
         return headers;
     }
@@ -194,36 +188,8 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
             return null;
         }
 
-        final List<String> proxiedEntityChain = Arrays.asList(proxiedEntities).stream().map(dn -> formatProxyDn(dn)).collect(Collectors.toList());
+        final List<String> proxiedEntityChain = Arrays.stream(proxiedEntities).map(ProxiedEntitiesUtils::formatProxyDn).collect(Collectors.toList());
         return StringUtils.join(proxiedEntityChain, "");
-    }
-
-    /**
-     * Formats the specified DN to be set as a HTTP header using well known conventions.
-     *
-     * @param dn raw dn
-     * @return the dn formatted as an HTTP header
-     */
-    private static String formatProxyDn(String dn) {
-        return LT + sanitizeDn(dn) + GT;
-    }
-
-    /**
-     * If a user provides a DN with the sequence '><', they could escape the tokenization process and impersonate another user.
-     * <p>
-     * Example:
-     * <p>
-     * Provided DN: {@code jdoe><alopresto} -> {@code <jdoe><alopresto><proxy...>} would allow the user to impersonate jdoe
-     *
-     * @param rawDn the unsanitized DN
-     * @return the sanitized DN
-     */
-    private static String sanitizeDn(String rawDn) {
-        if (StringUtils.isEmpty(rawDn)) {
-            return rawDn;
-        } else {
-            return rawDn.replaceAll(GT, ESCAPED_GT).replaceAll(LT, ESCAPED_LT);
-        }
     }
 
     @Override

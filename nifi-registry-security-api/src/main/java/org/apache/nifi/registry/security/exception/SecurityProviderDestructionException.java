@@ -14,22 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authentication.annotation;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package org.apache.nifi.registry.security.exception;
 
 /**
- *
- *
+ * Represents the exceptional case when a security api provider fails destruction.
  */
-@Documented
-@Target({ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface LoginIdentityProviderContext {
+public class SecurityProviderDestructionException extends RuntimeException {
+
+    public SecurityProviderDestructionException() {
+    }
+
+    public SecurityProviderDestructionException(String msg) {
+        super(msg);
+    }
+
+    public SecurityProviderDestructionException(Throwable cause) {
+        super(cause);
+    }
+
+    public SecurityProviderDestructionException(String msg, Throwable cause) {
+        super(msg, cause);
+    }
 }

@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authentication;
+package org.apache.nifi.registry.security.authentication.exception;
 
 /**
- * Login credentials for a user.
+ * Represents the case when the identity could not be confirmed because the
+ * identity claim credentials were invalid.
  */
-public class LoginCredentials {
+public class InvalidCredentialsException extends RuntimeException {
 
-    private final String username;
-    private final String password;
-
-    public LoginCredentials(String username, String password) {
-        this.username = username;
-        this.password = password;
+    public InvalidCredentialsException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public String getUsername() {
-        return username;
+    public InvalidCredentialsException(String message) {
+        super(message);
     }
 
-    public String getPassword() {
-        return password;
-    }
 }

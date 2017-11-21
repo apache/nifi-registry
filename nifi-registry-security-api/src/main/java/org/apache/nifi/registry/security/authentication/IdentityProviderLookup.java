@@ -14,26 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authentication.exception;
+package org.apache.nifi.registry.security.authentication;
 
-/**
- * Represents the exceptional case when an AuthorityProvider fails destruction.
- *
- */
-public class ProviderDestructionException extends RuntimeException {
+public interface IdentityProviderLookup {
 
-    public ProviderDestructionException() {
-    }
+    IdentityProvider getIdentityProvider(String identifier);
 
-    public ProviderDestructionException(String msg) {
-        super(msg);
-    }
-
-    public ProviderDestructionException(Throwable cause) {
-        super(cause);
-    }
-
-    public ProviderDestructionException(String msg, Throwable cause) {
-        super(msg, cause);
-    }
 }

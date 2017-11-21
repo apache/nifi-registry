@@ -18,8 +18,9 @@ package org.apache.nifi.registry.security.authorization.exception;
 
 /**
  * Represents the exceptional case when an Authorizer fails instantiation.
- *
+ * @deprecated Migrate to use SecurityProviderCreationException
  */
+@Deprecated // TODO migrate all usages to SecurityProviderCreationException
 public class AuthorizerCreationException extends RuntimeException {
 
     public AuthorizerCreationException() {

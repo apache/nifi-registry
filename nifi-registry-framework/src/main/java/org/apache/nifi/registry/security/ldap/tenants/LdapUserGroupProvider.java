@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.util.IdentityMapping;
 import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
-import org.apache.nifi.registry.security.authentication.exception.ProviderDestructionException;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.User;
@@ -30,6 +29,7 @@ import org.apache.nifi.registry.security.authorization.UserGroupProviderInitiali
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.security.ldap.LdapAuthenticationStrategy;
 import org.apache.nifi.registry.security.ldap.LdapsSocketFactory;
 import org.apache.nifi.registry.security.ldap.ReferralStrategy;
@@ -112,8 +112,6 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     public static final String PROP_GROUP_MEMBER_ATTRIBUTE = "Group Member Attribute";
 
     public static final String PROP_SYNC_INTERVAL = "Sync Interval";
-
-    //private AuthorizerConfigurationContext configurationContext;
 
     private List<IdentityMapping> identityMappings;
     private NiFiRegistryProperties properties;
@@ -669,7 +667,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     }
 
     @Override
-    public final void preDestruction() throws ProviderDestructionException {
+    public final void preDestruction() throws AuthorizerDestructionException {
         ldapSync.shutdown();
         try {
             if (!ldapSync.awaitTermination(10000, TimeUnit.MILLISECONDS)) {
