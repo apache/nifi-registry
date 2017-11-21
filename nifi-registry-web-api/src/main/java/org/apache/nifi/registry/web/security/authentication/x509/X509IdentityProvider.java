@@ -62,6 +62,11 @@ public class X509IdentityProvider implements IdentityProvider {
                     "will be authorized to have 'write' access to '/proxy', and the originating user identity will be " +
                     "authorized for access to the resource being accessed in the request.";
         }
+
+        @Override
+        public AuthType getAuthType() {
+            return AuthType.OTHER.httpAuthScheme("TLS-client-cert");
+        }
     };
 
     private X509PrincipalExtractor principalExtractor;
@@ -153,7 +158,10 @@ public class X509IdentityProvider implements IdentityProvider {
     }
 
     @Override
-    public void onConfigured(IdentityProviderConfigurationContext configurationContext) throws SecurityProviderCreationException {}
+    public void onConfigured(IdentityProviderConfigurationContext configurationContext) throws SecurityProviderCreationException {
+        throw new SecurityProviderCreationException(X509IdentityProvider.class.getSimpleName() +
+                " does not currently support being loaded via IdentityProviderFactory");
+    }
 
     @Override
     public void preDestruction() throws SecurityProviderDestructionException {}

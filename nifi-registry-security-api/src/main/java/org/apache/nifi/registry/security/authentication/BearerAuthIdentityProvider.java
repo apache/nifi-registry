@@ -35,6 +35,11 @@ public abstract class BearerAuthIdentityProvider implements IdentityProvider {
                     "That is: 'Authorization: Bearer <token>', " +
                     "where <token> is a value that will be validated by this identity provider.";
         }
+
+        @Override
+        public AuthType getAuthType() {
+            return AuthType.BEARER;
+        }
     };
 
     @Override

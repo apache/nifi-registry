@@ -27,7 +27,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -39,7 +38,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
 
 /**
  * Note: This class is deprecated and is being considered for complete removal in favor of using {@link IdentityFilter}.
@@ -76,41 +74,25 @@ public class IdentityAuthenticationFilter extends AbstractAuthenticationProcessi
 
         // Only require authentication from an identity provider if the NiFi registry is running securely.
         if (!httpServletRequest.isSecure()) {
-            // Otherwise, requests will be "authenticated" by the AnonymousIdentityFilter
-            //return null;
-            return new ContinueFilterChainAuthentication(); // see successfulAuthentication for why we do this
+            throw new InvalidAuthenticationException("Authentication of user identity claim is only avaialble when running a securely.");
         }
 
         AuthenticationRequest authenticationRequest = identityProvider.extractCredentials(httpServletRequest);
         if (authenticationRequest == null) {
-            //return null;
-            return new ContinueFilterChainAuthentication(); // see successfulAuthentication for why we do this
+            throw new InvalidAuthenticationException("User credentials not found in httpServletRequest by " + identityProvider.getClass().getSimpleName());
         }
         Authentication authentication = new AuthenticationRequestToken(authenticationRequest, identityProvider.getClass(), httpServletRequest.getRemoteAddr());
-        Authentication authenticationResult = getAuthenticationManager().authenticate(authentication); // See IdentityProviderAuthenticationProvider for authentication impl.
+        Authentication authenticationResult = getAuthenticationManager().authenticate(authentication); // See IdentityAuthenticationProvider for authentication impl.
         if (authenticationResult == null) {
-            return new ContinueFilterChainAuthentication(); // see successfulAuthentication for why we do this
-        } else {
-            return authenticationResult;
+            throw new InvalidAuthenticationException("User credentials not authenticated by " + identityProvider.getClass().getSimpleName());
         }
+
+        return authenticationResult;
         // Super class will invoke successfulAuthentication() or unsuccessfulAuthentication() depending on the outcome of the authentication attempt
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-
-        if (authResult.getClass().equals(ContinueFilterChainAuthentication.class)) {
-            logger.info("Authentication unknown, continue chain");
-            // Because this NiFi Registry might be configured with multiple AbstractAuthenticationProcessingFilter's,
-            // the request should continue through the filter chain. If none of the IdentityProviderAuthenticationFilters
-            // can authenticate the request and register a user identity, then the AnonymousIdentityFilter will assign the
-            // Anonymous identity which will not be authorized for access.
-            // A refinement of this would be to extend something other than AbstractAuthenticationProcessingFilter, such as
-            // GenericFilterBean, or to register different filter chains based on context, such as only include
-            // AbstractAuthenticationProcessingFilter(s) when running securely, otherwise don't register any and only register
-            // the AnonymousIdentityFilter.
-            chain.doFilter(request, response);
-        }
 
         logger.info("Authentication success for " + authResult);
 
@@ -161,43 +143,6 @@ public class IdentityAuthenticationFilter extends AbstractAuthenticationProcessi
         // log the failure
         logger.warn(String.format("Rejecting access to web api: %s", failed.getMessage()));
         logger.debug(StringUtils.EMPTY, failed);
-    }
-
-    protected class ContinueFilterChainAuthentication implements Authentication {
-        @Override
-        public Collection<? extends GrantedAuthority> getAuthorities() {
-            return null;
-        }
-
-        @Override
-        public Object getCredentials() {
-            return null;
-        }
-
-        @Override
-        public Object getDetails() {
-            return null;
-        }
-
-        @Override
-        public Object getPrincipal() {
-            return null;
-        }
-
-        @Override
-        public boolean isAuthenticated() {
-            return false;
-        }
-
-        @Override
-        public void setAuthenticated(boolean b) throws IllegalArgumentException {
-            throw new IllegalArgumentException("Cannot set authenticated on ContinueFilterChainAuthentication");
-        }
-
-        @Override
-        public String getName() {
-            return null;
-        }
     }
 
 }

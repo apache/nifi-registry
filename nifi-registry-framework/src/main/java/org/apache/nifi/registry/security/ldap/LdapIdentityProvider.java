@@ -248,6 +248,7 @@ public class LdapIdentityProvider extends BasicAuthIdentityProvider implements I
             // perform the authentication
             final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, credentials);
             final Authentication authentication = ldapAuthenticationProvider.authenticate(token);
+            logger.debug("Created authentication token: {}", token.toString());
 
             // use dn if configured
             if (IdentityStrategy.USE_DN.equals(identityStrategy)) {

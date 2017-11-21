@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -13,10 +12,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-
-# client security properties #
-# Don't use a client cert for one-way TLS. Client identity will be provided via LDAP user/pass to get JWT
-nifi.registry.security.truststore=./target/test-classes/keys/localhost-ts.jks
-nifi.registry.security.truststoreType=JKS
-nifi.registry.security.truststorePasswd=localhostTruststorePassword
+org.apache.nifi.registry.web.security.authentication.kerberos.KerberosIdentityProvider

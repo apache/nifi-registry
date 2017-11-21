@@ -25,7 +25,6 @@ import org.apache.nifi.registry.model.authorization.Tenant;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +46,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -59,7 +59,7 @@ import static org.junit.Assert.assertTrue;
  * Deploy the Web API Application using an embedded Jetty Server for local integration testing, with the follow characteristics:
  *
  * - A NiFiRegistryProperties has to be explicitly provided to the ApplicationContext using a profile unique to this test suite.
- * - A NiFiRegistryClientConfig has been configured to create a client capable of completing two-way TLS
+ * - A NiFiRegistryClientConfig has been configured to create a client capable of completing one-way TLS
  * - The database is embed H2 using volatile (in-memory) persistence
  * - Custom SQL is clearing the DB before each test method by default, unless method overrides this behavior
  */
@@ -115,8 +115,7 @@ public class SecureLdapIT extends IntegrationTestBase {
         String expectedJwtPayloadJson = "{" +
                 "\"sub\":\"nobel\"," +
                 "\"preferred_username\":\"nobel\"," +
-                "\"iss\":\"LdapIdentityProvider\"," +
-                "\"aud\":\"LdapIdentityProvider\"" +
+                "\"iss\":\"LdapIdentityProvider\"" +
                 "}";
         String expectedAccessStatusJson = "{" +
                 "\"identity\":\"nobel\"," +
@@ -136,7 +135,7 @@ public class SecureLdapIT extends IntegrationTestBase {
         assertTrue(StringUtils.isNotEmpty(token));
         String[] jwtParts = token.split("\\.");
         assertEquals(3, jwtParts.length);
-        String jwtPayload = new String(Base64.decodeBase64(jwtParts[1]), "UTF-8");
+        String jwtPayload = new String(Base64.getDecoder().decode(jwtParts[1]), "UTF-8");
         JSONAssert.assertEquals(expectedJwtPayloadJson, jwtPayload, false);
 
         // When: the token is returned in the Authorization header
@@ -182,7 +181,7 @@ public class SecureLdapIT extends IntegrationTestBase {
         assertTrue(StringUtils.isNotEmpty(token));
         String[] jwtParts = token.split("\\.");
         assertEquals(3, jwtParts.length);
-        String jwtPayload = new String(Base64.decodeBase64(jwtParts[1]), "UTF-8");
+        String jwtPayload = new String(Base64.getDecoder().decode(jwtParts[1]), "UTF-8");
         JSONAssert.assertEquals(expectedJwtPayloadJson, jwtPayload, false);
 
         // When: the token is returned in the Authorization header
@@ -434,7 +433,7 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     private static String encodeCredentialsForBasicAuth(String username, String password) {
         final String credentials = username + ":" + password;
-        final String base64credentials =  new String(java.util.Base64.getEncoder().encode(credentials.getBytes(Charset.forName("UTF-8"))));
+        final String base64credentials =  new String(Base64.getEncoder().encode(credentials.getBytes(Charset.forName("UTF-8"))));
         return base64credentials;
     }
 }
