@@ -23,10 +23,10 @@ import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlowCoordinates;
 
 /**
- * Describes differences between flows as if the flows are two disparate flows that are being
- * compared to one another. This provides verbiage such as "Processor with ID 123 exists in Flow A but not in Flow B."
+ * Describes differences between flows as if Flow A is an 'earlier version' of the same flow than Flow B.
+ * This provides verbiage such as "Processor with ID 123 was added to flow."
  */
-public class StaticDifferenceDescriptor implements DifferenceDescriptor {
+public class ConciseEvolvingDifferenceDescriptor implements DifferenceDescriptor {
 
     @Override
     public String describeDifference(final DifferenceType type, final String flowAName, final String flowBName, final VersionedComponent componentA,
@@ -35,28 +35,22 @@ public class StaticDifferenceDescriptor implements DifferenceDescriptor {
         final String description;
         switch (type) {
             case COMPONENT_ADDED:
-                description = String.format("%s with ID %s exists in %s but not in %s",
-                    componentB.getComponentType().getTypeName(), componentB.getIdentifier(), flowBName, flowAName);
+                description = String.format("%s was added", componentB.getComponentType().getTypeName());
                 break;
             case COMPONENT_REMOVED:
-                description = String.format("%s with ID %s exists in %s but not in %s",
-                    componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowAName, flowBName);
+                description = String.format("%s was removed", componentA.getComponentType().getTypeName());
                 break;
             case PROPERTY_ADDED:
-                description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
-                    valueB, componentB.getComponentType().getTypeName(), componentB.getIdentifier(), flowBName, flowAName);
+                description = String.format("Property '%s' was added", valueB);
                 break;
             case PROPERTY_REMOVED:
-                description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
-                    valueA, componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowAName, flowBName);
+                description = String.format("Property '%s' was removed", valueA);
                 break;
             case VARIABLE_ADDED:
-                description = String.format("Variable '%s' exists for Process Group with ID %s in %s but not in %s",
-                    valueB, componentB.getIdentifier(), flowBName, flowAName);
+                description = String.format("Variable '%s' was added", valueB);
                 break;
             case VARIABLE_REMOVED:
-                description = String.format("Variable '%s' exists for Process Group with ID %s in %s but not in %s",
-                    valueA, componentA.getIdentifier(), flowAName, flowBName);
+                description = String.format("Variable '%s' was removed", valueA);
                 break;
             case VERSIONED_FLOW_COORDINATES_CHANGED:
                 if (valueA instanceof VersionedFlowCoordinates && valueB instanceof VersionedFlowCoordinates) {
@@ -67,19 +61,15 @@ public class StaticDifferenceDescriptor implements DifferenceDescriptor {
                     if (Objects.equals(coordinatesA.getRegistryUrl(), coordinatesB.getRegistryUrl()) && Objects.equals(coordinatesA.getBucketId(), coordinatesB.getBucketId())
                             && Objects.equals(coordinatesA.getFlowId(), coordinatesB.getFlowId()) && coordinatesA.getVersion() != coordinatesB.getVersion()) {
 
-                        description = String.format("Flow Version is %s in %s but %s in %s", coordinatesA.getVersion(), flowAName, coordinatesB.getVersion(), flowBName);
+                        description = String.format("Flow Version changed from %s to %s", coordinatesA.getVersion(), coordinatesB.getVersion());
                         break;
                     }
                 }
 
-                description = String.format("%s for %s with ID %s; flow '%s' has value %s; flow '%s' has value %s",
-                    type.getDescription(), componentA.getComponentType().getTypeName(), componentA.getIdentifier(),
-                    flowAName, valueA, flowBName, valueB);
+                description = String.format("From '%s' to '%s'", valueA, valueB);
                 break;
             default:
-                description = String.format("%s for %s with ID %s; flow '%s' has value %s; flow '%s' has value %s",
-                    type.getDescription(), componentA.getComponentType().getTypeName(), componentA.getIdentifier(),
-                    flowAName, valueA, flowBName, valueB);
+                description = String.format("From '%s' to '%s'", valueA, valueB);
                 break;
         }
 
