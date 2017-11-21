@@ -27,9 +27,10 @@ var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/n
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/add/nf-registry-add-user.js');
+var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
 var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
+var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
@@ -41,6 +42,10 @@ var ngHttp = require('@angular/http');
 var rxjs = require('rxjs/Rx');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var ngRouter = require('@angular/router');
+var ngCommonHttp = require('@angular/common/http');
+var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
+var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 describe('NfRegistry Service isolated unit tests', function () {
     var comp;
@@ -182,7 +187,6 @@ describe('NfRegistry Service isolated unit tests', function () {
         var filterBucketsCall = nfRegistryService.filterBuckets.calls.first();
         expect(filterBucketsCall.args[0]).toBe('name');
         expect(filterBucketsCall.args[1]).toBe('ASC');
-        expect(nfRegistryService.activeBucketsColumn).toBe(column);
     });
 
     it('should generate the auto complete options for the droplet filter.', function () {
@@ -241,7 +245,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(allSelected).toBe(false);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
     });
 
     it('should check if all buckets are selected and return true.', function () {
@@ -261,7 +265,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(allSelected).toBe(true);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     });
 
     it('should set the `allBucketsSelected` state to true.', function () {
@@ -324,7 +328,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(nfRegistryService.filteredBuckets[0].checked).toBe(true);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     });
 
     it('should deselect all buckets.', function () {
@@ -335,7 +339,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(nfRegistryService.filteredBuckets[0].checked).toBe(false);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
     });
 
     it('should add a bucket search term.', function () {
@@ -380,6 +384,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 ngMoment.MomentModule,
                 ngHttp.HttpModule,
                 ngHttp.JsonpModule,
+                ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes
             ],
@@ -391,6 +396,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 NfRegistryUsersAdministration,
                 NfRegistryUserDetails,
                 NfRegistryUserPermissions,
+                NfRegistryUserGroupPermissions,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
@@ -401,7 +407,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             ],
             providers: [
                 NfRegistryService,
+                NfRegistryAuthService,
                 NfRegistryApi,
+                NfStorage,
+                {
+                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
+                    useClass: NfRegistryTokenInterceptor,
+                    multi: true
+                },
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
@@ -683,7 +696,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(nfRegistryService, 'getAutoCompleteBuckets');
 
         //assertion
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
 
         // The function to test
         nfRegistryService.filterBuckets();
@@ -698,7 +711,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.filteredBuckets.length).toBe(1);
         expect(nfRegistryService.filteredBuckets[0].name).toBe('Bucket #1');
         expect(nfRegistryService.getAutoCompleteBuckets).toHaveBeenCalled();
-        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     }));
 
     it('should delete all selected buckets.', ngCoreTesting.fakeAsync(function () {
@@ -746,7 +759,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.api.deleteBucket.calls.count()).toBe(1);
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets.calls.count()).toBe(1);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
         expect(nfRegistryService.allBucketsSelected).toBe(false);
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);

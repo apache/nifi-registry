@@ -25,7 +25,7 @@ var headers = new Headers({'Content-Type': 'application/json'});
 var config = {
     urls: {
         currentUser: '/nifi-registry-api/access',
-        kerberos: '/nifi-registry-api/access/kerberos'
+        kerberos: '/nifi-registry-api/access/token/kerberos'
     }
 };
 
@@ -484,7 +484,7 @@ NfRegistryApi.prototype = {
      */
     ticketExchange: function () {
         var self = this;
-        return this.http.post(config.urls.kerberos, {'username': name}, headers)
+        return this.http.post(config.urls.kerberos, null, headers)
             .map(function (response) {
                 // get the payload and store the token with the appropriate expiration
                 var token = nfCommon.getJwtPayload(response);

@@ -18,6 +18,10 @@
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommon = require('@angular/common');
+var ngCommonHttp = require('@angular/common/http');
+var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
+var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngPlatformBrowser = require('@angular/platform-browser');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
@@ -27,9 +31,10 @@ var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/n
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/add/nf-registry-add-user.js');
+var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
 var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
+var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
@@ -54,6 +59,7 @@ describe('NfRegistryAdministration Component', function () {
                 ngMoment.MomentModule,
                 ngHttp.HttpModule,
                 ngHttp.JsonpModule,
+                ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes
             ],
@@ -65,6 +71,7 @@ describe('NfRegistryAdministration Component', function () {
                 NfRegistryUsersAdministration,
                 NfRegistryUserDetails,
                 NfRegistryUserPermissions,
+                NfRegistryUserGroupPermissions,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
@@ -75,7 +82,14 @@ describe('NfRegistryAdministration Component', function () {
             ],
             providers: [
                 NfRegistryService,
+                NfRegistryAuthService,
                 NfRegistryApi,
+                NfStorage,
+                {
+                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
+                    useClass: NfRegistryTokenInterceptor,
+                    multi: true
+                },
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
@@ -93,7 +107,7 @@ describe('NfRegistryAdministration Component', function () {
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
         de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-administration-perspective'));
         el = de.nativeElement;
-        
+
         // Spy
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{

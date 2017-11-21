@@ -553,12 +553,10 @@ NfRegistryService.prototype = {
                                     duration: 3000
                                 });
                                 self.filterBuckets();
-                                self.allBucketsSelected = false;
                             });
                         }
                     });
-                    // if all buckets have been deleted reset the `allBucketsSelected`
-                    self.allBucketsSelected = (self.filteredBuckets.length === 0) ? false : true;
+                    self.determineAllBucketsSelectedState();
                 }
             });
     },

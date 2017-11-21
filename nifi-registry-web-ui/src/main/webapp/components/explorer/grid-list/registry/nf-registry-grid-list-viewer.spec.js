@@ -27,9 +27,10 @@ var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/n
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/add/nf-registry-add-user.js');
+var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
 var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
+var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
@@ -39,6 +40,10 @@ var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
 var ngHttp = require('@angular/http');
+var ngCommonHttp = require('@angular/common/http');
+var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
+var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 describe('NfRegistryGridListViewer Component', function () {
     var comp;
@@ -52,6 +57,7 @@ describe('NfRegistryGridListViewer Component', function () {
                 ngMoment.MomentModule,
                 ngHttp.HttpModule,
                 ngHttp.JsonpModule,
+                ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes
             ],
@@ -63,6 +69,7 @@ describe('NfRegistryGridListViewer Component', function () {
                 NfRegistryUsersAdministration,
                 NfRegistryUserDetails,
                 NfRegistryUserPermissions,
+                NfRegistryUserGroupPermissions,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
@@ -72,8 +79,16 @@ describe('NfRegistryGridListViewer Component', function () {
                 NfPageNotFoundComponent
             ],
             providers: [
+                NfRegistryService,
+                NfRegistryAuthService,
                 NfRegistryApi,
-                NfRegistryService, {
+                NfStorage,
+                {
+                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
+                    useClass: NfRegistryTokenInterceptor,
+                    multi: true
+                },
+                {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
                 }, {
