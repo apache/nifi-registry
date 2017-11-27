@@ -22,11 +22,12 @@ import java.util.Objects;
 import io.swagger.annotations.ApiModelProperty;
 
 public class VersionedRemoteGroupPort extends VersionedComponent {
-    private String groupId;
+    private String remoteGroupId;
     private Integer concurrentlySchedulableTaskCount;
     private Boolean useCompression;
     private BatchSize batchSize;
     private ComponentType componentType;
+    private String targetId;
 
     @ApiModelProperty("The number of task that may transmit flowfiles to the target port concurrently.")
     public Integer getConcurrentlySchedulableTaskCount() {
@@ -38,12 +39,12 @@ public class VersionedRemoteGroupPort extends VersionedComponent {
     }
 
     @ApiModelProperty("The id of the remote process group that the port resides in.")
-    public String getGroupId() {
-        return groupId;
+    public String getRemoteGroupId() {
+        return remoteGroupId;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setRemoteGroupId(String groupId) {
+        this.remoteGroupId = groupId;
     }
 
 
@@ -61,8 +62,17 @@ public class VersionedRemoteGroupPort extends VersionedComponent {
         return batchSize;
     }
 
-    public void setBatchSettings(BatchSize batchSize) {
+    public void setBatchSize(BatchSize batchSize) {
         this.batchSize = batchSize;
+    }
+
+    @ApiModelProperty("The ID of the port on the target NiFi instance")
+    public String getTargetId() {
+        return targetId;
+    }
+
+    public void setTargetId(final String targetId) {
+        this.targetId = targetId;
     }
 
     @Override
@@ -88,6 +98,7 @@ public class VersionedRemoteGroupPort extends VersionedComponent {
         return componentType;
     }
 
+    @Override
     public void setComponentType(final ComponentType componentType) {
         if (componentType != ComponentType.REMOTE_INPUT_PORT && componentType != ComponentType.REMOTE_OUTPUT_PORT) {
             throw new IllegalArgumentException();

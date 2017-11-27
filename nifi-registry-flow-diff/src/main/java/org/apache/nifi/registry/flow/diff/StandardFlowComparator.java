@@ -99,10 +99,11 @@ public class StandardFlowComparator implements FlowComparator {
 
 
     private boolean compareComponents(final VersionedComponent componentA, final VersionedComponent componentB, final Set<FlowDifference> differences) {
-        return compareComponents(componentA, componentB, differences, true);
+        return compareComponents(componentA, componentB, differences, true, true);
     }
 
-    private boolean compareComponents(final VersionedComponent componentA, final VersionedComponent componentB, final Set<FlowDifference> differences, final boolean compareNamePos) {
+    private boolean compareComponents(final VersionedComponent componentA, final VersionedComponent componentB, final Set<FlowDifference> differences, final boolean compareNamePos,
+            final boolean compareComments) {
         if (componentA == null) {
             differences.add(difference(DifferenceType.COMPONENT_ADDED, componentA, componentB, componentA, componentB));
             return true;
@@ -113,11 +114,13 @@ public class StandardFlowComparator implements FlowComparator {
             return true;
         }
 
-        addIfDifferent(differences, DifferenceType.COMMENTS_CHANGED, componentA, componentB, c -> c.getComments());
+        if (compareComments) {
+            addIfDifferent(differences, DifferenceType.COMMENTS_CHANGED, componentA, componentB, VersionedComponent::getComments);
+        }
 
         if (compareNamePos) {
-            addIfDifferent(differences, DifferenceType.NAME_CHANGED, componentA, componentB, c -> c.getName());
-            addIfDifferent(differences, DifferenceType.POSITION_CHANGED, componentA, componentB, c -> c.getPosition());
+            addIfDifferent(differences, DifferenceType.NAME_CHANGED, componentA, componentB, VersionedComponent::getName);
+            addIfDifferent(differences, DifferenceType.POSITION_CHANGED, componentA, componentB, VersionedComponent::getPosition);
         }
 
         return false;
@@ -128,18 +131,18 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.ANNOTATION_DATA_CHANGED, processorA, processorB, p -> p.getAnnotationData());
-        addIfDifferent(differences, DifferenceType.AUTO_TERMINATED_RELATIONSHIPS_CHANGED, processorA, processorB, p -> p.getAutoTerminatedRelationships());
-        addIfDifferent(differences, DifferenceType.BULLETIN_LEVEL_CHANGED, processorA, processorB, p -> p.getBulletinLevel());
-        addIfDifferent(differences, DifferenceType.BUNDLE_CHANGED, processorA, processorB, p -> p.getBundle());
-        addIfDifferent(differences, DifferenceType.CONCURRENT_TASKS_CHANGED, processorA, processorB, p -> p.getConcurrentlySchedulableTaskCount());
-        addIfDifferent(differences, DifferenceType.EXECUTION_MODE_CHANGED, processorA, processorB, p -> p.getExecutionNode());
-        addIfDifferent(differences, DifferenceType.PENALTY_DURATION_CHANGED, processorA, processorB, p -> p.getPenaltyDuration());
-        addIfDifferent(differences, DifferenceType.RUN_DURATION_CHANGED, processorA, processorB, p -> p.getRunDurationMillis());
-        addIfDifferent(differences, DifferenceType.SCHEDULING_PERIOD_CHANGED, processorA, processorB, p -> p.getSchedulingPeriod());
-        addIfDifferent(differences, DifferenceType.SCHEDULING_STRATEGY_CHANGED, processorA, processorB, p -> p.getSchedulingStrategy());
-        addIfDifferent(differences, DifferenceType.STYLE_CHANGED, processorA, processorB, p -> p.getStyle());
-        addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, processorA, processorB, p -> p.getYieldDuration());
+        addIfDifferent(differences, DifferenceType.ANNOTATION_DATA_CHANGED, processorA, processorB, VersionedProcessor::getAnnotationData);
+        addIfDifferent(differences, DifferenceType.AUTO_TERMINATED_RELATIONSHIPS_CHANGED, processorA, processorB, VersionedProcessor::getAutoTerminatedRelationships);
+        addIfDifferent(differences, DifferenceType.BULLETIN_LEVEL_CHANGED, processorA, processorB, VersionedProcessor::getBulletinLevel);
+        addIfDifferent(differences, DifferenceType.BUNDLE_CHANGED, processorA, processorB, VersionedProcessor::getBundle);
+        addIfDifferent(differences, DifferenceType.CONCURRENT_TASKS_CHANGED, processorA, processorB, VersionedProcessor::getConcurrentlySchedulableTaskCount);
+        addIfDifferent(differences, DifferenceType.EXECUTION_MODE_CHANGED, processorA, processorB, VersionedProcessor::getExecutionNode);
+        addIfDifferent(differences, DifferenceType.PENALTY_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getPenaltyDuration);
+        addIfDifferent(differences, DifferenceType.RUN_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getRunDurationMillis);
+        addIfDifferent(differences, DifferenceType.SCHEDULING_PERIOD_CHANGED, processorA, processorB, VersionedProcessor::getSchedulingPeriod);
+        addIfDifferent(differences, DifferenceType.SCHEDULING_STRATEGY_CHANGED, processorA, processorB, VersionedProcessor::getSchedulingStrategy);
+        addIfDifferent(differences, DifferenceType.STYLE_CHANGED, processorA, processorB, VersionedProcessor::getStyle);
+        addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getYieldDuration);
         compareProperties(processorA, processorB, processorA.getProperties(), processorB.getProperties(), differences);
     }
 
@@ -148,8 +151,8 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.ANNOTATION_DATA_CHANGED, serviceA, serviceB, s -> s.getAnnotationData());
-        addIfDifferent(differences, DifferenceType.BUNDLE_CHANGED, serviceA, serviceB, s -> s.getBundle());
+        addIfDifferent(differences, DifferenceType.ANNOTATION_DATA_CHANGED, serviceA, serviceB, VersionedControllerService::getAnnotationData);
+        addIfDifferent(differences, DifferenceType.BUNDLE_CHANGED, serviceA, serviceB, VersionedControllerService::getBundle);
         compareProperties(serviceA, serviceB, serviceA.getProperties(), serviceB.getProperties(), differences);
     }
 
@@ -183,39 +186,6 @@ public class StandardFlowComparator implements FlowComparator {
             });
     }
 
-    private void compareVariables(final VersionedProcessGroup groupA, final VersionedProcessGroup groupB, final Set<FlowDifference> differences) {
-
-        final Map<String, String> variablesA = groupA.getVariables();
-        final Map<String, String> variablesB = groupB.getVariables();
-
-        if (variablesA != null) {
-            variablesA.entrySet().stream()
-                .forEach(entry -> {
-                    final String valueA = entry.getValue();
-                    final String valueB = variablesB.get(entry.getKey());
-
-                    if (valueA == null && valueB != null) {
-                        differences.add(difference(DifferenceType.VARIABLE_ADDED, groupA, groupB, entry.getKey(), entry.getKey()));
-                    } else if (valueA != null && valueB == null) {
-                        differences.add(difference(DifferenceType.VARIABLE_REMOVED, groupA, groupB, entry.getKey(), entry.getKey()));
-                    }
-                });
-        }
-
-        if (variablesB != null) {
-            variablesB.entrySet().stream()
-                .forEach(entry -> {
-                    final String valueA = variablesA.get(entry.getKey());
-                    final String valueB = entry.getValue();
-
-                    // If there are any properties for component B that do not exist for Component A, add those as differences as well.
-                    if (valueA == null && valueB != null) {
-                        differences.add(difference(DifferenceType.VARIABLE_ADDED, groupA, groupB, entry.getKey(), entry.getKey()));
-                    }
-                });
-        }
-    }
-
 
     private void compare(final VersionedFunnel funnelA, final VersionedFunnel funnelB, final Set<FlowDifference> differences) {
         if (compareComponents(funnelA, funnelB, differences)) {
@@ -228,10 +198,10 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.LABEL_VALUE_CHANGED, labelA, labelB, l -> l.getLabel());
-        addIfDifferent(differences, DifferenceType.POSITION_CHANGED, labelA, labelB, l -> l.getHeight());
-        addIfDifferent(differences, DifferenceType.POSITION_CHANGED, labelA, labelB, l -> l.getWidth());
-        addIfDifferent(differences, DifferenceType.STYLE_CHANGED, labelA, labelB, l -> l.getStyle());
+        addIfDifferent(differences, DifferenceType.LABEL_VALUE_CHANGED, labelA, labelB, VersionedLabel::getLabel);
+        addIfDifferent(differences, DifferenceType.POSITION_CHANGED, labelA, labelB, VersionedLabel::getHeight);
+        addIfDifferent(differences, DifferenceType.POSITION_CHANGED, labelA, labelB, VersionedLabel::getWidth);
+        addIfDifferent(differences, DifferenceType.STYLE_CHANGED, labelA, labelB, VersionedLabel::getStyle);
     }
 
     private void compare(final VersionedPort portA, final VersionedPort portB, final Set<FlowDifference> differences) {
@@ -241,17 +211,17 @@ public class StandardFlowComparator implements FlowComparator {
     }
 
     private void compare(final VersionedRemoteProcessGroup rpgA, final VersionedRemoteProcessGroup rpgB, final Set<FlowDifference> differences) {
-        if (compareComponents(rpgA, rpgB, differences)) {
+        if (compareComponents(rpgA, rpgB, differences, true, false)) { // do not compare comments for RPG because they come from remote system, not our local flow
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.RPG_COMMS_TIMEOUT_CHANGED, rpgA, rpgB, r -> r.getCommunicationsTimeout());
-        addIfDifferent(differences, DifferenceType.RPG_NETWORK_INTERFACE_CHANGED, rpgA, rpgB, r -> rpgA.getLocalNetworkInterface());
-        addIfDifferent(differences, DifferenceType.RPG_PROXY_HOST_CHANGED, rpgA, rpgB, r -> rpgA.getProxyHost());
-        addIfDifferent(differences, DifferenceType.RPG_PROXY_PORT_CHANGED, rpgA, rpgB, r -> rpgA.getProxyPort());
-        addIfDifferent(differences, DifferenceType.RPG_PROXY_USER_CHANGED, rpgA, rpgB, r -> rpgA.getProxyUser());
-        addIfDifferent(differences, DifferenceType.RPG_TRANSPORT_PROTOCOL_CHANGED, rpgA, rpgB, r -> rpgA.getTransportProtocol());
-        addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, rpgA, rpgB, r -> rpgA.getYieldDuration());
+        addIfDifferent(differences, DifferenceType.RPG_COMMS_TIMEOUT_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getCommunicationsTimeout);
+        addIfDifferent(differences, DifferenceType.RPG_NETWORK_INTERFACE_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getLocalNetworkInterface);
+        addIfDifferent(differences, DifferenceType.RPG_PROXY_HOST_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getProxyHost);
+        addIfDifferent(differences, DifferenceType.RPG_PROXY_PORT_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getProxyPort);
+        addIfDifferent(differences, DifferenceType.RPG_PROXY_USER_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getProxyUser);
+        addIfDifferent(differences, DifferenceType.RPG_TRANSPORT_PROTOCOL_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getTransportProtocol);
+        addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, rpgA, rpgB, VersionedRemoteProcessGroup::getYieldDuration);
 
         differences.addAll(compareComponents(rpgA.getInputPorts(), rpgB.getInputPorts(), (a, b, diffs) -> compare(a, b, diffs)));
         differences.addAll(compareComponents(rpgA.getOutputPorts(), rpgB.getOutputPorts(), (a, b, diffs) -> compare(a, b, diffs)));
@@ -262,14 +232,14 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.REMOTE_PORT_BATCH_SIZE_CHANGED, portA, portB, p -> p.getBatchSize());
-        addIfDifferent(differences, DifferenceType.REMOTE_PORT_COMPRESSION_CHANGED, portA, portB, p -> p.isUseCompression());
-        addIfDifferent(differences, DifferenceType.CONCURRENT_TASKS_CHANGED, portA, portB, p -> p.getConcurrentlySchedulableTaskCount());
+        addIfDifferent(differences, DifferenceType.REMOTE_PORT_BATCH_SIZE_CHANGED, portA, portB, VersionedRemoteGroupPort::getBatchSize);
+        addIfDifferent(differences, DifferenceType.REMOTE_PORT_COMPRESSION_CHANGED, portA, portB, VersionedRemoteGroupPort::isUseCompression);
+        addIfDifferent(differences, DifferenceType.CONCURRENT_TASKS_CHANGED, portA, portB, VersionedRemoteGroupPort::getConcurrentlySchedulableTaskCount);
     }
 
 
     private void compare(final VersionedProcessGroup groupA, final VersionedProcessGroup groupB, final Set<FlowDifference> differences, final boolean compareNamePos) {
-        if (compareComponents(groupA, groupB, differences, compareNamePos)) {
+        if (compareComponents(groupA, groupB, differences, compareNamePos, true)) {
             return;
         }
 
@@ -283,19 +253,17 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, g -> g.getVersionedFlowCoordinates());
+        addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, VersionedProcessGroup::getVersionedFlowCoordinates);
 
-        differences.addAll(compareComponents(groupA.getConnections(), groupB.getConnections(), (a, b, diffs) -> compare(a, b, diffs)));
-        differences.addAll(compareComponents(groupA.getProcessors(), groupB.getProcessors(), (a, b, diffs) -> compare(a, b, diffs)));
-        differences.addAll(compareComponents(groupA.getControllerServices(), groupB.getControllerServices(), (a, b, diffs) -> compare(a, b, diffs)));
-        differences.addAll(compareComponents(groupA.getFunnels(), groupB.getFunnels(), (a, b, diffs) -> compare(a, b, diffs)));
-        differences.addAll(compareComponents(groupA.getInputPorts(), groupB.getInputPorts(), (a, b, diffs) -> compare(a, b, diffs)));
-        differences.addAll(compareComponents(groupA.getLabels(), groupB.getLabels(), (a, b, diffs) -> compare(a, b, diffs)));
-        differences.addAll(compareComponents(groupA.getOutputPorts(), groupB.getOutputPorts(), (a, b, diffs) -> compare(a, b, diffs)));
+        differences.addAll(compareComponents(groupA.getConnections(), groupB.getConnections(), this::compare));
+        differences.addAll(compareComponents(groupA.getProcessors(), groupB.getProcessors(), this::compare));
+        differences.addAll(compareComponents(groupA.getControllerServices(), groupB.getControllerServices(), this::compare));
+        differences.addAll(compareComponents(groupA.getFunnels(), groupB.getFunnels(), this::compare));
+        differences.addAll(compareComponents(groupA.getInputPorts(), groupB.getInputPorts(), this::compare));
+        differences.addAll(compareComponents(groupA.getLabels(), groupB.getLabels(), this::compare));
+        differences.addAll(compareComponents(groupA.getOutputPorts(), groupB.getOutputPorts(), this::compare));
         differences.addAll(compareComponents(groupA.getProcessGroups(), groupB.getProcessGroups(), (a, b, diffs) -> compare(a, b, diffs, true)));
-        differences.addAll(compareComponents(groupA.getRemoteProcessGroups(), groupB.getRemoteProcessGroups(), (a, b, diffs) -> compare(a, b, diffs)));
-
-        compareVariables(groupA, groupB, differences);
+        differences.addAll(compareComponents(groupA.getRemoteProcessGroups(), groupB.getRemoteProcessGroups(), this::compare));
     }
 
 
@@ -304,13 +272,13 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        addIfDifferent(differences, DifferenceType.BACKPRESSURE_DATA_SIZE_THRESHOLD_CHANGED, connectionA, connectionB, c -> c.getBackPressureDataSizeThreshold());
-        addIfDifferent(differences, DifferenceType.BACKPRESSURE_OBJECT_THRESHOLD_CHANGED, connectionA, connectionB, c -> c.getBackPressureObjectThreshold());
-        addIfDifferent(differences, DifferenceType.BENDPOINTS_CHANGED, connectionA, connectionB, c -> c.getBends());
-        addIfDifferent(differences, DifferenceType.DESTINATION_CHANGED, connectionA, connectionB, c -> c.getDestination());
-        addIfDifferent(differences, DifferenceType.FLOWFILE_EXPIRATION_CHANGED, connectionA, connectionB, c -> c.getFlowFileExpiration());
-        addIfDifferent(differences, DifferenceType.PRIORITIZERS_CHANGED, connectionA, connectionB, c -> c.getPrioritizers());
-        addIfDifferent(differences, DifferenceType.SELECTED_RELATIONSHIPS_CHANGED, connectionA, connectionB, c -> c.getSelectedRelationships());
+        addIfDifferent(differences, DifferenceType.BACKPRESSURE_DATA_SIZE_THRESHOLD_CHANGED, connectionA, connectionB, VersionedConnection::getBackPressureDataSizeThreshold);
+        addIfDifferent(differences, DifferenceType.BACKPRESSURE_OBJECT_THRESHOLD_CHANGED, connectionA, connectionB, VersionedConnection::getBackPressureObjectThreshold);
+        addIfDifferent(differences, DifferenceType.BENDPOINTS_CHANGED, connectionA, connectionB, VersionedConnection::getBends);
+        addIfDifferent(differences, DifferenceType.DESTINATION_CHANGED, connectionA, connectionB, VersionedConnection::getDestination);
+        addIfDifferent(differences, DifferenceType.FLOWFILE_EXPIRATION_CHANGED, connectionA, connectionB, VersionedConnection::getFlowFileExpiration);
+        addIfDifferent(differences, DifferenceType.PRIORITIZERS_CHANGED, connectionA, connectionB, VersionedConnection::getPrioritizers);
+        addIfDifferent(differences, DifferenceType.SELECTED_RELATIONSHIPS_CHANGED, connectionA, connectionB, VersionedConnection::getSelectedRelationships);
         addIfDifferent(differences, DifferenceType.SOURCE_CHANGED, connectionA, connectionB, c -> c.getSource().getId());
     }
 

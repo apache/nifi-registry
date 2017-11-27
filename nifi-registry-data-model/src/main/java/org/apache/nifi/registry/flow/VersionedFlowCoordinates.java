@@ -26,6 +26,7 @@ public class VersionedFlowCoordinates {
     private String bucketId;
     private String flowId;
     private int version;
+    private Boolean latest;
 
     @ApiModelProperty("The URL of the Flow Registry that contains the flow")
     public String getRegistryUrl() {
@@ -63,6 +64,15 @@ public class VersionedFlowCoordinates {
         this.version = version;
     }
 
+    @ApiModelProperty("Whether or not these coordinates point to the latest version of the flow")
+    public Boolean getLatest() {
+        return latest;
+    }
+
+    public void setLatest(Boolean latest) {
+        this.latest = latest;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(registryUrl, bucketId, flowId, version);
@@ -82,5 +92,10 @@ public class VersionedFlowCoordinates {
 
         final VersionedFlowCoordinates other = (VersionedFlowCoordinates) obj;
         return Objects.equals(registryUrl, other.registryUrl) && Objects.equals(bucketId, other.bucketId) && Objects.equals(flowId, other.flowId) && Objects.equals(version, other.version);
+    }
+
+    @Override
+    public String toString() {
+        return "VersionedFlowCoordinates[bucketId=" + bucketId + ", flowId=" + flowId + ", version=" + version + ", registryUrl=" + registryUrl + "]";
     }
 }
