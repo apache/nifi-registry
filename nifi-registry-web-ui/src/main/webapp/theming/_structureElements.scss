@@ -16,7 +16,8 @@
  */
 
 body {
-    background: $grey5;
+    background: $grey5 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+    background-size: 40%;
 }
 
 #nf-registry-app-container {
@@ -70,10 +71,35 @@ body {
     left: 0px;
     right: 0px;
     bottom: 0px;
-    background: $grey5;
     min-height: 370px;
     min-width: 1045px;
     overflow: auto;
+    background: $grey5 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+    background-size: 40%;
+}
+
+#current-user {
+    font-family: 'Roboto Slab';
+    font-style: normal;
+    font-weight: normal;
+    font-size: 12px;
+    max-width: 250px;
+    text-overflow: ellipsis;
+    line-height: normal;
+    overflow: hidden;
+    white-space: nowrap;
+    color: $grey5;
+}
+
+#logout-link-container {
+    font-size: 12px;
+    text-transform:uppercase;
+}
+
+#loading-spinner {
+    position: absolute;
+    top: calc(50% - 50px);
+    left: calc(50% - 50px);
 }
 
 mat-sidenav {

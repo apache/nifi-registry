@@ -17,19 +17,25 @@
 var ngCore = require('@angular/core');
 var rxjs = require('rxjs/Rx');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 
 /**
  * NfRegistryBucketGridListViewer constructor.
  *
+ * @param nfRegistryApi         The api service.
+ * @param nfStorage             A wrapper for the browser's local storage.
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
  * @constructor
  */
-function NfRegistryBucketGridListViewer(nfRegistryService, ActivatedRoute) {
+function NfRegistryBucketGridListViewer(nfRegistryApi, nfStorage, nfRegistryService, ActivatedRoute) {
     this.route = ActivatedRoute;
+    this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
 };
 
 NfRegistryBucketGridListViewer.prototype = {
@@ -42,24 +48,30 @@ NfRegistryBucketGridListViewer.prototype = {
         var self = this;
         this.nfRegistryService.explorerViewType = 'grid-list';
         this.nfRegistryService.droplet = {};
-        this.route.params
-            .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
-                    self.nfRegistryService.api.getBuckets(),
-                    self.nfRegistryService.api.getDroplets(params['bucketId']),
-                    self.nfRegistryService.api.getBucket(params['bucketId'])
-                );
-            })
-            .subscribe(function (response) {
-                var buckets = response[0];
-                var droplets = response[1];
-                var bucket = response[2];
-                self.nfRegistryService.bucket = bucket;
-                self.nfRegistryService.buckets = buckets;
-                self.nfRegistryService.droplets = droplets;
-                self.nfRegistryService.filterDroplets();
-                self.nfRegistryService.setBreadcrumbState('in');
+        // attempt kerberos authentication
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
+                self.route.params
+                    .switchMap(function (params) {
+                        return new rxjs.Observable.forkJoin(
+                            self.nfRegistryApi.getBuckets(),
+                            self.nfRegistryApi.getDroplets(params['bucketId']),
+                            self.nfRegistryApi.getBucket(params['bucketId'])
+                        );
+                    })
+                    .subscribe(function (response) {
+                        var buckets = response[0];
+                        var droplets = response[1];
+                        var bucket = response[2];
+                        self.nfRegistryService.bucket = bucket;
+                        self.nfRegistryService.buckets = buckets;
+                        self.nfRegistryService.droplets = droplets;
+                        self.nfRegistryService.filterDroplets();
+                        self.nfRegistryService.setBreadcrumbState('in');
+                    });
             });
+        });
+
     },
 
     /**
@@ -79,6 +91,8 @@ NfRegistryBucketGridListViewer.annotations = [
 ];
 
 NfRegistryBucketGridListViewer.parameters = [
+    NfRegistryApi,
+    NfStorage,
     NfRegistryService,
     ngRouter.ActivatedRoute
 ];

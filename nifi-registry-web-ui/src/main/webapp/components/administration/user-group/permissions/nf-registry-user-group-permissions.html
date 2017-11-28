@@ -16,13 +16,13 @@ limitations under the License.
 -->
 
 <div fxFill>
-    <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-md pad-bottom-md pad-left-sm pad-right-sm">
-        <span class="md-card-title">Add User</span>
+    <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-sm pad-bottom-md pad-left-md pad-right-md">
+        <span class="md-card-title"><i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{nfRegistryService.group.identity}}</span>
         <button mat-icon-button (click)="closeSideNav()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <button id="nf-registry-add-user-side-nav-container" mat-raised-button color="fds-primary" (click)="closeSideNav()">
-        Close
+    <button id="nf-registry-user-group-permissions-side-nav-container" class="push-right-md" mat-raised-button color="fds-primary"
+            (click)="closeSideNav()">Close
     </button>
 </div>

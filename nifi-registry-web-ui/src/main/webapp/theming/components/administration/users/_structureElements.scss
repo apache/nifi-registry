@@ -47,7 +47,7 @@
     right: 10px;
 }
 
-#nf-registry-add-user-side-nav-container {
+#nf-registry-user-group-permissions-side-nav-container {
     position: absolute;
     bottom: 15px;
     right: 10px;
@@ -59,3 +59,8 @@
     right: 10px;
 }
 
+#nifi-registry-add-selected-users-to-group-list-container {
+    width: 100%;
+    overflow: auto;
+    max-height: 245px;
+}

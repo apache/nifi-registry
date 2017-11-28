@@ -14,44 +14,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+var ngMaterial = require('@angular/material');
 
 /**
  * NfRegistryAddUser constructor.
  *
+ * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
- * @param Router                The angular router module.
+ * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryAddUser(nfRegistryService, Router) {
+function NfRegistryAddUser(nfRegistryApi, nfRegistryService, matDialogRef) {
     this.nfRegistryService = nfRegistryService;
-    this.router = Router;
+    this.nfRegistryApi = nfRegistryApi;
+    this.dialogRef = matDialogRef;
+    this.keepDialogOpen = false;
 };
 
 NfRegistryAddUser.prototype = {
     constructor: NfRegistryAddUser,
 
     /**
-     * Initialize the component.
+     * Create a new user.
+     *
+     * @param addUserInput     The addUserInput element.
      */
-    ngOnInit: function () {
-        this.nfRegistryService.sidenav.open();
+    addUser: function (addUserInput) {
+        var self = this;
+        this.nfRegistryApi.addUser(null, addUserInput.value).subscribe(function (user) {
+            self.nfRegistryService.users.push(user);
+            self.nfRegistryService.allUsersAndGroupsSelected = false;
+            self.nfRegistryService.filterUsersAndGroups();
+            if (self.keepDialogOpen !== true) {
+                self.dialogRef.close();
+            }
+        });
     },
 
     /**
-     * Destroy the component.
+     * Cancel creation of a new bucket and close dialog.
      */
-    ngOnDestroy: function () {
-        this.nfRegistryService.sidenav.close();
-    },
-
-    /**
-     * Navigate to administer users for current registry.
-     */
-    closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/users');
+    cancel: function () {
+        this.dialogRef.close();
     }
 };
 
@@ -62,8 +70,9 @@ NfRegistryAddUser.annotations = [
 ];
 
 NfRegistryAddUser.parameters = [
+    NfRegistryApi,
     NfRegistryService,
-    ngRouter.Router
+    ngMaterial.MatDialogRef
 ];
 
 module.exports = NfRegistryAddUser;

@@ -17,6 +17,7 @@
 
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
+var ngCommonHttpTesting = require('@angular/common/http/testing');
 var ngHttpTesting = require('@angular/http/testing');
 var ngCommon = require('@angular/common');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
@@ -27,9 +28,10 @@ var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/n
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/add/nf-registry-add-user.js');
+var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
 var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
+var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
@@ -41,6 +43,10 @@ var ngHttp = require('@angular/http');
 var rxjs = require('rxjs/Rx');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var ngRouter = require('@angular/router');
+var ngCommonHttp = require('@angular/common/http');
+var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
+var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 describe('NfRegistry Service isolated unit tests', function () {
     var comp;
@@ -182,7 +188,6 @@ describe('NfRegistry Service isolated unit tests', function () {
         var filterBucketsCall = nfRegistryService.filterBuckets.calls.first();
         expect(filterBucketsCall.args[0]).toBe('name');
         expect(filterBucketsCall.args[1]).toBe('ASC');
-        expect(nfRegistryService.activeBucketsColumn).toBe(column);
     });
 
     it('should generate the auto complete options for the droplet filter.', function () {
@@ -241,7 +246,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(allSelected).toBe(false);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
     });
 
     it('should check if all buckets are selected and return true.', function () {
@@ -261,7 +266,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(allSelected).toBe(true);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     });
 
     it('should set the `allBucketsSelected` state to true.', function () {
@@ -324,7 +329,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(nfRegistryService.filteredBuckets[0].checked).toBe(true);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     });
 
     it('should deselect all buckets.', function () {
@@ -335,7 +340,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(nfRegistryService.filteredBuckets[0].checked).toBe(false);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
     });
 
     it('should add a bucket search term.', function () {
@@ -373,6 +378,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
     var comp;
     var fixture;
     var nfRegistryService;
+    var nfRegistryApi;
 
     beforeEach(function () {
         ngCoreTesting.TestBed.configureTestingModule({
@@ -380,8 +386,10 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 ngMoment.MomentModule,
                 ngHttp.HttpModule,
                 ngHttp.JsonpModule,
+                ngCommonHttp.HttpClientModule,
                 fdsCore,
-                NfRegistryRoutes
+                NfRegistryRoutes,
+                ngCommonHttpTesting.HttpClientTestingModule
             ],
             declarations: [
                 FdsDemo,
@@ -391,6 +399,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 NfRegistryUsersAdministration,
                 NfRegistryUserDetails,
                 NfRegistryUserPermissions,
+                NfRegistryUserGroupPermissions,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
@@ -401,7 +410,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             ],
             providers: [
                 NfRegistryService,
+                NfRegistryAuthService,
                 NfRegistryApi,
+                NfStorage,
+                {
+                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
+                    useClass: NfRegistryTokenInterceptor,
+                    multi: true
+                },
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
@@ -426,12 +442,15 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         fixture.detectChanges();
 
         // Spy
-        spyOn(nfRegistryApi.http, 'get').and.callThrough();
+        spyOn(nfRegistryApi.http, 'get').and.callFake(function () {});
+        spyOn(nfRegistryApi.http, 'post').and.callFake(function () {});
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
     });
 
     it('should retrieve the snapshot metadata for the given droplet.', ngCoreTesting.fakeAsync(function () {
         //Spy
-        spyOn(nfRegistryService.api, 'getDropletSnapshotMetadata').and.callFake(function () {
+        spyOn(nfRegistryApi, 'getDropletSnapshotMetadata').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             version: 999
         }]));
@@ -450,9 +469,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         expect(droplet.snapshotMetadata[0].version).toBe(999);
-        expect(nfRegistryService.api.getDropletSnapshotMetadata).toHaveBeenCalled();
-        expect(nfRegistryService.api.getDropletSnapshotMetadata.calls.count()).toBe(1);
-        var getDropletSnapshotMetadataCall = nfRegistryService.api.getDropletSnapshotMetadata.calls.first()
+        expect(nfRegistryApi.getDropletSnapshotMetadata).toHaveBeenCalled();
+        expect(nfRegistryApi.getDropletSnapshotMetadata.calls.count()).toBe(1);
+        var getDropletSnapshotMetadataCall = nfRegistryApi.getDropletSnapshotMetadata.calls.first()
         expect(getDropletSnapshotMetadataCall.args[0]).toBe('test/id');
         expect(getDropletSnapshotMetadataCall.args[1]).toBe(true);
     }));
@@ -467,7 +486,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteDroplet').and.callFake(function () {
+        spyOn(nfRegistryApi, 'deleteDroplet').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
         spyOn(nfRegistryService, 'filterDroplets').and.callFake(function () {
         });
@@ -479,7 +498,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             link: {href: 'testhref'}
         });
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -490,7 +509,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
         var openConfirmCall = nfRegistryService.dialogService.openConfirm.calls.first()
         expect(openConfirmCall.args[0].title).toBe('Delete testtype');
-        var deleteDropletCall = nfRegistryService.api.deleteDroplet.calls.first()
+        var deleteDropletCall = nfRegistryApi.deleteDroplet.calls.first()
         expect(deleteDropletCall.args[0]).toBe('testhref');
     }));
 
@@ -535,7 +554,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -588,7 +607,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -613,7 +632,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
+        spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
@@ -639,7 +658,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
-        expect(nfRegistryService.api.deleteBucket).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
@@ -683,12 +702,12 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(nfRegistryService, 'getAutoCompleteBuckets');
 
         //assertion
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
 
         // The function to test
         nfRegistryService.filterBuckets();
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -698,7 +717,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.filteredBuckets.length).toBe(1);
         expect(nfRegistryService.filteredBuckets[0].name).toBe('Bucket #1');
         expect(nfRegistryService.getAutoCompleteBuckets).toHaveBeenCalled();
-        expect(nfRegistryService.disableMultiBucketActions).toBe(false);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     }));
 
     it('should delete all selected buckets.', ngCoreTesting.fakeAsync(function () {
@@ -716,7 +735,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
+        spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({identifier: 999, link: null}));
 
         // object to be updated by the test
@@ -742,11 +761,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
-        expect(nfRegistryService.api.deleteBucket).toHaveBeenCalled();
-        expect(nfRegistryService.api.deleteBucket.calls.count()).toBe(1);
+        expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteBucket.calls.count()).toBe(1);
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets.calls.count()).toBe(1);
-        expect(nfRegistryService.disableMultiBucketActions).toBe(true);
+        expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
         expect(nfRegistryService.allBucketsSelected).toBe(false);
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);

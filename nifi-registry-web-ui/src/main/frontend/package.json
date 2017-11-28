@@ -33,6 +33,7 @@
     "@angular/platform-browser": "4.4.4",
     "@angular/platform-browser-dynamic": "4.4.4",
     "@angular/router": "4.4.4",
+    "angular2-jwt": "0.2.3",
     "canonical-path": "0.0.2",
     "grunt": "0.4.5",
     "grunt-cli": "1.2.0",
@@ -59,7 +60,7 @@
     "superagent": "3.6.3",
     "systemjs": "0.20.17",
     "systemjs-plugin-text": "0.0.11",
-    "zone.js": "0.8.4"
+    "zone.js": "0.8.7"
   },
   "bundleDependencies": [],
   "private": true
