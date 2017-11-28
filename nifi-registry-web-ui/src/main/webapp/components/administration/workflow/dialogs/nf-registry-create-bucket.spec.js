@@ -53,19 +53,19 @@ describe('NfRegistryCreateBucket Component', function () {
     var de;
     var el;
     var nfRegistryService;
+    var nfRegistryApi;
 
     beforeEach(function () {
-        nfRegistryService = new NfRegistryService({}, {
-            createBucket: function() {}
-        }, {}, {});
-        comp = new NfRegistryCreateBucket(nfRegistryService, {
+        nfRegistryService = new NfRegistryService();
+        nfRegistryApi = new NfRegistryApi();
+        comp = new NfRegistryCreateBucket(nfRegistryApi, nfRegistryService, {
             close: function() {}
         })
     });
 
     it('should create a new bucket and close the dialog', function () {
         // Spy
-        spyOn(nfRegistryService.api, 'createBucket').and.callFake(function () {
+        spyOn(nfRegistryApi, 'createBucket').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({name: 'NewBucket'}));
         spyOn(nfRegistryService, 'filterBuckets');
         spyOn(comp.dialogRef, 'close');
@@ -83,7 +83,7 @@ describe('NfRegistryCreateBucket Component', function () {
 
     it('should create a new bucket and keep the dialog open', function () {
         // Spy
-        spyOn(nfRegistryService.api, 'createBucket').and.callFake(function () {
+        spyOn(nfRegistryApi, 'createBucket').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({name: 'NewBucket'}));
         spyOn(nfRegistryService, 'filterBuckets');
         spyOn(comp.dialogRef, 'close');

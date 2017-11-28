@@ -178,6 +178,33 @@ NfRegistryStorage.prototype = {
     },
 
     /**
+     * Extracts the subject from the specified jwt. If the jwt is not as expected
+     * an empty string is returned.
+     *
+     * @param {string} jwt
+     * @returns {string}
+     */
+    getJwtPayload: function (jwt) {
+        if (isDefinedAndNotNull(jwt)) {
+            var segments = jwt.split(/\./);
+            if (segments.length !== 3) {
+                return '';
+            }
+
+            var rawPayload = window.atob(segments[1]);
+            var payload = JSON.parse(rawPayload);
+
+            if (isDefinedAndNotNull(payload)) {
+                return payload;
+            } else {
+                return null;
+            }
+        }
+
+        return null;
+    },
+
+    /**
      * Removes the item with the specified key.
      *
      * @param {type} key

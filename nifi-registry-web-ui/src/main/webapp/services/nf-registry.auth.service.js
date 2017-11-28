@@ -19,6 +19,8 @@ var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 /**
  * NfRegistryAuth constructor.
+ *
+ * @param nfStorage             The NfStorage module.
  * @constructor
  */
 function NfRegistryAuth(nfStorage) {
@@ -27,21 +29,13 @@ function NfRegistryAuth(nfStorage) {
 
 NfRegistryAuth.prototype = {
     constructor: NfRegistryAuth,
+
     /**
      * Gets the jwt token.
      * @returns {*}
      */
     getToken: function() {
         return this.nfStorage.getItem('jwt');
-    },
-    /**
-     * boolean reflecting whether or not the token is expired.
-     * @returns {*}
-     */
-    isAuthenticated: function() {
-        // get the token
-        var token = this.getToken();
-        return tokenNotExpired(null, token);
     }
 };
 

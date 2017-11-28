@@ -16,6 +16,7 @@
  */
 
 var covalentCore = require('@covalent/core');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngCore = require('@angular/core');
 var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
@@ -25,16 +26,18 @@ var $ = require('jquery');
 /**
  * NfRegistryAddSelectedToGroup constructor.
  *
+ * @param nfRegistryApi         The api service.
  * @param TdDataTableService    The covalent data table service module.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @param FdsSnackBarService    The FDS snack bar service module.
  * @constructor
  */
-function NfRegistryAddSelectedToGroup(TdDataTableService, nfRegistryService, matDialogRef, FdsSnackBarService) {
+function NfRegistryAddSelectedToGroup(nfRegistryApi, TdDataTableService, nfRegistryService, matDialogRef, FdsSnackBarService) {
     this.dataTableService = TdDataTableService;
     this.snackBarService = FdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.filteredUserGroups = [];
     //make an independent copy of the groups for sorting and selecting within the scope of this component
@@ -192,8 +195,8 @@ NfRegistryAddSelectedToGroup.prototype = {
             return filteredUserGroup.checked;
         });
         groupIds.forEach(function (groupId) {
-            self.nfRegistryService.api.getUserGroup(groupId.identifier).subscribe(function (group) {
-                self.nfRegistryService.api.updateUserGroup(groupId.identifier, groupId.identity, selectedUsers.concat(group.users)).subscribe(function (group) {
+            self.nfRegistryApi.getUserGroup(groupId.identifier).subscribe(function (group) {
+                self.nfRegistryApi.updateUserGroup(groupId.identifier, groupId.identity, selectedUsers.concat(group.users)).subscribe(function (group) {
                     self.dialogRef.close();
                     var snackBarRef = self.snackBarService.openCoaster({
                         title: 'Success',
@@ -224,6 +227,7 @@ NfRegistryAddSelectedToGroup.annotations = [
 ];
 
 NfRegistryAddSelectedToGroup.parameters = [
+    NfRegistryApi,
     covalentCore.TdDataTableService,
     NfRegistryService,
     ngMaterial.MatDialogRef,

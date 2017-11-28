@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngCommonHttp = require('@angular/common/http');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var rxjs = require('rxjs/Rx');
 var ngRouter = require('@angular/router');
-
+var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
 
 var config = {
@@ -32,12 +33,14 @@ var config = {
 /**
  * NfRegistryApi constructor.
  *
+ * @param nfStorage             A wrapper for the browser's local storage.
  * @param http                  The angular http module.
  * @param fdsDialogService      The FDS dialog service.
  * @param router                The angular router module.
  * @constructor
  */
-function NfRegistryApi(http, fdsDialogService, router) {
+function NfRegistryApi(nfStorage, http, fdsDialogService, router) {
+    this.nfStorage = nfStorage;
     this.http = http;
     this.dialogService = fdsDialogService;
     this.router = router;
@@ -484,17 +487,23 @@ NfRegistryApi.prototype = {
      */
     ticketExchange: function () {
         var self = this;
-        return this.http.post(config.urls.kerberos, null, headers)
-            .map(function (response) {
-                // get the payload and store the token with the appropriate expiration
-                var token = nfCommon.getJwtPayload(response);
-                var expiration = parseInt(token['exp'], 10) * nfCommon.MILLIS_PER_SECOND;
-                self.nfStorage.setItem('jwt', jwt, expiration);
-                return response || {};
-            })
-            .catch(function (error) {
-                return rxjs.Observable.of({});
-            });
+        if (this.nfStorage.hasItem('jwt')) {
+            return rxjs.Observable.of(self.nfStorage.getItem('jwt'));
+        } else {
+            return this.http.post(config.urls.kerberos, null, {responseType: 'text'})
+                .map(function (jwt) {
+                    // get the payload and store the token with the appropriate expiration
+                    var token = self.nfStorage.getJwtPayload(jwt);
+                    if(token) {
+                        var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
+                        self.nfStorage.setItem('jwt', jwt, expiration);
+                    }
+                    return jwt;
+                })
+                .catch(function (error) {
+                    return rxjs.Observable.of('');
+                });
+        }
     },
 
     /**
@@ -507,7 +516,7 @@ NfRegistryApi.prototype = {
         // get the current user
         return this.http.get(config.urls.currentUser)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
@@ -520,6 +529,7 @@ NfRegistryApi.prototype = {
 };
 
 NfRegistryApi.parameters = [
+    NfStorage,
     ngCommonHttp.HttpClient,
     fdsDialogsModule.FdsDialogService,
     ngRouter.Router

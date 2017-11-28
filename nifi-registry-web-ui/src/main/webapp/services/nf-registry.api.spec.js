@@ -39,6 +39,7 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var ngHttp = require('@angular/http');
+var rxjs = require('rxjs/Rx');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -47,6 +48,7 @@ var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 describe('NfRegistry Service API w/ Angular testing utils', function () {
     var comp;
     var fixture;
+    var nfRegistryApi;
     var nfRegistryService;
 
     beforeEach(function () {
@@ -94,24 +96,25 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
             ],
             bootstrap: [NfRegistry]
         });
-    });
-
-    it('should GET droplet snapshot metadata.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
         fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
         fixture.detectChanges();
         comp = fixture.componentInstance;
 
         // NfRegistryService from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
+        nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+    });
 
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
-
+    it('should GET droplet snapshot metadata.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
         // The function to test
-        nfRegistryService.api.getDropletSnapshotMetadata('flow/test').subscribe(function(response) {
+        nfRegistryApi.getDropletSnapshotMetadata('flow/test').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/flow/test/versions');
             expect(req.request.method).toEqual('GET');
@@ -127,21 +130,13 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should GET droplet by type and ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
-
         // The function to test
-        nfRegistryService.api.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc').subscribe(function(response) {
+        nfRegistryApi.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
             expect(req.request.method).toEqual('GET');
@@ -171,21 +166,13 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should GET all droplets across all buckets.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
-
         // The function to test
-        nfRegistryService.api.getDroplets().subscribe(function(response) {
+        nfRegistryApi.getDroplets().subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/items');
             expect(req.request.method).toEqual('GET');
@@ -232,21 +219,13 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should GET all droplets across a single bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
-
         // The function to test
-        nfRegistryService.api.getDroplets('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function(response) {
+        nfRegistryApi.getDroplets('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
             expect(req.request.method).toEqual('GET');
@@ -276,21 +255,13 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should DELETE a droplet.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
-
         // The function to test
-        nfRegistryService.api.deleteDroplet('flows/1234').subscribe(function(response) {
+        nfRegistryApi.deleteDroplet('flows/1234').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/flows/1234');
             expect(req.request.method).toEqual('DELETE');
@@ -302,24 +273,16 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should POST to create a new bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
         //Spy
-        spyOn(nfRegistryService.api.http, 'post').and.callThrough();
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
+        spyOn(nfRegistryApi.http, 'post').and.callThrough();
 
         // The function to test
-        nfRegistryService.api.createBucket('test').subscribe(function(response) {
+        nfRegistryApi.createBucket('test').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/buckets');
             expect(req.request.method).toEqual('POST');
@@ -335,24 +298,16 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should DELETE a bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
         //Spy
-        spyOn(nfRegistryService.api.http, 'post').and.callThrough();
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
+        spyOn(nfRegistryApi.http, 'post').and.callThrough();
 
         // The function to test
-        nfRegistryService.api.deleteBucket('1234').subscribe(function(response) {
+        nfRegistryApi.deleteBucket('1234').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/buckets/1234');
             expect(req.request.method).toEqual('DELETE');
@@ -364,21 +319,14 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should GET bucket by ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
 
         // The function to test
-        nfRegistryService.api.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function(response) {
+        nfRegistryApi.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
             expect(req.request.method).toEqual('GET');
@@ -395,21 +343,13 @@ describe('NfRegistry Service API w/ Angular testing utils', function () {
     }));
 
     it('should GET metadata for all buckets in the registry for which the client is authorized.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
-
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-
-        var req = httpMock.expectOne('/nifi-registry-api/access/kerberos');
-        req.flush({});
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        req.flush({});
-        httpMock.verify();
-
         // The function to test
-        nfRegistryService.api.getBuckets().subscribe(function(response) {
+        nfRegistryApi.getBuckets().subscribe(function(response) {
+            var req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+            req.flush({});
+            req = httpMock.expectOne('/nifi-registry-api/access');
+            req.flush({});
+            httpMock.verify();
             // the request it made
             req = httpMock.expectOne('/nifi-registry-api/buckets');
             expect(req.request.method).toEqual('GET');

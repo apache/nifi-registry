@@ -20,31 +20,36 @@ var ngRouter = require('@angular/router');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+var rxjs = require('rxjs/Rx');
 require('rxjs/add/operator/catch');
 require('rxjs/add/operator/map');
 
 /**
  * NfRegistryService constructor.
  *
- * @param TdDataTableService    The covalent data table service module.
- * @param NfRegistryApi         The registry API module.
- * @param Router                The angular router module.
- * @param FdsDialogService      The FDS dialog service.
- * @param FdsSnackBarService    The FDS snack bar service module.
+ * @param nfRegistryApi         The api service.
+ * @param nfStorage             A wrapper for the browser's local storage.
+ * @param tdDataTableService    The covalent data table service module.
+ * @param router                The angular router module.
+ * @param fdsDialogService      The FDS dialog service.
+ * @param fdsSnackBarService    The FDS snack bar service module.
  * @constructor
  */
-function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogService, FdsSnackBarService) {
-    this.router = Router;
-    this.dialogService = FdsDialogService;
-    this.snackBarService = FdsSnackBarService;
+function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router, fdsDialogService, fdsSnackBarService) {
+    this.router = router;
+    this.api = nfRegistryApi;
+    this.nfStorage = nfStorage;
+    this.dialogService = fdsDialogService;
+    this.snackBarService = fdsSnackBarService;
     this.registry = {
         name: "Nifi Registry"
     };
-    this.api = NfRegistryApi;
     this.bucket = {};
     this.buckets = [];
     this.droplet = {};
     this.droplets = [];
+    this.currentUser = {};
     this.user = {};
     this.group = {};
     this.users = [];
@@ -53,7 +58,7 @@ function NfRegistryService(TdDataTableService, NfRegistryApi, Router, FdsDialogS
     this.explorerViewType = '';
     this.perspective = '';
     this.breadCrumbState = 'out';
-    this.dataTableService = TdDataTableService;
+    this.dataTableService = tdDataTableService;
 
     this.filteredDroplets = [];
     this.dropletActions = [{
@@ -582,6 +587,31 @@ NfRegistryService.prototype = {
     },
 
     /**
+     * Loads the current user and updates the current user locally.
+     *
+     * @returns xhr
+     */
+    loadCurrentUser: function () {
+        var self = this;
+        // get the current user
+        return rxjs.Observable.of(this.api.loadCurrentUser().subscribe(function (currentUser) {
+                // if the user is logged, we want to determine if they were logged in using a certificate
+                if (currentUser.status !== "UNKNOWN") {
+                    // render the users name
+                    self.currentUser = currentUser;
+
+                    // render the logout button if there is a token locally
+                    if (self.nfStorage.getItem('jwt') !== null) {
+                        self.currentUser.canLogout = true;
+                    }
+                } else {
+                    // set the anonymous user label
+                    self.nfRegistryService.currentUser.identity = 'Anonymous';
+                }
+        }));
+    },
+
+    /**
      * Adds a `searchTerm` to the `usersSearchTerms` and filters the `users` amd `groups`.
      *
      * @param {string} searchTerm   The search term to add.
@@ -931,8 +961,9 @@ NfRegistryService.prototype = {
 };
 
 NfRegistryService.parameters = [
-    covalentCore.TdDataTableService,
     NfRegistryApi,
+    NfStorage,
+    covalentCore.TdDataTableService,
     ngRouter.Router,
     fdsDialogsModule.FdsDialogService,
     fdsSnackBarsModule.FdsSnackBarService

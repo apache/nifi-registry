@@ -36,11 +36,10 @@ NfRegistryTokenInterceptor.prototype = {
      * @returns {Observable HTTPEvent}
      */
     intercept: function(request, next) {
-        request = request.clone({
-            setHeaders: {
-                Authorization: 'Bearer' + this.auth.getToken()
-            }
-        });
+        var token = this.auth.getToken();
+        if(token) {
+            request = request.clone({headers: request.headers.set('Authorization', 'Bearer ' + token)});
+        }
         return next.handle(request);
     }
 };

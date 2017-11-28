@@ -17,6 +17,7 @@
 
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
+var ngCommonHttpTesting = require('@angular/common/http/testing');
 var ngHttpTesting = require('@angular/http/testing');
 var ngCommon = require('@angular/common');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
@@ -377,6 +378,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
     var comp;
     var fixture;
     var nfRegistryService;
+    var nfRegistryApi;
 
     beforeEach(function () {
         ngCoreTesting.TestBed.configureTestingModule({
@@ -386,7 +388,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
-                NfRegistryRoutes
+                NfRegistryRoutes,
+                ngCommonHttpTesting.HttpClientTestingModule
             ],
             declarations: [
                 FdsDemo,
@@ -439,12 +442,15 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         fixture.detectChanges();
 
         // Spy
-        spyOn(nfRegistryApi.http, 'get').and.callThrough();
+        spyOn(nfRegistryApi.http, 'get').and.callFake(function () {});
+        spyOn(nfRegistryApi.http, 'post').and.callFake(function () {});
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
     });
 
     it('should retrieve the snapshot metadata for the given droplet.', ngCoreTesting.fakeAsync(function () {
         //Spy
-        spyOn(nfRegistryService.api, 'getDropletSnapshotMetadata').and.callFake(function () {
+        spyOn(nfRegistryApi, 'getDropletSnapshotMetadata').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             version: 999
         }]));
@@ -463,9 +469,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         expect(droplet.snapshotMetadata[0].version).toBe(999);
-        expect(nfRegistryService.api.getDropletSnapshotMetadata).toHaveBeenCalled();
-        expect(nfRegistryService.api.getDropletSnapshotMetadata.calls.count()).toBe(1);
-        var getDropletSnapshotMetadataCall = nfRegistryService.api.getDropletSnapshotMetadata.calls.first()
+        expect(nfRegistryApi.getDropletSnapshotMetadata).toHaveBeenCalled();
+        expect(nfRegistryApi.getDropletSnapshotMetadata.calls.count()).toBe(1);
+        var getDropletSnapshotMetadataCall = nfRegistryApi.getDropletSnapshotMetadata.calls.first()
         expect(getDropletSnapshotMetadataCall.args[0]).toBe('test/id');
         expect(getDropletSnapshotMetadataCall.args[1]).toBe(true);
     }));
@@ -480,7 +486,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteDroplet').and.callFake(function () {
+        spyOn(nfRegistryApi, 'deleteDroplet').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
         spyOn(nfRegistryService, 'filterDroplets').and.callFake(function () {
         });
@@ -492,7 +498,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             link: {href: 'testhref'}
         });
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -503,7 +509,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
         var openConfirmCall = nfRegistryService.dialogService.openConfirm.calls.first()
         expect(openConfirmCall.args[0].title).toBe('Delete testtype');
-        var deleteDropletCall = nfRegistryService.api.deleteDroplet.calls.first()
+        var deleteDropletCall = nfRegistryApi.deleteDroplet.calls.first()
         expect(deleteDropletCall.args[0]).toBe('testhref');
     }));
 
@@ -548,7 +554,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -601,7 +607,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -626,7 +632,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
+        spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
@@ -652,7 +658,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
-        expect(nfRegistryService.api.deleteBucket).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
@@ -701,7 +707,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterBuckets();
 
-        // wait for async nfRegistryService.api.deleteDroplet call
+        // wait for async nfRegistryApi.deleteDroplet call
         ngCoreTesting.tick();
 
         //inform angular to detect changes
@@ -729,7 +735,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 return rxjs.Observable.of(true);
             }
         });
-        spyOn(nfRegistryService.api, 'deleteBucket').and.callFake(function () {
+        spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({identifier: 999, link: null}));
 
         // object to be updated by the test
@@ -755,8 +761,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
-        expect(nfRegistryService.api.deleteBucket).toHaveBeenCalled();
-        expect(nfRegistryService.api.deleteBucket.calls.count()).toBe(1);
+        expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteBucket.calls.count()).toBe(1);
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets.calls.count()).toBe(1);
         expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);

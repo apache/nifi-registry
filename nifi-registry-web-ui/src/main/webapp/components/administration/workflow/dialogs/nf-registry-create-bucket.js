@@ -16,17 +16,20 @@
  */
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
 
 /**
  * NfRegistryCreateBucket constructor.
  *
+ * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryCreateBucket(nfRegistryService, matDialogRef) {
+function NfRegistryCreateBucket(nfRegistryApi, nfRegistryService, matDialogRef) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.keepDialogOpen = false;
 };
@@ -41,7 +44,7 @@ NfRegistryCreateBucket.prototype = {
      */
     createBucket: function (newBucketInput) {
         var self = this;
-        this.nfRegistryService.api.createBucket(newBucketInput.value).subscribe(function (bucket) {
+        this.nfRegistryApi.createBucket(newBucketInput.value).subscribe(function (bucket) {
             self.nfRegistryService.buckets.push(bucket);
             self.nfRegistryService.filterBuckets();
             self.nfRegistryService.allBucketsSelected = false;
@@ -66,6 +69,7 @@ NfRegistryCreateBucket.annotations = [
 ];
 
 NfRegistryCreateBucket.parameters = [
+    NfRegistryApi,
     NfRegistryService,
     ngMaterial.MatDialogRef
 ];

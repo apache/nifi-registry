@@ -17,17 +17,20 @@
 
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
 
 /**
  * NfRegistryAddUser constructor.
  *
+ * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryAddUser(nfRegistryService, matDialogRef) {
+function NfRegistryAddUser(nfRegistryApi, nfRegistryService, matDialogRef) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.keepDialogOpen = false;
 };
@@ -42,7 +45,7 @@ NfRegistryAddUser.prototype = {
      */
     addUser: function (addUserInput) {
         var self = this;
-        this.nfRegistryService.api.addUser(null, addUserInput.value).subscribe(function (user) {
+        this.nfRegistryApi.addUser(null, addUserInput.value).subscribe(function (user) {
             self.nfRegistryService.users.push(user);
             self.nfRegistryService.allUsersAndGroupsSelected = false;
             self.nfRegistryService.filterUsersAndGroups();
@@ -67,6 +70,7 @@ NfRegistryAddUser.annotations = [
 ];
 
 NfRegistryAddUser.parameters = [
+    NfRegistryApi,
     NfRegistryService,
     ngMaterial.MatDialogRef
 ];

@@ -120,6 +120,8 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         el = de.nativeElement;
 
         // Spy
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryService.api, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",

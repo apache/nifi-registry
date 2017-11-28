@@ -16,18 +16,21 @@
  */
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngRouter = require('@angular/router');
 
 /**
  * NfRegistryBucketPermissions constructor.
  *
+ * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
  * @param Router                The angular router module.
  * @constructor
  */
-function NfRegistryBucketPermissions(nfRegistryService, ActivatedRoute, Router) {
+function NfRegistryBucketPermissions(nfRegistryApi, nfRegistryService, ActivatedRoute, Router) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.route = ActivatedRoute;
     this.router = Router;
 };
@@ -43,7 +46,7 @@ NfRegistryBucketPermissions.prototype = {
         this.nfRegistryService.sidenav.open();
         this.route.params
             .switchMap(function (params) {
-                return self.nfRegistryService.api.getBucket(params['bucketId']);
+                return self.nfRegistryApi.getBucket(params['bucketId']);
             })
             .subscribe(function (bucket) {
                 self.nfRegistryService.bucket = bucket;
@@ -73,6 +76,7 @@ NfRegistryBucketPermissions.annotations = [
 ];
 
 NfRegistryBucketPermissions.parameters = [
+    NfRegistryApi,
     NfRegistryService,
     ngRouter.ActivatedRoute,
     ngRouter.Router

@@ -113,6 +113,8 @@ describe('NfRegistryGridListViewer Component', function () {
         nfRegistryService.perspective = 'explorer';
 
         // Spy
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',

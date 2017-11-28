@@ -16,6 +16,8 @@
  */
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var ngRouter = require('@angular/router');
@@ -24,14 +26,18 @@ var ngMaterial = require('@angular/material');
 /**
  * NfRegistryWorkflowAdministration constructor.
  *
+ * @param nfRegistryApi         The api service.
+ * @param nfStorage             A wrapper for the browser's local storage.
  * @param nfRegistryService     The nf-registry.service module.
- * @param ActivatedRoute        The angular activated route module.
- * @param matDialog          The angular material dialog module.
+ * @param activatedRoute        The angular activated route module.
+ * @param matDialog             The angular material dialog module.
  * @constructor
  */
-function NfRegistryWorkflowAdministration(nfRegistryService, ActivatedRoute, matDialog) {
-    this.route = ActivatedRoute;
+function NfRegistryWorkflowAdministration(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute, matDialog) {
+    this.route = activatedRoute;
+    this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.dialog = matDialog;
     this.bucketActions = [{
         'name': 'permissions',
@@ -53,16 +59,20 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     ngOnInit: function () {
         var self = this;
-        this.route.params
-            .switchMap(function (params) {
-                self.nfRegistryService.adminPerspective = 'workflow';
-                return self.nfRegistryService.api.getBuckets();
-            })
-            .subscribe(function (buckets) {
-                self.nfRegistryService.buckets = buckets;
-                self.nfRegistryService.filterBuckets();
+        // attempt kerberos authentication
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
+                self.route.params
+                    .switchMap(function (params) {
+                        self.nfRegistryService.adminPerspective = 'workflow';
+                        return self.nfRegistryApi.getBuckets();
+                    })
+                    .subscribe(function (buckets) {
+                        self.nfRegistryService.buckets = buckets;
+                        self.nfRegistryService.filterBuckets();
+                    });
             });
-
+        });
     },
 
     /**
@@ -93,6 +103,8 @@ NfRegistryWorkflowAdministration.annotations = [
 ];
 
 NfRegistryWorkflowAdministration.parameters = [
+    NfRegistryApi,
+    NfStorage,
     NfRegistryService,
     ngRouter.ActivatedRoute,
     ngMaterial.MatDialog

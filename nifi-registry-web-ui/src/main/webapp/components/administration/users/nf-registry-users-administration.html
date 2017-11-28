@@ -39,9 +39,9 @@ limitations under the License.
                     (click)="createNewGroup()">
                 <span>Create new group</span>
             </button>
-            <button mat-menu-item [disabled]="nfRegistryService.isMultiUserGroupActionsDisabled"
+            <button mat-menu-item [disabled]="nfRegistryService.isMultiUserGroupActionsDisabled || nfRegistryService.groups.length === 0"
                     (click)="addSelectedUsersToGroup()">
-                <span>Add selected to group</span>
+                <span>Add selected users to group</span>
             </button>
         </mat-menu>
         <div id="nifi-registry-users-administration-list-container-column-header" fxLayout="row"

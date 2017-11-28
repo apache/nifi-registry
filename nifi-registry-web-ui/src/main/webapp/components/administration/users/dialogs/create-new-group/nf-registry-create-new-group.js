@@ -17,17 +17,20 @@
 
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
 
 /**
  * NfRegistryCreateNewGroup constructor.
  *
+ * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryCreateNewGroup(nfRegistryService, matDialogRef) {
+function NfRegistryCreateNewGroup(nfRegistryApi, nfRegistryService, matDialogRef) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.keepDialogOpen = false;
 };
@@ -50,7 +53,7 @@ NfRegistryCreateNewGroup.prototype = {
                 return filteredUserGroup.checked;
             });
 
-            this.nfRegistryService.api.createNewGroup(null, createNewGroupInput.value, selectedUsers.concat(selectedUserGroups)).subscribe(function (group) {
+            this.nfRegistryApi.createNewGroup(null, createNewGroupInput.value, selectedUsers.concat(selectedUserGroups)).subscribe(function (group) {
                 self.nfRegistryService.groups.push(group);
                 self.nfRegistryService.filterUsersAndGroups();
                 self.nfRegistryService.allUsersAndGroupsSelected = false;
@@ -76,6 +79,7 @@ NfRegistryCreateNewGroup.annotations = [
 ];
 
 NfRegistryCreateNewGroup.parameters = [
+    NfRegistryApi,
     NfRegistryService,
     ngMaterial.MatDialogRef
 ];

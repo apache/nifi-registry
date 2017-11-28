@@ -17,6 +17,8 @@
 var ngCore = require('@angular/core');
 var rxjs = require('rxjs/Rx');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var ngMaterial = require('@angular/material');
@@ -28,15 +30,19 @@ var NfRegistryAddSelectedUsersToGroup = require('nifi-registry/components/admini
 /**
  * NfRegistryUsersAdministration constructor.
  *
+ * @param nfRegistryApi         The api service.
+ * @param nfStorage             A wrapper for the browser's local storage.
  * @param nfRegistryService     The nf-registry.service module.
  * @param activatedRoute        The angular activated route module.
  * @param fdsDialogService      The FDS dialog service.
  * @param matDialog             The angular material dialog module.
  * @constructor
  */
-function NfRegistryUsersAdministration(nfRegistryService, activatedRoute, fdsDialogService, matDialog) {
+function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute, fdsDialogService, matDialog) {
     this.route = activatedRoute;
+    this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
     this.dialogService = fdsDialogService;
     this.dialog = matDialog;
     this.usersActions = [{
@@ -69,21 +75,26 @@ NfRegistryUsersAdministration.prototype = {
      */
     ngOnInit: function () {
         var self = this;
-        this.route.params
-            .switchMap(function (params) {
-                self.nfRegistryService.adminPerspective = 'users';
-                return new rxjs.Observable.forkJoin(
-                    self.nfRegistryService.api.getUsers(),
-                    self.nfRegistryService.api.getUserGroups()
-                );
-            })
-            .subscribe(function (response) {
-                var users = response[0];
-                var groups = response[1];
-                self.nfRegistryService.users = users;
-                self.nfRegistryService.groups = groups;
-                self.nfRegistryService.filterUsersAndGroups();
+        // attempt kerberos authentication
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
+                self.route.params
+                    .switchMap(function (params) {
+                        self.nfRegistryService.adminPerspective = 'users';
+                        return new rxjs.Observable.forkJoin(
+                            self.nfRegistryApi.getUsers(),
+                            self.nfRegistryApi.getUserGroups()
+                        );
+                    })
+                    .subscribe(function (response) {
+                        var users = response[0];
+                        var groups = response[1];
+                        self.nfRegistryService.users = users;
+                        self.nfRegistryService.groups = groups;
+                        self.nfRegistryService.filterUsersAndGroups();
+                    });
             });
+        });
     },
 
     /**
@@ -147,6 +158,8 @@ NfRegistryUsersAdministration.annotations = [
 ];
 
 NfRegistryUsersAdministration.parameters = [
+    NfRegistryApi,
+    NfStorage,
     NfRegistryService,
     ngRouter.ActivatedRoute,
     fdsDialogsModule.FdsDialogService,

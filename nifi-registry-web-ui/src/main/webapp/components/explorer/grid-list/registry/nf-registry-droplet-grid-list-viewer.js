@@ -17,19 +17,25 @@
 var ngCore = require('@angular/core');
 var rxjs = require('rxjs/Rx');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 
 /**
  * NfRegistryDropletGridListViewer constructor.
  *
+ * @param nfRegistryApi         The api service.
+ * @param nfStorage             A wrapper for the browser's local storage.
  * @param nfRegistryService     The nf-registry.service module.
- * @param ActivatedRoute        The angular activated route module.
+ * @param activatedRoute        The angular activated route module.
  * @constructor
  */
-function NfRegistryDropletGridListViewer(nfRegistryService, ActivatedRoute) {
-    this.route = ActivatedRoute;
+function NfRegistryDropletGridListViewer(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute) {
+    this.route = activatedRoute;
+    this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
 };
 
 NfRegistryDropletGridListViewer.prototype = {
@@ -41,27 +47,32 @@ NfRegistryDropletGridListViewer.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.explorerViewType = 'grid-list';
-        this.route.params
-            .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
-                    self.nfRegistryService.api.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
-                    self.nfRegistryService.api.getBucket(params['bucketId']),
-                    self.nfRegistryService.api.getBuckets(),
-                    self.nfRegistryService.api.getDroplets(params['bucketId'])
-                );
-            })
-            .subscribe(function (response) {
-                var droplet = response[0];
-                var bucket = response[1];
-                var buckets = response[2];
-                var droplets = response[3];
-                self.nfRegistryService.bucket = bucket;
-                self.nfRegistryService.buckets = buckets;
-                self.nfRegistryService.droplet = droplet;
-                self.nfRegistryService.droplets = droplets;
-                self.nfRegistryService.filterDroplets();
-                self.nfRegistryService.setBreadcrumbState('in');
+        // attempt kerberos authentication
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
+                self.route.params
+                    .switchMap(function (params) {
+                        return new rxjs.Observable.forkJoin(
+                            self.nfRegistryApi.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
+                            self.nfRegistryApi.getBucket(params['bucketId']),
+                            self.nfRegistryApi.getBuckets(),
+                            self.nfRegistryApi.getDroplets(params['bucketId'])
+                        );
+                    })
+                    .subscribe(function (response) {
+                        var droplet = response[0];
+                        var bucket = response[1];
+                        var buckets = response[2];
+                        var droplets = response[3];
+                        self.nfRegistryService.bucket = bucket;
+                        self.nfRegistryService.buckets = buckets;
+                        self.nfRegistryService.droplet = droplet;
+                        self.nfRegistryService.droplets = droplets;
+                        self.nfRegistryService.filterDroplets();
+                        self.nfRegistryService.setBreadcrumbState('in');
+                    });
             });
+        });
     },
 
     /**
@@ -81,6 +92,8 @@ NfRegistryDropletGridListViewer.annotations = [
 ];
 
 NfRegistryDropletGridListViewer.parameters = [
+    NfRegistryApi,
+    NfStorage,
     NfRegistryService,
     ngRouter.ActivatedRoute
 ];

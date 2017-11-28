@@ -125,6 +125,8 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         nfRegistryService.explorerViewType = 'grid-list';
 
         //Spy
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(ngHttpService, 'get').and.callThrough();
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({
