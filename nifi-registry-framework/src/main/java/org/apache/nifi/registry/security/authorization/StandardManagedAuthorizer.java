@@ -17,25 +17,11 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authorization.AccessPolicy;
-import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.AccessPolicyProviderLookup;
-import org.apache.nifi.registry.security.authorization.AuthorizationRequest;
-import org.apache.nifi.registry.security.authorization.AuthorizationResult;
-import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.AuthorizerInitializationContext;
-import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
-import org.apache.nifi.registry.security.authorization.Group;
-import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
-import org.apache.nifi.registry.security.authorization.User;
-import org.apache.nifi.registry.security.authorization.UserAndGroups;
-import org.apache.nifi.registry.security.authorization.UserGroupProvider;
-import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
-import org.apache.nifi.registry.util.PropertyValue;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.util.PropertyValue;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -75,29 +61,29 @@ public class StandardManagedAuthorizer implements ManagedAuthorizer {
     }
 
     @Override
-    public void initialize(AuthorizerInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
         accessPolicyProviderLookup = initializationContext.getAccessPolicyProviderLookup();
     }
 
     @Override
-    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         final PropertyValue accessPolicyProviderKey = configurationContext.getProperty("Access Policy Provider");
         if (!accessPolicyProviderKey.isSet()) {
-            throw new AuthorizerCreationException("The Access Policy Provider must be set.");
+            throw new SecurityProviderCreationException("The Access Policy Provider must be set.");
         }
 
         accessPolicyProvider = accessPolicyProviderLookup.getAccessPolicyProvider(accessPolicyProviderKey.getValue());
 
         // ensure the desired access policy provider was found
         if (accessPolicyProvider == null) {
-            throw new AuthorizerCreationException(String.format("Unable to locate configured Access Policy Provider: %s", accessPolicyProviderKey));
+            throw new SecurityProviderCreationException(String.format("Unable to locate configured Access Policy Provider: %s", accessPolicyProviderKey));
         }
 
         userGroupProvider = accessPolicyProvider.getUserGroupProvider();
 
         // ensure the desired access policy provider has a user group provider
         if (userGroupProvider == null) {
-            throw new AuthorizerCreationException(String.format("Configured Access Policy Provider %s does not contain a User Group Provider", accessPolicyProviderKey));
+            throw new SecurityProviderCreationException(String.format("Configured Access Policy Provider %s does not contain a User Group Provider", accessPolicyProviderKey));
         }
     }
 
@@ -254,7 +240,7 @@ public class StandardManagedAuthorizer implements ManagedAuthorizer {
     }
 
     @Override
-    public void preDestruction() throws AuthorizerDestructionException {
+    public void preDestruction() throws SecurityProviderDestructionException {
 
     }
 
