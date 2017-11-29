@@ -35,7 +35,7 @@ public class User extends Tenant {
     }
 
     @ApiModelProperty(
-            value = "The groups to which the user belongs. This field is read only.",
+            value = "The groups to which the user belongs.",
             readOnly = true
     )
     public Set<Tenant> getUserGroups() {

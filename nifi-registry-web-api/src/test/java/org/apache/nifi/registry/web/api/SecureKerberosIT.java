@@ -19,6 +19,7 @@ package org.apache.nifi.registry.web.api;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.NiFiRegistryTestApiApplication;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -99,6 +100,19 @@ public class SecureKerberosIT extends IntegrationTestBase {
 
     }
 
+    private String adminAuthToken;
+
+    @Before
+    public void generateAuthToken() {
+        String validTicket = new String(Base64.getEncoder().encode(validKerberosTicket.getBytes(Charset.forName("UTF-8"))));
+        final String token = client
+                .target(createURL("/access/token/kerberos"))
+                .request()
+                .header("Authorization", "Negotiate " + validTicket)
+                .post(null, String.class);
+        adminAuthToken = token;
+    }
+
     @Test
     public void testTokenGenerationAndAccessStatus() throws Exception {
 
@@ -113,7 +127,7 @@ public class SecureKerberosIT extends IntegrationTestBase {
                 "}";
         String expectedAccessStatusJson = "{" +
                 "\"identity\":\"kerberosUser@LOCALHOST\"," +
-                "\"status\":\"ACTIVE\"}";
+                "\"anonymous\":false}";
 
         // When: the /access/token/kerberos endpoint is accessed with no credentials
         final Response tokenResponse1 = client
@@ -166,6 +180,34 @@ public class SecureKerberosIT extends IntegrationTestBase {
         assertEquals(200, accessResponse.getStatus());
         String accessStatus = accessResponse.readEntity(String.class);
         JSONAssert.assertEquals(expectedAccessStatusJson, accessStatus, false);
+
+    }
+
+    @Test
+    public void testGetCurrentUser() throws Exception {
+
+        // Given: the client is connected to an unsecured NiFi Registry
+        String expectedJson = "{" +
+                "\"identity\":\"kerberosUser@LOCALHOST\"," +
+                "\"anonymous\":false," +
+                "\"administrationPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"bucketsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"tenantsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"policiesPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"resourcesPermissions\":{\"canRead\":true}" +
+                "}";
+
+        // When: the /access endpoint is queried using a JWT for the kerberos user
+        final Response response = client
+                .target(createURL("/access"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Response.class);
+
+        // Then: the server returns a 200 OK with the expected current user
+        assertEquals(200, response.getStatus());
+        String actualJson = response.readEntity(String.class);
+        JSONAssert.assertEquals(expectedJson, actualJson, false);
 
     }
 

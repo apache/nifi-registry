@@ -25,6 +25,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import static org.apache.nifi.registry.web.api.IntegrationTestUtils.assertBucketsEqual;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -59,19 +60,19 @@ public class BucketsIT extends UnsecuredITBase {
                 "\"name\":\"Bucket 1\"," +
                 "\"createdTimestamp\":1505091060000," +
                 "\"description\":\"This is test bucket 1\"," +
-                "\"authorizedActions\":[\"read\",\"write\",\"delete\"]," +
+                "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1\"}}," +
                 "{\"identifier\":\"2\"," +
                 "\"name\":\"Bucket 2\"," +
                 "\"createdTimestamp\":1505091120000," +
                 "\"description\":\"This is test bucket 2\"," +
-                "\"authorizedActions\":[\"read\",\"write\",\"delete\"]," +
+                "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/2\"}}," +
                 "{\"identifier\":\"3\"," +
                 "\"name\":\"Bucket 3\"," +
                 "\"createdTimestamp\":1505091180000," +
                 "\"description\":\"This is test bucket 3\"," +
-                "\"authorizedActions\":[\"read\",\"write\",\"delete\"]," +
+                "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/3\"}}" +
                 "]";
 
@@ -203,7 +204,7 @@ public class BucketsIT extends UnsecuredITBase {
         // Then: the body of the server response matches the bucket that was deleted
         //  and: the bucket is no longer accessible (resource not found)
 
-        createdBucket.setAuthorizedActions(null); // authorizedActions will not be present in deletedBucket
+        createdBucket.setPermissions(null); // authorizedActions will not be present in deletedBucket
         createdBucket.setLink(null); // links will not be present in deletedBucket
         assertBucketsEqual(createdBucket, deletedBucket, true);
 
@@ -232,18 +233,6 @@ public class BucketsIT extends UnsecuredITBase {
 
         JSONAssert.assertEquals(expected, bucketFieldsJson, false);
 
-    }
-
-    private static void assertBucketsEqual(Bucket expected, Bucket actual, boolean checkServerSetFields) {
-        assertNotNull(actual);
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getDescription(), actual.getDescription());
-        if (checkServerSetFields) {
-            assertEquals(expected.getIdentifier(), actual.getIdentifier());
-            assertEquals(expected.getCreatedTimestamp(), actual.getCreatedTimestamp());
-            assertEquals(expected.getAuthorizedActions(), actual.getAuthorizedActions());
-            assertEquals(expected.getLink(), actual.getLink());
-        }
     }
 
 }

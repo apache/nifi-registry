@@ -30,7 +30,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.model.authorization.AccessStatus;
+import org.apache.nifi.registry.model.authorization.CurrentUser;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -86,9 +86,9 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     @Test
     public void testGetAccessStatus() throws IOException, NiFiRegistryException {
         final UserClient userClient = client.getUserClient();
-        final AccessStatus status = userClient.getAccessStatus();
+        final CurrentUser status = userClient.getAccessStatus();
         Assert.assertEquals("CN=user1, OU=nifi", status.getIdentity());
-        Assert.assertEquals("ACTIVE", status.getStatus());
+        Assert.assertFalse(status.isAnonymous());
     }
 
     @Test
@@ -138,9 +138,9 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     public void testGetAccessStatusWithProxiedEntity() throws IOException, NiFiRegistryException {
         final String proxiedEntity = "user2";
         final UserClient userClient = client.getUserClient(proxiedEntity);
-        final AccessStatus status = userClient.getAccessStatus();
+        final CurrentUser status = userClient.getAccessStatus();
         Assert.assertEquals("user2", status.getIdentity());
-        Assert.assertEquals("ACTIVE", status.getStatus());
+        Assert.assertFalse(status.isAnonymous());
     }
 
     @Test

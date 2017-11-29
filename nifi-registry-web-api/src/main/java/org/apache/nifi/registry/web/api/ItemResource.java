@@ -28,6 +28,7 @@ import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.QueryParameters;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.security.PermissionsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,17 +62,20 @@ public class ItemResource extends AuthorizableApplicationResource {
     UriInfo uriInfo;
 
     private final LinkService linkService;
+    private final PermissionsService permissionsService;
     private final RegistryService registryService;
 
     @Autowired
     public ItemResource(
             final RegistryService registryService,
             final LinkService linkService,
+            final PermissionsService permissionsService,
             final AuthorizationService authorizationService,
             final Authorizer authorizer) {
         super(authorizer, authorizationService);
         this.registryService = registryService;
         this.linkService = linkService;
+        this.permissionsService = permissionsService;
     }
 
 
@@ -102,6 +106,7 @@ public class ItemResource extends AuthorizableApplicationResource {
         }
 
         final List<BucketItem> items = registryService.getBucketItems(paramsBuilder.build(), authorizedBucketIds);
+        permissionsService.populateItemPermissions(items);
         linkService.populateItemLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();
@@ -132,6 +137,7 @@ public class ItemResource extends AuthorizableApplicationResource {
         }
 
         final List<BucketItem> items = registryService.getBucketItems(paramsBuilder.build(), bucketId);
+        permissionsService.populateItemPermissions(items);
         linkService.populateItemLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();

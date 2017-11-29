@@ -35,7 +35,14 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * NiFi Registry Web Api Spring security
@@ -44,6 +51,7 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
+
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistrySecurityConfig.class);
 
     @Autowired
@@ -81,6 +89,9 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                     .anyRequest().fullyAuthenticated()
                     .and()
+                .exceptionHandling()
+                    .authenticationEntryPoint(http401AuthenticationEntryPoint())
+                    .and()
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
@@ -93,8 +104,13 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         // otp
         // todo, if needed one-time password auth filter goes here
 
-        // anonymous
-        http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
+        if (properties.getSslPort() == null) {
+            // If we are running an unsecured NiFi Registry server, add an
+            // anonymous authentication filter that will populate the
+            // authenticated, anonymous user if no other user identity
+            // is detected earlier in the Spring filter chain.
+            http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
+        }
     }
 
     @Override
@@ -130,6 +146,21 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
             jwtAuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
         }
         return jwtAuthenticationProvider;
+    }
+
+    private AuthenticationEntryPoint http401AuthenticationEntryPoint() {
+        // This gets used for both secured and unsecured configurations. It will be called by Spring Security if a request makes it through the filter chain without being authenticated.
+        // For unsecured, this should never be reached because the custom AnonymousAuthenticationFilter should always populate a fully-authenticated anonymous user
+        // For secured, this will cause attempt to access any API endpoint (except those explicitly ignored) without providing credentials to return a 401 Unauthorized challenge
+        return new AuthenticationEntryPoint() {
+            @Override
+            public void commence(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 AuthenticationException e) throws IOException, ServletException {
+                logger.info("AuthenticationEntryPoint invoked as no user identity credentials were found in the request.");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+        };
     }
 
 }
