@@ -30,12 +30,12 @@ import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.security.authorization.file.generated.Authorizations;
 import org.apache.nifi.registry.security.authorization.file.generated.Policies;
 import org.apache.nifi.registry.security.authorization.file.generated.Policy;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.util.PropertyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,34 +143,33 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     private final AtomicReference<AuthorizationsHolder> authorizationsHolder = new AtomicReference<>();
 
     @Override
-    public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
         userGroupProviderLookup = initializationContext.getUserGroupProviderLookup();
 
         try {
             final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             authorizationsSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(AUTHORIZATIONS_XSD));
-//            usersSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(USERS_XSD));
         } catch (Exception e) {
-            throw new AuthorizerCreationException(e);
+            throw new SecurityProviderCreationException(e);
         }
     }
 
     @Override
-    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         try {
             final PropertyValue userGroupProviderIdentifier = configurationContext.getProperty(PROP_USER_GROUP_PROVIDER);
             if (!userGroupProviderIdentifier.isSet()) {
-                throw new AuthorizerCreationException("The user group provider must be specified.");
+                throw new SecurityProviderCreationException("The user group provider must be specified.");
             }
 
             userGroupProvider = userGroupProviderLookup.getUserGroupProvider(userGroupProviderIdentifier.getValue());
             if (userGroupProvider == null) {
-                throw new AuthorizerCreationException("Unable to locate user group provider with identifier " + userGroupProviderIdentifier.getValue());
+                throw new SecurityProviderCreationException("Unable to locate user group provider with identifier " + userGroupProviderIdentifier.getValue());
             }
 
             final PropertyValue authorizationsPath = configurationContext.getProperty(PROP_AUTHORIZATIONS_FILE);
             if (StringUtils.isBlank(authorizationsPath.getValue())) {
-                throw new AuthorizerCreationException("The authorizations file must be specified.");
+                throw new SecurityProviderCreationException("The authorizations file must be specified.");
             }
 
             // get the authorizations file and ensure it exists
@@ -200,8 +199,8 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             load();
 
             logger.info(String.format("Authorizations file loaded at %s", new Date().toString()));
-        } catch (AuthorizerCreationException | JAXBException | IllegalStateException | SAXException e) {
-            throw new AuthorizerCreationException(e);
+        } catch (SecurityProviderCreationException | JAXBException | IllegalStateException | SAXException e) {
+            throw new SecurityProviderCreationException(e);
         }
     }
 
@@ -509,7 +508,7 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     private void populateInitialAdmin(final Authorizations authorizations) {
         final User initialAdmin = userGroupProvider.getUserByIdentity(initialAdminIdentity);
         if (initialAdmin == null) {
-            throw new AuthorizerCreationException("Unable to locate initial admin " + initialAdminIdentity + " to seed policies");
+            throw new SecurityProviderCreationException("Unable to locate initial admin " + initialAdminIdentity + " to seed policies");
         }
 
         for (ResourceActionPair resourceAction : INITIAL_ADMIN_ACCESS_POLICIES) {
@@ -743,7 +742,7 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     }
 
     @Override
-    public void preDestruction() throws AuthorizerDestructionException {
+    public void preDestruction() throws SecurityProviderDestructionException {
     }
 
     private static class ResourceActionPair {

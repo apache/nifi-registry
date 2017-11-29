@@ -40,11 +40,11 @@ import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -657,32 +657,32 @@ public class AuthorizationService {
                     }
 
                     @Override
-                    public void initialize(UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+                    public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
 
                     }
 
                     @Override
-                    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+                    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
 
                     }
 
                     @Override
-                    public void preDestruction() throws AuthorizerDestructionException {
+                    public void preDestruction() throws SecurityProviderDestructionException {
 
                     }
                 };
             }
 
             @Override
-            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
             }
 
             @Override
-            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
             }
 
             @Override
-            public void preDestruction() throws AuthorizerDestructionException {
+            public void preDestruction() throws SecurityProviderDestructionException {
             }
         };
 

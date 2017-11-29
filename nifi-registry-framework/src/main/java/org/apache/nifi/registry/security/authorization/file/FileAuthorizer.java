@@ -16,23 +16,23 @@
  */
 package org.apache.nifi.registry.security.authorization.file;
 
-import org.apache.nifi.registry.security.authorization.StandardAuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
+import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.AbstractPolicyBasedAuthorizer;
 import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderLookup;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
 import org.apache.nifi.registry.security.authorization.AuthorizerInitializationContext;
 import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.StandardAuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.User;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
 import org.apache.nifi.registry.security.authorization.UsersAndAccessPolicies;
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +57,7 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     private FileAccessPolicyProvider accessPolicyProvider = new FileAccessPolicyProvider();
 
     @Override
-    public void initialize(final AuthorizerInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(final AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
         // initialize the user group provider
         userGroupProvider.initialize(new UserGroupProviderInitializationContext() {
             @Override
@@ -97,7 +97,7 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @Override
-    public void doOnConfigured(final AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void doOnConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         final Map<String, String> configurationProperties = configurationContext.getProperties();
 
         // relay the relevant config

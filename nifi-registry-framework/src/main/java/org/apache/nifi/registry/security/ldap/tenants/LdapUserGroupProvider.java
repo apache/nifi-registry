@@ -28,8 +28,8 @@ import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.security.ldap.LdapAuthenticationStrategy;
 import org.apache.nifi.registry.security.ldap.LdapsSocketFactory;
 import org.apache.nifi.registry.security.ldap.ReferralStrategy;
@@ -140,7 +140,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     private Integer pageSize;
 
     @Override
-    public void initialize(final UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(final UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
         ldapSync = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
             final ThreadFactory factory = Executors.defaultThreadFactory();
 
@@ -154,7 +154,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     }
 
     @Override
-    public void onConfigured(final AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void onConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         final LdapContextSource context = new LdapContextSource();
 
         final Map<String, Object> baseEnvironment = new HashMap<>();
@@ -169,7 +169,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
         try {
             authenticationStrategy = LdapAuthenticationStrategy.valueOf(rawAuthenticationStrategy.getValue());
         } catch (final IllegalArgumentException iae) {
-            throw new AuthorizerCreationException(String.format("Unrecognized authentication strategy '%s'. Possible values are [%s]",
+            throw new SecurityProviderCreationException(String.format("Unrecognized authentication strategy '%s'. Possible values are [%s]",
                     rawAuthenticationStrategy.getValue(), StringUtils.join(LdapAuthenticationStrategy.values(), ", ")));
         }
 
@@ -232,7 +232,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
         try {
             referralStrategy = ReferralStrategy.valueOf(rawReferralStrategy);
         } catch (final IllegalArgumentException iae) {
-            throw new AuthorizerCreationException(String.format("Unrecognized referral strategy '%s'. Possible values are [%s]",
+            throw new SecurityProviderCreationException(String.format("Unrecognized referral strategy '%s'. Possible values are [%s]",
                     rawReferralStrategy, StringUtils.join(ReferralStrategy.values(), ", ")));
         }
 
@@ -243,7 +243,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
         final String urls = configurationContext.getProperty(PROP_URL).getValue();
 
         if (StringUtils.isBlank(urls)) {
-            throw new AuthorizerCreationException("LDAP identity provider 'Url' must be specified.");
+            throw new SecurityProviderCreationException("LDAP identity provider 'Url' must be specified.");
         }
 
         // connection
@@ -256,12 +256,12 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
         // if loading the users, ensure the object class set
         if (rawUserSearchBase.isSet() && !rawUserObjectClass.isSet()) {
-            throw new AuthorizerCreationException("LDAP user group provider 'User Object Class' must be specified when 'User Search Base' is set.");
+            throw new SecurityProviderCreationException("LDAP user group provider 'User Object Class' must be specified when 'User Search Base' is set.");
         }
 
         // if loading the users, ensure the search scope is set
         if (rawUserSearchBase.isSet() && !rawUserSearchScope.isSet()) {
-            throw new AuthorizerCreationException("LDAP user group provider 'User Search Scope' must be specified when 'User Search Base' is set.");
+            throw new SecurityProviderCreationException("LDAP user group provider 'User Search Scope' must be specified when 'User Search Base' is set.");
         }
 
         // user search criteria
@@ -274,7 +274,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
         try {
             userSearchScope = SearchScope.valueOf(rawUserSearchScope.getValue());
         } catch (final IllegalArgumentException iae) {
-            throw new AuthorizerCreationException(String.format("Unrecognized user search scope '%s'. Possible values are [%s]",
+            throw new SecurityProviderCreationException(String.format("Unrecognized user search scope '%s'. Possible values are [%s]",
                     rawUserSearchScope.getValue(), StringUtils.join(SearchScope.values(), ", ")));
         }
 
@@ -289,12 +289,12 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
         // if loading the groups, ensure the object class is set
         if (rawGroupSearchBase.isSet() && !rawGroupObjectClass.isSet()) {
-            throw new AuthorizerCreationException("LDAP user group provider 'Group Object Class' must be specified when 'Group Search Base' is set.");
+            throw new SecurityProviderCreationException("LDAP user group provider 'Group Object Class' must be specified when 'Group Search Base' is set.");
         }
 
         // if loading the groups, ensure the search scope is set
         if (rawGroupSearchBase.isSet() && !rawGroupSearchScope.isSet()) {
-            throw new AuthorizerCreationException("LDAP user group provider 'Group Search Scope' must be specified when 'Group Search Base' is set.");
+            throw new SecurityProviderCreationException("LDAP user group provider 'Group Search Scope' must be specified when 'Group Search Base' is set.");
         }
 
         // group search criteria
@@ -307,7 +307,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
         try {
             groupSearchScope = SearchScope.valueOf(rawGroupSearchScope.getValue());
         } catch (final IllegalArgumentException iae) {
-            throw new AuthorizerCreationException(String.format("Unrecognized group search scope '%s'. Possible values are [%s]",
+            throw new SecurityProviderCreationException(String.format("Unrecognized group search scope '%s'. Possible values are [%s]",
                     rawGroupSearchScope.getValue(), StringUtils.join(SearchScope.values(), ", ")));
         }
 
@@ -317,12 +317,12 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
         // ensure we are either searching users or groups (at least one must be specified)
         if (!performUserSearch && !performGroupSearch) {
-            throw new AuthorizerCreationException("LDAP user group provider 'User Search Base' or 'Group Search Base' must be specified.");
+            throw new SecurityProviderCreationException("LDAP user group provider 'User Search Base' or 'Group Search Base' must be specified.");
         }
 
         // ensure group member attribute is set if searching groups but not users
         if (performGroupSearch && !performUserSearch && StringUtils.isBlank(groupMemberAttribute)) {
-            throw new AuthorizerCreationException("'Group Member Attribute' is required when searching groups but not users.");
+            throw new SecurityProviderCreationException("'Group Member Attribute' is required when searching groups but not users.");
         }
 
         // get the page size if configured
@@ -343,7 +343,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             // handling initializing beans
             context.afterPropertiesSet();
         } catch (final Exception e) {
-            throw new AuthorizerCreationException(e.getMessage(), e);
+            throw new SecurityProviderCreationException(e.getMessage(), e);
         }
 
         final PropertyValue rawSyncInterval = configurationContext.getProperty(PROP_SYNC_INTERVAL);
@@ -352,10 +352,10 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             try {
                 syncInterval = FormatUtils.getTimeDuration(rawSyncInterval.getValue(), TimeUnit.MILLISECONDS);
             } catch (final IllegalArgumentException iae) {
-                throw new AuthorizerCreationException(String.format("The %s '%s' is not a valid time duration", PROP_SYNC_INTERVAL, rawSyncInterval.getValue()));
+                throw new SecurityProviderCreationException(String.format("The %s '%s' is not a valid time duration", PROP_SYNC_INTERVAL, rawSyncInterval.getValue()));
             }
         } else {
-            throw new AuthorizerCreationException("The 'Sync Interval' must be specified.");
+            throw new SecurityProviderCreationException("The 'Sync Interval' must be specified.");
         }
 
         try {
@@ -365,13 +365,13 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
             // ensure the tenants were successfully synced
             if (tenants.get() == null) {
-                throw new AuthorizerCreationException("Unable to sync users and groups.");
+                throw new SecurityProviderCreationException("Unable to sync users and groups.");
             }
 
             // schedule the background thread to load the users/groups
             ldapSync.scheduleWithFixedDelay(() -> load(context), syncInterval, syncInterval, TimeUnit.SECONDS);
         } catch (final AuthorizationAccessException e) {
-            throw new AuthorizerCreationException(e);
+            throw new SecurityProviderCreationException(e);
         }
     }
 
@@ -667,7 +667,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     }
 
     @Override
-    public final void preDestruction() throws AuthorizerDestructionException {
+    public final void preDestruction() throws SecurityProviderDestructionException {
         ldapSync.shutdown();
         try {
             if (!ldapSync.awaitTermination(10000, TimeUnit.MILLISECONDS)) {
@@ -690,7 +690,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                 final Long timeout = FormatUtils.getTimeDuration(rawTimeout.getValue(), TimeUnit.MILLISECONDS);
                 baseEnvironment.put(environmentKey, timeout.toString());
             } catch (final IllegalArgumentException iae) {
-                throw new AuthorizerCreationException(String.format("The %s '%s' is not a valid time duration", configurationProperty, rawTimeout));
+                throw new SecurityProviderCreationException(String.format("The %s '%s' is not a valid time duration", configurationProperty, rawTimeout));
             }
         }
     }
@@ -713,7 +713,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             } else {
                 // ensure the protocol is specified
                 if (StringUtils.isBlank(rawProtocol)) {
-                    throw new AuthorizerCreationException("TLS - Protocol must be specified.");
+                    throw new SecurityProviderCreationException("TLS - Protocol must be specified.");
                 }
 
                 if (StringUtils.isBlank(rawKeystore)) {
@@ -729,7 +729,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                         try {
                             clientAuth = ClientAuth.valueOf(rawClientAuth);
                         } catch (final IllegalArgumentException iae) {
-                            throw new AuthorizerCreationException(String.format("Unrecognized client auth '%s'. Possible values are [%s]",
+                            throw new SecurityProviderCreationException(String.format("Unrecognized client auth '%s'. Possible values are [%s]",
                                     rawClientAuth, StringUtils.join(ClientAuth.values(), ", ")));
                         }
                     }
@@ -739,7 +739,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                 }
             }
         } catch (final KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | KeyManagementException | IOException e) {
-            throw new AuthorizerCreationException(e.getMessage(), e);
+            throw new SecurityProviderCreationException(e.getMessage(), e);
         }
 
         return sslContext;

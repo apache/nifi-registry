@@ -17,8 +17,8 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 
 /**
  * Authorizes user requests.
@@ -43,21 +43,21 @@ public interface Authorizer {
      *
      * @param initializationContext in which to initialize
      */
-    void initialize(AuthorizerInitializationContext initializationContext) throws AuthorizerCreationException;
+    void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException;
 
     /**
      * Called to configure the Authorizer.
      *
      * @param configurationContext at the time of configuration
-     * @throws AuthorizerCreationException for any issues configuring the provider
+     * @throws SecurityProviderCreationException for any issues configuring the provider
      */
-    void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException;
+    void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException;
 
     /**
      * Called immediately before instance destruction for implementers to release resources.
      *
-     * @throws AuthorizerDestructionException If pre-destruction fails.
+     * @throws SecurityProviderDestructionException If pre-destruction fails.
      */
-    void preDestruction() throws AuthorizerDestructionException;
+    void preDestruction() throws SecurityProviderDestructionException;
 
 }
