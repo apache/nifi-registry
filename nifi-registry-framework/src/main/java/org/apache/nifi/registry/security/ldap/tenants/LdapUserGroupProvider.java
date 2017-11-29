@@ -369,7 +369,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             }
 
             // schedule the background thread to load the users/groups
-            ldapSync.scheduleWithFixedDelay(() -> load(context), syncInterval, syncInterval, TimeUnit.SECONDS);
+            ldapSync.scheduleWithFixedDelay(() -> load(context), syncInterval, syncInterval, TimeUnit.MILLISECONDS);
         } catch (final AuthorizationAccessException e) {
             throw new SecurityProviderCreationException(e);
         }

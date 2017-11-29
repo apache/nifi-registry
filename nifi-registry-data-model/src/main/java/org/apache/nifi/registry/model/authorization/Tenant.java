@@ -31,6 +31,7 @@ public class Tenant {
 
     private String identifier;
     private String identity;
+    private Boolean configurable;
     private Set<AccessPolicySummary> accessPolicies;
 
     public Tenant() {}
@@ -43,7 +44,7 @@ public class Tenant {
     /**
      * @return tenant's unique identifier
      */
-    @ApiModelProperty(value = "The computer-generated identifier of the tenant.")
+    @ApiModelProperty(value = "The computer-generated identifier of the tenant.", readOnly = true)
     public String getIdentifier() {
         return identifier;
     }
@@ -55,7 +56,7 @@ public class Tenant {
     /**
      * @return tenant's identity
      */
-    @ApiModelProperty(value = "The identity provider's identity of the tenant.")
+    @ApiModelProperty(value = "The human-facing identity of the tenant. This can only be changed if the tenant is configurable.")
     public String getIdentity() {
         return identity;
     }
@@ -64,8 +65,17 @@ public class Tenant {
         this.identity = identity;
     }
 
+    @ApiModelProperty(value = "Indicates if this tenant is configurable, based on which UserGroupProvider has been configured to manage it.", readOnly = true)
+    public Boolean getConfigurable() {
+        return configurable;
+    }
+
+    public void setConfigurable(Boolean configurable) {
+        this.configurable = configurable;
+    }
+
     @ApiModelProperty(
-            value = "The access policies granted to this tenant. This field is read only",
+            value = "The access policies granted to this tenant.",
             readOnly = true
     )
     public Set<AccessPolicySummary> getAccessPolicies() {

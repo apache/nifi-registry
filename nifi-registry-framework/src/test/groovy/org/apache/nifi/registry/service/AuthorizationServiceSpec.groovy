@@ -48,42 +48,6 @@ class AuthorizationServiceSpec extends Specification {
         authorizationService = new AuthorizationService(authorizableLookup, authorizer, registryService)
     }
 
-    // ----- Tenant tests -----------------------------------------------------
-
-    def "get tenant"() {
-
-        when: "get tenant for existing user identifier"
-        userGroupProvider.getUser("userId") >> new AuthUser.Builder().identifier("userId").identity("username").build()
-        def userResult = authorizationService.getTenant("userId")
-
-        then: "user with identifier is returned as DTO"
-        with(userResult) {
-            identifier == "userId"
-            identity == "username"
-        }
-
-
-        when: "get tenant for existing group identifier"
-        userGroupProvider.getGroup("groupId") >> new Group.Builder().identifier("groupId").name("groupname").build()
-        def groupResult = authorizationService.getTenant("groupId")
-
-        then: "group with identifier is returned as DTO"
-        with(groupResult) {
-            identifier == "groupId"
-            identity == "groupname"
-        }
-
-
-        when: "get tenant for non-existent identifier"
-        userGroupProvider.getUser("id") >> null
-        userGroupProvider.getGroup("id") >> null
-        def result = authorizationService.getTenant("id")
-
-        then: "null is returned"
-        result == null
-
-    }
-
     // ----- User tests -------------------------------------------------------
 
     def "create user"() {

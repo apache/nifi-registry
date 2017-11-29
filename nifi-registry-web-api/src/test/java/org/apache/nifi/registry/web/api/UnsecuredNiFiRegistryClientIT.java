@@ -33,7 +33,7 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
-import org.apache.nifi.registry.model.authorization.AccessStatus;
+import org.apache.nifi.registry.model.authorization.CurrentUser;
 import org.apache.nifi.registry.params.SortOrder;
 import org.apache.nifi.registry.params.SortParameter;
 import org.junit.After;
@@ -88,13 +88,11 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
     }
 
     @Test
-    public void testUserClient() {
+    public void testGetAccessStatus() throws IOException, NiFiRegistryException {
         final UserClient userClient = client.getUserClient();
-        try {
-            final AccessStatus status = userClient.getAccessStatus();
-            Assert.fail("Should have thrown a 409");
-        } catch (Exception e) {
-        }
+        final CurrentUser status = userClient.getAccessStatus();
+        Assert.assertEquals("anonymous", status.getIdentity());
+        Assert.assertTrue(status.isAnonymous());
     }
 
     @Test

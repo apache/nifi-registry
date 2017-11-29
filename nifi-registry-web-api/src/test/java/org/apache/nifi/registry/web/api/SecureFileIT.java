@@ -52,7 +52,12 @@ public class SecureFileIT extends IntegrationTestBase {
         // Given: the client and server have been configured correctly for two-way TLS
         String expectedJson = "{" +
                 "\"identity\":\"CN=user1, OU=nifi\"," +
-                "\"status\":\"ACTIVE\"" +
+                "\"anonymous\":false," +
+                "\"administrationPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"bucketsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"tenantsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"policiesPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"resourcesPermissions\":{\"canRead\":true}" +
                 "}";
 
         // When: the /access endpoint is queried
@@ -75,7 +80,7 @@ public class SecureFileIT extends IntegrationTestBase {
                 "{\"identifier\":\"/policies\",\"name\":\"Access Policies\"}," +
                 "{\"identifier\":\"/tenants\",\"name\":\"Tenant\"}," +
                 "{\"identifier\":\"/proxy\",\"name\":\"Proxy User Requests\"}," +
-                "{\"identifier\":\"/resources\",\"name\":\"NiFi Resources\"}," +
+                "{\"identifier\":\"/resources\",\"name\":\"Resources\"}," +
                 "{\"identifier\":\"/buckets\",\"name\":\"Buckets\"}" +
                 "]";
 

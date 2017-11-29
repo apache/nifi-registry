@@ -19,6 +19,7 @@ package org.apache.nifi.registry.bucket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.link.LinkableEntity;
+import org.apache.nifi.registry.model.authorization.Permissions;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -51,6 +52,7 @@ public abstract class BucketItem extends LinkableEntity {
     @NotNull
     private final BucketItemType type;
 
+    private Permissions permissions;
 
     public BucketItem(final BucketItemType type) {
         this.type = type;
@@ -122,6 +124,15 @@ public abstract class BucketItem extends LinkableEntity {
     @ApiModelProperty("The type of item.")
     public BucketItemType getType() {
         return type;
+    }
+
+    @ApiModelProperty(value = "The access that the current user has to the bucket containing this item.", readOnly = true)
+    public Permissions getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Permissions permissions) {
+        this.permissions = permissions;
     }
 
     @Override

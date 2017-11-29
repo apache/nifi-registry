@@ -61,7 +61,7 @@ public class AccessPolicySummary {
         this.action = action;
     }
 
-    @ApiModelProperty("Indicates if this access policy is configurable, based on which authorizer has been configured to manage it.")
+    @ApiModelProperty(value = "Indicates if this access policy is configurable, based on which Authorizer has been configured to manage it.", readOnly = true)
     public Boolean getConfigurable() {
         return configurable;
     }

@@ -41,7 +41,7 @@ public class UserGroup extends Tenant {
     /**
      * @return The users that belong to this user group.
      */
-    @ApiModelProperty(value = "The users that belong to this user group.")
+    @ApiModelProperty(value = "The users that belong to this user group. This can only be changed if this group is configurable.")
     public Set<Tenant> getUsers() {
         return users;
     }

@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.exception.AdministrationException;
-import org.apache.nifi.registry.model.authorization.AccessStatus;
+import org.apache.nifi.registry.model.authorization.CurrentUser;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
@@ -34,6 +34,7 @@ import org.apache.nifi.registry.security.authentication.exception.IdentityAccess
 import org.apache.nifi.registry.security.authentication.exception.InvalidCredentialsException;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.exception.UnauthorizedException;
 import org.apache.nifi.registry.web.security.authentication.jwt.JwtService;
 import org.apache.nifi.registry.web.security.authentication.kerberos.KerberosSpnegoIdentityProvider;
@@ -51,6 +52,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -71,6 +73,7 @@ public class AccessResource extends ApplicationResource {
     private static final Logger logger = LoggerFactory.getLogger(AccessResource.class);
 
     private NiFiRegistryProperties properties;
+    private AuthorizationService authorizationService;
     private JwtService jwtService;
     private X509IdentityProvider x509IdentityProvider;
     private KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider;
@@ -79,6 +82,7 @@ public class AccessResource extends ApplicationResource {
     @Autowired
     public AccessResource(
             NiFiRegistryProperties properties,
+            AuthorizationService authorizationService,
             JwtService jwtService,
             X509IdentityProvider x509IdentityProvider,
             @Nullable KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider,
@@ -88,43 +92,35 @@ public class AccessResource extends ApplicationResource {
         this.x509IdentityProvider = x509IdentityProvider;
         this.kerberosSpnegoIdentityProvider = kerberosSpnegoIdentityProvider;
         this.identityProvider = identityProvider;
+        this.authorizationService = authorizationService;
     }
 
     /**
-     * Gets the status the client's access.
+     * Gets the current client's identity and authorized permissions.
      *
      * @param httpServletRequest the servlet request
-     * @return A accessStatusEntity
+     * @return An object describing the current client identity, as determined by the server, and it's permissions.
      */
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the status the client's access",
-            response = AccessStatus.class
+            value = "Returns the current client's authenticated identity and permissions to top-level resources",
+            response = CurrentUser.class
     )
     @ApiResponses({
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might be running unsecured.") })
     public Response getAccessStatus(@Context HttpServletRequest httpServletRequest) {
-        // only consider user specific access over https
-        if (!httpServletRequest.isSecure()) {
-            throw new IllegalStateException("User authentication/authorization is only supported when running over HTTPS.");
+
+        final NiFiUser user = NiFiUserUtils.getNiFiUser();
+        if (user == null) {
+            // Not expected to happen unless the nifi registry server has been seriously misconfigured.
+            throw new WebApplicationException(new Throwable("Unable to access details for current user."));
         }
 
-        final AccessStatus accessStatus = new AccessStatus();
+        final CurrentUser currentUser = authorizationService.getCurrentUser();
 
-        NiFiUser currentUser = NiFiUserUtils.getNiFiUser();
-        if (currentUser == null || currentUser.getIdentity() == null || currentUser.isAnonymous()) {
-            accessStatus.setStatus(AccessStatus.Status.UNKNOWN.name());
-            accessStatus.setMessage("No credentials supplied, unknown user.");
-        } else {
-            final String identity = currentUser.getIdentity();
-            accessStatus.setIdentity(identity);
-            accessStatus.setStatus(AccessStatus.Status.ACTIVE.name());
-            accessStatus.setMessage("You are logged in.");
-        }
-
-        return generateOkResponse(accessStatus).build();
+        return generateOkResponse(currentUser).build();
     }
 
 
