@@ -122,12 +122,12 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
             accessPolicyProperties.put(FileAuthorizer.PROP_LEGACY_AUTHORIZED_USERS_FILE, configurationProperties.get(FileAuthorizer.PROP_LEGACY_AUTHORIZED_USERS_FILE));
         }
 
-        // ensure all node identities are seeded into the user provider
+        // ensure all nifi identities are seeded into the user provider
         configurationProperties.forEach((property, value) -> {
-            final Matcher matcher = FileAccessPolicyProvider.NODE_IDENTITY_PATTERN.matcher(property);
+            final Matcher matcher = FileAccessPolicyProvider.NIFI_IDENTITY_PATTERN.matcher(property);
             if (matcher.matches()) {
                 accessPolicyProperties.put(property, value);
-                userGroupProperties.put(property.replace(FileAccessPolicyProvider.PROP_NODE_IDENTITY_PREFIX, FileUserGroupProvider.PROP_INITIAL_USER_IDENTITY_PREFIX), value);
+                userGroupProperties.put(property.replace(FileAccessPolicyProvider.PROP_NIFI_IDENTITY_PREFIX, FileUserGroupProvider.PROP_INITIAL_USER_IDENTITY_PREFIX), value);
             }
         });
 

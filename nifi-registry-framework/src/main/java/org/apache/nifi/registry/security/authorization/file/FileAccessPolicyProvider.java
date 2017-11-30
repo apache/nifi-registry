@@ -34,6 +34,7 @@ import org.apache.nifi.registry.security.authorization.exception.UninheritableAu
 import org.apache.nifi.registry.security.authorization.file.generated.Authorizations;
 import org.apache.nifi.registry.security.authorization.file.generated.Policies;
 import org.apache.nifi.registry.security.authorization.file.generated.Policy;
+import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.util.PropertyValue;
@@ -69,10 +70,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvider {
@@ -126,16 +130,17 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             new ResourceActionPair("/proxy", WRITE_CODE)
     };
 
-    static final String PROP_NODE_IDENTITY_PREFIX = "Node Identity ";
+    static final String PROP_NIFI_IDENTITY_PREFIX = "NiFi Identity ";
     static final String PROP_USER_GROUP_PROVIDER = "User Group Provider";
     static final String PROP_AUTHORIZATIONS_FILE = "Authorizations File";
     static final String PROP_INITIAL_ADMIN_IDENTITY = "Initial Admin Identity";
-    static final Pattern NODE_IDENTITY_PATTERN = Pattern.compile(PROP_NODE_IDENTITY_PREFIX + "\\S+");
+    static final Pattern NIFI_IDENTITY_PATTERN = Pattern.compile(PROP_NIFI_IDENTITY_PREFIX + "\\S+");
 
     private Schema authorizationsSchema;
     private NiFiRegistryProperties properties;
     private File authorizationsFile;
     private String initialAdminIdentity;
+    private Set<String> nifiIdentities;
     private List<IdentityMapping> identityMappings;
 
     private UserGroupProvider userGroupProvider;
@@ -179,21 +184,21 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
                 saveAuthorizations(new Authorizations());
             }
 
-            // extract the identity mappings from nifi.properties if any are provided
+            // extract the identity mappings from nifi-registry.properties if any are provided
             identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
 
             // get the value of the initial admin identity
             final PropertyValue initialAdminIdentityProp = configurationContext.getProperty(PROP_INITIAL_ADMIN_IDENTITY);
             initialAdminIdentity = initialAdminIdentityProp.isSet() ? IdentityMappingUtil.mapIdentity(initialAdminIdentityProp.getValue(), identityMappings) : null;
 
-//            // extract any node identities
-//            nodeIdentities = new HashSet<>();
-//            for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
-//                Matcher matcher = NODE_IDENTITY_PATTERN.matcher(entry.getKey());
-//                if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
-//                    nodeIdentities.add(IdentityMappingUtil.mapIdentity(entry.getValue(), identityMappings));
-//                }
-//            }
+            // extract any nifi identities
+            nifiIdentities = new HashSet<>();
+            for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
+                Matcher matcher = NIFI_IDENTITY_PATTERN.matcher(entry.getKey());
+                if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
+                    nifiIdentities.add(IdentityMappingUtil.mapIdentity(entry.getValue(), identityMappings));
+                }
+            }
 
             // load the authorizations
             load();
@@ -474,11 +479,20 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
         final AuthorizationsHolder authorizationsHolder = new AuthorizationsHolder(authorizations);
         final boolean emptyAuthorizations = authorizationsHolder.getAllPolicies().isEmpty();
         final boolean hasInitialAdminIdentity = (initialAdminIdentity != null && !StringUtils.isBlank(initialAdminIdentity));
+        final boolean hasNiFiIdentities = (nifiIdentities != null && !nifiIdentities.isEmpty());
 
         // if we are starting fresh then we might need to populate an initial admin
-        if (emptyAuthorizations && hasInitialAdminIdentity) {
-            logger.info("Populating authorizations for Initial Admin: " + initialAdminIdentity);
-            populateInitialAdmin(authorizations);
+        if (emptyAuthorizations) {
+            if (hasInitialAdminIdentity) {
+               logger.info("Populating authorizations for Initial Admin: " + initialAdminIdentity);
+               populateInitialAdmin(authorizations);
+            }
+
+            if (hasNiFiIdentities) {
+                logger.info("Populating proxy authorizations for NiFi clients: [{}]", StringUtils.join(nifiIdentities, ";"));
+                populateNiFiIdentities(authorizations);
+            }
+
             saveAndRefreshHolder(authorizations);
         } else {
             this.authorizationsHolder.set(authorizationsHolder);
@@ -516,28 +530,22 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
         }
     }
 
-//    /**
-//     * Creates a user for each node and gives the nodes write permission to /proxy.
-//     *
-//     * @param authorizations the overall authorizations
-//     */
-//    private void populateNodes(Authorizations authorizations) {
-//        for (String nodeIdentity : nodeIdentities) {
-//            final User node = userGroupProvider.getUserByIdentity(nodeIdentity);
-//            if (node == null) {
-//                throw new AuthorizerCreationException("Unable to locate node " + nodeIdentity + " to seed policies.");
-//            }
-//
-//            // grant access to the proxy resource
-//            addUserToAccessPolicy(authorizations, ResourceType.Proxy.getValue(), node.getIdentifier(), WRITE_CODE);
-//
-//            // grant the user read/write access data of the root group
-//            if (rootGroupId != null) {
-//                addUserToAccessPolicy(authorizations, ResourceType.Data.getValue() + ResourceType.ProcessGroup.getValue() + "/" + rootGroupId, node.getIdentifier(), READ_CODE);
-//                addUserToAccessPolicy(authorizations, ResourceType.Data.getValue() + ResourceType.ProcessGroup.getValue() + "/" + rootGroupId, node.getIdentifier(), WRITE_CODE);
-//            }
-//        }
-//    }
+    /**
+     * Creates a user for each NiFi client and gives each one write permission to /proxy.
+     *
+     * @param authorizations the overall authorizations
+     */
+    private void populateNiFiIdentities(Authorizations authorizations) {
+        for (String nifiIdentity : nifiIdentities) {
+            final User node = userGroupProvider.getUserByIdentity(nifiIdentity);
+            if (node == null) {
+                throw new SecurityProviderCreationException("Unable to locate node " + nifiIdentity + " to seed policies.");
+            }
+
+            // grant access to the proxy resource
+            addUserToAccessPolicy(authorizations, ResourceType.Proxy.getValue(), node.getIdentifier(), WRITE_CODE);
+        }
+    }
 
 
     /**

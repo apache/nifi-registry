@@ -331,7 +331,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             pageSize = rawPageSize.asInteger();
         }
 
-        // extract the identity mappings from nifi.properties if any are provided
+        // extract the identity mappings from nifi-registry.properties if any are provided
         identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
 
         // set the base environment is necessary

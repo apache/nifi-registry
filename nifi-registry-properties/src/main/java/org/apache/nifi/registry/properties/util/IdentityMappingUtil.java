@@ -70,7 +70,7 @@ public class IdentityMappingUtil {
             }
         }
 
-        // sort the list by the key so users can control the ordering in nifi.properties
+        // sort the list by the key so users can control the ordering in nifi-registry.properties
         Collections.sort(mappings, new Comparator<IdentityMapping>() {
             @Override
             public int compare(IdentityMapping m1, IdentityMapping m2) {

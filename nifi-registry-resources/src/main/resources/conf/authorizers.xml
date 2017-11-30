@@ -15,7 +15,7 @@
 -->
 <!--
     This file lists the userGroupProviders, accessPolicyProviders, and authorizers to use when running securely. In order
-    to use a specific authorizer it must be configured here and its identifier must be specified in the nifi.properties file.
+    to use a specific authorizer it must be configured here and its identifier must be specified in the nifi-registry.properties file.
     If the authorizer is a managedAuthorizer, it may need to be configured with an accessPolicyProvider and an userGroupProvider.
     This file allows for configuration of them, but they must be configured in order:
 
@@ -37,7 +37,7 @@
             each property must be unique, for example: "Initial User Identity A", "Initial User Identity B",
             "Initial User Identity C" or "Initial User Identity 1", "Initial User Identity 2", "Initial User Identity 3"
 
-            NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the user identities,
+            NOTE: Any identity mapping rules specified in nifi-registry.properties will also be applied to the user identities,
             so the values should be the unmapped identities (i.e. full DN from a certificate).
     -->
     <userGroupProvider>
@@ -101,7 +101,7 @@
             group membership will not be calculated through the groups. Will rely on group member being defined
             through 'User Group Name Attribute' if set.
 
-        NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the user identities.
+        NOTE: Any identity mapping rules specified in nifi-registry.properties will also be applied to the user identities.
             Group names are not mapped.
     -->
     <!-- To enable the ldap-user-group-provider remove 2 lines. This is 1 of 2.
@@ -154,8 +154,8 @@
             each property must be unique, for example: "User Group Provider A", "User Group Provider B",
             "User Group Provider C" or "User Group Provider 1", "User Group Provider 2", "User Group Provider 3"
 
-            NOTE: Any identity mapping rules specified in nifi.properties are not applied in this implementation. This behavior
-            would need to be applied by the base implementation.
+            NOTE: Any identity mapping rules specified in nifi-registry.properties are not applied in this implementation. This
+            behavior would need to be applied by the base implementation.
     -->
     <!-- To enable the composite-user-group-provider remove 2 lines. This is 1 of 2.
     <userGroupProvider>
@@ -176,8 +176,8 @@
             each property must be unique, for example: "User Group Provider A", "User Group Provider B",
             "User Group Provider C" or "User Group Provider 1", "User Group Provider 2", "User Group Provider 3"
 
-            NOTE: Any identity mapping rules specified in nifi.properties are not applied in this implementation. This behavior
-            would need to be applied by the base implementation.
+            NOTE: Any identity mapping rules specified in nifi-registry.properties are not applied in this implementation. This
+            behavior would need to be applied by the base implementation.
     -->
     <!-- To enable the composite-configurable-user-group-provider remove 2 lines. This is 1 of 2.
     <userGroupProvider>
@@ -202,15 +202,16 @@
             a DN when using certificates or LDAP. This property will only be used when there
             are no other policies defined.
 
-            NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the initial admin identity,
+            NOTE: Any identity mapping rules specified in nifi-registry.properties will also be applied to the initial admin identity,
             so the value should be the unmapped identity. This identity must be found in the configured User Group Provider.
 
-        - Node Identity [unique key] - The identity of a NiFi cluster node. When clustered, a property for each node
-            should be defined, so that every node knows about every other node. If not clustered these properties can be ignored.
-            The name of each property must be unique, for example for a three node cluster:
-            "Node Identity A", "Node Identity B", "Node Identity C" or "Node Identity 1", "Node Identity 2", "Node Identity 3"
+        - NiFi Identity [unique key] - The identity of a NiFi node that will have access to this NiFi Registry and will be able
+            to act as a proxy on behalf of a NiFi Registry end user. A property should be created for the identity of every NiFi
+            node that needs to access this NiFi Registry. The name of each property must be unique, for example for three
+            NiFi clients:
+            "NiFi Identity A", "NiFi Identity B", "NiFi Identity C" or "NiFi Identity 1", "NiFi Identity 2", "NiFi Identity 3"
 
-            NOTE: Any identity mapping rules specified in nifi.properties will also be applied to the node identities,
+            NOTE: Any identity mapping rules specified in nifi-registry.properties will also be applied to the nifi identities,
             so the values should be the unmapped identities (i.e. full DN from a certificate). This identity must be found
             in the configured User Group Provider.
     -->
@@ -221,7 +222,7 @@
         <property name="Authorizations File">./conf/authorizations.xml</property>
         <property name="Initial Admin Identity"><!-- CN=abc, OU=xyz --></property>
 
-        <!--<property name="Node Identity 1"></property>-->
+        <!--<property name="NiFi Identity 1"></property>-->
     </accessPolicyProvider>
 
     <!--
