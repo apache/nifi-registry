@@ -22,11 +22,11 @@ import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.security.authorization.generated.Authorizers;
 import org.apache.nifi.registry.security.authorization.generated.Prop;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -399,15 +399,15 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             }
 
             @Override
-            public void initialize(AuthorizerInitializationContext initializationContext) throws AuthorizerCreationException {
+            public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
             }
 
             @Override
-            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
             }
 
             @Override
-            public void preDestruction() throws AuthorizerDestructionException {
+            public void preDestruction() throws SecurityProviderCreationException {
             }
         };
     }
@@ -636,17 +636,17 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                         }
 
                                         @Override
-                                        public void initialize(UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+                                        public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
                                             baseConfigurableUserGroupProvider.initialize(initializationContext);
                                         }
 
                                         @Override
-                                        public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+                                        public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
                                             baseConfigurableUserGroupProvider.onConfigured(configurationContext);
                                         }
 
                                         @Override
-                                        public void preDestruction() throws AuthorizerDestructionException {
+                                        public void preDestruction() throws SecurityProviderDestructionException {
                                             baseConfigurableUserGroupProvider.preDestruction();
                                         }
                                     };
@@ -656,17 +656,17 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                             }
 
                             @Override
-                            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+                            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
                                 baseConfigurableAccessPolicyProvider.initialize(initializationContext);
                             }
 
                             @Override
-                            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+                            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
                                 baseConfigurableAccessPolicyProvider.onConfigured(configurationContext);
                             }
 
                             @Override
-                            public void preDestruction() throws AuthorizerDestructionException {
+                            public void preDestruction() throws SecurityProviderDestructionException {
                                 baseConfigurableAccessPolicyProvider.preDestruction();
                             }
                         };
@@ -686,12 +686,12 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                 }
 
                 @Override
-                public void initialize(AuthorizerInitializationContext initializationContext) throws AuthorizerCreationException {
+                public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
                     baseManagedAuthorizer.initialize(initializationContext);
                 }
 
                 @Override
-                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
                     baseManagedAuthorizer.onConfigured(configurationContext);
 
                     final AccessPolicyProvider accessPolicyProvider = baseManagedAuthorizer.getAccessPolicyProvider();
@@ -700,27 +700,27 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                     // ensure that only one policy per resource-action exists
                     for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
                         if (policyExists(accessPolicyProvider, accessPolicy)) {
-                            throw new AuthorizerCreationException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
+                            throw new SecurityProviderCreationException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
                         }
                     }
 
                     // ensure that only one group exists per identity
                     for (User user : userGroupProvider.getUsers()) {
                         if (tenantExists(userGroupProvider, user.getIdentifier(), user.getIdentity())) {
-                            throw new AuthorizerCreationException(String.format("Found multiple users/user groups with identity '%s'.", user.getIdentity()));
+                            throw new SecurityProviderCreationException(String.format("Found multiple users/user groups with identity '%s'.", user.getIdentity()));
                         }
                     }
 
                     // ensure that only one group exists per identity
                     for (Group group : userGroupProvider.getGroups()) {
                         if (tenantExists(userGroupProvider, group.getIdentifier(), group.getName())) {
-                            throw new AuthorizerCreationException(String.format("Found multiple users/user groups with name '%s'.", group.getName()));
+                            throw new SecurityProviderCreationException(String.format("Found multiple users/user groups with name '%s'.", group.getName()));
                         }
                     }
                 }
 
                 @Override
-                public void preDestruction() throws AuthorizerDestructionException {
+                public void preDestruction() throws SecurityProviderDestructionException {
                     baseManagedAuthorizer.preDestruction();
                 }
             };
@@ -737,17 +737,17 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                 }
 
                 @Override
-                public void initialize(AuthorizerInitializationContext initializationContext) throws AuthorizerCreationException {
+                public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
                     baseAuthorizer.initialize(initializationContext);
                 }
 
                 @Override
-                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
                     baseAuthorizer.onConfigured(configurationContext);
                 }
 
                 @Override
-                public void preDestruction() throws AuthorizerDestructionException {
+                public void preDestruction() throws SecurityProviderDestructionException {
                     baseAuthorizer.preDestruction();
                 }
             };

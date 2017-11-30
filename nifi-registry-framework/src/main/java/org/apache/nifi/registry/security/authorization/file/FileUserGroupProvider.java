@@ -17,25 +17,25 @@
 package org.apache.nifi.registry.security.authorization.file;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
-import org.apache.nifi.registry.security.authorization.file.tenants.generated.Groups;
-import org.apache.nifi.registry.security.authorization.file.tenants.generated.Tenants;
-import org.apache.nifi.registry.security.authorization.file.tenants.generated.Users;
+import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.util.IdentityMapping;
 import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
-import org.apache.nifi.registry.util.PropertyValue;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
 import org.apache.nifi.registry.security.authorization.Group;
-import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.security.authorization.User;
 import org.apache.nifi.registry.security.authorization.UserAndGroups;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
+import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
+import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
+import org.apache.nifi.registry.security.authorization.file.tenants.generated.Groups;
+import org.apache.nifi.registry.security.authorization.file.tenants.generated.Tenants;
+import org.apache.nifi.registry.security.authorization.file.tenants.generated.Users;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.util.FileUtils;
+import org.apache.nifi.registry.util.PropertyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -123,22 +123,22 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
     private final AtomicReference<UserGroupHolder> userGroupHolder = new AtomicReference<>();
 
     @Override
-    public void initialize(UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
         try {
             final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             tenantsSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(TENANTS_XSD));
             //usersSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(USERS_XSD));
         } catch (Exception e) {
-            throw new AuthorizerCreationException(e);
+            throw new SecurityProviderCreationException(e);
         }
     }
 
     @Override
-    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         try {
             final PropertyValue tenantsPath = configurationContext.getProperty(PROP_TENANTS_FILE);
             if (StringUtils.isBlank(tenantsPath.getValue())) {
-                throw new AuthorizerCreationException("The users file must be specified.");
+                throw new SecurityProviderCreationException("The users file must be specified.");
             }
 
             // get the tenants file and ensure it exists
@@ -170,8 +170,8 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
             }
 
             logger.info(String.format("Users/Groups file loaded at %s", new Date().toString()));
-        } catch (IOException | AuthorizerCreationException | JAXBException | IllegalStateException | SAXException e) {
-            throw new AuthorizerCreationException(e);
+        } catch (IOException | SecurityProviderCreationException | JAXBException | IllegalStateException | SAXException e) {
+            throw new SecurityProviderCreationException(e);
         }
     }
 
@@ -752,7 +752,7 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
     }
 
     @Override
-    public void preDestruction() throws AuthorizerDestructionException {
+    public void preDestruction() throws SecurityProviderDestructionException {
     }
 
     private static class UsersAndGroups {

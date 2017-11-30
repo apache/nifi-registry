@@ -17,16 +17,9 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.Group;
-import org.apache.nifi.registry.security.authorization.User;
-import org.apache.nifi.registry.security.authorization.UserAndGroups;
-import org.apache.nifi.registry.security.authorization.UserGroupProvider;
-import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
-import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,12 +48,12 @@ public class CompositeUserGroupProvider implements UserGroupProvider {
     }
 
     @Override
-    public void initialize(UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
         userGroupProviderLookup = initializationContext.getUserGroupProviderLookup();
     }
 
     @Override
-    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
             Matcher matcher = USER_GROUP_PROVIDER_PATTERN.matcher(entry.getKey());
             if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
@@ -68,7 +61,7 @@ public class CompositeUserGroupProvider implements UserGroupProvider {
                 final UserGroupProvider userGroupProvider = userGroupProviderLookup.getUserGroupProvider(userGroupProviderKey);
 
                 if (userGroupProvider == null) {
-                    throw new AuthorizerCreationException(String.format("Unable to locate the configured User Group Provider: %s", userGroupProviderKey));
+                    throw new SecurityProviderCreationException(String.format("Unable to locate the configured User Group Provider: %s", userGroupProviderKey));
                 }
 
                 userGroupProviders.add(userGroupProvider);
@@ -76,7 +69,7 @@ public class CompositeUserGroupProvider implements UserGroupProvider {
         }
 
         if (!allowEmptyProviderList && userGroupProviders.isEmpty()) {
-            throw new AuthorizerCreationException("At least one User Group Provider must be configured.");
+            throw new SecurityProviderCreationException("At least one User Group Provider must be configured.");
         }
     }
 
@@ -179,6 +172,6 @@ public class CompositeUserGroupProvider implements UserGroupProvider {
     }
 
     @Override
-    public void preDestruction() throws AuthorizerDestructionException {
+    public void preDestruction() throws SecurityProviderDestructionException {
     }
 }

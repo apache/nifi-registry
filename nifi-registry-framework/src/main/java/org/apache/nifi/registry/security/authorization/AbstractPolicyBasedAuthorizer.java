@@ -16,25 +16,10 @@
  */
 package org.apache.nifi.registry.security.authorization;
 
-import org.apache.nifi.registry.security.authorization.AccessPolicy;
-import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
-import org.apache.nifi.registry.security.authorization.AuthorizationRequest;
-import org.apache.nifi.registry.security.authorization.AuthorizationResult;
-import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
-import org.apache.nifi.registry.security.authorization.Group;
-import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.User;
-import org.apache.nifi.registry.security.authorization.UserAndGroups;
-import org.apache.nifi.registry.security.authorization.UserGroupProvider;
-import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -78,7 +63,7 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
     static final String ACTIONS_ATTR = "actions";
 
     @Override
-    public final void onConfigured(final AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public final void onConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         doOnConfigured(configurationContext);
     }
 
@@ -86,9 +71,9 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
      * Allows sub-classes to take action when onConfigured is called.
      *
      * @param configurationContext the configuration context
-     * @throws AuthorizerCreationException if an error occurs during onConfigured process
+     * @throws SecurityProviderCreationException if an error occurs during onConfigured process
      */
-    protected abstract void doOnConfigured(final AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException;
+    protected abstract void doOnConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException;
 
     @Override
     public final AuthorizationResult authorize(AuthorizationRequest request) throws AuthorizationAccessException {
@@ -667,29 +652,29 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
                     }
 
                     @Override
-                    public void initialize(UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+                    public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
                     }
 
                     @Override
-                    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+                    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
                     }
 
                     @Override
-                    public void preDestruction() throws AuthorizerDestructionException {
+                    public void preDestruction() throws SecurityProviderDestructionException {
                     }
                 };
             }
 
             @Override
-            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
             }
 
             @Override
-            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
             }
 
             @Override
-            public void preDestruction() throws AuthorizerDestructionException {
+            public void preDestruction() throws SecurityProviderDestructionException {
             }
         };
     }

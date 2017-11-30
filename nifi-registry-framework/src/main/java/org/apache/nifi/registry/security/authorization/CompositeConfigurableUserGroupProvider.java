@@ -16,19 +16,11 @@
  */
 package org.apache.nifi.registry.security.authorization;
 
-import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
-import org.apache.nifi.registry.security.authorization.Group;
-import org.apache.nifi.registry.security.authorization.User;
-import org.apache.nifi.registry.security.authorization.UserAndGroups;
-import org.apache.nifi.registry.security.authorization.UserGroupProvider;
-import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
-import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
-import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
-import org.apache.nifi.registry.util.PropertyValue;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerCreationException;
-import org.apache.nifi.registry.security.authorization.exception.AuthorizerDestructionException;
+import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
+import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.util.PropertyValue;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,7 +37,7 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
     }
 
     @Override
-    public void initialize(UserGroupProviderInitializationContext initializationContext) throws AuthorizerCreationException {
+    public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
         userGroupProviderLookup = initializationContext.getUserGroupProviderLookup();
 
         // initialize the CompositeUserGroupProvider
@@ -53,20 +45,20 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
     }
 
     @Override
-    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws AuthorizerCreationException {
+    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         final PropertyValue configurableUserGroupProviderKey = configurationContext.getProperty(PROP_CONFIGURABLE_USER_GROUP_PROVIDER);
         if (!configurableUserGroupProviderKey.isSet()) {
-            throw new AuthorizerCreationException("The Configurable User Group Provider must be set.");
+            throw new SecurityProviderCreationException("The Configurable User Group Provider must be set.");
         }
 
         final UserGroupProvider userGroupProvider = userGroupProviderLookup.getUserGroupProvider(configurableUserGroupProviderKey.getValue());
 
         if (userGroupProvider == null) {
-            throw new AuthorizerCreationException(String.format("Unable to locate the Configurable User Group Provider: %s", configurableUserGroupProviderKey));
+            throw new SecurityProviderCreationException(String.format("Unable to locate the Configurable User Group Provider: %s", configurableUserGroupProviderKey));
         }
 
         if (!(userGroupProvider instanceof ConfigurableUserGroupProvider)) {
-            throw new AuthorizerCreationException(String.format("The Configurable User Group Provider is not configurable: %s", configurableUserGroupProviderKey));
+            throw new SecurityProviderCreationException(String.format("The Configurable User Group Provider is not configurable: %s", configurableUserGroupProviderKey));
         }
 
         configurableUserGroupProvider = (ConfigurableUserGroupProvider) userGroupProvider;
@@ -199,7 +191,7 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
     }
 
     @Override
-    public void preDestruction() throws AuthorizerDestructionException {
+    public void preDestruction() throws SecurityProviderDestructionException {
         super.preDestruction();
     }
 }
