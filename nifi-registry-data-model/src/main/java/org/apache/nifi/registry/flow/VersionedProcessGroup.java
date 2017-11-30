@@ -18,29 +18,26 @@
 package org.apache.nifi.registry.flow;
 
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import javax.xml.bind.annotation.XmlRootElement;
+
+import io.swagger.annotations.ApiModelProperty;
 
 @XmlRootElement
 public class VersionedProcessGroup extends VersionedComponent {
 
-    // It is important that all of these components be held in LinkedHashSets because if a VersionedProcessGroup
-    // is sent to a cluster and all nodes must add more than 1 component, we have to ensure that we add them in the
-    // same order so that their generated ID's are deterministic.
-    private LinkedHashSet<VersionedProcessGroup> processGroups = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedRemoteProcessGroup> remoteProcessGroups = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedProcessor> processors = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedPort> inputPorts = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedPort> outputPorts = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedConnection> connections = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedLabel> labels = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedFunnel> funnels = new LinkedHashSet<>();
-    private LinkedHashSet<VersionedControllerService> controllerServices = new LinkedHashSet<>();
+    private Set<VersionedProcessGroup> processGroups = new HashSet<>();
+    private Set<VersionedRemoteProcessGroup> remoteProcessGroups = new HashSet<>();
+    private Set<VersionedProcessor> processors = new HashSet<>();
+    private Set<VersionedPort> inputPorts = new HashSet<>();
+    private Set<VersionedPort> outputPorts = new HashSet<>();
+    private Set<VersionedConnection> connections = new HashSet<>();
+    private Set<VersionedLabel> labels = new HashSet<>();
+    private Set<VersionedFunnel> funnels = new HashSet<>();
+    private Set<VersionedControllerService> controllerServices = new HashSet<>();
     private VersionedFlowCoordinates versionedFlowCoordinates = null;
 
     private Map<String, String> variables = new HashMap<>();
@@ -51,7 +48,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setProcessGroups(Set<VersionedProcessGroup> processGroups) {
-        this.processGroups = new LinkedHashSet<>(processGroups);
+        this.processGroups = new HashSet<>(processGroups);
     }
 
     @ApiModelProperty("The Remote Process Groups")
@@ -60,7 +57,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setRemoteProcessGroups(Set<VersionedRemoteProcessGroup> remoteProcessGroups) {
-        this.remoteProcessGroups = new LinkedHashSet<>(remoteProcessGroups);
+        this.remoteProcessGroups = new HashSet<>(remoteProcessGroups);
     }
 
     @ApiModelProperty("The Processors")
@@ -69,7 +66,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setProcessors(Set<VersionedProcessor> processors) {
-        this.processors = new LinkedHashSet<>(processors);
+        this.processors = new HashSet<>(processors);
     }
 
     @ApiModelProperty("The Input Ports")
@@ -78,7 +75,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setInputPorts(Set<VersionedPort> inputPorts) {
-        this.inputPorts = new LinkedHashSet<>(inputPorts);
+        this.inputPorts = new HashSet<>(inputPorts);
     }
 
     @ApiModelProperty("The Output Ports")
@@ -87,7 +84,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setOutputPorts(Set<VersionedPort> outputPorts) {
-        this.outputPorts = new LinkedHashSet<>(outputPorts);
+        this.outputPorts = new HashSet<>(outputPorts);
     }
 
     @ApiModelProperty("The Connections")
@@ -96,7 +93,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setConnections(Set<VersionedConnection> connections) {
-        this.connections = new LinkedHashSet<>(connections);
+        this.connections = new HashSet<>(connections);
     }
 
     @ApiModelProperty("The Labels")
@@ -105,7 +102,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setLabels(Set<VersionedLabel> labels) {
-        this.labels = new LinkedHashSet<>(labels);
+        this.labels = new HashSet<>(labels);
     }
 
     @ApiModelProperty("The Funnels")
@@ -114,7 +111,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setFunnels(Set<VersionedFunnel> funnels) {
-        this.funnels = new LinkedHashSet<>(funnels);
+        this.funnels = new HashSet<>(funnels);
     }
 
     @ApiModelProperty("The Controller Services")
@@ -123,7 +120,7 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     public void setControllerServices(Set<VersionedControllerService> controllerServices) {
-        this.controllerServices = new LinkedHashSet<>(controllerServices);
+        this.controllerServices = new HashSet<>(controllerServices);
     }
 
     @Override

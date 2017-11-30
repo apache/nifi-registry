@@ -34,6 +34,7 @@ import org.apache.nifi.registry.flow.VersionedLabel;
 import org.apache.nifi.registry.flow.VersionedPort;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
+import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
 import org.apache.nifi.registry.flow.VersionedRemoteGroupPort;
 import org.apache.nifi.registry.flow.VersionedRemoteProcessGroup;
 
@@ -41,11 +42,14 @@ public class StandardFlowComparator implements FlowComparator {
 
     private final ComparableDataFlow flowA;
     private final ComparableDataFlow flowB;
+    private final Set<String> externallyAccessibleServiceIds;
     private final DifferenceDescriptor differenceDescriptor;
 
-    public StandardFlowComparator(final ComparableDataFlow flowA, final ComparableDataFlow flowB, final DifferenceDescriptor differenceDescriptor) {
+    public StandardFlowComparator(final ComparableDataFlow flowA, final ComparableDataFlow flowB,
+        final Set<String> externallyAccessibleServiceIds, final DifferenceDescriptor differenceDescriptor) {
         this.flowA = flowA;
         this.flowB = flowB;
+        this.externallyAccessibleServiceIds = externallyAccessibleServiceIds;
         this.differenceDescriptor = differenceDescriptor;
     }
 
@@ -99,11 +103,11 @@ public class StandardFlowComparator implements FlowComparator {
 
 
     private boolean compareComponents(final VersionedComponent componentA, final VersionedComponent componentB, final Set<FlowDifference> differences) {
-        return compareComponents(componentA, componentB, differences, true, true);
+        return compareComponents(componentA, componentB, differences, true, true, true);
     }
 
-    private boolean compareComponents(final VersionedComponent componentA, final VersionedComponent componentB, final Set<FlowDifference> differences, final boolean compareNamePos,
-            final boolean compareComments) {
+    private boolean compareComponents(final VersionedComponent componentA, final VersionedComponent componentB, final Set<FlowDifference> differences,
+        final boolean compareName, final boolean comparePos, final boolean compareComments) {
         if (componentA == null) {
             differences.add(difference(DifferenceType.COMPONENT_ADDED, componentA, componentB, componentA, componentB));
             return true;
@@ -115,11 +119,14 @@ public class StandardFlowComparator implements FlowComparator {
         }
 
         if (compareComments) {
-            addIfDifferent(differences, DifferenceType.COMMENTS_CHANGED, componentA, componentB, VersionedComponent::getComments);
+            addIfDifferent(differences, DifferenceType.COMMENTS_CHANGED, componentA, componentB, VersionedComponent::getComments, false);
         }
 
-        if (compareNamePos) {
+        if (compareName) {
             addIfDifferent(differences, DifferenceType.NAME_CHANGED, componentA, componentB, VersionedComponent::getName);
+        }
+
+        if (comparePos) {
             addIfDifferent(differences, DifferenceType.POSITION_CHANGED, componentA, componentB, VersionedComponent::getPosition);
         }
 
@@ -143,7 +150,14 @@ public class StandardFlowComparator implements FlowComparator {
         addIfDifferent(differences, DifferenceType.SCHEDULING_STRATEGY_CHANGED, processorA, processorB, VersionedProcessor::getSchedulingStrategy);
         addIfDifferent(differences, DifferenceType.STYLE_CHANGED, processorA, processorB, VersionedProcessor::getStyle);
         addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getYieldDuration);
-        compareProperties(processorA, processorB, processorA.getProperties(), processorB.getProperties(), differences);
+        compareProperties(processorA, processorB, processorA.getProperties(), processorB.getProperties(), processorA.getPropertyDescriptors(), differences);
+    }
+
+    @Override
+    public Set<FlowDifference> compareControllerServices(final VersionedControllerService serviceA, final VersionedControllerService serviceB) {
+        final Set<FlowDifference> differences = new HashSet<>();
+        compare(serviceA, serviceB, differences);
+        return differences;
     }
 
     private void compare(final VersionedControllerService serviceA, final VersionedControllerService serviceB, final Set<FlowDifference> differences) {
@@ -153,24 +167,43 @@ public class StandardFlowComparator implements FlowComparator {
 
         addIfDifferent(differences, DifferenceType.ANNOTATION_DATA_CHANGED, serviceA, serviceB, VersionedControllerService::getAnnotationData);
         addIfDifferent(differences, DifferenceType.BUNDLE_CHANGED, serviceA, serviceB, VersionedControllerService::getBundle);
-        compareProperties(serviceA, serviceB, serviceA.getProperties(), serviceB.getProperties(), differences);
+        compareProperties(serviceA, serviceB, serviceA.getProperties(), serviceB.getProperties(), serviceA.getPropertyDescriptors(), differences);
     }
 
 
     private void compareProperties(final VersionedComponent componentA, final VersionedComponent componentB,
-        final Map<String, String> propertiesA, final Map<String, String> propertiesB, final Set<FlowDifference> differences) {
+        final Map<String, String> propertiesA, final Map<String, String> propertiesB, final Map<String, VersionedPropertyDescriptor> descriptorsA,
+        final Set<FlowDifference> differences) {
 
         propertiesA.entrySet().stream()
             .forEach(entry -> {
                 final String valueA = entry.getValue();
                 final String valueB = propertiesB.get(entry.getKey());
 
+                final VersionedPropertyDescriptor descriptor = descriptorsA.get(entry.getKey());
+                final String displayName = descriptor.getDisplayName() == null ? descriptor.getName() : descriptor.getDisplayName();
+
                 if (valueA == null && valueB != null) {
-                    differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, entry.getKey(), entry.getKey()));
+                    differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, displayName, displayName));
                 } else if (valueA != null && valueB == null) {
-                    differences.add(difference(DifferenceType.PROPERTY_REMOVED, componentA, componentB, entry.getKey(), entry.getKey()));
+                    differences.add(difference(DifferenceType.PROPERTY_REMOVED, componentA, componentB, displayName, displayName));
                 } else if (valueA != null && valueB != null && !valueA.equals(valueB)) {
-                    differences.add(difference(DifferenceType.PROPERTY_CHANGED, componentA, componentB, valueA, valueB));
+                    // If the property in Flow A references a Controller Service that is not available in the flow
+                    // and the property in Flow B references a Controller Service that is available in its environment
+                    // but not part of the Versioned Flow, then we do not want to consider this to be a Flow Difference.
+                    // This is typically the case when a flow is versioned in one instance, referencing an external Controller Service,
+                    // and then imported into another NiFi instance. When imported, the property does not point to any existing Controller
+                    // Service, and the user must then point the property an existing Controller Service. We don't want to consider the
+                    // flow as having changed, since it is an environment-specific change (similar to how we handle variables).
+                    if (descriptor.getIdentifiesControllerService()) {
+                        final boolean accessibleA = externallyAccessibleServiceIds.contains(valueA);
+                        final boolean accessibleB = externallyAccessibleServiceIds.contains(valueB);
+                        if (!accessibleA && accessibleB) {
+                            return;
+                        }
+                    }
+
+                    differences.add(difference(DifferenceType.PROPERTY_CHANGED, componentA, componentB, displayName + "=" + valueA, displayName + "=" + valueB));
                 }
             });
 
@@ -211,7 +244,7 @@ public class StandardFlowComparator implements FlowComparator {
     }
 
     private void compare(final VersionedRemoteProcessGroup rpgA, final VersionedRemoteProcessGroup rpgB, final Set<FlowDifference> differences) {
-        if (compareComponents(rpgA, rpgB, differences, true, false)) { // do not compare comments for RPG because they come from remote system, not our local flow
+        if (compareComponents(rpgA, rpgB, differences, false, true, false)) { // do not compare comments for RPG because they come from remote system, not our local flow
             return;
         }
 
@@ -239,7 +272,7 @@ public class StandardFlowComparator implements FlowComparator {
 
 
     private void compare(final VersionedProcessGroup groupA, final VersionedProcessGroup groupB, final Set<FlowDifference> differences, final boolean compareNamePos) {
-        if (compareComponents(groupA, groupB, differences, compareNamePos, true)) {
+        if (compareComponents(groupA, groupB, differences, compareNamePos, compareNamePos, true)) {
             return;
         }
 
@@ -287,9 +320,14 @@ public class StandardFlowComparator implements FlowComparator {
         return components.stream().collect(Collectors.toMap(VersionedComponent::getIdentifier, Function.identity()));
     }
 
-
     private <T extends VersionedComponent> void addIfDifferent(final Set<FlowDifference> differences, final DifferenceType type, final T componentA, final T componentB,
         final Function<T, Object> transform) {
+
+        addIfDifferent(differences, type, componentA, componentB, transform, true);
+    }
+
+    private <T extends VersionedComponent> void addIfDifferent(final Set<FlowDifference> differences, final DifferenceType type, final T componentA, final T componentB,
+        final Function<T, Object> transform, final boolean differentiateNullAndEmptyString) {
 
         final Object valueA = transform.apply(componentA);
         final Object valueB = transform.apply(componentB);
@@ -303,11 +341,28 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
+        if (!differentiateNullAndEmptyString && isEmptyString(valueA) && isEmptyString(valueB)) {
+            return;
+        }
+
         differences.add(difference(type, componentA, componentB, valueA, valueB));
     }
 
     private boolean isEmpty(final Collection<?> collection) {
         return collection == null || collection.isEmpty();
+    }
+
+    private boolean isEmptyString(final Object potentialString) {
+        if (potentialString == null) {
+            return true;
+        }
+
+        if (potentialString instanceof String) {
+            final String string = (String) potentialString;
+            return string.isEmpty();
+        } else {
+            return false;
+        }
     }
 
     private FlowDifference difference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB, final Object valueA, final Object valueB) {
