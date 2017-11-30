@@ -150,10 +150,10 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
 
             final File tenantsFileDirectory = tenantsFile.getAbsoluteFile().getParentFile();
 
-            // extract the identity mappings from nifi.properties if any are provided
+            // extract the identity mappings from nifi-registry.properties if any are provided
             identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
 
-            // extract any node identities
+            // extract any nifi identities
             initialUserIdentities = new HashSet<>();
             for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
                 Matcher matcher = INITIAL_USER_IDENTITY_PATTERN.matcher(entry.getKey());

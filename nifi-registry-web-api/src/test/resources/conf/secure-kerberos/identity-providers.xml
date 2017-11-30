@@ -17,8 +17,8 @@
   -->
 <!--
     This file lists the login identity providers to use when running securely. In order
-    to use a specific provider it must be configured here and it's identifier
-    must be specified in the nifi.properties file.
+    to use a specific provider it must be configured here and its identifier
+    must be specified in the nifi-registry.properties file.
 -->
 <identityProviders>
 
