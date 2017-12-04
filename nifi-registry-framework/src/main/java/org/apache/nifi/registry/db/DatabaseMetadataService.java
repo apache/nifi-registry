@@ -106,7 +106,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public BucketEntity getBucketById(final String bucketIdentifier) {
-        return bucketRepository.findOne(bucketIdentifier);
+        return bucketRepository.findById(bucketIdentifier).orElse(null);
     }
 
     @Override
@@ -282,7 +282,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public FlowEntity getFlowById(final String bucketIdentifier, final String flowIdentifier) {
-        FlowEntity flow = flowRepository.findOne(flowIdentifier);
+        FlowEntity flow = flowRepository.findById(flowIdentifier).orElse(null);
 
         if (flow == null || flow.getBucket() == null || !bucketIdentifier.equals(flow.getBucket().getId())) {
             return null;
@@ -293,7 +293,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public FlowEntity getFlowByIdWithSnapshotCounts(final String bucketIdentifier, final String flowIdentifier) {
-        FlowEntity flow = flowRepository.findOne(flowIdentifier);
+        FlowEntity flow = flowRepository.findById(flowIdentifier).orElse(null);
 
         if (flow == null || flow.getBucket() == null || !bucketIdentifier.equals(flow.getBucket().getId())) {
             return null;
@@ -362,7 +362,7 @@ public class DatabaseMetadataService implements MetadataService {
     @Override
     public FlowSnapshotEntity getFlowSnapshot(final String bucketIdentifier, final String flowIdentifier, final Integer version) {
         final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey(flowIdentifier, version);
-        FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findOne(key);
+        FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findById(key).orElse(null);
 
         if (flowSnapshot == null
                 || flowSnapshot.getFlow() == null
@@ -403,9 +403,9 @@ public class DatabaseMetadataService implements MetadataService {
     private Pageable getPageRequest(final QueryParameters parameters) {
         final Sort sort = getSort(parameters);
         if (sort == null) {
-            return new PageRequest(parameters.getPageNum(), parameters.getNumRows());
+            return PageRequest.of(parameters.getPageNum(), parameters.getNumRows());
         } else {
-            return new PageRequest(parameters.getPageNum(), parameters.getNumRows(), sort);
+            return PageRequest.of(parameters.getPageNum(), parameters.getNumRows(), sort);
         }
     }
 
@@ -427,7 +427,7 @@ public class DatabaseMetadataService implements MetadataService {
         if (orders.isEmpty()) {
             return null;
         } else {
-            return new Sort(orders);
+            return Sort.by(orders);
         }
     }
 

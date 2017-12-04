@@ -107,10 +107,11 @@
         <inceptionYear>2017</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <jetty.version>9.4.3.v20170317</jetty.version>
-        <jax.rs.api.version>2.0.1</jax.rs.api.version>
-        <jersey.version>2.25.1</jersey.version>
-        <spring.boot.version>1.5.7.RELEASE</spring.boot.version>
-        <spring.security.version>4.2.3.RELEASE</spring.security.version>
+        <jax.rs.api.version>2.1</jax.rs.api.version>
+        <jersey.version>2.26</jersey.version>
+        <jackson.version>2.9.2</jackson.version>
+        <spring.boot.version>2.0.0.M7</spring.boot.version>
+        <spring.security.version>5.0.0.RELEASE</spring.security.version>
         <flyway.version>4.2.0</flyway.version>
     </properties>
 
@@ -142,6 +143,16 @@
         <repository>
             <id>jcenter</id>
             <url>http://jcenter.bintray.com</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <url>http://repo.spring.io/milestone</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -235,37 +246,6 @@
                 <version>${jax.rs.api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-server</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.containers</groupId>
-                <artifactId>jersey-container-servlet</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.core</groupId>
-                <artifactId>jersey-client</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.media</groupId>
-                <artifactId>jersey-media-json-jackson</artifactId>
-                <version>${jersey.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.jersey.ext</groupId>
-                <artifactId>jersey-bean-validation</artifactId>
-                <version>${jersey.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.glassfish.web</groupId>
-                        <artifactId>javax.el</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
                 <groupId>javax.validation</groupId>
                 <artifactId>validation-api</artifactId>
                 <version>2.0.0.Final</version>
@@ -279,6 +259,27 @@
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.el</artifactId>
                 <version>3.0.1-b08</version>
+            </dependency>
+            <!-- Spring Boot 2.0 Requires Jackson 2.9.x -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.module</groupId>
+                <artifactId>jackson-module-jaxb-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
