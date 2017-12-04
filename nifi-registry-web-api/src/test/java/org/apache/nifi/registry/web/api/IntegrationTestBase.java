@@ -19,16 +19,16 @@ package org.apache.nifi.registry.web.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.LocalServerPort;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 
 import javax.annotation.PostConstruct;
@@ -46,7 +46,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public abstract class IntegrationTestBase {
 
-    private static final String CONTEXT_PATH = "/nifi-registry-api-test";
+    private static final String CONTEXT_PATH = "/nifi-registry-api";
 
     @TestConfiguration
     public static class TestConfigurationClass {
@@ -62,8 +62,8 @@ public abstract class IntegrationTestBase {
         private NiFiRegistryProperties testProperties;
 
         @Bean
-        public JettyEmbeddedServletContainerFactory jettyEmbeddedServletContainerFactory() {
-            JettyEmbeddedServletContainerFactory jettyContainerFactory = new JettyEmbeddedServletContainerFactory();
+        public JettyServletWebServerFactory jettyEmbeddedServletContainerFactory() {
+            JettyServletWebServerFactory jettyContainerFactory = new JettyServletWebServerFactory();
             jettyContainerFactory.setContextPath(CONTEXT_PATH);
             return jettyContainerFactory;
         }
@@ -125,11 +125,7 @@ public abstract class IntegrationTestBase {
             throw new IllegalArgumentException("Resource path cannot be null");
         }
 
-        final boolean isSecure = this.properties.getSslPort() != null;
-        final String protocolSchema = isSecure ? "https" : "http";
-
-        final StringBuilder baseUriBuilder = new StringBuilder()
-                .append(protocolSchema).append("://localhost:").append(port).append(CONTEXT_PATH);
+        final StringBuilder baseUriBuilder = new StringBuilder(createBaseURL()).append(CONTEXT_PATH);
 
         if (!relativeResourcePath.startsWith("/")) {
             baseUriBuilder.append('/');
@@ -137,6 +133,38 @@ public abstract class IntegrationTestBase {
         baseUriBuilder.append(relativeResourcePath);
 
         return baseUriBuilder.toString();
+    }
+
+    /**
+     * Sub-classes can utilize this method to obtain the base-url for a client.
+     *
+     * @return a string containing the base url which includes the scheme, host, and port
+     */
+    String createBaseURL() {
+        final boolean isSecure = this.properties.getSslPort() != null;
+        final String protocolSchema = isSecure ? "https" : "http";
+
+        final StringBuilder baseUriBuilder = new StringBuilder()
+                .append(protocolSchema).append("://localhost:").append(port);
+
+        return baseUriBuilder.toString();
+    }
+
+    NiFiRegistryClientConfig createClientConfig(String baseUrl) {
+        final NiFiRegistryClientConfig.Builder builder = new NiFiRegistryClientConfig.Builder();
+        builder.baseUrl(baseUrl);
+
+        if (this.clientConfig != null) {
+            if (this.clientConfig.getSslContext() != null) {
+                builder.sslContext(this.clientConfig.getSslContext());
+            }
+
+            if (this.clientConfig.getHostnameVerifier() != null) {
+                builder.hostnameVerifier(this.clientConfig.getHostnameVerifier());
+            }
+        }
+
+        return builder.build();
     }
 
     /**

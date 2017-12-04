@@ -44,7 +44,7 @@ public class TestFlowRepository extends DatabaseBaseTest {
     public void testCreateFlow() {
         final String bucketId = "1";
 
-        final BucketEntity existingBucket = bucketRepository.findOne(bucketId);
+        final BucketEntity existingBucket = bucketRepository.findById(bucketId).orElse(null);
         assertNotNull(existingBucket);
         assertNotNull(existingBucket.getItems());
         assertEquals(2, existingBucket.getItems().size());
@@ -71,7 +71,7 @@ public class TestFlowRepository extends DatabaseBaseTest {
     public void testUpdateFlow() {
         final String flowId = "1";
 
-        final FlowEntity flow = flowRepository.findOne(flowId);
+        final FlowEntity flow = flowRepository.findById(flowId).orElse(null);
         assertNotNull(flow);
         assertEquals(flowId, flow.getId());
 
@@ -80,7 +80,7 @@ public class TestFlowRepository extends DatabaseBaseTest {
 
         flowRepository.save(flow);
 
-        final FlowEntity updatedFlow = flowRepository.findOne(flowId);
+        final FlowEntity updatedFlow = flowRepository.findById(flowId).orElse(null);
         assertEquals(flow.getName(), updatedFlow.getName());
         assertEquals(flow.getDescription(), updatedFlow.getDescription());
         assertEquals(flow.getCreated(), updatedFlow.getCreated());
@@ -92,12 +92,12 @@ public class TestFlowRepository extends DatabaseBaseTest {
     public void testDeleteFlow() {
         final String flowId = "1";
 
-        final FlowEntity flow = flowRepository.findOne(flowId);
+        final FlowEntity flow = flowRepository.findById(flowId).orElse(null);
         assertNotNull(flow);
 
         flowRepository.delete(flow);
 
-        final FlowEntity deletedFlow = flowRepository.findOne(flowId);
+        final FlowEntity deletedFlow = flowRepository.findById(flowId).orElse(null);
         assertNull(deletedFlow);
     }
 
@@ -105,7 +105,7 @@ public class TestFlowRepository extends DatabaseBaseTest {
     public void testOneToManyWithFlowSnapshots() {
         final String flowId = "1";
 
-        final FlowEntity flow = flowRepository.findOne(flowId);
+        final FlowEntity flow = flowRepository.findById(flowId).orElse(null);
         assertNotNull(flow);
         assertNotNull(flow.getSnapshots());
         assertEquals(3, flow.getSnapshots().size());
