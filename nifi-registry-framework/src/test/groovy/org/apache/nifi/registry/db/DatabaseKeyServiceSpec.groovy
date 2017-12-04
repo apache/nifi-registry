@@ -34,7 +34,8 @@ class DatabaseKeyServiceSpec extends Specification {
     def "get key"() {
 
         given: "a record exists for id=key1"
-        keyRepository.findOne("key1") >> new KeyEntity([id: "key1", tenantIdentity: "user1", keyValue: "keyValue1"])
+        keyRepository.findById("key1") >> Optional.of(new KeyEntity([id: "key1", tenantIdentity: "user1", keyValue: "keyValue1"]))
+        keyRepository.findById("key2") >> Optional.empty()
 
         when: "getKey is called with an existing id"
         Key existingKey = keyService.getKey("key1")
