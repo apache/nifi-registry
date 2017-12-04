@@ -29,6 +29,7 @@ public class VersionedProcessor extends VersionedComponent {
 
     private String type;
     private Map<String, String> properties;
+    private Map<String, VersionedPropertyDescriptor> propertyDescriptors;
     private String annotationData;
 
     private String schedulingPeriod;
@@ -122,6 +123,15 @@ public class VersionedProcessor extends VersionedComponent {
 
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
+    }
+
+    @ApiModelProperty("The property descriptors for the processor.")
+    public Map<String, VersionedPropertyDescriptor> getPropertyDescriptors() {
+        return propertyDescriptors;
+    }
+
+    public void setPropertyDescriptors(Map<String, VersionedPropertyDescriptor> propertyDescriptors) {
+        this.propertyDescriptors = propertyDescriptors;
     }
 
     @ApiModelProperty("The annotation data for the processor used to relay configuration between a custom UI and the procesosr.")

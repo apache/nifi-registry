@@ -17,6 +17,19 @@
 
 package org.apache.nifi.registry.flow.diff;
 
+import java.util.Set;
+
+import org.apache.nifi.registry.flow.VersionedControllerService;
+
 public interface FlowComparator {
     FlowComparison compare();
+
+    /**
+     * Compares to versions of a Controller Service and returns the differences between them
+     *
+     * @param serviceA the first Controller Service
+     * @param serviceB the second Controller Service
+     * @return the differences between them
+     */
+    Set<FlowDifference> compareControllerServices(VersionedControllerService serviceA, VersionedControllerService serviceB);
 }
