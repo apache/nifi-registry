@@ -18,8 +18,10 @@ package org.apache.nifi.registry.client.impl;
 
 import org.apache.nifi.registry.client.NiFiRegistryException;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -69,13 +71,24 @@ public class AbstractJerseyClient {
             return action.execute();
         } catch (final Exception e) {
             final Throwable ioeCause = getIOExceptionCause(e);
+
             if (ioeCause == null) {
-                throw new NiFiRegistryException(errorMessage, e);
+                final StringBuilder errorMessageBuilder = new StringBuilder(errorMessage);
+
+                // see if we have a WebApplicationException, and if so add the response body to the error message
+                if (e instanceof WebApplicationException) {
+                    final Response response = ((WebApplicationException) e).getResponse();
+                    final String responseBody = response.readEntity(String.class);
+                    errorMessageBuilder.append(": ").append(responseBody);
+                }
+
+                throw new NiFiRegistryException(errorMessageBuilder.toString(), e);
             } else {
                 throw (IOException) ioeCause;
             }
         }
     }
+
 
     /**
      * An action to execute with the given return type.

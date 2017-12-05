@@ -179,12 +179,20 @@ public interface MetadataService {
     /**
      * Retrieves the snapshot for the given flow identifier and snapshot version.
      *
-     * @param bucketIdentifier the identifier of the bucket storign the flow
+     * @param bucketIdentifier the identifier of the bucket storing the flow
      * @param flowIdentifier the identifier of the flow the snapshot belongs to
      * @param version the version of the snapshot
      * @return the versioned flow snapshot for the given flow identifier and version, or null if none exists
      */
     FlowSnapshotEntity getFlowSnapshot(String bucketIdentifier, String flowIdentifier, Integer version);
+
+    /**
+     * Retrieves the snapshot with the latest version number for the given flow in the given bucket.
+     *
+     * @param flowEntity the flow to retrieve the latest snapshot for
+     * @return the latest snapshot for the flow, or null if one doesn't exist
+     */
+    FlowSnapshotEntity getLatestSnapshot(FlowEntity flowEntity);
 
     /**
      * Deletes the flow snapshot.

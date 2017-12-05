@@ -325,17 +325,47 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
-        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
-        if (snapshots == null || snapshots.size() == 0) {
-            throw new ResourceNotFoundException("Not flow versions found for flow with id " + flowId);
+        final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
+        if (latest == null) {
+            throw new ResourceNotFoundException("No flow versions found for flow with id " + flowId);
         }
 
-        final VersionedFlowSnapshotMetadata lastSnapshotMetadata = snapshots.first();
-
-        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, lastSnapshotMetadata.getVersion());
+        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latest.getVersion());
         populateLinks(lastSnapshot);
 
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
+    }
+
+    @GET
+    @Path("{flowId}/versions/latest/metadata")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Get the metadata for the latest version of a flow",
+            response = VersionedFlowSnapshotMetadata.class
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getLatestFlowVersionMetadata(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+            final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId) {
+
+        authorizeBucketAccess(RequestAction.READ, bucketId);
+
+        final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
+        if (latest == null) {
+            throw new ResourceNotFoundException("No flow versions found for flow with id " + flowId);
+        }
+
+        linkService.populateSnapshotLinks(latest);
+        return Response.status(Response.Status.OK).entity(latest).build();
     }
 
     @GET

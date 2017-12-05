@@ -237,7 +237,22 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final List<VersionedFlowSnapshotMetadata> retrievedMetadata = snapshotClient.getSnapshotMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
         Assert.assertNotNull(retrievedMetadata);
         Assert.assertEquals(2, retrievedMetadata.size());
+        Assert.assertEquals(2, retrievedMetadata.get(0).getVersion());
+        Assert.assertEquals(1, retrievedMetadata.get(1).getVersion());
         retrievedMetadata.stream().forEach(s -> LOGGER.info("Retrieved snapshot metadata " + s.getVersion()));
+
+        // get latest metadata
+        final VersionedFlowSnapshotMetadata latestMetadata = snapshotClient.getLatestMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
+        Assert.assertNotNull(latestMetadata);
+        Assert.assertEquals(2, latestMetadata.getVersion());
+
+        // get latest metadata that doesn't exist
+        try {
+            snapshotClient.getLatestMetadata(snapshotFlow.getBucketIdentifier(), "DOES-NOT-EXIST");
+            Assert.fail("Should have thrown exception");
+        } catch (NiFiRegistryException nfe) {
+            Assert.assertEquals("Error retrieving latest snapshot metadata: VersionedFlow does not exist for identifier DOES-NOT-EXIST", nfe.getMessage());
+        }
 
         // ---------------------- TEST ITEMS --------------------------//
 

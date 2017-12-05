@@ -375,6 +375,19 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
+    public FlowSnapshotEntity getLatestSnapshot(final FlowEntity flowEntity) {
+        if (flowEntity == null) {
+            return null;
+        }
+
+        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findFirstByFlowOrderByIdVersionDesc(flowEntity);
+        if (flowSnapshot == null) {
+            return null;
+        }
+        return flowSnapshot;
+    }
+
+    @Override
     public void deleteFlowSnapshot(final FlowSnapshotEntity flowSnapshot) {
         flowSnapshotRepository.delete(flowSnapshot);
     }
