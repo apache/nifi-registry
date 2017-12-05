@@ -18,23 +18,19 @@ package org.apache.nifi.registry;
 
 import org.apache.nifi.registry.jetty.JettyServer;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.properties.NiFiRegistryPropertiesLoader;
+import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
+import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
+import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
+import org.apache.nifi.registry.security.crypto.MissingCryptoKeyException;
 import org.apache.nifi.registry.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -43,15 +39,17 @@ import java.util.concurrent.TimeUnit;
 public class NiFiRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NiFiRegistry.class);
-    private static final String KEY_FILE_FLAG = "-K";
 
     public static final String BOOTSTRAP_PORT_PROPERTY = "nifi.registry.bootstrap.listen.port";
+
+    public static final String REGISTRY_BOOTSTRAP_FILE_LOCATION = "conf/bootstrap.conf";
+    public static final String REGISTRY_PROPERTIES_FILE_LOCATION = "conf/nifi-registry.properties";
 
     private final JettyServer server;
     private final BootstrapListener bootstrapListener;
     private volatile boolean shutdown = false;
 
-    public NiFiRegistry(final NiFiRegistryProperties properties)
+    public NiFiRegistry(final NiFiRegistryProperties properties, CryptoKeyProvider masterKeyProvider)
             throws ClassNotFoundException, IOException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -104,7 +102,7 @@ public class NiFiRegistry {
         SLF4JBridgeHandler.install();
 
         final long startTime = System.nanoTime();
-        server = new JettyServer(properties);
+        server = new JettyServer(properties, masterKeyProvider);
 
         if (shutdown) {
             LOGGER.info("NiFi Registry has been shutdown via NiFi Registry Bootstrap. Will not start Controller");
@@ -146,111 +144,49 @@ public class NiFiRegistry {
     public static void main(String[] args) {
         LOGGER.info("Launching NiFi Registry...");
 
-        final NiFiRegistryProperties properties = new NiFiRegistryProperties();
-        try (final FileReader reader = new FileReader("conf/nifi-registry.properties")) {
-            properties.load(reader);
-        } catch (final IOException ioe) {
-            throw new RuntimeException("Unable to load properties: " + ioe, ioe);
+        final CryptoKeyProvider masterKeyProvider;
+        final NiFiRegistryProperties properties;
+        try {
+            masterKeyProvider = new BootstrapFileCryptoKeyProvider(REGISTRY_BOOTSTRAP_FILE_LOCATION);
+            LOGGER.info("Read property protection key from {}", REGISTRY_BOOTSTRAP_FILE_LOCATION);
+            properties = initializeProperties(masterKeyProvider);
+        } catch (final IllegalArgumentException iae) {
+            throw new RuntimeException("Unable to load properties: " + iae, iae);
         }
 
         try {
-            new NiFiRegistry(properties);
+            new NiFiRegistry(properties, masterKeyProvider);
         } catch (final Throwable t) {
             LOGGER.error("Failure to launch NiFi Registry due to " + t, t);
         }
     }
 
-    private static String loadFormattedKey(String[] args) {
-        String key = null;
-        List<String> parsedArgs = parseArgs(args);
-        // Check if args contain protection key
-        if (parsedArgs.contains(KEY_FILE_FLAG)) {
-            key = getKeyFromKeyFileAndPrune(parsedArgs);
-            // Format the key (check hex validity and remove spaces)
-            key = formatHexKey(key);
-        }
+    private static NiFiRegistryProperties initializeProperties(CryptoKeyProvider masterKeyProvider) {
 
-        if (null == key) {
-            return "";
-        } else if (!isHexKeyValid(key)) {
-            throw new IllegalArgumentException("The key was not provided in valid hex format and of the correct length");
-        } else {
-            return key;
-        }
-    }
-
-    private static String getKeyFromKeyFileAndPrune(List<String> parsedArgs) {
-        String key = null;
-        LOGGER.debug("The bootstrap process provided the " + KEY_FILE_FLAG + " flag");
-        int i = parsedArgs.indexOf(KEY_FILE_FLAG);
-        if (parsedArgs.size() <= i + 1) {
-            LOGGER.error("The bootstrap process passed the {} flag without a filename", KEY_FILE_FLAG);
-            throw new IllegalArgumentException("The bootstrap process provided the " + KEY_FILE_FLAG + " flag but no key");
-        }
+        String key = CryptoKeyProvider.EMPTY_KEY;
         try {
-            String passwordfile_path = parsedArgs.get(i + 1);
-            // Slurp in the contents of the file:
-            byte[] encoded = Files.readAllBytes(Paths.get(passwordfile_path));
-            key = new String(encoded, StandardCharsets.UTF_8);
-            if (0 == key.length())
-                throw new IllegalArgumentException("Key in keyfile " + passwordfile_path + " yielded an empty key");
+            key = masterKeyProvider.getKey();
+        } catch (MissingCryptoKeyException e) {
+            LOGGER.debug("CryptoKeyProvider provided to initializeProperties method was empty - did not contain a key.");
+            // Do nothing. The key can be empty when it is passed to the loader as the loader will only use it if any properties are protected.
+        }
 
-            LOGGER.info("Now overwriting file in "+passwordfile_path);
-
-            // Overwrite the contents of the file (to avoid littering file system
-            // unlinked with key material):
-            File password_file = new File(passwordfile_path);
-            FileWriter overwriter = new FileWriter(password_file,false);
-
-            // Construe a random pad:
-            Random r = new Random();
-            StringBuffer sb = new StringBuffer();
-            // Note on correctness: this pad is longer, but equally sufficient.
-            while(sb.length() < encoded.length){
-                sb.append(Integer.toHexString(r.nextInt()));
+        try {
+            try {
+                // Load properties using key. If properties are protected and key missing, throw RuntimeException
+                NiFiRegistryProperties properties = NiFiRegistryPropertiesLoader.withKey(key).load(REGISTRY_PROPERTIES_FILE_LOCATION);
+                LOGGER.info("Loaded {} properties", properties.size());
+                return properties;
+            } catch (SensitivePropertyProtectionException e) {
+                final String msg = "There was an issue decrypting protected properties";
+                LOGGER.error(msg, e);
+                throw new IllegalArgumentException(msg);
             }
-            String pad = sb.toString();
-            LOGGER.info("Overwriting key material with pad: "+pad);
-            overwriter.write(pad);
-            overwriter.close();
-
-            LOGGER.info("Removing/unlinking file: "+passwordfile_path);
-            password_file.delete();
-
-        } catch (IOException e) {
-            LOGGER.error("Caught IOException while retrieving the "+KEY_FILE_FLAG+"-passed keyfile; aborting: "+e.toString());
-            System.exit(1);
+        } catch (IllegalArgumentException e) {
+            final String msg = "The bootstrap process did not provide a valid key and there are protected properties present in the properties file";
+            LOGGER.error(msg, e);
+            throw new IllegalArgumentException(msg);
         }
-
-        LOGGER.info("Read property protection key from key file provided by bootstrap process");
-        return key;
     }
 
-    private static List<String> parseArgs(String[] args) {
-        List<String> parsedArgs = new ArrayList<>(Arrays.asList(args));
-        for (int i = 0; i < parsedArgs.size(); i++) {
-            if (parsedArgs.get(i).startsWith(KEY_FILE_FLAG + " ")) {
-                String[] split = parsedArgs.get(i).split(" ", 2);
-                parsedArgs.set(i, split[0]);
-                parsedArgs.add(i + 1, split[1]);
-                break;
-            }
-        }
-        return parsedArgs;
-    }
-
-    private static String formatHexKey(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            return "";
-        }
-        return input.replaceAll("[^0-9a-fA-F]", "").toLowerCase();
-    }
-
-    private static boolean isHexKeyValid(String key) {
-        if (key == null || key.trim().isEmpty()) {
-            return false;
-        }
-        // Key length is in "nibbles" (i.e. one hex char = 4 bits)
-        return Arrays.asList(128, 196, 256).contains(key.length() * 4) && key.matches("^[0-9a-fA-F]*$");
-    }
 }

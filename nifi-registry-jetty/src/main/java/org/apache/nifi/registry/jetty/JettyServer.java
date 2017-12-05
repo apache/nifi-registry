@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.jetty;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.server.Connector;
@@ -72,17 +73,19 @@ public class JettyServer {
     };
 
     private final NiFiRegistryProperties properties;
+    private final CryptoKeyProvider masterKeyProvider;
     private final Server server;
 
     private WebAppContext webUiContext;
     private WebAppContext webApiContext;
     private WebAppContext webDocsContext;
 
-    public JettyServer(final NiFiRegistryProperties properties) {
+    public JettyServer(final NiFiRegistryProperties properties, final CryptoKeyProvider cryptoKeyProvider) {
         final QueuedThreadPool threadPool = new QueuedThreadPool(properties.getWebThreads());
         threadPool.setName("NiFi Registry Web Server");
 
         this.properties = properties;
+        this.masterKeyProvider = cryptoKeyProvider;
         this.server = new Server(threadPool);
 
         // enable the annotation based configuration to ensure the jsp container is initialized properly
@@ -235,7 +238,10 @@ public class JettyServer {
         webUiContext = loadWar(webUiWar, "/nifi-registry");
 
         webApiContext = loadWar(webApiWar, "/nifi-registry-api");
+        logger.info("Adding {} object to ServletContext with key 'nifi-registry.properties'", properties.getClass().getSimpleName());
         webApiContext.setAttribute("nifi-registry.properties", properties);
+        logger.info("Adding {} object to ServletContext with key 'nifi-registry.key'", masterKeyProvider.getClass().getSimpleName());
+        webApiContext.setAttribute("nifi-registry.key", masterKeyProvider);
 
         // there is an issue scanning the asm repackaged jar so narrow down what we are scanning
         webApiContext.setAttribute("org.eclipse.jetty.server.webapp.WebInfIncludeJarPattern", ".*/spring-[^/]*\\.jar$");

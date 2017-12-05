@@ -25,9 +25,13 @@ import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.authorization.Tenant;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.extension.ExtensionManager;
+import org.apache.nifi.registry.properties.AESSensitivePropertyProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.properties.SensitivePropertyProvider;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
+import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
+import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,11 +94,21 @@ public class SecureLdapIT extends IntegrationTestBase {
         @Primary
         @Bean
         @DependsOn({"directoryServer"}) // Can't load LdapUserGroupProvider until the embedded LDAP server, which creates the "directoryServer" bean, is running
-        public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager) {
+        public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager) throws Exception {
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager);
+                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider());
             }
             return authorizerFactory.getAuthorizer();
+        }
+
+        @Primary
+        @Bean
+        public static SensitivePropertyProvider sensitivePropertyProvider() throws Exception {
+            return new AESSensitivePropertyProvider(getNiFiRegistryMasterKeyProvider().getKey());
+        }
+
+        private static CryptoKeyProvider getNiFiRegistryMasterKeyProvider() {
+            return new BootstrapFileCryptoKeyProvider("src/test/resources/conf/secure-ldap/bootstrap.conf");
         }
 
     }

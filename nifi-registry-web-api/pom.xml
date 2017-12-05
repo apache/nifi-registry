@@ -187,8 +187,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
-                <artifactId>nifi-registry-security-utils</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+            <artifactId>nifi-registry-security-utils</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

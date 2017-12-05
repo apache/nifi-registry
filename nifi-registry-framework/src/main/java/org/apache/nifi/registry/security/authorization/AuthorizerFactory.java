@@ -19,6 +19,8 @@ package org.apache.nifi.registry.security.authorization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
+import org.apache.nifi.registry.properties.SensitivePropertyProvider;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
@@ -34,6 +36,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -80,6 +83,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
     private final NiFiRegistryProperties properties;
     private final ExtensionManager extensionManager;
+    private final SensitivePropertyProvider sensitivePropertyProvider;
 
     private Authorizer authorizer;
     private final Map<String, UserGroupProvider> userGroupProviders = new HashMap<>();
@@ -87,9 +91,14 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     private final Map<String, Authorizer> authorizers = new HashMap<>();
 
     @Autowired
-    public AuthorizerFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
+    public AuthorizerFactory(
+            final NiFiRegistryProperties properties,
+            final ExtensionManager extensionManager,
+            @Nullable final SensitivePropertyProvider sensitivePropertyProvider) {
+
         this.properties = properties;
         this.extensionManager = extensionManager;
+        this.sensitivePropertyProvider = sensitivePropertyProvider;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
@@ -233,7 +242,12 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         final Map<String, String> authorizerProperties = new HashMap<>();
 
         for (final Prop property : properties) {
-            authorizerProperties.put(property.getName(), property.getValue());
+            if (!StringUtils.isBlank(property.getEncryption())) {
+                String decryptedValue = decryptValue(property.getValue(), property.getEncryption());
+                authorizerProperties.put(property.getName(), decryptedValue);
+            } else {
+                authorizerProperties.put(property.getName(), property.getValue());
+            }
         }
         return new StandardAuthorizerConfigurationContext(identifier, authorizerProperties);
     }
@@ -385,6 +399,24 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         if (parentClass != null && Authorizer.class.isAssignableFrom(parentClass)) {
             performFieldInjection(instance, parentClass);
         }
+    }
+
+    private String decryptValue(String cipherText, String encryptionScheme) throws SensitivePropertyProtectionException {
+        if (sensitivePropertyProvider == null) {
+            throw new SensitivePropertyProtectionException("Sensitive Property Provider dependency was never wired, so protected" +
+                    "properties cannot be decrypted. This usually indicates that a master key for this NiFi Registry was not " +
+                    "detected and configured during the bootstrap startup sequence. Contact the system administrator.");
+        }
+
+        if (!sensitivePropertyProvider.getIdentifierKey().equalsIgnoreCase(encryptionScheme)) {
+            throw new SensitivePropertyProtectionException("Identity Provider configuration XML was protected using " +
+                    encryptionScheme +
+                    ", but the configured Sensitive Property Provider supports " +
+                    sensitivePropertyProvider.getIdentifierKey() +
+                    ". Cannot configure this Identity Provider due to failing to decrypt protected configuration properties.");
+        }
+
+        return sensitivePropertyProvider.unprotect(cipherText);
     }
 
 
