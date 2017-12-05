@@ -126,6 +126,26 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
     }
 
     @Override
+    public VersionedFlowSnapshotMetadata getLatestMetadata(String bucketId, String flowId) throws NiFiRegistryException, IOException {
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalArgumentException("Bucket Identifier cannot be blank");
+        }
+
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Identifier cannot be blank");
+        }
+
+        return executeAction("Error retrieving latest snapshot metadata", () -> {
+            final WebTarget target = flowSnapshotTarget
+                    .path("/latest/metadata")
+                    .resolveTemplate("bucketId", bucketId)
+                    .resolveTemplate("flowId", flowId);
+
+            return getRequestBuilder(target).get(VersionedFlowSnapshotMetadata.class);
+        });
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public List<VersionedFlowSnapshotMetadata> getSnapshotMetadata(final String bucketId, final String flowId)
             throws NiFiRegistryException, IOException {

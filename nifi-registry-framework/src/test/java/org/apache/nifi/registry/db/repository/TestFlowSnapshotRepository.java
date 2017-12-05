@@ -121,4 +121,14 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
         assertEquals(3, count.getSnapshotCount());
     }
 
+    @Test
+    public void testFindFirstByFlow() {
+        final FlowEntity flowEntity = flowRepository.findById("1").orElse(null);
+        assertNotNull(flowEntity);
+
+        final FlowSnapshotEntity latest = flowSnapshotRepository.findFirstByFlowOrderByIdVersionDesc(flowEntity);
+        assertNotNull(latest);
+        assertEquals(3, latest.getId().getVersion().intValue());
+    }
+
 }

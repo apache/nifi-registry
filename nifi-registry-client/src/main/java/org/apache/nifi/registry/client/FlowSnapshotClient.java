@@ -64,6 +64,17 @@ public interface FlowSnapshotClient {
     VersionedFlowSnapshot getLatest(String bucketId, String flowId) throws NiFiRegistryException, IOException;
 
     /**
+     * Gets the latest snapshot metadata for the given flow.
+     *
+     * @param bucketId the bucket id
+     * @param flowId the flow id
+     * @return the snapshot metadata for the latest version of the given flow
+     * @throws NiFiRegistryException if an error is encountered other than IOException
+     * @throws IOException if an I/O error is encountered
+     */
+    VersionedFlowSnapshotMetadata getLatestMetadata(String bucketId, String flowId) throws NiFiRegistryException, IOException;
+
+    /**
      * Gets a list of the metadata for all snapshots of a given flow.
      *
      * The contents of each snapshot are not part of the response.
