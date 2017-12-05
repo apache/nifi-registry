@@ -52,6 +52,12 @@ public class ConciseEvolvingDifferenceDescriptor implements DifferenceDescriptor
             case VARIABLE_REMOVED:
                 description = String.format("Variable '%s' was removed", valueA);
                 break;
+            case POSITION_CHANGED:
+                description = "Position was changed";
+                break;
+            case BENDPOINTS_CHANGED:
+                description = "Connection Bendpoints changed";
+                break;
             case VERSIONED_FLOW_COORDINATES_CHANGED:
                 if (valueA instanceof VersionedFlowCoordinates && valueB instanceof VersionedFlowCoordinates) {
                     final VersionedFlowCoordinates coordinatesA = (VersionedFlowCoordinates) valueA;

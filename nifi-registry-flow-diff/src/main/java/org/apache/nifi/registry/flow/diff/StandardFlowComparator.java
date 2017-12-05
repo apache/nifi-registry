@@ -146,11 +146,11 @@ public class StandardFlowComparator implements FlowComparator {
         addIfDifferent(differences, DifferenceType.EXECUTION_MODE_CHANGED, processorA, processorB, VersionedProcessor::getExecutionNode);
         addIfDifferent(differences, DifferenceType.PENALTY_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getPenaltyDuration);
         addIfDifferent(differences, DifferenceType.RUN_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getRunDurationMillis);
-        addIfDifferent(differences, DifferenceType.SCHEDULING_PERIOD_CHANGED, processorA, processorB, VersionedProcessor::getSchedulingPeriod);
+        addIfDifferent(differences, DifferenceType.RUN_SCHEDULE_CHANGED, processorA, processorB, VersionedProcessor::getSchedulingPeriod);
         addIfDifferent(differences, DifferenceType.SCHEDULING_STRATEGY_CHANGED, processorA, processorB, VersionedProcessor::getSchedulingStrategy);
         addIfDifferent(differences, DifferenceType.STYLE_CHANGED, processorA, processorB, VersionedProcessor::getStyle);
         addIfDifferent(differences, DifferenceType.YIELD_DURATION_CHANGED, processorA, processorB, VersionedProcessor::getYieldDuration);
-        compareProperties(processorA, processorB, processorA.getProperties(), processorB.getProperties(), processorA.getPropertyDescriptors(), differences);
+        compareProperties(processorA, processorB, processorA.getProperties(), processorB.getProperties(), processorA.getPropertyDescriptors(), processorB.getPropertyDescriptors(), differences);
     }
 
     @Override
@@ -167,12 +167,13 @@ public class StandardFlowComparator implements FlowComparator {
 
         addIfDifferent(differences, DifferenceType.ANNOTATION_DATA_CHANGED, serviceA, serviceB, VersionedControllerService::getAnnotationData);
         addIfDifferent(differences, DifferenceType.BUNDLE_CHANGED, serviceA, serviceB, VersionedControllerService::getBundle);
-        compareProperties(serviceA, serviceB, serviceA.getProperties(), serviceB.getProperties(), serviceA.getPropertyDescriptors(), differences);
+        compareProperties(serviceA, serviceB, serviceA.getProperties(), serviceB.getProperties(), serviceA.getPropertyDescriptors(), serviceB.getPropertyDescriptors(), differences);
     }
 
 
     private void compareProperties(final VersionedComponent componentA, final VersionedComponent componentB,
-        final Map<String, String> propertiesA, final Map<String, String> propertiesB, final Map<String, VersionedPropertyDescriptor> descriptorsA,
+        final Map<String, String> propertiesA, final Map<String, String> propertiesB,
+        final Map<String, VersionedPropertyDescriptor> descriptorsA, final Map<String, VersionedPropertyDescriptor> descriptorsB,
         final Set<FlowDifference> differences) {
 
         propertiesA.entrySet().stream()
@@ -180,8 +181,17 @@ public class StandardFlowComparator implements FlowComparator {
                 final String valueA = entry.getValue();
                 final String valueB = propertiesB.get(entry.getKey());
 
-                final VersionedPropertyDescriptor descriptor = descriptorsA.get(entry.getKey());
-                final String displayName = descriptor.getDisplayName() == null ? descriptor.getName() : descriptor.getDisplayName();
+                VersionedPropertyDescriptor descriptor = descriptorsA.get(entry.getKey());
+                if (descriptor == null) {
+                    descriptor = descriptorsB.get(entry.getKey());
+                }
+
+                final String displayName;
+                if (descriptor == null) {
+                    displayName = entry.getKey();
+                } else {
+                    displayName = descriptor.getDisplayName() == null ? descriptor.getName() : descriptor.getDisplayName();
+                }
 
                 if (valueA == null && valueB != null) {
                     differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, displayName, displayName));
@@ -214,7 +224,16 @@ public class StandardFlowComparator implements FlowComparator {
 
                 // If there are any properties for component B that do not exist for Component A, add those as differences as well.
                 if (valueA == null && valueB != null) {
-                    differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, entry.getKey(), entry.getKey()));
+                    final VersionedPropertyDescriptor descriptor = descriptorsB.get(entry.getKey());
+
+                    final String displayName;
+                    if (descriptor == null) {
+                        displayName = entry.getKey();
+                    } else {
+                        displayName = descriptor.getDisplayName() == null ? descriptor.getName() : descriptor.getDisplayName();
+                    }
+
+                    differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, displayName, displayName));
                 }
             });
     }
@@ -288,15 +307,17 @@ public class StandardFlowComparator implements FlowComparator {
 
         addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, VersionedProcessGroup::getVersionedFlowCoordinates);
 
-        differences.addAll(compareComponents(groupA.getConnections(), groupB.getConnections(), this::compare));
-        differences.addAll(compareComponents(groupA.getProcessors(), groupB.getProcessors(), this::compare));
-        differences.addAll(compareComponents(groupA.getControllerServices(), groupB.getControllerServices(), this::compare));
-        differences.addAll(compareComponents(groupA.getFunnels(), groupB.getFunnels(), this::compare));
-        differences.addAll(compareComponents(groupA.getInputPorts(), groupB.getInputPorts(), this::compare));
-        differences.addAll(compareComponents(groupA.getLabels(), groupB.getLabels(), this::compare));
-        differences.addAll(compareComponents(groupA.getOutputPorts(), groupB.getOutputPorts(), this::compare));
-        differences.addAll(compareComponents(groupA.getProcessGroups(), groupB.getProcessGroups(), (a, b, diffs) -> compare(a, b, diffs, true)));
-        differences.addAll(compareComponents(groupA.getRemoteProcessGroups(), groupB.getRemoteProcessGroups(), this::compare));
+        if (groupA != null && groupB != null && groupA.getVersionedFlowCoordinates() == null && groupB.getVersionedFlowCoordinates() == null) {
+            differences.addAll(compareComponents(groupA.getConnections(), groupB.getConnections(), this::compare));
+            differences.addAll(compareComponents(groupA.getProcessors(), groupB.getProcessors(), this::compare));
+            differences.addAll(compareComponents(groupA.getControllerServices(), groupB.getControllerServices(), this::compare));
+            differences.addAll(compareComponents(groupA.getFunnels(), groupB.getFunnels(), this::compare));
+            differences.addAll(compareComponents(groupA.getInputPorts(), groupB.getInputPorts(), this::compare));
+            differences.addAll(compareComponents(groupA.getLabels(), groupB.getLabels(), this::compare));
+            differences.addAll(compareComponents(groupA.getOutputPorts(), groupB.getOutputPorts(), this::compare));
+            differences.addAll(compareComponents(groupA.getProcessGroups(), groupB.getProcessGroups(), (a, b, diffs) -> compare(a, b, diffs, true)));
+            differences.addAll(compareComponents(groupA.getRemoteProcessGroups(), groupB.getRemoteProcessGroups(), this::compare));
+        }
     }
 
 
