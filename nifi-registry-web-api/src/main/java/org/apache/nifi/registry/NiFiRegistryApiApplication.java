@@ -32,6 +32,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
 
     public static final String NIFI_REGISTRY_PROPERTIES_ATTRIBUTE = "nifi-registry.properties";
+    public static final String NIFI_REGISTRY_MASTER_KEY_ATTRIBUTE = "nifi-registry.key";
 
     public static void main(String[] args) {
         SpringApplication.run(NiFiRegistryApiApplication.class, args);

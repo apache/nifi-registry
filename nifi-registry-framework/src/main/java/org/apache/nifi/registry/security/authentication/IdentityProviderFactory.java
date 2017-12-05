@@ -19,6 +19,8 @@ package org.apache.nifi.registry.security.authentication;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
+import org.apache.nifi.registry.properties.SensitivePropertyProvider;
 import org.apache.nifi.registry.security.authentication.annotation.IdentityProviderContext;
 import org.apache.nifi.registry.security.authentication.generated.IdentityProviders;
 import org.apache.nifi.registry.security.authentication.generated.Property;
@@ -31,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.Nullable;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
@@ -68,13 +71,18 @@ public class IdentityProviderFactory implements IdentityProviderLookup, Disposab
 
     private NiFiRegistryProperties properties;
     private ExtensionManager extensionManager;
+    private SensitivePropertyProvider sensitivePropertyProvider;
     private IdentityProvider identityProvider;
     private final Map<String, IdentityProvider> identityProviders = new HashMap<>();
 
     @Autowired
-    public IdentityProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
+    public IdentityProviderFactory(
+            final NiFiRegistryProperties properties,
+            final ExtensionManager extensionManager,
+            @Nullable final SensitivePropertyProvider sensitivePropertyProvider) {
         this.properties = properties;
         this.extensionManager = extensionManager;
+        this.sensitivePropertyProvider = sensitivePropertyProvider;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
@@ -90,9 +98,8 @@ public class IdentityProviderFactory implements IdentityProviderLookup, Disposab
         return identityProviders.get(identifier);
     }
 
-    @Primary
     @Bean
-//    @Bean("LoginIdentityProvider")
+    @Primary
     public IdentityProvider getIdentityProvider() throws Exception {
         if (identityProvider == null) {
             // look up the login identity provider to use
@@ -186,7 +193,12 @@ public class IdentityProviderFactory implements IdentityProviderLookup, Disposab
         final Map<String, String> providerProperties = new HashMap<>();
 
         for (final Property property : provider.getProperty()) {
-            providerProperties.put(property.getName(), property.getValue());
+            if (!StringUtils.isBlank(property.getEncryption())) {
+                String decryptedValue = decryptValue(property.getValue(), property.getEncryption());
+                providerProperties.put(property.getName(), decryptedValue);
+            } else {
+                providerProperties.put(property.getName(), property.getValue());
+            }
         }
 
         return new StandardIdentityProviderConfigurationContext(provider.getIdentifier(), this, providerProperties);
@@ -256,6 +268,24 @@ public class IdentityProviderFactory implements IdentityProviderLookup, Disposab
         if (parentClass != null && IdentityProvider.class.isAssignableFrom(parentClass)) {
             performFieldInjection(instance, parentClass);
         }
+    }
+
+    private String decryptValue(String cipherText, String encryptionScheme) throws SensitivePropertyProtectionException {
+        if (sensitivePropertyProvider == null) {
+            throw new SensitivePropertyProtectionException("Sensitive Property Provider dependency was never wired, so protected" +
+                    "properties cannot be decrypted. This usually indicates that a master key for this NiFi Registry was not " +
+                    "detected and configured during the bootstrap startup sequence. Contact the system administrator.");
+        }
+
+        if (!sensitivePropertyProvider.getIdentifierKey().equalsIgnoreCase(encryptionScheme)) {
+            throw new SensitivePropertyProtectionException("Identity Provider configuration XML was protected using " +
+                    encryptionScheme +
+                    ", but the configured Sensitive Property Provider supports " +
+                    sensitivePropertyProvider.getIdentifierKey() +
+                    ". Cannot configure this Identity Provider due to failing to decrypt protected configuration properties.");
+        }
+
+        return sensitivePropertyProvider.unprotect(cipherText);
     }
 
 }

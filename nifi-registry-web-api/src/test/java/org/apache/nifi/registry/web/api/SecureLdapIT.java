@@ -92,7 +92,7 @@ public class SecureLdapIT extends IntegrationTestBase {
         @DependsOn({"directoryServer"}) // Can't load LdapUserGroupProvider until the embedded LDAP server, which creates the "directoryServer" bean, is running
         public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager) {
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager);
+                authorizerFactory = new AuthorizerFactory(properties, extensionManager, null);
             }
             return authorizerFactory.getAuthorizer();
         }
