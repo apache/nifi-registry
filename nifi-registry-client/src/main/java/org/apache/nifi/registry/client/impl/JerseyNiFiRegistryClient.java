@@ -77,7 +77,7 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
         }
 
         if (baseUrl.endsWith("/")) {
-            baseUrl = baseUrl.substring(0, baseUrl.length() - 2);
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
 
         if (!baseUrl.endsWith(NIFI_REGISTRY_CONTEXT)) {
