@@ -828,6 +828,9 @@ public class TestRegistryService {
         final SortedSet<VersionedFlowSnapshotMetadata> retrievedSnapshots = registryService.getFlowSnapshots(existingBucket.getId(), existingFlow.getId());
         assertNotNull(retrievedSnapshots);
         assertEquals(2, retrievedSnapshots.size());
+        // check that sorted set order is reversed
+        assertEquals(2, retrievedSnapshots.first().getVersion());
+        assertEquals(1, retrievedSnapshots.last().getVersion());
     }
 
     @Test

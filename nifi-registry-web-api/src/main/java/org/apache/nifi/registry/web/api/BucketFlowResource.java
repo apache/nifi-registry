@@ -275,7 +275,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets summary information for all versions of a flow",
+            value = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
             response = VersionedFlowSnapshotMetadata.class,
             responseContainer = "List"
     )
