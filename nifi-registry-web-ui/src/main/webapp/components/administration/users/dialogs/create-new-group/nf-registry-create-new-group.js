@@ -44,24 +44,16 @@ NfRegistryCreateNewGroup.prototype = {
      * @param createNewGroupInput     The createNewGroupInput element.
      */
     createNewGroup: function (createNewGroupInput) {
-        if(!this.nfRegistryService.isMultiUserGroupActionsDisabled) {
-            var self = this;
-            var selectedUsers = this.nfRegistryService.filteredUsers.filter(function (filteredUser) {
-                return filteredUser.checked;
-            });
-            var selectedUserGroups = this.nfRegistryService.filteredUserGroups.filter(function (filteredUserGroup) {
-                return filteredUserGroup.checked;
-            });
-
-            this.nfRegistryApi.createNewGroup(null, createNewGroupInput.value, selectedUsers.concat(selectedUserGroups)).subscribe(function (group) {
-                self.nfRegistryService.groups.push(group);
-                self.nfRegistryService.filterUsersAndGroups();
-                self.nfRegistryService.allUsersAndGroupsSelected = false;
-                if (self.keepDialogOpen !== true) {
-                    self.dialogRef.close();
-                }
-            });
-        }
+        var self = this;
+        // create new group with any selected users added to the new group
+        this.nfRegistryApi.createNewGroup(null, createNewGroupInput.value, this.nfRegistryService.getSelectedUsers()).subscribe(function (group) {
+            self.nfRegistryService.groups.push(group);
+            self.nfRegistryService.filterUsersAndGroups();
+            self.nfRegistryService.allUsersAndGroupsSelected = false;
+            if (self.keepDialogOpen !== true) {
+                self.dialogRef.close();
+            }
+        });
     },
 
     /**

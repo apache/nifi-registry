@@ -27,15 +27,15 @@ var $ = require('jquery');
  * NfRegistryAddSelectedToGroup constructor.
  *
  * @param nfRegistryApi         The api service.
- * @param TdDataTableService    The covalent data table service module.
+ * @param tdDataTableService    The covalent data table service module.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
- * @param FdsSnackBarService    The FDS snack bar service module.
+ * @param fdsSnackBarService    The FDS snack bar service module.
  * @constructor
  */
-function NfRegistryAddSelectedToGroup(nfRegistryApi, TdDataTableService, nfRegistryService, matDialogRef, FdsSnackBarService) {
-    this.dataTableService = TdDataTableService;
-    this.snackBarService = FdsSnackBarService;
+function NfRegistryAddSelectedToGroup(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService) {
+    this.dataTableService = tdDataTableService;
+    this.snackBarService = fdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
@@ -43,7 +43,7 @@ function NfRegistryAddSelectedToGroup(nfRegistryApi, TdDataTableService, nfRegis
     //make an independent copy of the groups for sorting and selecting within the scope of this component
     this.groups = $.extend(true, [], this.nfRegistryService.groups);
     this.selectedGroups = [];
-    this.allUsersAndGroupsSelected = false;
+    this.allGroupsSelected = false;
     this.isAddSelectedUsersToSelectedGroupsDisabled = true;
     this.userGroupsSearchTerms = [];
     this.userGroupsColumns = [
@@ -111,7 +111,7 @@ NfRegistryAddSelectedToGroup.prototype = {
      *
      * @param column    The column to sort by.
      */
-    sortUserGroups: function (sortEvent, column) {
+    sortUserGroups: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -120,11 +120,11 @@ NfRegistryAddSelectedToGroup.prototype = {
     },
 
     /**
-     * Checks the `allUsersAndGroupsSelected` property state and either selects
+     * Checks the `allGroupsSelected` property state and either selects
      * or deselects each of the `filteredUserGroups`.
      */
     toggleUserGroupsSelectAll: function () {
-        if (this.allUsersAndGroupsSelected) {
+        if (this.allGroupsSelected) {
             this.selectAllUserGroups();
         } else {
             this.deselectAllUserGroups();
@@ -133,7 +133,7 @@ NfRegistryAddSelectedToGroup.prototype = {
 
     /**
      * Sets the `checked` property of each of the `filteredUserGroups` to true
-     * and sets the `isAddSelectedUsersToSelectedGroupsDisabled` and the `allUsersAndGroupsSelected`
+     * and sets the `isAddSelectedUsersToSelectedGroupsDisabled` and the `allGroupsSelected`
      * properties accordingly.
      */
     selectAllUserGroups: function () {
@@ -141,12 +141,12 @@ NfRegistryAddSelectedToGroup.prototype = {
             c.checked = true;
         });
         this.isAddSelectedUsersToSelectedGroupsDisabled = false;
-        this.allUsersAndGroupsSelected = true;
+        this.allGroupsSelected = true;
     },
 
     /**
      * Sets the `checked` property of each group to false
-     * and sets the `isAddSelectedUsersToSelectedGroupsDisabled` and the `allUsersAndGroupsSelected`
+     * and sets the `isAddSelectedUsersToSelectedGroupsDisabled` and the `allGroupsSelected`
      * properties accordingly.
      */
     deselectAllUserGroups: function () {
@@ -154,7 +154,7 @@ NfRegistryAddSelectedToGroup.prototype = {
             c.checked = false;
         });
         this.isAddSelectedUsersToSelectedGroupsDisabled = true;
-        this.allUsersAndGroupsSelected = false;
+        this.allGroupsSelected = false;
     },
 
     /**
@@ -180,7 +180,7 @@ NfRegistryAddSelectedToGroup.prototype = {
             this.isAddSelectedUsersToSelectedGroupsDisabled = true;
         }
 
-        this.allUsersAndGroupsSelected = allSelected;
+        this.allGroupsSelected = allSelected;
     },
 
     /**

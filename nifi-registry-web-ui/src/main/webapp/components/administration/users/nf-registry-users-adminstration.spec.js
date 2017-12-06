@@ -17,9 +17,10 @@
 
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
-var ngHttpTesting = require('@angular/http/testing');
+var ngCommonHttpTesting = require('@angular/common/http/testing');
 var ngCommon = require('@angular/common');
 var ngRouter = require('@angular/router');
+var ngPlatformBrowser = require('@angular/platform-browser');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
@@ -34,6 +35,7 @@ var NfRegistryUserPermissions = require('nifi-registry/components/administration
 var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
+var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
@@ -46,12 +48,13 @@ var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.tok
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
-describe('NfRegistryBucketGridListViewer Component', function () {
+describe('NfRegistryUsersAdministration Component', function () {
     var comp;
     var fixture;
+    var de;
+    var el;
     var nfRegistryService;
     var nfRegistryApi;
-    var ngHttpService;
 
     beforeEach(function () {
         ngCoreTesting.TestBed.configureTestingModule({
@@ -61,7 +64,8 @@ describe('NfRegistryBucketGridListViewer Component', function () {
                 ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
-                NfRegistryRoutes
+                NfRegistryRoutes,
+                ngCommonHttpTesting.HttpClientTestingModule
             ],
             declarations: [
                 FdsDemo,
@@ -75,10 +79,14 @@ describe('NfRegistryBucketGridListViewer Component', function () {
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
+                NfRegistryCreateBucket,
                 NfRegistryGridListViewer,
                 NfRegistryBucketGridListViewer,
                 NfRegistryDropletGridListViewer,
                 NfPageNotFoundComponent
+            ],
+            entryComponents: [
+                NfRegistryCreateBucket
             ],
             providers: [
                 NfRegistryService,
@@ -93,20 +101,16 @@ describe('NfRegistryBucketGridListViewer Component', function () {
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
-                },
-                {
+                }, {
                     provide: ngRouter.ActivatedRoute,
                     useValue: {
-                        params: rxjs.Observable.of({bucketId: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc'})
+                        params: rxjs.Observable.of({})
                     }
-                },
-                {
-                    provide: ngHttp.XHRBackend,
-                    useClass: ngHttpTesting.MockBackend
                 }
             ]
         });
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryBucketGridListViewer);
+
+        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryUsersAdministration);
 
         // test instance
         comp = fixture.componentInstance;
@@ -114,86 +118,89 @@ describe('NfRegistryBucketGridListViewer Component', function () {
         // from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
-        ngHttpService = ngCoreTesting.TestBed.get(ngHttp.Http);
+        de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-users-administration-perspective'));
+        el = de.nativeElement;
 
-        // because the NfRegistryBucketGridListViewer component is a nested route component we need to set up the nfRegistryService service manually
-        nfRegistryService.explorerViewType = 'grid-list';
-
-        //Spy
+        // Spy
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(ngHttpService, 'get').and.callThrough();
-        spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
-            identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            name: 'Bucket #1'
-        }]));
-        spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
-            identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            name: 'Bucket #1'
-        }));
-        spyOn(nfRegistryService, 'filterDroplets');
-    });
-
-    it('should have a defined component', ngCoreTesting.fakeAsync(function () {
-        spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
+        spyOn(nfRegistryApi, 'getUsers').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
-                },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
-            }
+            "identity": "User #1"
         }]));
-        // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, and getDroplets calls
-        fixture.detectChanges();
-        // wait for async getBuckets, getBucket, and getDroplets calls
-        ngCoreTesting.tick();
-        // 2nd change detection completes after the getBuckets, getBucket, and getDroplets calls
-        fixture.detectChanges();
+        spyOn(nfRegistryApi, 'getUserGroups').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([{
+            "identifier": "5e04b4fb-9513-47bb-aa74-1ae34616bfdc",
+            "identity": "Group #1"}]));
+        spyOn(nfRegistryService, 'filterUsersAndGroups');
+    });
 
-        //assertions
-        expect(comp).toBeDefined();
-        expect(nfRegistryService.breadCrumbState).toBe('in');
-        expect(nfRegistryService.droplet.identity).toBeUndefined();
-        expect(nfRegistryService.bucket.name).toEqual('Bucket #1');
-        expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
-        expect(nfRegistryService.buckets.length).toBe(1);
-        expect(nfRegistryService.droplets[0].name).toEqual('Flow #1');
-        expect(nfRegistryService.droplets.length).toBe(1);
-        expect(nfRegistryApi.getBuckets).toHaveBeenCalled();
-        expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
-        expect(nfRegistryService.filterDroplets.calls.count()).toBe(1);
+    it('should have a defined component', ngCoreTesting.async(function () {
+        fixture.detectChanges();
+        fixture.whenStable().then(function () { // wait for async getBuckets
+            fixture.detectChanges();
 
-        var getDropletsCall = nfRegistryApi.getDroplets.calls.first()
-        expect(getDropletsCall.args[0]).toBe('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
-        var getBucketCall = nfRegistryApi.getBucket.calls.first()
-        expect(getBucketCall.args[0]).toBe('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+            //assertions
+            expect(comp).toBeDefined();
+            expect(de).toBeDefined();
+            expect(nfRegistryService.adminPerspective).toBe('users');
+            expect(nfRegistryService.users[0].identity).toEqual('User #1');
+            expect(nfRegistryService.users.length).toBe(1);
+            expect(nfRegistryService.groups[0].identity).toEqual('Group #1');
+            expect(nfRegistryService.groups.length).toBe(1);
+            expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
+        });
     }));
 
-    it('should destroy the component', ngCoreTesting.fakeAsync(function () {
-        spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([]));
-        // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, and getDroplets calls
+    it('should open a dialog to create a new user', function () {
+        spyOn(comp.dialog, 'open')
         fixture.detectChanges();
-        // wait for async getBuckets, getBucket, and getDroplets calls
+
+        // the function to test
+        comp.addUser();
+
+        //assertions
+        expect(comp.dialog.open).toHaveBeenCalled();
+    });
+
+    it('should open a dialog to create a new group', function () {
+        spyOn(comp.dialog, 'open')
+        fixture.detectChanges();
+
+        // the function to test
+        comp.createNewGroup();
+
+        //assertions
+        expect(comp.dialog.open).toHaveBeenCalled();
+    });
+
+    it('should open a dialog to add selected users to groups', function () {
+        spyOn(comp.dialog, 'open')
+        fixture.detectChanges();
+
+        // the function to test
+        comp.addSelectedUsersToGroup();
+
+        //assertions
+        expect(comp.dialog.open).toHaveBeenCalled();
+    });
+
+    it('should destroy the component', ngCoreTesting.fakeAsync(function () {
+        fixture.detectChanges();
+        // wait for async getBucket call
         ngCoreTesting.tick();
-        // 2nd change detection completes after the getBuckets, getBucket, and getDroplets calls
         fixture.detectChanges();
 
         // The function to test
         comp.ngOnDestroy();
 
         //assertions
-        expect(nfRegistryService.breadCrumbState).toBe('out');
+        expect(nfRegistryService.adminPerspective).toBe('');
+        expect(nfRegistryService.users.length).toBe(0);
+        expect(nfRegistryService.groups.length).toBe(0);
+        expect(nfRegistryService.filteredUsers.length).toBe(0);
+        expect(nfRegistryService.filteredUserGroups.length).toBe(0);
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(false);
     }));
 });

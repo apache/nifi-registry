@@ -41,7 +41,7 @@ NfAnimations.prototype = {
             ngAnimate.style({
                 opacity: 0
             }),
-            ngAnimate.animate('0.3s ease-in')
+            ngAnimate.animate('0.5s ease-in')
         ]),
         ngAnimate.transition(':leave', [
             ngAnimate.animate('0.5s ease-out', ngAnimate.style({
@@ -65,7 +65,7 @@ NfAnimations.prototype = {
                 opacity: 0,
                 transform: 'translateX(-100%)'
             }),
-            ngAnimate.animate('0.3s ease-in')
+            ngAnimate.animate('0.5s ease-in')
         ]),
         ngAnimate.transition(':leave', [
             ngAnimate.animate('0.5s ease-out', ngAnimate.style({
@@ -90,7 +90,7 @@ NfAnimations.prototype = {
                 opacity: 0,
                 transform: 'translateY(-100%)'
             }),
-            ngAnimate.animate('0.3s ease-in')
+            ngAnimate.animate('0.5s ease-in')
         ]),
         ngAnimate.transition(':leave', [
             ngAnimate.animate('0.5s ease-out', ngAnimate.style({
@@ -111,7 +111,7 @@ NfAnimations.prototype = {
             ngAnimate.style({transform: 'translateX(100%)'}),
             ngAnimate.animate('0.5s 0.1s ease-in')
         ]),
-        ngAnimate.transition('* => void', ngAnimate.animate('0.3s ease-out', ngAnimate.style({transform: 'translateX(-100%)'})))
+        ngAnimate.transition('* => void', ngAnimate.animate('0.5s ease-out', ngAnimate.style({transform: 'translateX(-100%)'})))
     ])
 
 };

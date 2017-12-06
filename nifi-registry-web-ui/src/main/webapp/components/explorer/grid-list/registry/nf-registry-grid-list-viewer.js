@@ -47,7 +47,11 @@ NfRegistryGridListViewer.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.explorerViewType = 'grid-list';
+
+        // reset the breadcrumb state
         this.nfRegistryService.bucket = {};
+        this.nfRegistryService.droplet = {};
+
         // attempt kerberos authentication
         this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {

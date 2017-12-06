@@ -17,6 +17,7 @@
 
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
+var ngCommonHttpTesting = require('@angular/common/http/testing');
 var ngCommon = require('@angular/common');
 var ngRouter = require('@angular/router');
 var ngPlatformBrowser = require('@angular/platform-browser');
@@ -63,7 +64,8 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
-                NfRegistryRoutes
+                NfRegistryRoutes,
+                ngCommonHttpTesting.HttpClientTestingModule
             ],
             declarations: [
                 FdsDemo,
@@ -122,27 +124,8 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         // Spy
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryService.api, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
-                },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
-            }
-        }]));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{name: 'Bucket #1'}]));
-        spyOn(nfRegistryApi, 'createBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({name: 'Newly Created Bucket'}));
         spyOn(nfRegistryService, 'filterBuckets');
     });
 
@@ -169,7 +152,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         comp.createBucket();
 
         //assertions
-        expect(comp.dialog.open).toBeDefined();
+        expect(comp.dialog.open).toHaveBeenCalled();
     });
 
     it('should destroy the component', ngCoreTesting.fakeAsync(function () {

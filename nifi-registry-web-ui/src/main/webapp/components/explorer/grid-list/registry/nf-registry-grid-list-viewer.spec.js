@@ -152,6 +152,8 @@ describe('NfRegistryGridListViewer Component', function () {
         expect(comp).toBeDefined();
         expect(nfRegistryService.explorerViewType).toBe('grid-list');
         expect(nfRegistryService.breadCrumbState).toBe('in');
+        expect(nfRegistryService.bucket.identity).toBeUndefined();
+        expect(nfRegistryService.droplet.identity).toBeUndefined();
         expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.droplets[0].name).toEqual('Flow #1');

@@ -25,28 +25,29 @@ limitations under the License.
             <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()">
                 Add User
             </button>
-            <button class="push-top-sm" [disabled]="nfRegistryService.isMultiUserActionsDisabled" color="fds-primary"
+            <button class="push-top-sm" color="fds-primary"
                     mat-raised-button [matMenuTriggerFor]="userActionMenu">
                 Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
             </button>
         </div>
         <mat-menu class="fds-primary-dropdown-button-menu" #userActionMenu="matMenu" [overlapTrigger]="false">
             <button mat-menu-item
+                    [disabled]="(nfRegistryService.getSelectedGroups().length === 0) && (nfRegistryService.getSelectedUsers().length === 0)"
                     (click)="nfRegistryService.deleteSelectedUsersAndGroups()">
                 <span>Delete</span>
             </button>
-            <button mat-menu-item [disabled]="nfRegistryService.isMultiUserGroupActionsDisabled"
+            <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0)"
                     (click)="createNewGroup()">
                 <span>Create new group</span>
             </button>
-            <button mat-menu-item [disabled]="nfRegistryService.isMultiUserGroupActionsDisabled || nfRegistryService.groups.length === 0"
+            <button mat-menu-item [disabled]="nfRegistryService.getSelectedGroups().length > 0 || nfRegistryService.getSelectedUsers().length === 0 || nfRegistryService.groups.length === 0"
                     (click)="addSelectedUsersToGroup()">
                 <span>Add selected users to group</span>
             </button>
         </mat-menu>
         <div id="nifi-registry-users-administration-list-container-column-header" fxLayout="row"
              fxLayoutAlign="space-between center" class="td-data-table">
-            <div class="td-data-table-column" (click)="nfRegistryService.sortUsersAndGroups($event, column)"
+            <div class="td-data-table-column" (click)="nfRegistryService.sortUsersAndGroups(column)"
                  *ngFor="let column of nfRegistryService.userColumns"
                  fxFlex="{{column.width}}">
                 {{column.label}}
@@ -67,7 +68,7 @@ limitations under the License.
             <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredUserGroups"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllUsersAndGroupsSelectedState(row)">
                 <div *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
-                    <div *ngIf="row.users && row.users.length > 0" class="td-data-table-cell" fxFlex="{{column.width}}">
+                    <div class="td-data-table-cell" fxFlex="{{column.width}}">
                         <div>
                             <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ? column.format(row[column.name]) : row[column.name]}}
                         </div>
@@ -116,7 +117,7 @@ limitations under the License.
             <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredUsers"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllUsersAndGroupsSelectedState(row)">
                 <div *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
-                    <div *ngIf="!row.users" class="td-data-table-cell" fxFlex="{{column.width}}">
+                    <div class="td-data-table-cell" fxFlex="{{column.width}}">
                         <div>
                             {{column.format ? column.format(row[column.name]) : row[column.name]}}
                         </div>

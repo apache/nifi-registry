@@ -24,7 +24,7 @@ limitations under the License.
     </div>
     <div class="pad-bottom-md">
         <div id="nifi-registry-users-administration-list-container-column-header" class="td-data-table">
-            <div class="td-data-table-column" (click)="sortUserGroups($event, column)"
+            <div class="td-data-table-column" (click)="sortUserGroups(column)"
                  *ngFor="let column of userGroupsColumns"
                  fxFlex="{{column.width}}">
                 {{column.label}}
@@ -34,8 +34,8 @@ limitations under the License.
                    aria-hidden="true"></i>
             </div>
             <div class="td-data-table-column">
-                <mat-checkbox [(ngModel)]="allUsersAndGroupsSelected"
-                              (checked)="allUsersAndGroupsSelected"
+                <mat-checkbox [(ngModel)]="allGroupsSelected"
+                              (checked)="allGroupsSelected"
                               (change)="toggleUserGroupsSelectAll()"></mat-checkbox>
             </div>
         </div>
