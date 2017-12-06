@@ -51,7 +51,7 @@ public class TestKeyRepository extends DatabaseBaseTest {
     public void testUpdate() {
         final String prepopulatedKeyId = "1";  // see test-setup.sql
 
-        final KeyEntity existingKey = keyRepository.findOne(prepopulatedKeyId);
+        final KeyEntity existingKey = keyRepository.findById(prepopulatedKeyId).orElse(null);
         assertNotNull(existingKey);
 
         final String updatedKeyValue = existingKey.getKeyValue() + " UPDATED";
@@ -59,7 +59,7 @@ public class TestKeyRepository extends DatabaseBaseTest {
 
         keyRepository.save(existingKey);
 
-        final KeyEntity updatedKey = keyRepository.findOne(prepopulatedKeyId);
+        final KeyEntity updatedKey = keyRepository.findById(prepopulatedKeyId).orElse(null);
         assertNotNull(updatedKey);
         assertEquals(updatedKeyValue, updatedKey.getKeyValue());
     }
@@ -69,12 +69,12 @@ public class TestKeyRepository extends DatabaseBaseTest {
     public void testDelete() {
         final String id = "1";
 
-        final KeyEntity existingKey = keyRepository.findOne("1");
+        final KeyEntity existingKey = keyRepository.findById("1").orElse(null);
         assertNotNull(existingKey);
 
         keyRepository.delete(existingKey);
 
-        final KeyEntity deletedKey = keyRepository.findOne("1");
+        final KeyEntity deletedKey = keyRepository.findById("1").orElse(null);
         assertNull(deletedKey);
     }
 
@@ -99,7 +99,7 @@ public class TestKeyRepository extends DatabaseBaseTest {
 
         KeyEntity deletedKey = keyRepository.findOneByTenantIdentity(prepopulatedKeyTenantIdentity);
         assertNull(deletedKey);
-        deletedKey = keyRepository.findOne("1");
+        deletedKey = keyRepository.findById("1").orElse(null);
         assertNull(deletedKey);
     }
 

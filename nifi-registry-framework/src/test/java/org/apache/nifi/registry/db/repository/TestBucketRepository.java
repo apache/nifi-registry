@@ -61,7 +61,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
     public void testUpdate() {
         final String id = "1";
 
-        final BucketEntity existingBucket = bucketRepository.findOne(id);
+        final BucketEntity existingBucket = bucketRepository.findById(id).orElse(null);
         assertNotNull(existingBucket);
 
         final String updatedDescription = existingBucket.getDescription() + " UPDATED";
@@ -69,7 +69,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
 
         bucketRepository.save(existingBucket);
 
-        final BucketEntity updatedBucket = bucketRepository.findOne(id);
+        final BucketEntity updatedBucket = bucketRepository.findById(id).orElse(null);
         assertNotNull(updatedBucket);
         assertEquals(updatedDescription, updatedBucket.getDescription());
 
@@ -81,12 +81,12 @@ public class TestBucketRepository extends DatabaseBaseTest {
     public void testDelete() {
         final String id = "6";
 
-        final BucketEntity existingBucket = bucketRepository.findOne(id);
+        final BucketEntity existingBucket = bucketRepository.findById(id).orElse(null);
         assertNotNull(existingBucket);
 
         bucketRepository.delete(existingBucket);
 
-        final BucketEntity updatedBucket = bucketRepository.findOne(id);
+        final BucketEntity updatedBucket = bucketRepository.findById(id).orElse(null);
         assertNull(updatedBucket);
     }
 
@@ -94,7 +94,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
     public void testOneToManyWithBucketItems() {
         final String id = "1";
 
-        final BucketEntity existingBucket = bucketRepository.findOne(id);
+        final BucketEntity existingBucket = bucketRepository.findById(id).orElse(null);
         assertNotNull(existingBucket);
 
         final Set<BucketItemEntity> items = existingBucket.getItems();
@@ -122,7 +122,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
         int pageSize = 2;
 
         // query for first page
-        Pageable pageable = new PageRequest(pageIndex, pageSize, sort);
+        Pageable pageable = PageRequest.of(pageIndex, pageSize, sort);
 
         Page<BucketEntity> page = bucketRepository.findAll(pageable);
         assertNotNull(page);
@@ -139,7 +139,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
 
         // query for second page
         pageIndex++;
-        pageable = new PageRequest(pageIndex, pageSize, sort);
+        pageable = PageRequest.of(pageIndex, pageSize, sort);
         buckets = bucketRepository.findAll(pageable);
         assertNotNull(buckets);
 
@@ -150,7 +150,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
 
         // query for third page
         pageIndex++;
-        pageable = new PageRequest(pageIndex, pageSize, sort);
+        pageable = PageRequest.of(pageIndex, pageSize, sort);
         buckets = bucketRepository.findAll(pageable);
         assertNotNull(buckets);
 
@@ -161,7 +161,7 @@ public class TestBucketRepository extends DatabaseBaseTest {
 
         // query for fourth page
         pageIndex++;
-        pageable = new PageRequest(pageIndex, pageSize, sort);
+        pageable = PageRequest.of(pageIndex, pageSize, sort);
         buckets = bucketRepository.findAll(pageable);
         assertNotNull(buckets);
 

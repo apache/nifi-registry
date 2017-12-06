@@ -330,7 +330,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             throw new ResourceNotFoundException("Not flow versions found for flow with id " + flowId);
         }
 
-        final VersionedFlowSnapshotMetadata lastSnapshotMetadata = snapshots.last();
+        final VersionedFlowSnapshotMetadata lastSnapshotMetadata = snapshots.first();
 
         final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, lastSnapshotMetadata.getVersion());
         populateLinks(lastSnapshot);

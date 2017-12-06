@@ -47,8 +47,8 @@ public class KerberosSpnegoFactory {
         return kerberosSpnegoIdentityProvider;
     }
 
-    @Bean
-    public KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() throws Exception {
+
+    private KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider() throws Exception {
 
         if (kerberosServiceAuthenticationProvider == null && properties.isKerberosSpnegoSupportEnabled()) {
 

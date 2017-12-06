@@ -31,6 +31,7 @@ import org.apache.nifi.registry.util.FormatUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -73,7 +74,9 @@ public class KerberosSpnegoIdentityProvider implements IdentityProvider {
     private AuthenticationDetailsSource<HttpServletRequest, ?> authenticationDetailsSource;
 
     @Autowired
-    public KerberosSpnegoIdentityProvider(KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider, NiFiRegistryProperties properties) {
+    public KerberosSpnegoIdentityProvider(
+            @Nullable  KerberosServiceAuthenticationProvider kerberosServiceAuthenticationProvider,
+            NiFiRegistryProperties properties) {
         this.kerberosServiceAuthenticationProvider = kerberosServiceAuthenticationProvider;
         authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
@@ -127,6 +130,10 @@ public class KerberosSpnegoIdentityProvider implements IdentityProvider {
         if (credentials == null) {
             logger.info("Kerberos Ticket not found in authenticationRequest credentials, returning null.");
             return null;
+        }
+
+        if (kerberosServiceAuthenticationProvider == null) {
+            throw new IdentityAccessException("The Kerberos authentication provider is not initialized.");
         }
 
         try {

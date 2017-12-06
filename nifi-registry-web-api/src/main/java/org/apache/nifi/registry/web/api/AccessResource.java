@@ -41,6 +41,7 @@ import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityPro
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
@@ -80,8 +81,8 @@ public class AccessResource extends ApplicationResource {
             NiFiRegistryProperties properties,
             JwtService jwtService,
             X509IdentityProvider x509IdentityProvider,
-            KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider,
-            IdentityProvider identityProvider) {
+            @Nullable KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider,
+            @Nullable IdentityProvider identityProvider) {
         this.properties = properties;
         this.jwtService = jwtService;
         this.x509IdentityProvider = x509IdentityProvider;

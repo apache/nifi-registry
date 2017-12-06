@@ -39,7 +39,7 @@ public class TestBucketItemRepository extends DatabaseBaseTest {
 
     @Test
     public void testFindByBucket() {
-        final BucketEntity bucket = bucketRepository.findOne("1");
+        final BucketEntity bucket = bucketRepository.findById("1").orElse(null);
         assertNotNull(bucket);
 
         final List<BucketItemEntity> entities = bucketItemRepository.findByBucket(bucket);
@@ -49,10 +49,10 @@ public class TestBucketItemRepository extends DatabaseBaseTest {
 
     @Test
     public void testFindByBucketPageable() {
-        final BucketEntity bucket = bucketRepository.findOne("1");
+        final BucketEntity bucket = bucketRepository.findById("1").orElse(null);
         assertNotNull(bucket);
 
-        final List<BucketItemEntity> entities = bucketItemRepository.findByBucket(bucket, new PageRequest(0, 2, new Sort(Sort.Direction.ASC, "id")));
+        final List<BucketItemEntity> entities = bucketItemRepository.findByBucket(bucket, PageRequest.of(0, 2, new Sort(Sort.Direction.ASC, "id")));
         assertNotNull(entities);
         assertEquals(2, entities.size());
         assertEquals("1", entities.get(0).getId());
@@ -61,7 +61,7 @@ public class TestBucketItemRepository extends DatabaseBaseTest {
 
     @Test
     public void testFindByBucketSort() {
-        final BucketEntity bucket = bucketRepository.findOne("1");
+        final BucketEntity bucket = bucketRepository.findById("1").orElse(null);
         assertNotNull(bucket);
 
         final List<BucketItemEntity> entities = bucketItemRepository.findByBucket(bucket, new Sort(Sort.Direction.DESC, "id"));
