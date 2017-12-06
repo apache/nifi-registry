@@ -20,6 +20,7 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
+import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.service.QueryParameters;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +100,16 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final FlowEntity flowEntity = metadataService.getFlowByIdWithSnapshotCounts("1", "1");
         assertNotNull(flowEntity);
         assertEquals(3, flowEntity.getSnapshotCount());
+    }
+
+    @Test
+    public void testGetLatestSnapshot() {
+        final FlowEntity flowEntity = metadataService.getFlowById("1", "1");
+        assertNotNull(flowEntity);
+
+        final FlowSnapshotEntity flowSnapshotEntity = metadataService.getLatestSnapshot(flowEntity);
+        assertNotNull(flowSnapshotEntity);
+        assertEquals(3, flowSnapshotEntity.getId().getVersion().intValue());
     }
 
 }

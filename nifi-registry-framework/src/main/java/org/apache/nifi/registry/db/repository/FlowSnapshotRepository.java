@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.db.repository;
 
+import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotCount;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
@@ -31,5 +32,7 @@ public interface FlowSnapshotRepository extends PagingAndSortingRepository<FlowS
 
     @Query("select new org.apache.nifi.registry.db.entity.FlowSnapshotCount(fs.id.flowId, count(*)) from FlowSnapshotEntity as fs group by fs.id.flowId")
     List<FlowSnapshotCount> countByFlow();
+
+    FlowSnapshotEntity findFirstByFlowOrderByIdVersionDesc(FlowEntity flowEntity);
 
 }

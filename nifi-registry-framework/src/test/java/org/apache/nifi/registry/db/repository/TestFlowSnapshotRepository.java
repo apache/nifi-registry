@@ -57,7 +57,7 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
 
         flowSnapshotRepository.save(flowSnapshot);
 
-        final FlowSnapshotEntity createdFlowSnapshot = flowSnapshotRepository.findOne(key);
+        final FlowSnapshotEntity createdFlowSnapshot = flowSnapshotRepository.findById(key).orElse(null);
         assertNotNull(createdFlowSnapshot);
     }
 
@@ -67,7 +67,7 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
         key.setFlowId("1");
         key.setVersion(1);
 
-        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findOne(key);
+        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findById(key).orElse(null);
         assertNotNull(flowSnapshot);
         assertEquals(key, flowSnapshot.getId());
         assertNotNull(flowSnapshot.getFlow());
@@ -80,12 +80,12 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
         key.setFlowId("1");
         key.setVersion(1);
 
-        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findOne(key);
+        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findById(key).orElse(null);
         assertNotNull(flowSnapshot);
 
         flowSnapshotRepository.delete(flowSnapshot);
 
-        final FlowSnapshotEntity deletedFlowSnapshot = flowSnapshotRepository.findOne(key);
+        final FlowSnapshotEntity deletedFlowSnapshot = flowSnapshotRepository.findById(key).orElse(null);
         assertNull(deletedFlowSnapshot);
     }
 
@@ -95,7 +95,7 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
         key.setFlowId("1");
         key.setVersion(1);
 
-        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findOne(key);
+        final FlowSnapshotEntity flowSnapshot = flowSnapshotRepository.findById(key).orElse(null);
         assertNotNull(flowSnapshot);
 
         final FlowEntity flow = flowSnapshot.getFlow();
@@ -106,8 +106,8 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
 
         bucketRepository.delete(bucket);
 
-        assertNull(flowRepository.findOne(flow.getId()));
-        assertNull(flowSnapshotRepository.findOne(key));
+        assertNull(flowRepository.findById(flow.getId()).orElse(null));
+        assertNull(flowSnapshotRepository.findById(key).orElse(null));
     }
 
     @Test
@@ -119,6 +119,16 @@ public class TestFlowSnapshotRepository extends DatabaseBaseTest {
         final FlowSnapshotCount count = counts.get(0);
         assertEquals("1", count.getFlowIdentifier());
         assertEquals(3, count.getSnapshotCount());
+    }
+
+    @Test
+    public void testFindFirstByFlow() {
+        final FlowEntity flowEntity = flowRepository.findById("1").orElse(null);
+        assertNotNull(flowEntity);
+
+        final FlowSnapshotEntity latest = flowSnapshotRepository.findFirstByFlowOrderByIdVersionDesc(flowEntity);
+        assertNotNull(latest);
+        assertEquals(3, latest.getId().getVersion().intValue());
     }
 
 }

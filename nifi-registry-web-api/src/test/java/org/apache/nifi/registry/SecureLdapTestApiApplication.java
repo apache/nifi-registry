@@ -19,7 +19,7 @@ package org.apache.nifi.registry;
 import org.apache.nifi.registry.db.DataSourceFactory;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 

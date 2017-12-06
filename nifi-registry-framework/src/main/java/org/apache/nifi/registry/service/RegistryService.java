@@ -130,14 +130,14 @@ public class RegistryService {
 
     public Bucket getBucket(final String bucketIdentifier) {
         if (bucketIdentifier == null) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null");
+            throw new IllegalArgumentException("Bucket identifier cannot be null");
         }
 
         readLock.lock();
         try {
             final BucketEntity bucket = metadataService.getBucketById(bucketIdentifier);
             if (bucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketIdentifier);
             }
 
             return DataModelMapper.map(bucket);
@@ -172,7 +172,7 @@ public class RegistryService {
         }
 
         if (bucket.getIdentifier() == null) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null");
+            throw new IllegalArgumentException("Bucket identifier cannot be null");
         }
 
         writeLock.lock();
@@ -180,7 +180,7 @@ public class RegistryService {
             // ensure a bucket with the given id exists
             final BucketEntity existingBucketById = metadataService.getBucketById(bucket.getIdentifier());
             if (existingBucketById == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucket.getIdentifier());
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucket.getIdentifier());
             }
 
             // ensure a different bucket with the same name does not exist
@@ -190,7 +190,7 @@ public class RegistryService {
                 if (bucketsWithSameName != null) {
                     for (final BucketEntity bucketWithSameName : bucketsWithSameName) {
                         if (!bucketWithSameName.getId().equals(existingBucketById.getId())){
-                            throw new IllegalStateException("A bucket with the same name already exists: " + bucket.getName());
+                            throw new IllegalStateException("A bucket with the same name already exists - " + bucket.getName());
                         }
                     }
                 }
@@ -215,7 +215,7 @@ public class RegistryService {
 
     public Bucket deleteBucket(final String bucketIdentifier) {
         if (bucketIdentifier == null) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null");
+            throw new IllegalArgumentException("Bucket identifier cannot be null");
         }
 
         writeLock.lock();
@@ -223,7 +223,7 @@ public class RegistryService {
             // ensure the bucket exists
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketIdentifier);
             }
 
             // for each flow in the bucket, delete all snapshots from the flow persistence provider
@@ -244,14 +244,14 @@ public class RegistryService {
 
     public List<BucketItem> getBucketItems(final QueryParameters queryParameters, final String bucketIdentifier) {
         if (bucketIdentifier == null) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null");
+            throw new IllegalArgumentException("Bucket identifier cannot be null");
         }
 
         readLock.lock();
         try {
             final BucketEntity bucket = metadataService.getBucketById(bucketIdentifier);
             if (bucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketIdentifier);
             }
 
             final List<BucketItem> bucketItems = new ArrayList<>();
@@ -264,7 +264,7 @@ public class RegistryService {
 
     public List<BucketItem> getBucketItems(final QueryParameters queryParameters, final Set<String> bucketIdentifiers) {
         if (bucketIdentifiers == null || bucketIdentifiers.isEmpty()) {
-            throw new IllegalArgumentException("Bucket Identifiers cannot be null or empty");
+            throw new IllegalArgumentException("Bucket identifiers cannot be null or empty");
         }
 
         readLock.lock();
@@ -290,7 +290,7 @@ public class RegistryService {
 
     public VersionedFlow createFlow(final String bucketIdentifier, final VersionedFlow versionedFlow) {
         if (StringUtils.isBlank(bucketIdentifier)) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null or blank");
+            throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
         }
 
         if (versionedFlow == null) {
@@ -318,7 +318,7 @@ public class RegistryService {
             // ensure the bucket exists
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketIdentifier);
             }
 
             // ensure another flow with the same name doesn't exist
@@ -341,18 +341,18 @@ public class RegistryService {
 
     public VersionedFlow getFlow(final String bucketIdentifier, final String flowIdentifier) {
         if (StringUtils.isBlank(bucketIdentifier)) {
-            throw new IllegalArgumentException("Bucket Identifier Identifier cannot be null or blank");
+            throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
         }
 
         if (StringUtils.isBlank(flowIdentifier)) {
-            throw new IllegalArgumentException("Flow Identifier cannot be null or blank");
+            throw new IllegalArgumentException("Flow identifier cannot be null or blank");
         }
 
         readLock.lock();
         try {
             final FlowEntity flowEntity = metadataService.getFlowByIdWithSnapshotCounts(bucketIdentifier, flowIdentifier);
             if (flowEntity == null) {
-                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier " + flowIdentifier);
             }
 
             return DataModelMapper.map(flowEntity);
@@ -363,14 +363,14 @@ public class RegistryService {
 
     public List<VersionedFlow> getFlows(final String bucketId) {
         if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null");
+            throw new IllegalArgumentException("Bucket identifier cannot be null");
         }
 
         readLock.lock();
         try {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketId);
             if (existingBucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketId);
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketId);
             }
 
             // return non-verbose set of flows for the given bucket
@@ -399,7 +399,7 @@ public class RegistryService {
             // ensure a flow with the given id exists
             final FlowEntity existingFlow = metadataService.getFlowById(versionedFlow.getBucketIdentifier(), versionedFlow.getIdentifier());
             if (existingFlow == null) {
-                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + versionedFlow.getIdentifier());
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier " + versionedFlow.getIdentifier());
             }
 
             // ensure a different flow with the same name does not exist
@@ -409,7 +409,7 @@ public class RegistryService {
                 if (flowsWithSameName != null) {
                     for (final FlowEntity flowWithSameName : flowsWithSameName) {
                          if(!flowWithSameName.getId().equals(existingFlow.getId())) {
-                            throw new IllegalStateException("A VersionedFlow with the same name already exists: " + versionedFlow.getName());
+                            throw new IllegalStateException("A VersionedFlow with the same name already exists - " + versionedFlow.getName());
                         }
                     }
                 }
@@ -434,10 +434,10 @@ public class RegistryService {
 
     public VersionedFlow deleteFlow(final String bucketIdentifier, final String flowIdentifier) {
         if (StringUtils.isBlank(bucketIdentifier)) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be null or blank");
+            throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
         }
         if (StringUtils.isBlank(flowIdentifier)) {
-            throw new IllegalArgumentException("Flow Identifier cannot be null or blank");
+            throw new IllegalArgumentException("Flow identifier cannot be null or blank");
         }
 
         writeLock.lock();
@@ -445,7 +445,7 @@ public class RegistryService {
             // ensure the flow exists
             final FlowEntity existingFlow = metadataService.getFlowById(bucketIdentifier, flowIdentifier);
             if (existingFlow == null) {
-                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier " + flowIdentifier);
             }
 
             // delete all snapshots from the flow persistence provider
@@ -485,13 +485,13 @@ public class RegistryService {
             // ensure the bucket exists
             final BucketEntity existingBucket = metadataService.getBucketById(snapshotMetadata.getBucketIdentifier());
             if (existingBucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + snapshotMetadata.getBucketIdentifier());
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + snapshotMetadata.getBucketIdentifier());
             }
 
             // ensure the flow exists, we need to use "with counts" here so we can return this is a part of the response
             final FlowEntity existingFlow = metadataService.getFlowByIdWithSnapshotCounts(snapshotMetadata.getBucketIdentifier(), snapshotMetadata.getFlowIdentifier());
             if (existingFlow == null) {
-                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + snapshotMetadata.getFlowIdentifier());
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier " + snapshotMetadata.getFlowIdentifier());
             }
 
             // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata
@@ -560,7 +560,7 @@ public class RegistryService {
             // we need to populate the version count here so we have to do this retrieval instead of snapshotEntity.getFlow()
             final FlowEntity flowEntityWithCount = metadataService.getFlowByIdWithSnapshotCounts(bucketIdentifier, flowIdentifier);
             if (flowEntityWithCount == null) {
-                throw new ResourceNotFoundException("VersionedFlow does not exist for flow " + flowIdentifier);
+                throw new ResourceNotFoundException("VersionedFlow does not exist with identifier " + flowIdentifier);
             }
 
             // ensure the snapshot exists
@@ -619,13 +619,13 @@ public class RegistryService {
             // ensure the bucket exists
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
-                throw new ResourceNotFoundException("Bucket does not exist for identifier: " + bucketIdentifier);
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketIdentifier);
             }
 
             // ensure the flow exists
             final FlowEntity existingFlow = metadataService.getFlowById(bucketIdentifier, flowIdentifier);
             if (existingFlow == null) {
-                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier " + flowIdentifier);
             }
 
             // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata, ordered by version descending
@@ -636,6 +636,37 @@ public class RegistryService {
 
             return existingSnapshots;
 
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public VersionedFlowSnapshotMetadata getLatestFlowSnapshotMetadata(final String bucketIdentifier, final String flowIdentifier) {
+        if (StringUtils.isBlank(bucketIdentifier)) {
+            throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(flowIdentifier)) {
+            throw new IllegalArgumentException("Flow identifier cannot be null or blank");
+        }
+
+        readLock.lock();
+        try {
+            // ensure the bucket exists
+            final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
+            if (existingBucket == null) {
+                throw new ResourceNotFoundException("Bucket does not exist for identifier " + bucketIdentifier);
+            }
+
+            // ensure the flow exists
+            final FlowEntity existingFlow = metadataService.getFlowById(bucketIdentifier, flowIdentifier);
+            if (existingFlow == null) {
+                throw new ResourceNotFoundException("VersionedFlow does not exist for identifier " + flowIdentifier);
+            }
+
+            // get latest snapshot for the flow
+            final FlowSnapshotEntity latestSnapshot = metadataService.getLatestSnapshot(existingFlow);
+            return DataModelMapper.map(latestSnapshot);
         } finally {
             readLock.unlock();
         }

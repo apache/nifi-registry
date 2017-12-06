@@ -55,7 +55,7 @@ public class DatabaseKeyService implements KeyService {
         Key key = null;
         readLock.lock();
         try {
-            KeyEntity keyEntity = keyRepository.findOne(id);
+            KeyEntity keyEntity = keyRepository.findById(id).orElse(null);
             if (keyEntity != null) {
                 key = DataModelMapper.map(keyEntity);
             } else {
