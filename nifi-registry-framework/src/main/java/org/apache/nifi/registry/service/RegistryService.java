@@ -46,6 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -597,6 +598,13 @@ public class RegistryService {
         }
     }
 
+    /**
+     * Returns all versions of a flow, sorted newest to oldest.
+     *
+     * @param bucketIdentifier the id of the bucket to search for the flowIdentifier
+     * @param flowIdentifier the id of the flow to retrieve from the specified bucket
+     * @return all versions of the specified flow, sorted newest to oldest
+     */
     public SortedSet<VersionedFlowSnapshotMetadata> getFlowSnapshots(final String bucketIdentifier, final String flowIdentifier) {
         if (StringUtils.isBlank(bucketIdentifier)) {
             throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
@@ -620,8 +628,8 @@ public class RegistryService {
                 throw new ResourceNotFoundException("VersionedFlow does not exist for identifier: " + flowIdentifier);
             }
 
-            // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata
-            final SortedSet<VersionedFlowSnapshotMetadata> existingSnapshots = new TreeSet<>();
+            // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata, ordered by version descending
+            final SortedSet<VersionedFlowSnapshotMetadata> existingSnapshots = new TreeSet<>(Collections.reverseOrder());
             if (existingFlow.getSnapshots() != null) {
                 existingFlow.getSnapshots().stream().forEach(s -> existingSnapshots.add(DataModelMapper.map(s)));
             }
