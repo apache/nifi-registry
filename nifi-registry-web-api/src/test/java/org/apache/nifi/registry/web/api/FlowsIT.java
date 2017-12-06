@@ -267,24 +267,25 @@ public class FlowsIT extends UnsecuredITBase {
 
         final String prePopulatedBucketId = "1";
         final String prePopulatedFlowId = "1";
+        // For this test case, the order of the expected list matters as we are asserting a strict equality check
         final String expected = "[" +
-                "{\"bucketIdentifier\":\"1\"," +
-                "\"flowIdentifier\":\"1\"," +
-                "\"version\":1," +
-                "\"timestamp\":1505091420000," +
-                "\"author\" : \"user1\"," +
-                "\"comments\":\"This is flow 1 snapshot 1\"," +
-                "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/1\"}}," +
                 "{\"bucketIdentifier\":\"1\"," +
                 "\"flowIdentifier\":\"1\"," +
                 "\"version\":2," +
                 "\"timestamp\":1505091480000," +
                 "\"author\" : \"user2\"," +
                 "\"comments\":\"This is flow 1 snapshot 2\"," +
-                "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/2\"}}]";
+                "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/2\"}}," +
+                "{\"bucketIdentifier\":\"1\"," +
+                "\"flowIdentifier\":\"1\"," +
+                "\"version\":1," +
+                "\"timestamp\":1505091420000," +
+                "\"author\" : \"user1\"," +
+                "\"comments\":\"This is flow 1 snapshot 1\"," +
+                "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/1\"}}" +
+                "]";
 
         // When: the /buckets/{id}/flows/{id}/versions endpoint is queried
-
         final String flowSnapshotsJson = client
                 .target(createURL("buckets/{bucketId}/flows/{flowId}/versions"))
                 .resolveTemplate("bucketId", prePopulatedBucketId)
@@ -292,9 +293,9 @@ public class FlowsIT extends UnsecuredITBase {
                 .request()
                 .get(String.class);
 
-        // Then: the pre-populated list of flow versions is returned
+        // Then: the pre-populated list of flow versions is returned, in descending order
+        JSONAssert.assertEquals(expected, flowSnapshotsJson, true);
 
-        JSONAssert.assertEquals(expected, flowSnapshotsJson, false);
     }
 
     @Test
