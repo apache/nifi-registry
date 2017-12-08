@@ -40,7 +40,6 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
-var ngHttp = require('@angular/http');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -51,14 +50,11 @@ describe('NfRegistryBucketGridListViewer Component', function () {
     var fixture;
     var nfRegistryService;
     var nfRegistryApi;
-    var ngHttpService;
 
     beforeEach(function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes
@@ -99,10 +95,6 @@ describe('NfRegistryBucketGridListViewer Component', function () {
                     useValue: {
                         params: rxjs.Observable.of({bucketId: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc'})
                     }
-                },
-                {
-                    provide: ngHttp.XHRBackend,
-                    useClass: ngHttpTesting.MockBackend
                 }
             ]
         });
@@ -114,7 +106,6 @@ describe('NfRegistryBucketGridListViewer Component', function () {
         // from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
-        ngHttpService = ngCoreTesting.TestBed.get(ngHttp.Http);
 
         // because the NfRegistryBucketGridListViewer component is a nested route component we need to set up the nfRegistryService service manually
         nfRegistryService.explorerViewType = 'grid-list';
@@ -122,7 +113,6 @@ describe('NfRegistryBucketGridListViewer Component', function () {
         //Spy
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(ngHttpService, 'get').and.callThrough();
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
@@ -164,6 +154,7 @@ describe('NfRegistryBucketGridListViewer Component', function () {
         //assertions
         expect(comp).toBeDefined();
         expect(nfRegistryService.breadCrumbState).toBe('in');
+        expect(nfRegistryService.inProgress).toBe(false);
         expect(nfRegistryService.droplet.identity).toBeUndefined();
         expect(nfRegistryService.bucket.name).toEqual('Bucket #1');
         expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
@@ -182,7 +173,22 @@ describe('NfRegistryBucketGridListViewer Component', function () {
 
     it('should destroy the component', ngCoreTesting.fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([]));
+        }).and.returnValue(rxjs.Observable.of([{
+            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
+            "name": "Flow #1",
+            "description": "This is flow #1",
+            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
+            "createdTimestamp": 1505931890999,
+            "modifiedTimestamp": 1505931890999,
+            "type": "FLOW",
+            "snapshotMetadata": null,
+            "link": {
+                "params": {
+                    "rel": "self"
+                },
+                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+            }
+        }]));
         // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, and getDroplets calls
         fixture.detectChanges();
         // wait for async getBuckets, getBucket, and getDroplets calls
@@ -194,6 +200,8 @@ describe('NfRegistryBucketGridListViewer Component', function () {
         comp.ngOnDestroy();
 
         //assertions
+        expect(nfRegistryService.explorerViewType).toBe('');
+        expect(nfRegistryService.filteredDroplets.length).toBe(0);
         expect(nfRegistryService.breadCrumbState).toBe('out');
     }));
 });

@@ -42,7 +42,6 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
-var ngHttp = require('@angular/http');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -60,8 +59,6 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes,
@@ -138,6 +135,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
             expect(comp).toBeDefined();
             expect(de).toBeDefined();
             expect(nfRegistryService.adminPerspective).toBe('workflow');
+            expect(nfRegistryService.inProgress).toBe(false);
             expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
             expect(nfRegistryService.buckets.length).toBe(1);
             expect(nfRegistryService.filterBuckets).toHaveBeenCalled();

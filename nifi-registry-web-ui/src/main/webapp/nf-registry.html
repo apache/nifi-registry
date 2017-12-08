@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<mat-progress-spinner id="loading-spinner" mode="indeterminate"></mat-progress-spinner>
+<mat-progress-spinner id="loading-spinner" *ngIf="nfRegistryService.inProgress" mode="indeterminate"></mat-progress-spinner>
 <mat-sidenav-container>
     <mat-sidenav #sidenav mode="over" align="end" opened="false" disableClose="true">
         <router-outlet name="sidenav"></router-outlet>
@@ -76,7 +76,7 @@ limitations under the License.
                 <a id="logout-link-container" *ngIf="nfRegistryService.currentUser.canLogout" class="link" (click)="logout()">logout</a>
             </div>
             <button mat-ripple *ngIf="nfRegistryService.perspective === 'explorer'" mat-icon-button
-                    routerLink="/nifi-registry/administration/users">
+                    routerLink="/nifi-registry/administration/workflow">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
             <button mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab

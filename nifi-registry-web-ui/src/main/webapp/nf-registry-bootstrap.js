@@ -19,6 +19,11 @@ require('core-js');
 require('zone.js');
 require('hammerjs');
 require('switchMap');
+// patch Observable with appropriate methods
+require('rxjs/add/operator/map');
+require('rxjs/add/operator/catch');
+require('rxjs/add/observable/of');
+require('rxjs/add/observable/forkJoin');
 var $ = require('jquery');
 var NfRegistryModule = require('nifi-registry/nf-registry.module.js');
 var ngPlatformBrowserDynamic = require('@angular/platform-browser-dynamic');

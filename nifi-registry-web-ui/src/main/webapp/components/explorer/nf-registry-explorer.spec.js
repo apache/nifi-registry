@@ -37,7 +37,6 @@ var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
-var ngHttp = require('@angular/http');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -52,8 +51,6 @@ describe('NfRegistryExplorer Component', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes

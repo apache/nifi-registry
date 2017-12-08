@@ -117,10 +117,6 @@ module.exports = function (config) {
                 served: true
             },
 
-            // Asset (HTML) paths loaded via Angular's component compiler
-            // (these paths need to be rewritten, see proxies section)
-            // {pattern: appBase + '**/*.html', included: false, watched: true},
-
             // Images
             {pattern: '**/*.svg', watched: false, included: true, served: true},
 
@@ -159,7 +155,7 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
         autoWatch: true,
         browsers: ['Chrome'],
-        singleRun: false
+        singleRun: true
     });
 
     if (process.env.TRAVIS) {

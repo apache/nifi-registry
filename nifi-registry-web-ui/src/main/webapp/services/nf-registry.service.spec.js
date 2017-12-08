@@ -18,7 +18,6 @@
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommonHttpTesting = require('@angular/common/http/testing');
-var ngHttpTesting = require('@angular/http/testing');
 var ngCommon = require('@angular/common');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
@@ -39,7 +38,6 @@ var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
-var ngHttp = require('@angular/http');
 var rxjs = require('rxjs/Rx');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var ngRouter = require('@angular/router');
@@ -49,8 +47,6 @@ var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.ser
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 describe('NfRegistry Service isolated unit tests', function () {
-    var comp;
-    var fixture;
     var nfRegistryService;
 
     beforeEach(function () {
@@ -674,8 +670,6 @@ describe('NfRegistry Service isolated unit tests', function () {
 });
 
 describe('NfRegistry Service w/ Angular testing utils', function () {
-    var comp;
-    var fixture;
     var nfRegistryService;
     var nfRegistryApi;
 
@@ -683,8 +677,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes,
@@ -720,25 +712,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
-                },
-                {
-                    provide: ngHttp.XHRBackend,
-                    useClass: ngHttpTesting.MockBackend
                 }
             ],
             bootstrap: [NfRegistry]
         });
-
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryDropletGridListViewer);
-
-        // test instance
-        comp = fixture.componentInstance;
-
         // from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
-
-        fixture.detectChanges();
 
         // Spy
         spyOn(nfRegistryApi.http, 'get').and.callFake(function () {
@@ -751,7 +731,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         }).and.returnValue(rxjs.Observable.of({}));
     });
 
-    it('should retrieve the snapshot metadata for the given droplet.', ngCoreTesting.fakeAsync(function () {
+    it('should retrieve the snapshot metadata for the given droplet.', function () {
         //Spy
         spyOn(nfRegistryApi, 'getDropletSnapshotMetadata').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
@@ -764,12 +744,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.getDropletSnapshotMetadata(droplet);
 
-        // wait for async getDropletSnapshotMetadata call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(droplet.snapshotMetadata[0].version).toBe(999);
         expect(nfRegistryApi.getDropletSnapshotMetadata).toHaveBeenCalled();
@@ -777,9 +751,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         var getDropletSnapshotMetadataCall = nfRegistryApi.getDropletSnapshotMetadata.calls.first()
         expect(getDropletSnapshotMetadataCall.args[0]).toBe('test/id');
         expect(getDropletSnapshotMetadataCall.args[1]).toBe(true);
-    }));
+    });
 
-    it('should execute the `delete` droplet action.', ngCoreTesting.fakeAsync(function () {
+    it('should execute the `delete` droplet action.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.droplets = [{identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}];
 
@@ -801,12 +775,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             link: {href: 'testhref'}
         });
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.droplets.length).toBe(0);
         expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
@@ -814,9 +782,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(openConfirmCall.args[0].title).toBe('Delete testtype');
         var deleteDropletCall = nfRegistryApi.deleteDroplet.calls.first()
         expect(deleteDropletCall.args[0]).toBe('testhref');
-    }));
+    });
 
-    it('should filter droplets by name.', ngCoreTesting.fakeAsync(function () {
+    it('should filter droplets by name.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.dropletsSearchTerms = ['Flow #1'];
         nfRegistryService.droplets = [{
@@ -857,19 +825,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredDroplets.length).toBe(1);
         expect(nfRegistryService.filteredDroplets[0].name).toBe('Flow #1');
         expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
-    }));
+    });
 
-    it('should filter droplets by `type:flow` (demonstrate ability to do advanced searching of a droplet by a property `name:value` pair).', ngCoreTesting.fakeAsync(function () {
+    it('should filter droplets by `type:flow` (demonstrate ability to do advanced searching of a droplet by a property `name:value` pair).', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.dropletsSearchTerms = ['type:FLOW'];
         nfRegistryService.droplets = [{
@@ -910,19 +872,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredDroplets.length).toBe(1);
         expect(nfRegistryService.filteredDroplets[0].name).toBe('Flow #1');
         expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
-    }));
+    });
 
-    it('should execute a `delete` action on a bucket.', ngCoreTesting.fakeAsync(function () {
+    it('should execute a `delete` action on a bucket.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -947,25 +903,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.executeBucketAction({name: 'delete'}, bucket);
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
-    }));
+    });
 
     it('should execute a `permissions` action on a bucket.', function () {
         // from the root injector
@@ -986,7 +930,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:bucket/permissions/999)');
     });
 
-    it('should execute a `delete` action on a user.', ngCoreTesting.fakeAsync(function () {
+    it('should execute a `delete` action on a user.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -1011,25 +955,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.executeUserAction({name: 'delete'}, user);
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteUser).toHaveBeenCalled();
         expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
         expect(nfRegistryService.users.length).toBe(1);
         expect(nfRegistryService.users[0].identifier).toBe(1);
-    }));
+    });
 
     it('should execute a `permissions` action on a user.', function () {
         // from the root injector
@@ -1050,7 +982,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:user/permissions/999)');
     });
 
-    it('should execute a `delete` action on a group.', ngCoreTesting.fakeAsync(function () {
+    it('should execute a `delete` action on a group.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -1075,25 +1007,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.executeGroupAction({name: 'delete'}, group);
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteUserGroup).toHaveBeenCalled();
         expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
         expect(nfRegistryService.groups.length).toBe(1);
         expect(nfRegistryService.groups[0].identifier).toBe(1);
-    }));
+    });
 
     it('should execute a `permissions` action on a group.', function () {
         // from the root injector
@@ -1114,7 +1034,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:group/permissions/999)');
     });
 
-    it('should filter buckets by name.', ngCoreTesting.fakeAsync(function () {
+    it('should filter buckets by name.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.bucketsSearchTerms = ['Bucket #1'];
         nfRegistryService.buckets = [{
@@ -1138,20 +1058,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterBuckets();
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredBuckets.length).toBe(1);
         expect(nfRegistryService.filteredBuckets[0].name).toBe('Bucket #1');
         expect(nfRegistryService.getAutoCompleteBuckets).toHaveBeenCalled();
         expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
-    }));
+    });
 
-    it('should filter users and groups by name.', ngCoreTesting.fakeAsync(function () {
+    it('should filter users and groups by name.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.usersSearchTerms = ['Group #1'];
         nfRegistryService.users = [{
@@ -1183,20 +1097,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterUsersAndGroups();
 
-        // wait for async call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredUsers.length).toBe(0);
         expect(nfRegistryService.filteredUserGroups.length).toBe(1);
         expect(nfRegistryService.filteredUserGroups[0].identity).toBe('Group #1');
         expect(nfRegistryService.getAutoCompleteUserAndGroups).toHaveBeenCalled();
-    }));
+    });
 
-    it('should delete all selected buckets.', ngCoreTesting.fakeAsync(function () {
+    it('should delete all selected buckets.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -1223,18 +1131,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.deleteSelectedBuckets();
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
@@ -1245,9 +1141,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.allBucketsSelected).toBe(false);
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
-    }));
+    });
 
-    it('should delete all selected users and groups.', ngCoreTesting.fakeAsync(function () {
+    it('should delete all selected users and groups.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -1278,18 +1174,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.deleteSelectedUsersAndGroups();
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteUserGroup).toHaveBeenCalled();
@@ -1303,5 +1187,5 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.groups[0].identifier).toBe(1);
         expect(nfRegistryService.users.length).toBe(1);
         expect(nfRegistryService.users[0].identifier).toBe(12);
-    }));
+    });
 });

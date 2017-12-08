@@ -21,9 +21,7 @@ var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var rxjs = require('rxjs/Rx');
-require('rxjs/add/operator/catch');
-require('rxjs/add/operator/map');
+var rxjs = require('rxjs/Observable');
 
 /**
  * NfRegistryService constructor.
@@ -82,7 +80,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             sortable: true
         },
         {
-            name: 'updated',
+            name: 'modifiedTimestamp',
             label: 'Updated',
             sortable: true
         }
@@ -121,6 +119,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.autoCompleteUsersAndGroups = [];
     this.usersSearchTerms = [];
 
+    this.inProgress = false;
     //</editor-fold>
 };
 

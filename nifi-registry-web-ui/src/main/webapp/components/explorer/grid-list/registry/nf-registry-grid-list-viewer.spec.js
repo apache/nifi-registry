@@ -39,7 +39,6 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
-var ngHttp = require('@angular/http');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -55,8 +54,6 @@ describe('NfRegistryGridListViewer Component', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes
@@ -152,6 +149,7 @@ describe('NfRegistryGridListViewer Component', function () {
         expect(comp).toBeDefined();
         expect(nfRegistryService.explorerViewType).toBe('grid-list');
         expect(nfRegistryService.breadCrumbState).toBe('in');
+        expect(nfRegistryService.inProgress).toBe(false);
         expect(nfRegistryService.bucket.identity).toBeUndefined();
         expect(nfRegistryService.droplet.identity).toBeUndefined();
         expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
@@ -165,7 +163,22 @@ describe('NfRegistryGridListViewer Component', function () {
 
     it('should destroy the component', ngCoreTesting.fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([]));
+        }).and.returnValue(rxjs.Observable.of([{
+            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
+            "name": "Flow #1",
+            "description": "This is flow #1",
+            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
+            "createdTimestamp": 1505931890999,
+            "modifiedTimestamp": 1505931890999,
+            "type": "FLOW",
+            "snapshotMetadata": null,
+            "link": {
+                "params": {
+                    "rel": "self"
+                },
+                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+            }
+        }]));
         // 1st change detection triggers ngOnInit which makes getBuckets and getDroplets calls
         fixture.detectChanges();
         // wait for async getBuckets and getDroplets calls
@@ -178,7 +191,6 @@ describe('NfRegistryGridListViewer Component', function () {
 
         //assertions
         expect(nfRegistryService.explorerViewType).toBe('');
-        expect(nfRegistryService.droplets.length).toBe(0);
         expect(nfRegistryService.filteredDroplets.length).toBe(0);
         expect(nfRegistryService.breadCrumbState).toBe('out');
     }));
