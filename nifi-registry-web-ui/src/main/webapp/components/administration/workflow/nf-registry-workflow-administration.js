@@ -59,6 +59,7 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     ngOnInit: function () {
         var self = this;
+        this.nfRegistryService.inProgress = true;
         // attempt kerberos authentication
         this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
@@ -70,6 +71,7 @@ NfRegistryWorkflowAdministration.prototype = {
                     .subscribe(function (buckets) {
                         self.nfRegistryService.buckets = buckets;
                         self.nfRegistryService.filterBuckets();
+                        self.nfRegistryService.inProgress = false;
                     });
             });
         });

@@ -42,7 +42,6 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
-var ngHttp = require('@angular/http');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -60,8 +59,6 @@ describe('NfRegistryUsersAdministration Component', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes,
@@ -145,6 +142,7 @@ describe('NfRegistryUsersAdministration Component', function () {
             expect(comp).toBeDefined();
             expect(de).toBeDefined();
             expect(nfRegistryService.adminPerspective).toBe('users');
+            expect(nfRegistryService.inProgress).toBe(false);
             expect(nfRegistryService.users[0].identity).toEqual('User #1');
             expect(nfRegistryService.users.length).toBe(1);
             expect(nfRegistryService.groups[0].identity).toEqual('Group #1');

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
-var rxjs = require('rxjs/Rx');
+var rxjs = require('rxjs/Observable');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
@@ -46,6 +46,7 @@ NfRegistryDropletGridListViewer.prototype = {
      */
     ngOnInit: function () {
         var self = this;
+        this.nfRegistryService.inProgress = true;
         this.nfRegistryService.explorerViewType = 'grid-list';
         // attempt kerberos authentication
         this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
@@ -70,6 +71,7 @@ NfRegistryDropletGridListViewer.prototype = {
                         self.nfRegistryService.droplets = droplets;
                         self.nfRegistryService.filterDroplets();
                         self.nfRegistryService.setBreadcrumbState('in');
+                        self.nfRegistryService.inProgress = false;
                     });
             });
         });
@@ -81,6 +83,7 @@ NfRegistryDropletGridListViewer.prototype = {
     ngOnDestroy: function () {
         this.nfRegistryService.explorerViewType = '';
         this.nfRegistryService.setBreadcrumbState('out');
+        this.nfRegistryService.filteredDroplets = [];
     }
 };
 

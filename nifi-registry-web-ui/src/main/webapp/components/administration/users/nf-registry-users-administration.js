@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
-var rxjs = require('rxjs/Rx');
+var rxjs = require('rxjs/Observable');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
@@ -75,6 +75,7 @@ NfRegistryUsersAdministration.prototype = {
      */
     ngOnInit: function () {
         var self = this;
+        this.nfRegistryService.inProgress = true;
         // attempt kerberos authentication
         this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
@@ -92,6 +93,7 @@ NfRegistryUsersAdministration.prototype = {
                         self.nfRegistryService.users = users;
                         self.nfRegistryService.groups = groups;
                         self.nfRegistryService.filterUsersAndGroups();
+                        self.nfRegistryService.inProgress = false;
                     });
             });
         });

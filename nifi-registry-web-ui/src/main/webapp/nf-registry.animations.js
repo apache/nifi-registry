@@ -109,9 +109,23 @@ NfAnimations.prototype = {
         ),
         ngAnimate.transition('void => *', [
             ngAnimate.style({transform: 'translateX(100%)'}),
+            ngAnimate.animate('0.4s 0.1s ease-in')
+        ]),
+        ngAnimate.transition('* => void', ngAnimate.animate('0.2s ease-out', ngAnimate.style({transform: 'translateX(-100%)'})))
+    ]),
+
+    /**
+     * Fly in/out animation
+     */
+    fadeInOutAnimation: ngAnimate.trigger('fadeInOut', [
+        ngAnimate.state('in',
+            ngAnimate.style({opacity: 1})
+        ),
+        ngAnimate.transition('void => *', [
+            ngAnimate.style({opacity: 0}),
             ngAnimate.animate('0.5s 0.1s ease-in')
         ]),
-        ngAnimate.transition('* => void', ngAnimate.animate('0.5s ease-out', ngAnimate.style({transform: 'translateX(-100%)'})))
+        ngAnimate.transition('* => void', ngAnimate.animate('0.5s ease-out', ngAnimate.style({opacity: 0})))
     ])
 
 };
