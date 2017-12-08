@@ -17,6 +17,7 @@
 
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
+var ngCommonHttpTesting = require('@angular/common/http/testing');
 var ngCommon = require('@angular/common');
 var ngRouter = require('@angular/router');
 var ngPlatformBrowser = require('@angular/platform-browser');
@@ -41,7 +42,6 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
-var ngHttp = require('@angular/http');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
@@ -59,11 +59,10 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
-                NfRegistryRoutes
+                NfRegistryRoutes,
+                ngCommonHttpTesting.HttpClientTestingModule
             ],
             declarations: [
                 FdsDemo,
@@ -122,27 +121,8 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         // Spy
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryService.api, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
-                },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
-            }
-        }]));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{name: 'Bucket #1'}]));
-        spyOn(nfRegistryApi, 'createBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({name: 'Newly Created Bucket'}));
         spyOn(nfRegistryService, 'filterBuckets');
     });
 
@@ -155,6 +135,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
             expect(comp).toBeDefined();
             expect(de).toBeDefined();
             expect(nfRegistryService.adminPerspective).toBe('workflow');
+            expect(nfRegistryService.inProgress).toBe(false);
             expect(nfRegistryService.buckets[0].name).toEqual('Bucket #1');
             expect(nfRegistryService.buckets.length).toBe(1);
             expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
@@ -169,7 +150,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
         comp.createBucket();
 
         //assertions
-        expect(comp.dialog.open).toBeDefined();
+        expect(comp.dialog.open).toHaveBeenCalled();
     });
 
     it('should destroy the component', ngCoreTesting.fakeAsync(function () {

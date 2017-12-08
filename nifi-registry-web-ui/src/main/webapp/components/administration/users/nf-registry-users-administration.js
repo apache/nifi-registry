@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
-var rxjs = require('rxjs/Rx');
+var rxjs = require('rxjs/Observable');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
@@ -75,6 +75,7 @@ NfRegistryUsersAdministration.prototype = {
      */
     ngOnInit: function () {
         var self = this;
+        this.nfRegistryService.inProgress = true;
         // attempt kerberos authentication
         this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
@@ -92,6 +93,7 @@ NfRegistryUsersAdministration.prototype = {
                         self.nfRegistryService.users = users;
                         self.nfRegistryService.groups = groups;
                         self.nfRegistryService.filterUsersAndGroups();
+                        self.nfRegistryService.inProgress = false;
                     });
             });
         });
@@ -105,8 +107,6 @@ NfRegistryUsersAdministration.prototype = {
         this.nfRegistryService.users = this.nfRegistryService.filteredUsers = [];
         this.nfRegistryService.groups = this.nfRegistryService.filteredUserGroups = [];
         this.nfRegistryService.allUsersAndGroupsSelected = false;
-        this.nfRegistryService.isMultiUserActionsDisabled = true;
-        this.nfRegistryService.isMultiUserGroupActionsDisabled = false;
     },
 
     /**
@@ -124,25 +124,19 @@ NfRegistryUsersAdministration.prototype = {
     },
 
     /**
-     * Opens the add selected users to group dialog.
+     * Opens the add selected users to groups dialog.
      */
     addSelectedUsersToGroup: function () {
-        // the menu button that calls this method should be disabled if a group is selected
-        // let's just make sure
-        var selectedUserGroups = this.nfRegistryService.filteredUserGroups.filter(function (filteredUserGroup) {
-            return filteredUserGroup.checked;
-        });
-
-        if (selectedUserGroups.length > 0) {
+        if (this.nfRegistryService.getSelectedGroups().length === 0) {
+            // ok...only users are currently selected...go ahead and open the dialog to select groups
+            this.dialog.open(NfRegistryAddSelectedUsersToGroup);
+        } else {
             self.dialogService.openConfirm({
                 title: 'Error: Groups may not be added to a group. Please deselect any groups and try again',
                 message: error.message,
                 acceptButton: 'Ok',
                 acceptButtonColor: 'fds-warn'
             });
-        } else {
-            // ok...only users are currently selected...go ahead and open the dialog to select groups
-            this.dialog.open(NfRegistryAddSelectedUsersToGroup);
         }
     }
 };

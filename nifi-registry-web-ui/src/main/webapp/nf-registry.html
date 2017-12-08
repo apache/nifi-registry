@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<mat-progress-spinner id="loading-spinner" mode="indeterminate"></mat-progress-spinner>
+<mat-progress-spinner id="loading-spinner" *ngIf="nfRegistryService.inProgress" mode="indeterminate"></mat-progress-spinner>
 <mat-sidenav-container>
     <mat-sidenav #sidenav mode="over" align="end" opened="false" disableClose="true">
         <router-outlet name="sidenav"></router-outlet>
@@ -24,18 +24,18 @@ limitations under the License.
         <mat-toolbar id="nifi-registry-toolbar">
             <img id="nifi-registry-logo" src="nifi-registry/images/registry-logo-web-app.svg">
             <div fxFlex="1 1 auto" class="pad-left-xl" [@flyInOut]="nfRegistryService.breadCrumbState">
-                <span routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">{{nfRegistryService.registry.name}}</span>
+                <span class="pointer" routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">{{nfRegistryService.registry.name}}</span>
                 <mat-menu #availableRegistriesMenu="matMenu" [overlapTrigger]="false">
                     <button mat-menu-item *ngFor="let registry of nfRegistryService.registries"
                             routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                         <span>{{registry.name}}</span>
                     </button>
                 </mat-menu>
-                <span *ngIf="nfRegistryService.perspective === 'administration'"> / Administration</span>
-                <span *ngIf="(nfRegistryService.perspective === 'explorer') && nfRegistryService.bucket.identifier"
+                <span class="pointer" *ngIf="nfRegistryService.perspective === 'administration'"> / Administration</span>
+                <span class="pointer" *ngIf="(nfRegistryService.perspective === 'explorer') && nfRegistryService.bucket.identifier"
                       [matMenuTriggerFor]="availableBucketsMenu"> / {{nfRegistryService.bucket.name}}<i
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
-                <span *ngIf="nfRegistryService.perspective === 'explorer' && !nfRegistryService.bucket.identifier"
+                <span class="pointer" *ngIf="nfRegistryService.perspective === 'explorer' && !nfRegistryService.bucket.identifier"
                       [matMenuTriggerFor]="availableBucketsMenu"> / All<i class="fa fa-caret-down pad-left-sm"
                                                                          aria-hidden="true"></i></span>
                 <mat-menu #availableBucketsMenu="matMenu" [overlapTrigger]="false">
@@ -48,10 +48,10 @@ limitations under the License.
                         <span>{{bucket.name}}</span>
                     </button>
                 </mat-menu>
-                <span *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.droplet.identifier"
+                <span class="pointer" *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.droplet.identifier"
                       [matMenuTriggerFor]="availableDropletsMenu"> / {{nfRegistryService.droplet.name}}<i
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
-                <span [matMenuTriggerFor]="availableDropletsMenu"
+                <span class="pointer" [matMenuTriggerFor]="availableDropletsMenu"
                       *ngIf="nfRegistryService.perspective === 'explorer' && nfRegistryService.bucket.identifier && !nfRegistryService.droplet.identifier"> / All<i
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
                 <mat-menu #availableDropletsMenu="matMenu" [overlapTrigger]="false">
@@ -76,7 +76,7 @@ limitations under the License.
                 <a id="logout-link-container" *ngIf="nfRegistryService.currentUser.canLogout" class="link" (click)="logout()">logout</a>
             </div>
             <button mat-ripple *ngIf="nfRegistryService.perspective === 'explorer'" mat-icon-button
-                    routerLink="/nifi-registry/administration/users">
+                    routerLink="/nifi-registry/administration/workflow">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
             <button mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab

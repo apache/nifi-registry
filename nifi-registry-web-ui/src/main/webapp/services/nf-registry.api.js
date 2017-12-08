@@ -18,7 +18,7 @@
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngCommonHttp = require('@angular/common/http');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
-var rxjs = require('rxjs/Rx');
+var rxjs = require('rxjs/Observable');
 var ngRouter = require('@angular/router');
 var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
@@ -61,7 +61,7 @@ NfRegistryApi.prototype = {
         url += '/versions';
         return this.http.get(url)
             .map(function (response) {
-                return response || [];
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -70,7 +70,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -101,7 +101,7 @@ NfRegistryApi.prototype = {
                             self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucketId);
                         }
                     });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -131,7 +131,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -150,7 +150,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.delete('/nifi-registry-api/' + dropletUri, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -159,7 +159,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -173,7 +173,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.post('/nifi-registry-api/buckets', {'name': name}, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -182,7 +182,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -196,7 +196,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.delete('/nifi-registry-api/buckets/' + bucketId, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -205,7 +205,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -220,7 +220,7 @@ NfRegistryApi.prototype = {
         var url = '/nifi-registry-api/buckets/' + bucketId;
         return this.http.get(url)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -234,7 +234,7 @@ NfRegistryApi.prototype = {
                             self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
                         }
                     });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -251,7 +251,7 @@ NfRegistryApi.prototype = {
         var url = '/nifi-registry-api/buckets';
         return this.http.get(url)
             .map(function (response) {
-                return response || [];
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -260,7 +260,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -269,7 +269,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.get('/nifi-registry-api/users/' + userId)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -296,7 +296,7 @@ NfRegistryApi.prototype = {
             'identity': identity
         }, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -305,7 +305,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -316,9 +316,9 @@ NfRegistryApi.prototype = {
      */
     getUsers: function () {
         var self = this;
-        return this.http.get('nifi-registry-api/tenants/users')
+        return this.http.get('/nifi-registry-api/tenants/users')
             .map(function (response) {
-                return response || [];
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -327,7 +327,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -341,7 +341,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.delete('/nifi-registry-api/tenants/users/' + userId, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -350,7 +350,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -361,9 +361,9 @@ NfRegistryApi.prototype = {
      */
     getUserGroups: function () {
         var self = this;
-        return this.http.get('nifi-registry-api/tenants/user-groups')
+        return this.http.get('/nifi-registry-api/tenants/user-groups')
             .map(function (response) {
-                return response || [];
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -372,7 +372,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -386,7 +386,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.get('/nifi-registry-api/tenants/user-groups/' + groupId)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -395,7 +395,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -409,7 +409,7 @@ NfRegistryApi.prototype = {
         var self = this;
         return this.http.delete('/nifi-registry-api/tenants/user-groups/' + userGroupId, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -418,7 +418,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -438,7 +438,7 @@ NfRegistryApi.prototype = {
             'users': users
         }, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -447,7 +447,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -467,7 +467,7 @@ NfRegistryApi.prototype = {
             'users': users
         }, headers)
             .map(function (response) {
-                return response || {};
+                return response;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -476,7 +476,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.of(error);
             });
     },
 

@@ -18,7 +18,6 @@
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommonHttpTesting = require('@angular/common/http/testing');
-var ngHttpTesting = require('@angular/http/testing');
 var ngCommon = require('@angular/common');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
@@ -39,7 +38,6 @@ var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
 var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
-var ngHttp = require('@angular/http');
 var rxjs = require('rxjs/Rx');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var ngRouter = require('@angular/router');
@@ -49,8 +47,6 @@ var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.ser
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 describe('NfRegistry Service isolated unit tests', function () {
-    var comp;
-    var fixture;
     var nfRegistryService;
 
     beforeEach(function () {
@@ -190,6 +186,28 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(filterBucketsCall.args[1]).toBe('ASC');
     });
 
+    it('should sort `users` and `groups` by `column`', function () {
+        //Spy
+        spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
+        });
+
+        // object to be updated by the test
+        var column = {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true
+        };
+
+        // The function to test
+        nfRegistryService.sortUsersAndGroups(column);
+
+        //assertions
+        expect(column.active).toBe(true);
+        var filterUsersAndGroupsCall = nfRegistryService.filterUsersAndGroups.calls.first();
+        expect(filterUsersAndGroupsCall.args[0]).toBe('identity');
+        expect(filterUsersAndGroupsCall.args[1]).toBe('ASC');
+    });
+
     it('should generate the auto complete options for the droplet filter.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.filteredDroplets = [{
@@ -231,6 +249,25 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(nfRegistryService.autoCompleteBuckets[0]).toBe(nfRegistryService.filteredBuckets[0].name);
     });
 
+    it('should generate the auto complete options for the users and groups filter.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1'
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '5f04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1'
+        }];
+
+        // The function to test
+        nfRegistryService.getAutoCompleteUserAndGroups();
+
+        //assertions
+        expect(nfRegistryService.autoCompleteUsersAndGroups[0]).toBe(nfRegistryService.filteredUsers[0].identity);
+        expect(nfRegistryService.autoCompleteUsersAndGroups[1]).toBe(nfRegistryService.filteredUserGroups[0].identity);
+    });
+
     it('should check if all buckets are selected and return false.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.filteredBuckets = [{
@@ -269,6 +306,58 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
     });
 
+    it('should check if all users and groups are selected and return false.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2'
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2'
+        }];
+
+        // The function to test
+        nfRegistryService.determineAllUsersAndGroupsSelectedState();
+
+        //assertions
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(false);
+    });
+
+    it('should check if all users and groups are selected and return true.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1',
+            'checked': true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'User #2',
+            'checked': true
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1',
+            'checked': true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2',
+            'checked': true
+        }];
+
+        // The function to test
+        nfRegistryService.determineAllUsersAndGroupsSelectedState();
+
+        //assertions
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(true);
+    });
+
     it('should set the `allBucketsSelected` state to true.', function () {
         //Spy
         spyOn(nfRegistryService, 'allFilteredBucketsSelected').and.callFake(function () {
@@ -291,6 +380,58 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(nfRegistryService.allBucketsSelected).toBe(false);
+    });
+
+    it('should set the `allUsersAndGroupsSelected` state to true.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1',
+            'checked': true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2',
+            'checked': true
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1',
+            'checked': true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2',
+            'checked': true
+        }];
+
+        // The function to test
+        nfRegistryService.determineAllUsersAndGroupsSelectedState();
+
+        //assertions
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(true);
+    });
+
+    it('should set the `allUsersAndGroupsSelected` state to false.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2'
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2'
+        }];
+
+        // The function to test
+        nfRegistryService.determineAllUsersAndGroupsSelectedState();
+
+        //assertions
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(false);
     });
 
     it('should toggle all bucket `checked` properties to true.', function () {
@@ -321,6 +462,34 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(nfRegistryService.deselectAllBuckets).toHaveBeenCalled();
     });
 
+    it('should toggle all user and group `checked` properties to true.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'selectAllUsersAndGroups').and.callFake(function () {
+        });
+
+        nfRegistryService.allUsersAndGroupsSelected = true;
+
+        // The function to test
+        nfRegistryService.toggleUsersSelectAll();
+
+        //assertions
+        expect(nfRegistryService.selectAllUsersAndGroups).toHaveBeenCalled();
+    });
+
+    it('should toggle all user and group `checked` properties to false.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'deselectAllUsersAndGroups').and.callFake(function () {
+        });
+
+        nfRegistryService.allUsersAndGroupsSelected = false;
+
+        // The function to test
+        nfRegistryService.toggleUsersSelectAll();
+
+        //assertions
+        expect(nfRegistryService.deselectAllUsersAndGroups).toHaveBeenCalled();
+    });
+
     it('should select all buckets.', function () {
         nfRegistryService.filteredBuckets = [{identifier: 1}];
 
@@ -343,6 +512,66 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(true);
     });
 
+    it('should select all users and groups.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2'
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1'
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2'
+        }];
+
+        // The function to test
+        nfRegistryService.selectAllUsersAndGroups();
+
+        //assertions
+        expect(nfRegistryService.filteredUsers[0].checked).toBe(true);
+        expect(nfRegistryService.filteredUsers[1].checked).toBe(true);
+        expect(nfRegistryService.filteredUserGroups[0].checked).toBe(true);
+        expect(nfRegistryService.filteredUserGroups[1].checked).toBe(true);
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(true);
+    });
+
+    it('should deselect all users and groups.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1',
+            checked: true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2',
+            checked: true
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1',
+            checked: true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2',
+            checked: true
+        }];
+
+        // The function to test
+        nfRegistryService.deselectAllUsersAndGroups();
+
+        //assertions
+        expect(nfRegistryService.filteredUsers[0].checked).toBe(false);
+        expect(nfRegistryService.filteredUsers[1].checked).toBe(false);
+        expect(nfRegistryService.filteredUserGroups[0].checked).toBe(false);
+        expect(nfRegistryService.filteredUserGroups[1].checked).toBe(false);
+        expect(nfRegistryService.allUsersAndGroupsSelected).toBe(false);
+    });
+
     it('should add a bucket search term.', function () {
         //Spy
         spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
@@ -357,7 +586,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
     });
 
-    it('should add a bucket search term.', function () {
+    it('should remove a bucket search term.', function () {
         //Spy
         spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
         });
@@ -372,11 +601,75 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(nfRegistryService.bucketsSearchTerms.length).toBe(0);
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
     });
+
+    it('should add a user/group search term.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
+        });
+        spyOn(nfRegistryService, 'determineAllUsersAndGroupsSelectedState').and.callFake(function () {
+        });
+
+        // The function to test
+        nfRegistryService.usersSearchAdd('Group #1');
+
+        //assertions
+        expect(nfRegistryService.usersSearchTerms.length).toBe(1);
+        expect(nfRegistryService.usersSearchTerms[0]).toBe('Group #1');
+        expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
+        expect(nfRegistryService.determineAllUsersAndGroupsSelectedState).toHaveBeenCalled();
+    });
+
+    it('should remove a user/group search term.', function () {
+        //Spy
+        spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
+        });
+        spyOn(nfRegistryService, 'determineAllUsersAndGroupsSelectedState').and.callFake(function () {
+        });
+
+        //set up the state
+        nfRegistryService.usersSearchTerms = ['Group #1'];
+
+        // The function to test
+        nfRegistryService.usersSearchRemove('Group #1');
+
+        //assertions
+        expect(nfRegistryService.usersSearchTerms.length).toBe(0);
+        expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
+        expect(nfRegistryService.determineAllUsersAndGroupsSelectedState).toHaveBeenCalled();
+    });
+
+    it('should get the selected user and group counts.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.filteredUsers = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1',
+            checked: true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2',
+            checked: true
+        }];
+        nfRegistryService.filteredUserGroups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1',
+            checked: true
+        }, {
+            'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2',
+            checked: true
+        }];
+
+        // The function to test
+        var selectedGroups = nfRegistryService.getSelectedGroups();
+        var selectedUsers = nfRegistryService.getSelectedUsers();
+
+        //assertions
+        expect(selectedUsers.length).toBe(2);
+        expect(selectedGroups.length).toBe(2);
+    });
 });
 
 describe('NfRegistry Service w/ Angular testing utils', function () {
-    var comp;
-    var fixture;
     var nfRegistryService;
     var nfRegistryApi;
 
@@ -384,8 +677,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         ngCoreTesting.TestBed.configureTestingModule({
             imports: [
                 ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
                 ngCommonHttp.HttpClientModule,
                 fdsCore,
                 NfRegistryRoutes,
@@ -421,34 +712,26 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 {
                     provide: ngCommon.APP_BASE_HREF,
                     useValue: '/'
-                },
-                {
-                    provide: ngHttp.XHRBackend,
-                    useClass: ngHttpTesting.MockBackend
                 }
             ],
             bootstrap: [NfRegistry]
         });
-
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryDropletGridListViewer);
-
-        // test instance
-        comp = fixture.componentInstance;
-
         // from the root injector
         nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
         nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
 
-        fixture.detectChanges();
-
         // Spy
-        spyOn(nfRegistryApi.http, 'get').and.callFake(function () {});
-        spyOn(nfRegistryApi.http, 'post').and.callFake(function () {});
-        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryApi.http, 'get').and.callFake(function () {
+        });
+        spyOn(nfRegistryApi.http, 'post').and.callFake(function () {
+        });
+        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({}));
     });
 
-    it('should retrieve the snapshot metadata for the given droplet.', ngCoreTesting.fakeAsync(function () {
+    it('should retrieve the snapshot metadata for the given droplet.', function () {
         //Spy
         spyOn(nfRegistryApi, 'getDropletSnapshotMetadata').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
@@ -461,12 +744,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.getDropletSnapshotMetadata(droplet);
 
-        // wait for async getDropletSnapshotMetadata call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(droplet.snapshotMetadata[0].version).toBe(999);
         expect(nfRegistryApi.getDropletSnapshotMetadata).toHaveBeenCalled();
@@ -474,9 +751,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         var getDropletSnapshotMetadataCall = nfRegistryApi.getDropletSnapshotMetadata.calls.first()
         expect(getDropletSnapshotMetadataCall.args[0]).toBe('test/id');
         expect(getDropletSnapshotMetadataCall.args[1]).toBe(true);
-    }));
+    });
 
-    it('should execute the `delete` droplet action.', ngCoreTesting.fakeAsync(function () {
+    it('should execute the `delete` droplet action.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.droplets = [{identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}];
 
@@ -498,12 +775,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
             link: {href: 'testhref'}
         });
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.droplets.length).toBe(0);
         expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
@@ -511,9 +782,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(openConfirmCall.args[0].title).toBe('Delete testtype');
         var deleteDropletCall = nfRegistryApi.deleteDroplet.calls.first()
         expect(deleteDropletCall.args[0]).toBe('testhref');
-    }));
+    });
 
-    it('should filter droplets by name.', ngCoreTesting.fakeAsync(function () {
+    it('should filter droplets by name.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.dropletsSearchTerms = ['Flow #1'];
         nfRegistryService.droplets = [{
@@ -554,19 +825,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredDroplets.length).toBe(1);
         expect(nfRegistryService.filteredDroplets[0].name).toBe('Flow #1');
         expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
-    }));
+    });
 
-    it('should filter droplets by `type:flow` (demonstrate ability to do advanced searching of a droplet by a property `name:value` pair).', ngCoreTesting.fakeAsync(function () {
+    it('should filter droplets by `type:flow` (demonstrate ability to do advanced searching of a droplet by a property `name:value` pair).', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.dropletsSearchTerms = ['type:FLOW'];
         nfRegistryService.droplets = [{
@@ -607,19 +872,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterDroplets();
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredDroplets.length).toBe(1);
         expect(nfRegistryService.filteredDroplets[0].name).toBe('Flow #1');
         expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
-    }));
+    });
 
-    it('should execute a `delete` action on a bucket.', ngCoreTesting.fakeAsync(function () {
+    it('should execute a `delete` action on a bucket.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -644,25 +903,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.executeBucketAction({name: 'delete'}, bucket);
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
         expect(nfRegistryService.filterBuckets).toHaveBeenCalled();
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
-    }));
+    });
 
     it('should execute a `permissions` action on a bucket.', function () {
         // from the root injector
@@ -683,7 +930,111 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:bucket/permissions/999)');
     });
 
-    it('should filter buckets by name.', ngCoreTesting.fakeAsync(function () {
+    it('should execute a `delete` action on a user.', function () {
+        // from the root injector
+        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+
+        //Spy
+        spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
+        });
+        spyOn(dialogService, 'openConfirm').and.callFake(function () {
+        }).and.returnValue({
+            afterClosed: function () {
+                return rxjs.Observable.of(true);
+            }
+        });
+        spyOn(nfRegistryApi, 'deleteUser').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+
+        // object to be updated by the test
+        var user = {identifier: '999'};
+
+        // set up the user to be deleted
+        nfRegistryService.users = [user, {identifier: 1}];
+
+        // The function to test
+        nfRegistryService.executeUserAction({name: 'delete'}, user);
+
+        //assertions
+        expect(dialogService.openConfirm).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteUser).toHaveBeenCalled();
+        expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
+        expect(nfRegistryService.users.length).toBe(1);
+        expect(nfRegistryService.users[0].identifier).toBe(1);
+    });
+
+    it('should execute a `permissions` action on a user.', function () {
+        // from the root injector
+        var router = ngCoreTesting.TestBed.get(ngRouter.Router);
+
+        //Spy
+        spyOn(router, 'navigateByUrl').and.callFake(function () {
+        });
+
+        // object to be updated by the test
+        var user = {identifier: '999'};
+
+        // The function to test
+        nfRegistryService.executeUserAction({name: 'permissions', type: 'sidenav'}, user);
+
+        //assertions
+        var navigateByUrlCall = router.navigateByUrl.calls.first();
+        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:user/permissions/999)');
+    });
+
+    it('should execute a `delete` action on a group.', function () {
+        // from the root injector
+        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+
+        //Spy
+        spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
+        });
+        spyOn(dialogService, 'openConfirm').and.callFake(function () {
+        }).and.returnValue({
+            afterClosed: function () {
+                return rxjs.Observable.of(true);
+            }
+        });
+        spyOn(nfRegistryApi, 'deleteUserGroup').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+
+        // object to be updated by the test
+        var group = {identifier: '999'};
+
+        // set up the user to be deleted
+        nfRegistryService.groups = [group, {identifier: 1}];
+
+        // The function to test
+        nfRegistryService.executeGroupAction({name: 'delete'}, group);
+
+        //assertions
+        expect(dialogService.openConfirm).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteUserGroup).toHaveBeenCalled();
+        expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
+        expect(nfRegistryService.groups.length).toBe(1);
+        expect(nfRegistryService.groups[0].identifier).toBe(1);
+    });
+
+    it('should execute a `permissions` action on a group.', function () {
+        // from the root injector
+        var router = ngCoreTesting.TestBed.get(ngRouter.Router);
+
+        //Spy
+        spyOn(router, 'navigateByUrl').and.callFake(function () {
+        });
+
+        // object to be updated by the test
+        var group = {identifier: '999'};
+
+        // The function to test
+        nfRegistryService.executeGroupAction({name: 'permissions', type: 'sidenav'}, group);
+
+        //assertions
+        var navigateByUrlCall = router.navigateByUrl.calls.first();
+        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:group/permissions/999)');
+    });
+
+    it('should filter buckets by name.', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.bucketsSearchTerms = ['Bucket #1'];
         nfRegistryService.buckets = [{
@@ -707,20 +1058,53 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.filterBuckets();
 
-        // wait for async nfRegistryApi.deleteDroplet call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(nfRegistryService.filteredBuckets.length).toBe(1);
         expect(nfRegistryService.filteredBuckets[0].name).toBe('Bucket #1');
         expect(nfRegistryService.getAutoCompleteBuckets).toHaveBeenCalled();
         expect(nfRegistryService.isMultiBucketActionsDisabled).toBe(false);
-    }));
+    });
 
-    it('should delete all selected buckets.', ngCoreTesting.fakeAsync(function () {
+    it('should filter users and groups by name.', function () {
+        //Setup the nfRegistryService state for this test
+        nfRegistryService.usersSearchTerms = ['Group #1'];
+        nfRegistryService.users = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #1',
+            'description': 'This is user #1',
+            'checked': true
+        }, {
+            'identifier': '5d04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'User #2',
+            'description': 'This is user #2',
+            'checked': true
+        }];
+        nfRegistryService.groups = [{
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #1',
+            'description': 'This is group #1',
+            'checked': true
+        }, {
+            'identifier': '5d04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'identity': 'Group #2',
+            'description': 'This is group #2',
+            'checked': true
+        }];
+
+        //Spy
+        spyOn(nfRegistryService, 'getAutoCompleteUserAndGroups');
+
+        // The function to test
+        nfRegistryService.filterUsersAndGroups();
+
+        //assertions
+        expect(nfRegistryService.filteredUsers.length).toBe(0);
+        expect(nfRegistryService.filteredUserGroups.length).toBe(1);
+        expect(nfRegistryService.filteredUserGroups[0].identity).toBe('Group #1');
+        expect(nfRegistryService.getAutoCompleteUserAndGroups).toHaveBeenCalled();
+    });
+
+    it('should delete all selected buckets.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
 
@@ -747,18 +1131,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         // The function to test
         nfRegistryService.deleteSelectedBuckets();
 
-        // wait for async openConfirm call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
-        // wait for async deleteBucket call
-        ngCoreTesting.tick();
-
-        //inform angular to detect changes
-        fixture.detectChanges();
-
         //assertions
         expect(dialogService.openConfirm).toHaveBeenCalled();
         expect(nfRegistryApi.deleteBucket).toHaveBeenCalled();
@@ -769,5 +1141,51 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.allBucketsSelected).toBe(false);
         expect(nfRegistryService.buckets.length).toBe(1);
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
-    }));
+    });
+
+    it('should delete all selected users and groups.', function () {
+        // from the root injector
+        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+
+        //Spy
+        spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
+        });
+        spyOn(nfRegistryService, 'determineAllUsersAndGroupsSelectedState').and.callFake(function () {
+        });
+        spyOn(dialogService, 'openConfirm').and.callFake(function () {
+        }).and.returnValue({
+            afterClosed: function () {
+                return rxjs.Observable.of(true);
+            }
+        });
+        spyOn(nfRegistryApi, 'deleteUserGroup').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: 999, link: null}));
+        spyOn(nfRegistryApi, 'deleteUser').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({identifier: 99, link: null}));
+
+        // object to be updated by the test
+        var group = {identifier: 999, checked: true};
+        var user = {identifier: 999, checked: true};
+
+        // set up the group to be deleted
+        nfRegistryService.groups = nfRegistryService.filteredUserGroups = [group, {identifier: 1}];
+        nfRegistryService.users = nfRegistryService.filteredUsers = [user, {identifier: 12}];
+
+        // The function to test
+        nfRegistryService.deleteSelectedUsersAndGroups();
+
+        //assertions
+        expect(dialogService.openConfirm).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteUserGroup).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteUserGroup.calls.count()).toBe(1);
+        expect(nfRegistryApi.deleteUser).toHaveBeenCalled();
+        expect(nfRegistryApi.deleteUser.calls.count()).toBe(1);
+        expect(nfRegistryService.filterUsersAndGroups).toHaveBeenCalled();
+        expect(nfRegistryService.filterUsersAndGroups.calls.count()).toBe(2);
+        expect(nfRegistryService.allBucketsSelected).toBe(false);
+        expect(nfRegistryService.groups.length).toBe(1);
+        expect(nfRegistryService.groups[0].identifier).toBe(1);
+        expect(nfRegistryService.users.length).toBe(1);
+        expect(nfRegistryService.users[0].identifier).toBe(12);
+    });
 });

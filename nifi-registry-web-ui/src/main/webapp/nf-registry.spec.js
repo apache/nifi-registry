@@ -46,6 +46,7 @@ var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 describe('NfRegistry Component', function () {
     var comp;
     var fixture;
+    var nfRegistryService;
 
     beforeEach(function () {
         ngCoreTesting.TestBed.configureTestingModule({
@@ -91,13 +92,15 @@ describe('NfRegistry Component', function () {
             ],
             bootstrap: [NfRegistry]
         });
-    });
-
-    it('should create component', function () {
         fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
         fixture.detectChanges();
         comp = fixture.componentInstance;
 
+        // NfRegistryService from the root injector
+        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
+    });
+
+    it('should create component', function () {
         //assertions
         expect(comp).toBeDefined();
     });

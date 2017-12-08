@@ -43,6 +43,8 @@
             '@angular/material': 'npm:@angular/material/bundles/material.umd.js',
             '@angular/platform-browser/animations': 'npm:@angular/platform-browser/bundles/platform-browser-animations.umd.js',
             '@angular/cdk': 'npm:@angular/cdk/bundles/cdk.umd.js',
+            '@angular/cdk/accordion': 'npm:@angular/cdk/bundles/cdk-accordion.umd.js',
+            '@angular/cdk/layout': 'npm:@angular/cdk/bundles/cdk-layout.umd.js',
             '@angular/cdk/a11y': 'npm:@angular/cdk/bundles/cdk-a11y.umd.js',
             '@angular/cdk/collections': 'npm:@angular/cdk/bundles/cdk-collections.umd.js',
             '@angular/cdk/observers': 'npm:@angular/cdk/bundles/cdk-observers.umd.js',

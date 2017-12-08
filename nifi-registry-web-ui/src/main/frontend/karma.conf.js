@@ -117,12 +117,8 @@ module.exports = function (config) {
                 served: true
             },
 
-            // Asset (HTML) paths loaded via Angular's component compiler
-            // (these paths need to be rewritten, see proxies section)
-            // {pattern: appBase + '**/*.html', included: false, watched: true},
-
             // Images
-            {pattern: '**/*.svg', watched: false, included: false, served: true},
+            {pattern: '**/*.svg', watched: false, included: true, served: true},
 
             // Paths for debugging with source maps in dev tools
             {pattern: 'node_modules/@fluid-design-system/dist/platform/**/*.css.map', included: false, watched: false},
@@ -137,7 +133,9 @@ module.exports = function (config) {
             '/base/nifi-registry/node_modules/': '/base/node_modules/',
             '/base/systemjs-angular-loader.js': '/base/webapp/systemjs-angular-loader.js',
             '/base/nifi-registry/': '/base/webapp/',
-            '/nifi-registry/images/': '/base/webapp/images/'
+            '/nifi-registry/images/': '/base/webapp/images/',
+            '/nifi-registry/explorer/nifi-registry/images/': '/base/webapp/images/',
+            '/nifi-registry/explorer/grid-list/buckets/nifi-registry/images/': '/base/webapp/images/'
         },
 
         exclude: [],
@@ -157,7 +155,7 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
         autoWatch: true,
         browsers: ['Chrome'],
-        singleRun: false
+        singleRun: true
     });
 
     if (process.env.TRAVIS) {

@@ -15,29 +15,34 @@
  * limitations under the License.
  */
 
-#nf-registry-droplet-filter-clear-grouping-button-container {
-    height: 36px;
-    line-height: 36px;
-}
+var ngCore = require('@angular/core');
+var fdsStorageServiceModule = require('@fluid-design-system/storage-service');
 
-#nf-registry-droplet-filter-clear-grouping-button-container i{
-    color: $red2;
-}
+/**
+ * FdsCommonsModule constructor.
+ *
+ * @constructor
+ */
+function FdsCommonsModule() {
 
-#droplet-sort-by-field {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: end;
-}
+};
 
-#nifi-registry-explorer-grid-list-viewer-droplet-container-details {
-    position: relative;
-}
+FdsCommonsModule.prototype = {
+    constructor: FdsCommonsModule
+};
 
-#nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log {
-    position: relative;
-    left: 0px;
-    max-height: 230px;
-    overflow: auto;
-}
+FdsCommonsModule.annotations = [
+    new ngCore.NgModule({
+        imports: [],
+        declarations: [],
+        exports: [],
+        providers: [
+            fdsStorageServiceModule.FdsStorageService
+        ]
+    })
+];
+
+module.exports = {
+    FdsCommonsModule: FdsCommonsModule,
+    FdsStorageService: fdsStorageServiceModule.FdsStorageService
+};

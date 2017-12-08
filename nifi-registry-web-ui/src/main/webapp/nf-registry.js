@@ -53,35 +53,10 @@ NfRegistry.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.sidenav = this.sidenav; //ngCore.ViewChild
-        //
-        // // attempt kerberos authentication
-        // return this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-        //     // get the payload and store the token with the appropriate expiration
-        //     var token = self.nfStorage.getJwtPayload(jwt);
-        //     if(token) {
-        //         var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
-        //         self.nfStorage.setItem('jwt', jwt, expiration);
-        //     }
-        //     self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
-        //         // if the user is logged, we want to determine if they were logged in using a certificate
-        //         if (currentUser.status !== "UNKNOWN") {
-        //             // render the users name
-        //             self.nfRegistryService.currentUser = currentUser;
-        //
-        //             // render the logout button if there is a token locally
-        //             if (self.nfStorage.getItem('jwt') !== null) {
-        //                 self.nfRegistryService.currentUser.canLogout = true;
-        //             }
-        //         } else {
-        //             // set the anonymous user label
-        //             self.nfRegistryService.currentUser.identity = 'Anonymous';
-        //         }
-        //     });
-        // });
     },
 
     /**
-     * since the child views are updating the nfRegistryService values that are used to display
+     * Since the child views are updating the nfRegistryService values that are used to display
      * the breadcrumbs in this component's view we need to manually detect changes at the correct
      * point in the lifecycle.
      */

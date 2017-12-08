@@ -21,9 +21,7 @@ var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var rxjs = require('rxjs/Rx');
-require('rxjs/add/operator/catch');
-require('rxjs/add/operator/map');
+var rxjs = require('rxjs/Observable');
 
 /**
  * NfRegistryService constructor.
@@ -37,14 +35,21 @@ require('rxjs/add/operator/map');
  * @constructor
  */
 function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router, fdsDialogService, fdsSnackBarService) {
+    this.registry = {
+        name: "Nifi Registry"
+    };
+
+    // Services
     this.router = router;
     this.api = nfRegistryApi;
     this.nfStorage = nfStorage;
     this.dialogService = fdsDialogService;
     this.snackBarService = fdsSnackBarService;
-    this.registry = {
-        name: "Nifi Registry"
-    };
+    this.dataTableService = tdDataTableService;
+
+    //<editor-fold desc="application state objects">
+
+    // General
     this.bucket = {};
     this.buckets = [];
     this.droplet = {};
@@ -58,14 +63,16 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.explorerViewType = '';
     this.perspective = '';
     this.breadCrumbState = 'out';
-    this.dataTableService = tdDataTableService;
 
+    // Droplets
     this.filteredDroplets = [];
-    this.dropletActions = [{
-        name: 'Delete',
-        icon: 'fa fa-trash',
-        tooltip: 'Delete'
-    }];
+    this.dropletActions = [
+        {
+            name: 'Delete',
+            icon: 'fa fa-trash',
+            tooltip: 'Delete'
+        }
+    ];
     this.dropletColumns = [
         {
             name: 'name',
@@ -73,7 +80,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             sortable: true
         },
         {
-            name: 'updated',
+            name: 'modifiedTimestamp',
             label: 'Updated',
             sortable: true
         }
@@ -81,6 +88,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.autoCompleteDroplets = [];
     this.dropletsSearchTerms = [];
 
+    // Buckets
     this.filteredBuckets = [];
     this.bucketColumns = [
         {
@@ -92,10 +100,10 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     ];
     this.allBucketsSelected = false;
     this.autoCompleteBuckets = [];
-    this.selectedBuckets = [];
     this.bucketsSearchTerms = [];
     this.isMultiBucketActionsDisabled = true;
 
+    // Users and Groups
     this.filteredUsers = [];
     this.filteredUserGroups = [];
     this.userColumns = [
@@ -109,10 +117,10 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     ];
     this.allUsersAndGroupsSelected = false;
     this.autoCompleteUsersAndGroups = [];
-    this.selectedUsers = [];
     this.usersSearchTerms = [];
-    this.isMultiUserActionsDisabled = true;
-    this.isMultiUserGroupActionsDisabled = false;
+
+    this.inProgress = false;
+    //</editor-fold>
 };
 
 NfRegistryService.prototype = {
@@ -571,7 +579,7 @@ NfRegistryService.prototype = {
      *
      * @param column    The column to sort by.
      */
-    sortUsersAndGroups: function (sortEvent, column) {
+    sortUsersAndGroups: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
             var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
@@ -595,19 +603,19 @@ NfRegistryService.prototype = {
         var self = this;
         // get the current user
         return rxjs.Observable.of(this.api.loadCurrentUser().subscribe(function (currentUser) {
-                // if the user is logged, we want to determine if they were logged in using a certificate
-                if (currentUser.status !== "UNKNOWN") {
-                    // render the users name
-                    self.currentUser = currentUser;
+            // if the user is logged, we want to determine if they were logged in using a certificate
+            if (currentUser.status !== "UNKNOWN") {
+                // render the users name
+                self.currentUser = currentUser;
 
-                    // render the logout button if there is a token locally
-                    if (self.nfStorage.getItem('jwt') !== null) {
-                        self.currentUser.canLogout = true;
-                    }
-                } else {
-                    // set the anonymous user label
-                    self.nfRegistryService.currentUser.identity = 'Anonymous';
+                // render the logout button if there is a token locally
+                if (self.nfStorage.getItem('jwt') !== null) {
+                    self.currentUser.canLogout = true;
                 }
+            } else {
+                // set the anonymous user label
+                self.nfRegistryService.currentUser.identity = 'Anonymous';
+            }
         }));
     },
 
@@ -688,36 +696,44 @@ NfRegistryService.prototype = {
 
     /**
      * Checks each of the `filteredUsers` and each of the `filteredUserGroups` `checked` property state and sets
-     * the `allUsersAndGroupsSelected`, `isMultiUserGroupActionsDisabled`, and the `isMultiUserActionsDisabled`
-     * properties accordingly.
+     * the `allUsersAndGroupsSelected` property accordingly.
      */
     determineAllUsersAndGroupsSelectedState: function () {
-        var selected = 0;
         var allSelected = true;
-        this.isMultiUserGroupActionsDisabled = false;
         this.filteredUserGroups.forEach(function (c) {
-            if (c.checked) {
-                selected++;
-            }
             if (c.checked === undefined || c.checked === false) {
                 allSelected = false;
             }
         });
-
-        if (selected > 0) {
-            this.isMultiUserGroupActionsDisabled = true;
-        }
 
         this.filteredUsers.forEach(function (c) {
-            if (c.checked) {
-                selected++;
-            }
             if (c.checked === undefined || c.checked === false) {
                 allSelected = false;
             }
         });
-        this.isMultiUserActionsDisabled = (selected > 0) ? false : true;
         this.allUsersAndGroupsSelected = allSelected;
+    },
+
+    /**
+     * Gets the currently selected groups.
+     *
+     * @returns {Array.<T>}     The selected groups.
+     */
+    getSelectedGroups: function () {
+        return this.filteredUserGroups.filter(function (filteredUserGroup) {
+            return filteredUserGroup.checked;
+        });
+    },
+
+    /**
+     * Gets the currently selected users.
+     *
+     * @returns {Array.<T>}     The selected users.
+     */
+    getSelectedUsers: function () {
+        return this.filteredUsers.filter(function (filteredUser) {
+            return filteredUser.checked;
+        });
     },
 
     /**
@@ -734,8 +750,7 @@ NfRegistryService.prototype = {
 
     /**
      * Sets the `checked` property of each `filteredUsers` and each `filteredUserGroups` to true and sets
-     * the `allUsersAndGroupsSelected`, `isMultiUserGroupActionsDisabled`, and the `isMultiUserActionsDisabled`
-     * properties accordingly.
+     * the `allUsersAndGroupsSelected` properties accordingly.
      */
     selectAllUsersAndGroups: function () {
         this.filteredUsers.forEach(function (c) {
@@ -744,15 +759,12 @@ NfRegistryService.prototype = {
         this.filteredUserGroups.forEach(function (c) {
             c.checked = true;
         });
-        this.isMultiUserGroupActionsDisabled = (this.filteredUserGroups.length > 0) ? true : false;
         this.allUsersAndGroupsSelected = true;
-        this.isMultiUserActionsDisabled = false;
     },
 
     /**
      * Sets the `checked` property of each `filteredUsers` and each `filteredUserGroups` to false and sets
-     * the `allUsersAndGroupsSelected`, `isMultiUserGroupActionsDisabled`, and the `isMultiUserActionsDisabled`
-     * properties accordingly.
+     * the `allUsersAndGroupsSelected` properties accordingly.
      */
     deselectAllUsersAndGroups: function () {
         this.filteredUsers.forEach(function (c) {
@@ -762,8 +774,6 @@ NfRegistryService.prototype = {
             c.checked = false;
         });
         this.allUsersAndGroupsSelected = false;
-        this.isMultiUserGroupActionsDisabled = false;
-        this.isMultiUserActionsDisabled = true;
     },
 
     /**
@@ -933,7 +943,7 @@ NfRegistryService.prototype = {
      * @param ignoreCase    Ignore case.
      * @returns {*}
      */
-    filterData: function(data, searchTerm, ignoreCase) {
+    filterData: function (data, searchTerm, ignoreCase) {
         var field = '';
         if (searchTerm.indexOf(":") > -1) {
             field = searchTerm.split(':')[0].trim();
