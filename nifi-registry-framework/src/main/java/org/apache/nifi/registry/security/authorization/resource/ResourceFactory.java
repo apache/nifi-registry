@@ -82,7 +82,7 @@ public final class ResourceFactory {
 
         @Override
         public String getName() {
-            return "NiFi Resources";
+            return "Resources";
         }
 
         @Override
@@ -125,7 +125,6 @@ public final class ResourceFactory {
             return "policies";
         }
     };
-
 
     /**
      * Gets the Resource for proxying a user request.

@@ -21,10 +21,14 @@ import org.apache.nifi.registry.SecureLdapTestApiApplication;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.model.authorization.AccessPolicy;
+import org.apache.nifi.registry.model.authorization.AccessPolicySummary;
+import org.apache.nifi.registry.model.authorization.CurrentUser;
+import org.apache.nifi.registry.model.authorization.Permissions;
 import org.apache.nifi.registry.model.authorization.Tenant;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,10 +49,12 @@ import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -94,15 +100,23 @@ public class SecureLdapIT extends IntegrationTestBase {
     }
 
     private String adminAuthToken;
+    private List<AccessPolicy> beforeTestAccessPoliciesSnapshot;
 
     @Before
-    public void generateAuthToken() {
+    public void setup() {
         final Form form = encodeCredentialsForURLFormParams("nifiadmin", "password");
         final String token = client
                 .target(createURL(tokenLoginPath))
                 .request()
                 .post(Entity.form(form), String.class);
         adminAuthToken = token;
+
+        beforeTestAccessPoliciesSnapshot = createAccessPoliciesSnapshot();
+    }
+
+    @After
+    public void cleanup() {
+        restoreAccessPoliciesSnapshot(beforeTestAccessPoliciesSnapshot);
     }
 
     @Test
@@ -119,7 +133,7 @@ public class SecureLdapIT extends IntegrationTestBase {
                 "}";
         String expectedAccessStatusJson = "{" +
                 "\"identity\":\"nobel\"," +
-                "\"status\":\"ACTIVE\"" +
+                "\"anonymous\":false" +
                 "}";
 
         // When: the /access/token/login endpoint is queried
@@ -164,7 +178,7 @@ public class SecureLdapIT extends IntegrationTestBase {
                 "}";
         String expectedAccessStatusJson = "{" +
                 "\"identity\":\"nobel\"," +
-                "\"status\":\"ACTIVE\"" +
+                "\"anonymous\":false" +
                 "}";
 
         // When: the /access/token/identity-provider endpoint is queried
@@ -199,24 +213,68 @@ public class SecureLdapIT extends IntegrationTestBase {
     }
 
     @Test
+    public void testGetCurrentUserFailsForAnonymous() throws Exception {
+
+        // Given: the client is connected to an unsecured NiFi Registry
+
+        // When: the /access endpoint is queried with no credentials
+        final Response response = client
+                .target(createURL("/access"))
+                .request()
+                .get(Response.class);
+
+        // Then: the server returns a 200 OK with the expected current user
+        assertEquals(401, response.getStatus());
+
+    }
+
+    @Test
+    public void testGetCurrentUser() throws Exception {
+
+        // Given: the client is connected to an unsecured NiFi Registry
+        String expectedJson = "{" +
+                "\"identity\":\"nifiadmin\"," +
+                "\"anonymous\":false," +
+                "\"administrationPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"bucketsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"tenantsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"policiesPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"resourcesPermissions\":{\"canRead\":true}" +
+                "}";
+
+        // When: the /access endpoint is queried using a JWT for the nifiadmin LDAP user
+        final Response response = client
+                .target(createURL("/access"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Response.class);
+
+        // Then: the server returns a 200 OK with the expected current user
+        assertEquals(200, response.getStatus());
+        String actualJson = response.readEntity(String.class);
+        JSONAssert.assertEquals(expectedJson, actualJson, false);
+
+    }
+
+    @Test
     public void testUsers() throws Exception {
 
         // Given: the client and server have been configured correctly for LDAP authentication
         String expectedJson = "[" +
-                "{\"identity\":\"nifiadmin\",\"userGroups\":[]}," +
-                "{\"identity\":\"euler\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"euclid\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"boyle\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"newton\",\"userGroups\":[{\"identity\":\"scientists\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"riemann\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"gauss\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"galileo\",\"userGroups\":[{\"identity\":\"scientists\"},{\"identity\":\"italians\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"nobel\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"pasteur\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"tesla\",\"userGroups\":[{\"identity\":\"scientists\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"nogroup\",\"userGroups\":[],\"accessPolicies\":[]}," +
-                "{\"identity\":\"einstein\",\"userGroups\":[{\"identity\":\"scientists\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"curie\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[]}]";
+                "{\"identity\":\"nifiadmin\",\"userGroups\":[],\"configurable\":false}," +
+                "{\"identity\":\"euler\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"euclid\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"boyle\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"newton\",\"userGroups\":[{\"identity\":\"scientists\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"riemann\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"gauss\",\"userGroups\":[{\"identity\":\"mathematicians\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"galileo\",\"userGroups\":[{\"identity\":\"scientists\"},{\"identity\":\"italians\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"nobel\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"pasteur\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"tesla\",\"userGroups\":[{\"identity\":\"scientists\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"nogroup\",\"userGroups\":[],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"einstein\",\"userGroups\":[{\"identity\":\"scientists\"}],\"accessPolicies\":[],\"configurable\":false}," +
+                "{\"identity\":\"curie\",\"userGroups\":[{\"identity\":\"chemists\"}],\"accessPolicies\":[],\"configurable\":false}]";
 
         // When: the /tenants/users endpoint is queried
         final String usersJson = client
@@ -234,10 +292,30 @@ public class SecureLdapIT extends IntegrationTestBase {
 
         // Given: the client and server have been configured correctly for LDAP authentication
         String expectedJson = "[" +
-                "{\"identity\":\"chemists\",\"users\":[{\"identity\":\"pasteur\"},{\"identity\":\"boyle\"},{\"identity\":\"curie\"},{\"identity\":\"nobel\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"mathematicians\",\"users\":[{\"identity\":\"gauss\"},{\"identity\":\"euclid\"},{\"identity\":\"riemann\"},{\"identity\":\"euler\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"scientists\",\"users\":[{\"identity\":\"einstein\"},{\"identity\":\"tesla\"},{\"identity\":\"newton\"},{\"identity\":\"galileo\"}],\"accessPolicies\":[]}," +
-                "{\"identity\":\"italians\",\"users\":[{\"identity\":\"galileo\"}],\"accessPolicies\":[]}]";
+                "{" +
+                    "\"identity\":\"chemists\"," +
+                    "\"users\":[{\"identity\":\"pasteur\"},{\"identity\":\"boyle\"},{\"identity\":\"curie\"},{\"identity\":\"nobel\"}]," +
+                    "\"accessPolicies\":[]," +
+                    "\"configurable\":false" +
+                "}," +
+                "{" +
+                    "\"identity\":\"mathematicians\"," +
+                    "\"users\":[{\"identity\":\"gauss\"},{\"identity\":\"euclid\"},{\"identity\":\"riemann\"},{\"identity\":\"euler\"}]," +
+                    "\"accessPolicies\":[]," +
+                    "\"configurable\":false" +
+                "}," +
+                "{" +
+                    "\"identity\":\"scientists\"," +
+                    "\"users\":[{\"identity\":\"einstein\"},{\"identity\":\"tesla\"},{\"identity\":\"newton\"},{\"identity\":\"galileo\"}]," +
+                    "\"accessPolicies\":[]," +
+                    "\"configurable\":false" +
+                "}," +
+                "{" +
+                    "\"identity\":\"italians\"," +
+                    "\"users\":[{\"identity\":\"galileo\"}]," +
+                    "\"accessPolicies\":[]," +
+                    "\"configurable\":false" +
+                "}]";
 
         // When: the /tenants/users endpoint is queried
         final String groupsJson = client
@@ -292,6 +370,21 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .request()
                 .post(Entity.form(form), String.class);
 
+        // When: user nobel re-checks top-level permissions
+        final CurrentUser currentUser = client
+                .target(createURL("/access"))
+                .request()
+                .header("Authorization", "Bearer " + nobelAuthToken)
+                .get(CurrentUser.class);
+
+        // Then: 200 OK is returned indicating user has access to no top-level resources
+        assertEquals(new Permissions(), currentUser.getAdministrationPermissions());
+        assertEquals(new Permissions(), currentUser.getBucketsPermissions());
+        assertEquals(new Permissions(), currentUser.getTenantsPermissions());
+        assertEquals(new Permissions(), currentUser.getPoliciesPermissions());
+        assertEquals(new Permissions(), currentUser.getResourcesPermissions());
+
+
         // When: nifiadmin creates a bucket
         final Bucket bucket = new Bucket();
         bucket.setName("Integration Test Bucket");
@@ -320,7 +413,6 @@ public class SecureLdapIT extends IntegrationTestBase {
 
 
         // When: nifiadmin grants read access on createdBucket to 'chemists' a group containing nobel
-        Set<String> policiesToCleanup = new HashSet<>();
         AccessPolicy readPolicy = new AccessPolicy();
         readPolicy.setResource("/buckets/" + createdBucket.getIdentifier());
         readPolicy.setAction("read");
@@ -333,71 +425,53 @@ public class SecureLdapIT extends IntegrationTestBase {
 
         // Then: the server returns a 201 Created
         assertEquals(201, adminGrantsReadAccessResponse.getStatus());
-        policiesToCleanup.add(adminGrantsReadAccessResponse.readEntity(AccessPolicy.class).getIdentifier());
-
-        try {
-
-            // When: user nobel re-queries /buckets
-            final Bucket[] buckets2 = client
-                    .target(createURL("buckets"))
-                    .request()
-                    .header("Authorization", "Bearer " + nobelAuthToken)
-                    .get(Bucket[].class);
-
-            // Then: the created bucket is now present
-            assertNotNull(buckets2);
-            assertEquals(1, buckets2.length);
-            assertEquals(createdBucket.getIdentifier(), buckets2[0].getIdentifier());
-            assertEquals(1, buckets2[0].getAuthorizedActions().size());
-            assertTrue(buckets2[0].getAuthorizedActions().contains("read"));
 
 
-            // When: nifiadmin grants write access on createdBucket to user 'nobel'
-            AccessPolicy writePolicy = new AccessPolicy();
-            writePolicy.setResource("/buckets/" + createdBucket.getIdentifier());
-            writePolicy.setAction("write");
-            writePolicy.addUsers(Arrays.asList(new Tenant(nobelId, "nobel")));
-            Response adminGrantsWriteAccessResponse = client
-                    .target(createURL("policies"))
-                    .request()
-                    .header("Authorization", "Bearer " + adminAuthToken)
-                    .post(Entity.entity(writePolicy, MediaType.APPLICATION_JSON), Response.class);
+        // When: user nobel re-queries /buckets
+        final Bucket[] buckets2 = client
+                .target(createURL("buckets"))
+                .request()
+                .header("Authorization", "Bearer " + nobelAuthToken)
+                .get(Bucket[].class);
 
-            // Then: the server returns a 201 Created
-            assertEquals(201, adminGrantsWriteAccessResponse.getStatus());
-            policiesToCleanup.add(adminGrantsWriteAccessResponse.readEntity(AccessPolicy.class).getIdentifier());
+        // Then: the created bucket is now present
+        assertNotNull(buckets2);
+        assertEquals(1, buckets2.length);
+        assertEquals(createdBucket.getIdentifier(), buckets2[0].getIdentifier());
+        assertEquals(new Permissions().withCanRead(true), buckets2[0].getPermissions());
 
 
-            // When: user nobel re-queries /buckets
-            final Bucket[] buckets3 = client
-                    .target(createURL("buckets"))
-                    .request()
-                    .header("Authorization", "Bearer " + nobelAuthToken)
-                    .get(Bucket[].class);
+        // When: nifiadmin grants write access on createdBucket to user 'nobel'
+        AccessPolicy writePolicy = new AccessPolicy();
+        writePolicy.setResource("/buckets/" + createdBucket.getIdentifier());
+        writePolicy.setAction("write");
+        writePolicy.addUsers(Arrays.asList(new Tenant(nobelId, "nobel")));
+        Response adminGrantsWriteAccessResponse = client
+                .target(createURL("policies"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .post(Entity.entity(writePolicy, MediaType.APPLICATION_JSON), Response.class);
 
-            // Then: the authorizedActions are updated
-            assertNotNull(buckets3);
-            assertEquals(1, buckets3.length);
-            assertEquals(createdBucket.getIdentifier(), buckets3[0].getIdentifier());
-            assertEquals(2, buckets3[0].getAuthorizedActions().size());
-            assertTrue(buckets3[0].getAuthorizedActions().contains("read"));
-            assertTrue(buckets3[0].getAuthorizedActions().contains("write"));
+        // Then: the server returns a 201 Created
+        assertEquals(201, adminGrantsWriteAccessResponse.getStatus());
 
-        } finally {
-            // Teardown: delete the policy we made in case other tests assume they are starting with no policies
-            for (String policyId : policiesToCleanup) {
-                Response adminDeletesPolicyResponse = client
-                        .target(createURL("policies/" + policyId))
-                        .request()
-                        .header("Authorization", "Bearer " + adminAuthToken)
-                        .delete(Response.class);
-                assertEquals(200, adminDeletesPolicyResponse.getStatus());
-            }
-        }
+
+        // When: user nobel re-queries /buckets
+        final Bucket[] buckets3 = client
+                .target(createURL("buckets"))
+                .request()
+                .header("Authorization", "Bearer " + nobelAuthToken)
+                .get(Bucket[].class);
+
+        // Then: the authorizedActions are updated
+        assertNotNull(buckets3);
+        assertEquals(1, buckets3.length);
+        assertEquals(createdBucket.getIdentifier(), buckets3[0].getIdentifier());
+        assertEquals(new Permissions().withCanRead(true).withCanWrite(true), buckets3[0].getPermissions());
 
     }
 
-    /** A helper method to lookup identifiers for tenant identities
+    /** A helper method to lookup identifiers for tenant identities using the REST API
      *
      * @param tenantIdentity - the identity to lookup
      * @return A string containing the identifier of the tenant, or null if the tenant identity is not found.
@@ -416,13 +490,115 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .header("Authorization", "Bearer " + adminAuthToken)
                 .get(Tenant[].class);
 
-
         final Tenant matchedTenant = Stream.concat(Arrays.stream(users), Arrays.stream(groups))
                 .filter(tenant -> tenant.getIdentity().equalsIgnoreCase(tenantIdentity))
                 .findFirst()
                 .orElse(null);
 
         return matchedTenant != null ? matchedTenant.getIdentifier() : null;
+    }
+
+    /** A helper method to lookup access policies
+     *
+     * @return A string containing the identifier of the policy, or null if the policy identity is not found.
+     */
+    private AccessPolicy getPolicyByResourceAction(String action, String resource) {
+
+        final AccessPolicySummary[] policies = client
+                .target(createURL("policies"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(AccessPolicySummary[].class);
+
+        final AccessPolicySummary matchedPolicy = Arrays.stream(policies)
+                .filter(p -> p.getAction().equalsIgnoreCase(action) && p.getResource().equalsIgnoreCase(resource))
+                .findFirst()
+                .orElse(null);
+
+        if (matchedPolicy == null) {
+            return null;
+        }
+
+        String policyId = matchedPolicy.getIdentifier();
+
+        final AccessPolicy policy = client
+                .target(createURL("policies/" + policyId))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(AccessPolicy.class);
+
+        return policy;
+    }
+
+    private List<AccessPolicy> createAccessPoliciesSnapshot() {
+
+        final AccessPolicySummary[] policySummaries = client
+                .target(createURL("policies"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(AccessPolicySummary[].class);
+
+        final List<AccessPolicy> policies = new ArrayList<>(policySummaries.length);
+        for (AccessPolicySummary s : policySummaries) {
+            AccessPolicy policy = client
+                    .target(createURL("policies/" + s.getIdentifier()))
+                    .request()
+                    .header("Authorization", "Bearer " + adminAuthToken)
+                    .get(AccessPolicy.class);
+            policies.add(policy);
+        }
+
+        return policies;
+    }
+
+    private void restoreAccessPoliciesSnapshot(List<AccessPolicy> accessPoliciesSnapshot) {
+
+        List<AccessPolicy> currentAccessPolicies = createAccessPoliciesSnapshot();
+
+        Set<String> policiesToRestore = accessPoliciesSnapshot.stream()
+                .map(AccessPolicy::getIdentifier)
+                .collect(Collectors.toSet());
+
+        Set<String> policiesToDelete = currentAccessPolicies.stream()
+                .filter(p -> !policiesToRestore.contains(p.getIdentifier()))
+                .map(AccessPolicy::getIdentifier)
+                .collect(Collectors.toSet());
+
+        for (AccessPolicy originalPolicy : accessPoliciesSnapshot) {
+
+            Response getCurrentPolicy = client
+                    .target(createURL("policies/" + originalPolicy.getIdentifier()))
+                    .request()
+                    .header("Authorization", "Bearer " + adminAuthToken)
+                    .get(Response.class);
+
+            if (getCurrentPolicy.getStatus() == 200) {
+                // update policy to match original
+                client.target(createURL("policies/" + originalPolicy.getIdentifier()))
+                        .request()
+                        .header("Authorization", "Bearer " + adminAuthToken)
+                        .put(Entity.entity(originalPolicy, MediaType.APPLICATION_JSON));
+            } else {
+                // post the original policy
+                client.target(createURL("policies"))
+                        .request()
+                        .header("Authorization", "Bearer " + adminAuthToken)
+                        .post(Entity.entity(originalPolicy, MediaType.APPLICATION_JSON));
+            }
+
+        }
+
+        for (String id : policiesToDelete) {
+            try {
+                client.target(createURL("policies/" + id))
+                        .request()
+                        .header("Authorization", "Bearer " + adminAuthToken)
+                        .delete();
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
+
     }
 
     private static Form encodeCredentialsForURLFormParams(String username, String password) {

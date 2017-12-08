@@ -19,13 +19,12 @@ package org.apache.nifi.registry.bucket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.link.LinkableEntity;
+import org.apache.nifi.registry.model.authorization.Permissions;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.xml.bind.annotation.XmlRootElement;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 @XmlRootElement
 @ApiModel(value = "bucket")
@@ -42,7 +41,7 @@ public class Bucket extends LinkableEntity {
 
     private String description;
 
-    private Set<String> authorizedActions;
+    private Permissions permissions;
 
     @ApiModelProperty("An ID to uniquely identify this object.")
     public String getIdentifier() {
@@ -80,22 +79,13 @@ public class Bucket extends LinkableEntity {
         this.description = description;
     }
 
-    @ApiModelProperty(value = "A list of actions the client is authorized to perform for this bucket.", readOnly = true)
-    public Set<String> getAuthorizedActions() {
-        return authorizedActions;
+    @ApiModelProperty(value = "The access that the current user has to this bucket.", readOnly = true)
+    public Permissions getPermissions() {
+        return permissions;
     }
 
-    public void setAuthorizedActions(Set<String> authorizedActions) {
-        this.authorizedActions = authorizedActions;
-    }
-
-    public void addAuthorizedAction(String action) {
-        if (action != null) {
-            if (this.authorizedActions == null) {
-                this.authorizedActions = new HashSet<>();
-            }
-            authorizedActions.add(action);
-        }
+    public void setPermissions(Permissions permissions) {
+        this.permissions = permissions;
     }
 
     @Override

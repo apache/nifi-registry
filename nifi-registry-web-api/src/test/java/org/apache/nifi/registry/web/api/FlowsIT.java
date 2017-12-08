@@ -17,7 +17,6 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.bucket.BucketItemType;
-import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -30,8 +29,10 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Set;
 
+import static org.apache.nifi.registry.web.api.IntegrationTestUtils.assertFlowSnapshotMetadataEqual;
+import static org.apache.nifi.registry.web.api.IntegrationTestUtils.assertFlowSnapshotsEqual;
+import static org.apache.nifi.registry.web.api.IntegrationTestUtils.assertFlowsEqual;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -73,6 +74,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"createdTimestamp\":1505091360000," +
                 "\"modifiedTimestamp\":1505091360000," +
                 "\"type\":\"FLOW\"," +
+                "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1/flows/1\"}}," +
                 "{\"identifier\":\"2\",\"name\":\"Flow 2\"," +
                 "\"description\":\"This is flow 2\"," +
@@ -80,6 +82,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"createdTimestamp\":1505091360000," +
                 "\"modifiedTimestamp\":1505091360000," +
                 "\"type\":\"FLOW\"," +
+                "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"versionCount\":0," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1/flows/2\"}}" +
                 "]";
@@ -385,75 +388,6 @@ public class FlowsIT extends UnsecuredITBase {
         assertNotNull(flowSnapshotByLatest.getFlow());
         assertNotNull(flowSnapshotByLatest.getBucket());
 
-    }
-
-    private static void assertFlowsEqual(VersionedFlow expected, VersionedFlow actual, boolean checkServerSetFields) {
-        assertNotNull(actual);
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getDescription(), actual.getDescription());
-        assertEquals(expected.getBucketIdentifier(), actual.getBucketIdentifier());
-        if (checkServerSetFields) {
-            assertEquals(expected.getIdentifier(), actual.getIdentifier());
-            assertEquals(expected.getVersionCount(), actual.getVersionCount());
-            assertEquals(expected.getCreatedTimestamp(), actual.getCreatedTimestamp());
-            assertEquals(expected.getModifiedTimestamp(), actual.getModifiedTimestamp());
-            assertEquals(expected.getType(), actual.getType());
-            assertEquals(expected.getLink(), actual.getLink());
-        }
-    }
-
-    private static void assertFlowSnapshotsEqual(VersionedFlowSnapshot expected, VersionedFlowSnapshot actual, boolean checkServerSetFields) {
-
-        assertNotNull(actual);
-
-        if (expected.getSnapshotMetadata() != null) {
-            assertFlowSnapshotMetadataEqual(expected.getSnapshotMetadata(), actual.getSnapshotMetadata(), checkServerSetFields);
-        }
-
-        if (expected.getFlowContents() != null) {
-            assertVersionedProcessGroupsEqual(expected.getFlowContents(), actual.getFlowContents());
-        }
-
-    }
-
-    private static void assertFlowSnapshotMetadataEqual(
-            VersionedFlowSnapshotMetadata expected, VersionedFlowSnapshotMetadata actual, boolean checkServerSetFields) {
-
-        assertNotNull(actual);
-        assertEquals(expected.getBucketIdentifier(), actual.getBucketIdentifier());
-        assertEquals(expected.getFlowIdentifier(), actual.getFlowIdentifier());
-        assertEquals(expected.getVersion(), actual.getVersion());
-        assertEquals(expected.getComments(), actual.getComments());
-        if (checkServerSetFields) {
-            assertEquals(expected.getTimestamp(), actual.getTimestamp());
-        }
-    }
-
-    private static void assertVersionedProcessGroupsEqual(VersionedProcessGroup expected, VersionedProcessGroup actual) {
-        assertNotNull(actual);
-
-        assertEquals(((VersionedComponent)expected), ((VersionedComponent)actual));
-
-        // Poor man's set equality assertion as we are only checking the base type and not doing a recursive check
-        // TODO, this would be a stronger assertion by replacing this with a true VersionedProcessGroup.equals() method that does a deep equality check
-        assertSetsEqual(expected.getProcessGroups(), actual.getProcessGroups());
-        assertSetsEqual(expected.getRemoteProcessGroups(), actual.getRemoteProcessGroups());
-        assertSetsEqual(expected.getProcessors(), actual.getProcessors());
-        assertSetsEqual(expected.getInputPorts(), actual.getInputPorts());
-        assertSetsEqual(expected.getOutputPorts(), actual.getOutputPorts());
-        assertSetsEqual(expected.getConnections(), actual.getConnections());
-        assertSetsEqual(expected.getLabels(), actual.getLabels());
-        assertSetsEqual(expected.getFunnels(), actual.getFunnels());
-        assertSetsEqual(expected.getControllerServices(), actual.getControllerServices());
-    }
-
-
-    private static void assertSetsEqual(Set<? extends VersionedComponent> expected, Set<? extends VersionedComponent> actual) {
-        if (expected != null) {
-            assertNotNull(actual);
-            assertEquals(expected.size(), actual.size());
-            assertTrue(actual.containsAll(expected));
-        }
     }
 
 }

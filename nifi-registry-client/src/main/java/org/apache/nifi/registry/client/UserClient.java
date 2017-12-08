@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.client;
 
-import org.apache.nifi.registry.model.authorization.AccessStatus;
+import org.apache.nifi.registry.model.authorization.CurrentUser;
 
 import java.io.IOException;
 
@@ -31,12 +31,12 @@ public interface UserClient {
      * If the UserClient was obtained without proxied entities, then it would represent the identity of the certificate
      * in the keystore used by the client.
      *
-     * If the registry is not in secure mode, or if the user is unauthorized for any reason, an exception
-     * will be thrown.
+     * If the registry is not in secure mode, the anonymous identity is expected to be returned along with a flag indicating
+     * the user is anonymous.
      *
      * @return the access status of the current user
-     * @throws NiFiRegistryException if the user is unauthorized, or the proxying user is not a valid proxy, or nifi-registry is not secured
+     * @throws NiFiRegistryException if the proxying user is not a valid proxy or identity claim is otherwise invalid
      */
-    AccessStatus getAccessStatus() throws NiFiRegistryException, IOException;
+    CurrentUser getAccessStatus() throws NiFiRegistryException, IOException;
 
 }

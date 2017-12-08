@@ -35,6 +35,7 @@ import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.QueryParameters;
 import org.apache.nifi.registry.params.SortParameter;
 import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.security.PermissionsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,16 +69,19 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
     private final RegistryService registryService;
     private final LinkService linkService;
+    private final PermissionsService permissionsService;
 
     @Autowired
     public BucketFlowResource(
             final RegistryService registryService,
             final LinkService linkService,
+            final PermissionsService permissionsService,
             final AuthorizationService authorizationService,
             final Authorizer authorizer) {
         super(authorizer, authorizationService);
         this.registryService = registryService;
         this.linkService = linkService;
+        this.permissionsService =permissionsService;
     }
 
     @POST
@@ -102,6 +106,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
         verifyPathParamsMatchBody(bucketId, flow);
         final VersionedFlow createdFlow = registryService.createFlow(bucketId, flow);
+        permissionsService.populateItemPermissions(createdFlow);
         linkService.populateFlowLinks(createdFlow);
         return Response.status(Response.Status.OK).entity(createdFlow).build();
     }
@@ -136,6 +141,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         }
 
         final List<VersionedFlow> flows = registryService.getFlows(bucketId);
+        permissionsService.populateItemPermissions(flows);
         linkService.populateFlowLinks(flows);
 
         return Response.status(Response.Status.OK).entity(flows).build();
@@ -166,6 +172,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
         final VersionedFlow flow = registryService.getFlow(bucketId, flowId);
+        permissionsService.populateItemPermissions(flow);
         linkService.populateFlowLinks(flow);
 
         return Response.status(Response.Status.OK).entity(flow).build();
@@ -200,6 +207,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         final VersionedFlow updatedFlow = registryService.updateFlow(flow);
+        permissionsService.populateItemPermissions(updatedFlow);
         linkService.populateFlowLinks(updatedFlow);
 
         return Response.status(Response.Status.OK).entity(updatedFlow).build();
@@ -267,6 +275,10 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         if (createdSnapshot.getSnapshotMetadata() != null) {
             linkService.populateSnapshotLinks(createdSnapshot.getSnapshotMetadata());
         }
+        if (createdSnapshot.getBucket() != null) {
+            permissionsService.populateBucketPermissions(createdSnapshot.getBucket());
+            linkService.populateBucketLinks(createdSnapshot.getBucket());
+        }
         return Response.status(Response.Status.OK).entity(createdSnapshot).build();
     }
 
@@ -331,7 +343,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         }
 
         final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latest.getVersion());
-        populateLinks(lastSnapshot);
+        populateLinksAndPermissions(lastSnapshot);
 
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
     }
@@ -365,6 +377,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         }
 
         linkService.populateSnapshotLinks(latest);
+
         return Response.status(Response.Status.OK).entity(latest).build();
     }
 
@@ -395,12 +408,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
         final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
-        populateLinks(snapshot);
+        populateLinksAndPermissions(snapshot);
 
         return Response.status(Response.Status.OK).entity(snapshot).build();
     }
 
-    private void populateLinks(VersionedFlowSnapshot snapshot) {
+    private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
         if (snapshot.getSnapshotMetadata() != null) {
             linkService.populateSnapshotLinks(snapshot.getSnapshotMetadata());
         }
@@ -410,6 +423,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         }
 
         if (snapshot.getBucket() != null) {
+            permissionsService.populateBucketPermissions(snapshot.getBucket());
             linkService.populateBucketLinks(snapshot.getBucket());
         }
 

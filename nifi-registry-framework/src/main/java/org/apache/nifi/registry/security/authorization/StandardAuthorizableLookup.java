@@ -17,12 +17,11 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authorization.Resource;
+import org.apache.nifi.registry.exception.ResourceNotFoundException;
+import org.apache.nifi.registry.security.authorization.resource.AccessPolicyAuthorizable;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
-import org.apache.nifi.registry.security.authorization.resource.AccessPolicyAuthorizable;
-import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Component;
 
 @Component

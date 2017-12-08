@@ -18,7 +18,7 @@ package org.apache.nifi.registry.client.impl;
 
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.client.UserClient;
-import org.apache.nifi.registry.model.authorization.AccessStatus;
+import org.apache.nifi.registry.model.authorization.CurrentUser;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
@@ -39,9 +39,9 @@ public class JerseyUserClient extends AbstractJerseyClient implements UserClient
     }
 
     @Override
-    public AccessStatus getAccessStatus() throws NiFiRegistryException, IOException {
+    public CurrentUser getAccessStatus() throws NiFiRegistryException, IOException {
         return executeAction("Error retrieving access status for the current user", () -> {
-            return getRequestBuilder(accessTarget).get(AccessStatus.class);
+            return getRequestBuilder(accessTarget).get(CurrentUser.class);
         });
     }
 }
