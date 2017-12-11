@@ -21,7 +21,6 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.params.SortParameter;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -134,23 +133,6 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
     public List<Bucket> getAll() throws NiFiRegistryException, IOException {
         return executeAction("Error retrieving all buckets", () -> {
             final Bucket[] buckets = getRequestBuilder(bucketsTarget).get(Bucket[].class);
-            return buckets == null ? Collections.emptyList() : Arrays.asList(buckets);
-        });
-    }
-
-    @Override
-    public List<Bucket> getAll(final List<SortParameter> sorts) throws NiFiRegistryException, IOException {
-        if (sorts == null || sorts.size() == 0) {
-            return getAll();
-        }
-
-        return executeAction("Error retrieving all buckets", () -> {
-            WebTarget target = bucketsTarget;
-            for (final SortParameter sortParam : sorts) {
-                target = target.queryParam("sort", sortParam.toString());
-            }
-
-            final Bucket[] buckets = getRequestBuilder(target).get(Bucket[].class);
             return buckets == null ? Collections.emptyList() : Arrays.asList(buckets);
         });
     }

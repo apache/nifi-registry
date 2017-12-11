@@ -72,11 +72,10 @@ public interface MetadataService {
     /**
      * Retrieves all buckets with the given ids.
      *
-     * @param params the paging and sorting params, or null
      * @param bucketIds the ids of the buckets to retrieve
      * @return the set of all buckets
      */
-    List<BucketEntity> getBuckets(QueryParameters params, Set<String> bucketIds);
+    List<BucketEntity> getBuckets(Set<String> bucketIds);
 
     /**
      * Retrieves all buckets.
@@ -90,20 +89,18 @@ public interface MetadataService {
     /**
      * Retrieves items for the given bucket.
      *
-     * @param bucket the bucket to retrieve items for
-     * @param queryParameters the parameters for retrieving the items, or null
+     * @param bucketId the id of bucket to retrieve items for
      * @return the set of items for the bucket
      */
-    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, BucketEntity bucket);
+    List<BucketItemEntity> getBucketItems(String bucketId);
 
     /**
      * Retrieves items for the given buckets.
      *
      * @param bucketIds the ids of buckets to retrieve items for
-     * @param queryParameters the parameters for retrieving the items, or null
      * @return the set of items for the bucket
      */
-    List<BucketItemEntity> getBucketItems(QueryParameters queryParameters, Set<String> bucketIds);
+    List<BucketItemEntity> getBucketItems(Set<String> bucketIds);
 
     // --------------------------------------------------------------------------------------------
 
@@ -119,20 +116,18 @@ public interface MetadataService {
     /**
      * Retrieves the versioned flow with the given id and DOES NOT populate the versionCount.
      *
-     * @param bucketIdentifier the identifier of the bucket storing the flow
      * @param flowIdentifier the identifier of the flow to retrieve
      * @return the versioned flow with the given id, or null if no flow with the given id exists
      */
-    FlowEntity getFlowById(String bucketIdentifier, String flowIdentifier);
+    FlowEntity getFlowById(String flowIdentifier);
 
     /**
      * Retrieves the versioned flow with the given id and DOES populate the versionCount.
      *
-     * @param bucketIdentifier the identifier of the bucket storing the flow
      * @param flowIdentifier the identifier of the flow to retrieve
      * @return the versioned flow with the given id, or null if no flow with the given id exists
      */
-    FlowEntity getFlowByIdWithSnapshotCounts(final String bucketIdentifier, final String flowIdentifier);
+    FlowEntity getFlowByIdWithSnapshotCounts(String flowIdentifier);
 
     /**
      * Retrieves the versioned flows with the given name. The name comparison must be case-insensitive.
@@ -145,10 +140,10 @@ public interface MetadataService {
     /**
      * Retrieves the versioned flows for the given bucket.
      *
-     * @param bucketEntity the bucket entity
+     * @param bucketIdentifier the bucket id to retrieve flows for
      * @return the flows in the given bucket
      */
-    List<FlowEntity> getFlowsByBucket(BucketEntity bucketEntity);
+    List<FlowEntity> getFlowsByBucket(String bucketIdentifier);
 
     /**
      * Updates the given versioned flow, only the name and description should be allowed to be updated.
@@ -179,20 +174,27 @@ public interface MetadataService {
     /**
      * Retrieves the snapshot for the given flow identifier and snapshot version.
      *
-     * @param bucketIdentifier the identifier of the bucket storing the flow
      * @param flowIdentifier the identifier of the flow the snapshot belongs to
      * @param version the version of the snapshot
      * @return the versioned flow snapshot for the given flow identifier and version, or null if none exists
      */
-    FlowSnapshotEntity getFlowSnapshot(String bucketIdentifier, String flowIdentifier, Integer version);
+    FlowSnapshotEntity getFlowSnapshot(String flowIdentifier, Integer version);
 
     /**
      * Retrieves the snapshot with the latest version number for the given flow in the given bucket.
      *
-     * @param flowEntity the flow to retrieve the latest snapshot for
+     * @param flowIdentifier the id of flow to retrieve the latest snapshot for
      * @return the latest snapshot for the flow, or null if one doesn't exist
      */
-    FlowSnapshotEntity getLatestSnapshot(FlowEntity flowEntity);
+    FlowSnapshotEntity getLatestSnapshot(String flowIdentifier);
+
+    /**
+     * Retrieves the snapshots for the given flow in the given bucket.
+     *
+     * @param flowIdentifier the id of the flow
+     * @return the snapshots
+     */
+    List<FlowSnapshotEntity> getSnapshots(String flowIdentifier);
 
     /**
      * Deletes the flow snapshot.

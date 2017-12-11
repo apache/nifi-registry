@@ -21,7 +21,6 @@ import org.apache.nifi.registry.client.FlowClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.params.SortParameter;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -172,25 +171,12 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
 
     @Override
     public List<VersionedFlow> getByBucket(final String bucketId) throws NiFiRegistryException, IOException {
-        return getByBucket(bucketId, Collections.emptyList());
-    }
-
-    @Override
-    public List<VersionedFlow> getByBucket(final String bucketId, final List<SortParameter> sorts) throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
 
-        if (sorts == null) {
-            throw new IllegalArgumentException("Sorts cannot be null");
-        }
-
         return executeAction("Error getting flows for bucket", () -> {
             WebTarget target = bucketFlowsTarget;
-            for (final SortParameter sortParam : sorts) {
-                target = target.queryParam("sort", sortParam.toString());
-            }
-
             target = target.resolveTemplate("bucketId", bucketId);
 
             final VersionedFlow[] versionedFlows = getRequestBuilder(target).get(VersionedFlow[].class);

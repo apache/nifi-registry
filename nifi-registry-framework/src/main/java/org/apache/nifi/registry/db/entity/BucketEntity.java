@@ -16,21 +16,11 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.Objects;
-import java.util.Set;
 
-@Entity
-@Table(name = "BUCKET")
 public class BucketEntity {
 
-    @Id
     private String id;
 
     private String name;
@@ -38,13 +28,6 @@ public class BucketEntity {
     private String description;
 
     private Date created;
-
-    @OneToMany(
-            mappedBy = "bucket",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private Set<BucketItemEntity> items;
 
 
     public String getId() {
@@ -77,29 +60,6 @@ public class BucketEntity {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Set<BucketItemEntity> getItems() {
-        return items;
-    }
-
-    public void setItems(Set<BucketItemEntity> items) {
-        this.items = items;
-    }
-
-    /**
-     * Convenience method to obtain all FlowEntity objects from the items set.
-     *
-     * @return a set of FlowEntities
-     */
-    public Set<FlowEntity> getFlows() {
-        final Set<FlowEntity> flows = new LinkedHashSet<>();
-        for (final BucketItemEntity itemEntity : getItems()) {
-            if (BucketItemEntityType.FLOW == itemEntity.getType()) {
-                flows.add((FlowEntity) itemEntity);
-            }
-        }
-        return flows;
     }
 
     @Override

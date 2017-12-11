@@ -18,7 +18,6 @@ package org.apache.nifi.registry.client;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.params.SortParameter;
 
 import java.io.IOException;
 import java.util.List;
@@ -73,13 +72,5 @@ public interface BucketClient {
      * @return the list of all buckets
      */
     List<Bucket> getAll() throws NiFiRegistryException, IOException;
-
-    /**
-     * Gets all buckets sorted by the given sort parameters.
-     *
-     * @param sorts the list of sort parameters, can be empty, but must be non-null
-     * @return the list of sorted buckets
-     */
-    List<Bucket> getAll(List<SortParameter> sorts) throws NiFiRegistryException, IOException;
 
 }

@@ -14,25 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.repository;
+package org.apache.nifi.registry.db.mapper;
 
-import org.apache.nifi.registry.db.entity.FlowEntity;
-import org.apache.nifi.registry.db.entity.FlowSnapshotCount;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.Nullable;
 
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-/**
- * Repository for FlowSnapshotEntity.
- */
-public interface FlowSnapshotRepository extends PagingAndSortingRepository<FlowSnapshotEntity, FlowSnapshotEntityKey> {
+public class FlowSnapshotEntityRowMapper implements RowMapper<FlowSnapshotEntity> {
 
-    @Query("select new org.apache.nifi.registry.db.entity.FlowSnapshotCount(fs.id.flowId, count(*)) from FlowSnapshotEntity as fs group by fs.id.flowId")
-    List<FlowSnapshotCount> countByFlow();
-
-    FlowSnapshotEntity findFirstByFlowOrderByIdVersionDesc(FlowEntity flowEntity);
-
+    @Nullable
+    @Override
+    public FlowSnapshotEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        final FlowSnapshotEntity entity = new FlowSnapshotEntity();
+        entity.setFlowId(rs.getString("FLOW_ID"));
+        entity.setVersion(rs.getInt("VERSION"));
+        entity.setCreated(rs.getTimestamp("CREATED"));
+        entity.setCreatedBy(rs.getString("CREATED_BY"));
+        entity.setComments(rs.getString("COMMENTS"));
+        return entity;
+    }
 }

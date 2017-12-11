@@ -16,39 +16,12 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-import javax.persistence.CascadeType;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import java.util.Set;
-
-@Entity
-@Table(name = "FLOW")
-@DiscriminatorValue(value = BucketItemEntityType.Values.FLOW)
 public class FlowEntity extends BucketItemEntity {
 
-    @OneToMany(
-            mappedBy = "flow",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private Set<FlowSnapshotEntity> snapshots;
-
-    @Transient
     private long snapshotCount;
 
     public FlowEntity() {
         setType(BucketItemEntityType.FLOW);
-    }
-
-    public Set<FlowSnapshotEntity> getSnapshots() {
-        return snapshots;
-    }
-
-    public void setSnapshots(Set<FlowSnapshotEntity> snapshots) {
-        this.snapshots = snapshots;
     }
 
     public long getSnapshotCount() {

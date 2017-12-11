@@ -220,7 +220,7 @@ public class BucketsIT extends UnsecuredITBase {
 
         // Given: the server is configured to return this fixed response
 
-        String expected = "{\"fields\":[\"created\",\"name\",\"description\",\"id\"]}";
+        String expected = "{\"fields\":[\"ID\",\"NAME\",\"DESCRIPTION\",\"CREATED\"]}";
 
         // When: the server is queried
 

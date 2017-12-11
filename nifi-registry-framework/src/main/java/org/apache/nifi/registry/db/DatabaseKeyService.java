@@ -17,13 +17,15 @@
 package org.apache.nifi.registry.db;
 
 import org.apache.nifi.registry.db.entity.KeyEntity;
-import org.apache.nifi.registry.db.repository.KeyRepository;
+import org.apache.nifi.registry.db.mapper.KeyEntityRowMapper;
 import org.apache.nifi.registry.security.key.Key;
 import org.apache.nifi.registry.security.key.KeyService;
 import org.apache.nifi.registry.service.DataModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -39,11 +41,11 @@ public class DatabaseKeyService implements KeyService {
     private final Lock readLock = lock.readLock();
     private final Lock writeLock = lock.writeLock();
 
-    private KeyRepository keyRepository;
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public DatabaseKeyService(KeyRepository keyRepository) {
-        this.keyRepository = keyRepository;
+    public DatabaseKeyService(final JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -55,7 +57,15 @@ public class DatabaseKeyService implements KeyService {
         Key key = null;
         readLock.lock();
         try {
-            KeyEntity keyEntity = keyRepository.findById(id).orElse(null);
+            final String sql = "SELECT * FROM signing_key WHERE id = ?";
+
+            KeyEntity keyEntity;
+            try {
+                keyEntity = jdbcTemplate.queryForObject(sql, new KeyEntityRowMapper(), id);
+            } catch (EmptyResultDataAccessException e) {
+                keyEntity = null;
+            }
+
             if (keyEntity != null) {
                 key = DataModelMapper.map(keyEntity);
             } else {
@@ -68,26 +78,35 @@ public class DatabaseKeyService implements KeyService {
     }
 
     @Override
-    public Key getOrCreateKey(String identity) {
-        if (identity == null) {
+    public Key getOrCreateKey(String tenantIdentity) {
+        if (tenantIdentity == null) {
             throw new IllegalArgumentException("Identity cannot be null");
         }
 
         Key key;
         writeLock.lock();
         try {
-            final KeyEntity existingKeyEntity = keyRepository.findOneByTenantIdentity(identity);
+            final String selectSql = "SELECT * FROM signing_key WHERE tenant_identity = ?";
+
+            KeyEntity existingKeyEntity;
+            try {
+                existingKeyEntity = jdbcTemplate.queryForObject(selectSql, new KeyEntityRowMapper(), tenantIdentity);
+            } catch (EmptyResultDataAccessException e) {
+                existingKeyEntity = null;
+            }
+
             if (existingKeyEntity == null) {
-                logger.debug("No key found with identity='" + identity + "'. Creating new key.");
+                logger.debug("No key found with identity='" + tenantIdentity + "'. Creating new key.");
 
                 final KeyEntity newKeyEntity = new KeyEntity();
                 newKeyEntity.setId(UUID.randomUUID().toString());
-                newKeyEntity.setTenantIdentity(identity);
+                newKeyEntity.setTenantIdentity(tenantIdentity);
                 newKeyEntity.setKeyValue(UUID.randomUUID().toString());
 
-                final KeyEntity savedKeyEntity = keyRepository.save(newKeyEntity);
+                final String insertSql = "INSERT INTO signing_key (ID, TENANT_IDENTITY, KEY_VALUE) VALUES (?, ?, ?)";
+                jdbcTemplate.update(insertSql, newKeyEntity.getId(), newKeyEntity.getTenantIdentity(), newKeyEntity.getKeyValue());
 
-                key = DataModelMapper.map(savedKeyEntity);
+                key = DataModelMapper.map(newKeyEntity);
             } else {
                 key = DataModelMapper.map(existingKeyEntity);
             }
@@ -98,16 +117,16 @@ public class DatabaseKeyService implements KeyService {
     }
 
     @Override
-    public void deleteKey(String identity) {
-        if (identity == null) {
+    public void deleteKey(String tenantIdentity) {
+        if (tenantIdentity == null) {
             throw new IllegalArgumentException("Identity cannot be null");
         }
 
-        Key key;
         writeLock.lock();
         try {
-            logger.debug("Deleting key with identity='" + identity + "'.");
-            keyRepository.deleteByTenantIdentity(identity);
+            logger.debug("Deleting key with identity='" + tenantIdentity + "'.");
+            final String deleteSql = "DELETE FROM signing_key WHERE tenant_identity = ?";
+            jdbcTemplate.update(deleteSql, tenantIdentity);
         } finally {
             writeLock.unlock();
         }

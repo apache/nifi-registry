@@ -16,7 +16,6 @@
  */
 package org.apache.nifi.registry.db;
 
-import org.apache.nifi.registry.db.DatabaseTestApplication;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestExecutionListeners;

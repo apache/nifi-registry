@@ -16,40 +16,35 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import java.util.Date;
 import java.util.Objects;
 
-@Entity
-@Table(name = "FLOW_SNAPSHOT")
 public class FlowSnapshotEntity {
 
-    @EmbeddedId
-    private FlowSnapshotEntityKey id;
+    private String flowId;
+
+    private Integer version;
 
     private Date created;
 
-    @Column(name = "CREATED_BY")
     private String createdBy;
 
     private String comments;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FLOW_ID", insertable = false, updatable = false)
-    private FlowEntity flow;
-
-    public FlowSnapshotEntityKey getId() {
-        return id;
+    public String getFlowId() {
+        return flowId;
     }
 
-    public void setId(FlowSnapshotEntityKey id) {
-        this.id = id;
+    public void setFlowId(String flowId) {
+        this.flowId = flowId;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     public Date getCreated() {
@@ -76,17 +71,9 @@ public class FlowSnapshotEntity {
         this.comments = comments;
     }
 
-    public FlowEntity getFlow() {
-        return flow;
-    }
-
-    public void setFlow(FlowEntity flow) {
-        this.flow = flow;
-    }
-
     @Override
     public int hashCode() {
-        return Objects.hashCode(this.id);
+        return Objects.hash(this.flowId, this.version);
     }
 
     @Override
@@ -100,6 +87,7 @@ public class FlowSnapshotEntity {
         }
 
         final FlowSnapshotEntity other = (FlowSnapshotEntity) obj;
-        return Objects.equals(this.id, other.id);
+        return Objects.equals(this.flowId, other.flowId) && Objects.equals(this.version, other.version);
     }
+
 }

@@ -21,7 +21,6 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.db.entity.FlowSnapshotEntityKey;
 import org.apache.nifi.registry.db.entity.KeyEntity;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -67,42 +66,47 @@ public class DataModelMapper {
         return flowEntity;
     }
 
-    public static VersionedFlow map(final FlowEntity flowEntity) {
+    public static VersionedFlow map(final BucketEntity bucketEntity, final FlowEntity flowEntity) {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowEntity.getId());
-        versionedFlow.setBucketIdentifier(flowEntity.getBucket().getId());
-        versionedFlow.setBucketName(flowEntity.getBucket().getName());
+        versionedFlow.setBucketIdentifier(flowEntity.getBucketId());
         versionedFlow.setName(flowEntity.getName());
         versionedFlow.setDescription(flowEntity.getDescription());
         versionedFlow.setCreatedTimestamp(flowEntity.getCreated().getTime());
         versionedFlow.setModifiedTimestamp(flowEntity.getModified().getTime());
         versionedFlow.setVersionCount(flowEntity.getSnapshotCount());
+
+        if (bucketEntity != null) {
+            versionedFlow.setBucketName(bucketEntity.getName());
+        }
+
         return versionedFlow;
     }
 
     // --- Map snapshots
 
     public static FlowSnapshotEntity map(final VersionedFlowSnapshotMetadata versionedFlowSnapshot) {
-        final FlowSnapshotEntityKey key = new FlowSnapshotEntityKey();
-        key.setFlowId(versionedFlowSnapshot.getFlowIdentifier());
-        key.setVersion(versionedFlowSnapshot.getVersion());
-
         final FlowSnapshotEntity flowSnapshotEntity = new FlowSnapshotEntity();
-        flowSnapshotEntity.setId(key);
+        flowSnapshotEntity.setFlowId(versionedFlowSnapshot.getFlowIdentifier());
+        flowSnapshotEntity.setVersion(versionedFlowSnapshot.getVersion());
         flowSnapshotEntity.setComments(versionedFlowSnapshot.getComments());
         flowSnapshotEntity.setCreated(new Date(versionedFlowSnapshot.getTimestamp()));
         flowSnapshotEntity.setCreatedBy(versionedFlowSnapshot.getAuthor());
         return flowSnapshotEntity;
     }
 
-    public static VersionedFlowSnapshotMetadata map(final FlowSnapshotEntity flowSnapshotEntity) {
+    public static VersionedFlowSnapshotMetadata map(final BucketEntity bucketEntity, final FlowSnapshotEntity flowSnapshotEntity) {
         final VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
-        metadata.setFlowIdentifier(flowSnapshotEntity.getId().getFlowId());
-        metadata.setVersion(flowSnapshotEntity.getId().getVersion());
-        metadata.setBucketIdentifier(flowSnapshotEntity.getFlow().getBucket().getId());
+        metadata.setFlowIdentifier(flowSnapshotEntity.getFlowId());
+        metadata.setVersion(flowSnapshotEntity.getVersion());
         metadata.setComments(flowSnapshotEntity.getComments());
         metadata.setTimestamp(flowSnapshotEntity.getCreated().getTime());
         metadata.setAuthor(flowSnapshotEntity.getCreatedBy());
+
+        if (bucketEntity != null) {
+            metadata.setBucketIdentifier(bucketEntity.getId());
+        }
+
         return metadata;
     }
 

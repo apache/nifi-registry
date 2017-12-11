@@ -18,7 +18,6 @@ package org.apache.nifi.registry.client;
 
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.params.SortParameter;
 
 import java.io.IOException;
 import java.util.List;
@@ -106,16 +105,5 @@ public interface FlowClient {
      * @throws IOException if an I/O error is encountered
      */
     List<VersionedFlow> getByBucket(String bucketId) throws NiFiRegistryException, IOException;
-
-    /**
-     * Gets the flows for a given bucket in the specified sorted order.
-     *
-     * @param bucketId a bucket id
-     * @param sorts sort parameters, can be empty, but must be non-null
-     * @return the flows in the given bucket
-     * @throws NiFiRegistryException if an error is encountered other than IOException
-     * @throws IOException if an I/O error is encountered
-     */
-    List<VersionedFlow> getByBucket(String bucketId, List<SortParameter> sorts) throws NiFiRegistryException, IOException;
 
 }

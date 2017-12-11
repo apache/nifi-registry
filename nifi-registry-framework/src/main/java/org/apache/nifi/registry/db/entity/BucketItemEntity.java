@@ -16,28 +16,11 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorColumn;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import java.util.Date;
 import java.util.Objects;
 
-@Entity
-@Table(name = "BUCKET_ITEM")
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "ITEM_TYPE")
 public class BucketItemEntity {
 
-    @Id
     private String id;
 
     private String name;
@@ -49,14 +32,9 @@ public class BucketItemEntity {
     private Date modified;
 
     // NOTE: sub-classes should ensure that the type is set appropriately by overriding the getter/setter
-
-    @Column(name = "ITEM_TYPE", nullable = false, insertable = false, updatable = false)
-    @Enumerated(EnumType.STRING)
     private BucketItemEntityType type;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "BUCKET_ID")
-    private BucketEntity bucket;
+    private String bucketId;
 
 
     public String getId() {
@@ -107,12 +85,12 @@ public class BucketItemEntity {
         this.type = type;
     }
 
-    public BucketEntity getBucket() {
-        return bucket;
+    public String getBucketId() {
+        return bucketId;
     }
 
-    public void setBucket(BucketEntity bucket) {
-        this.bucket = bucket;
+    public void setBucketId(String bucketId) {
+        this.bucketId = bucketId;
     }
 
     @Override

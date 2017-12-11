@@ -18,10 +18,7 @@ package org.apache.nifi.registry;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
-
-import java.util.Properties;
 
 /**
  * Main class for starting the NiFi Registry Web API as a Spring Boot application.
@@ -35,17 +32,6 @@ import java.util.Properties;
 public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
 
     public static final String NIFI_REGISTRY_PROPERTIES_ATTRIBUTE = "nifi-registry.properties";
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        final Properties defaultProperties = new Properties();
-        defaultProperties.setProperty("spring.jpa.hibernate.ddl-auto", "none");
-        defaultProperties.setProperty("spring.jpa.hibernate.naming.physical-strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl");
-
-        return application
-                .sources(NiFiRegistryApiApplication.class)
-                .properties(defaultProperties);
-    }
 
     public static void main(String[] args) {
         SpringApplication.run(NiFiRegistryApiApplication.class, args);
