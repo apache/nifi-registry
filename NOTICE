@@ -1,6 +1,9 @@
-Apache NiFi
+Apache NiFi Registry
 Copyright 2014-2017 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
 
+This includes derived works from the Apache NiFi (ASLv2 licensed) project (https://git-wip-us.apache.org/repos/asf?p=nifi.git):
+  Copyright 2015-2017 The Apache Software Foundation
+  This includes sources for bootstrapping, runtime, component API, security/authorization API
