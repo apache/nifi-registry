@@ -137,7 +137,7 @@
         <!-- nifi-registry.properties: web properties -->
         <nifi.registry.web.war.directory>./lib</nifi.registry.web.war.directory>
         <nifi.registry.web.http.host />
-        <nifi.registry.web.http.port>8080</nifi.registry.web.http.port>
+        <nifi.registry.web.http.port>18080</nifi.registry.web.http.port>
         <nifi.registry.web.https.host />
         <nifi.registry.web.https.port />
         <nifi.registry.jetty.work.dir>./work/jetty</nifi.registry.jetty.work.dir>

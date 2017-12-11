@@ -23,7 +23,42 @@ Registry—a subproject of Apache NiFi—is a complementary application that pro
 
 ## Getting Started
 
-TBD
+### Requirements
+    
+* Java 1.8 (above 1.8.0_45)
+* Maven 3.1.0, or newer
+* Recent git client
+
+1) Clone the repo
+
+        git clone https://git-wip-us.apache.org/repos/asf/nifi-registry.git
+        git checkout master
+
+2) Build the project
+
+        cd nifi-registry
+        mvn clean install
+
+    If you wish to enable style and license checks, specify the contrib-check profile:
+    
+        mvn clean install -Pcontrib-check
+        
+    If you wish to run integration tests and contrib-check, specify both profiles:
+    
+        mvn clean install -Pcontrib-check,integration-tests
+
+3) Start the application
+
+        cd nifi-registry-assembly/target/nifi-registry-<VERSION>-bin/nifi-registry-<VERSION>/
+        ./bin/nifi-registry.sh start
+
+4) Launch the application
+ 
+    With the default settings, the application will be available at[http://localhost:18080/nifi-registry](http://localhost:8080/nifi-registry) 
+   
+5) Logging
+
+    Logs will be available in logs/nifi-registry.app.log  
 
 ## License
 
