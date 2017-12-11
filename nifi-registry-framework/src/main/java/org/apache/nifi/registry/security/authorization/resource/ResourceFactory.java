@@ -235,12 +235,6 @@ public final class ResourceFactory {
                     case Bucket:
                         safeDescription.append("Bucket");
                         break;
-                    case Policy:
-                        safeDescription.append("Policy");
-                        break;
-                    case Tenant:
-                        safeDescription.append("Tenant");
-                        break;
                     default:
                         safeDescription.append("Unknown resource type");
                         break;

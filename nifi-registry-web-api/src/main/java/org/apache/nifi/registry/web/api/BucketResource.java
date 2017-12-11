@@ -116,7 +116,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets all buckets",
-            notes = "The returned list will include only buckets for which the caller is authorized.",
+            notes = "The returned list will include only buckets for which the user is authorized." +
+                    "If the user is not authorized for any buckets, this returns an empty list.",
             response = Bucket.class,
             responseContainer = "List"
     )
@@ -128,6 +129,15 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
             @QueryParam("sort")
             final List<String> sortParameters) {
+
+        // Note: We don't explicitly check for access to (READ, /buckets) because
+        // a user might have access to individual buckets without top-level access.
+        // For example, a user that has (READ, /buckets/bucket-id-1) but not access
+        // to /buckets should not get a 403 error returned from this endpoint.
+        // This has the side effect that a user with no access to any buckets
+        // gets an empty array returned from this endpoint instead of 403 as one
+        // might expect.
+
         final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
 
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
