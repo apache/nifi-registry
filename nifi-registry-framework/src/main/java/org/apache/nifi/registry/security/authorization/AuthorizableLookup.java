@@ -65,14 +65,6 @@ public interface AuthorizableLookup {
     Authorizable getBucketAuthorizable(String bucketIdentifier);
 
     /**
-     * Get the authorizable for the policy of the specified resource.
-     *
-     * @param resource resource
-     * @return authorizable
-     */
-    Authorizable getAccessPolicyByResource(String resource);
-
-    /**
      * Get the authorizable of the specified resource.
      *
      * @param resource resource
