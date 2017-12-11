@@ -133,13 +133,6 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(numBuckets, allBuckets.size());
         allBuckets.stream().forEach(b -> System.out.println("Retrieve bucket " + b.getIdentifier()));
 
-        // get all buckets with sorting
-        final SortParameter sortParam = new SortParameter("created", SortOrder.ASC);
-        final List<Bucket> allBucketsSorted = bucketClient.getAll(Arrays.asList(sortParam));
-        LOGGER.info("Retrieved sorted buckets, size = " + allBucketsSorted.size());
-        Assert.assertEquals(numBuckets, allBucketsSorted.size());
-        allBucketsSorted.stream().forEach(b -> System.out.println("Retrieve bucket " + b.getIdentifier()));
-
         // update each bucket
         for (final Bucket bucket : createdBuckets) {
             final Bucket bucketUpdate = new Bucket();
@@ -194,12 +187,6 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(2, flowsInBucket.size());
         flowsInBucket.stream().forEach(f -> LOGGER.info("Flow in bucket, flow id " + f.getIdentifier()));
 
-        // get flows in bucket with sorting
-        final SortParameter flowsSortParam = new SortParameter("created", SortOrder.ASC);
-        final List<VersionedFlow> flowsInBucketSorted = flowClient.getByBucket(flowsBucket.getIdentifier(), Arrays.asList(flowsSortParam));
-        Assert.assertNotNull(flowsInBucketSorted);
-        Assert.assertEquals(2, flowsInBucketSorted.size());
-
         // ---------------------- TEST SNAPSHOTS --------------------------//
 
         final FlowSnapshotClient snapshotClient = client.getFlowSnapshotClient();
@@ -249,7 +236,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
             snapshotClient.getLatestMetadata(snapshotFlow.getBucketIdentifier(), "DOES-NOT-EXIST");
             Assert.fail("Should have thrown exception");
         } catch (NiFiRegistryException nfe) {
-            Assert.assertEquals("Error retrieving latest snapshot metadata: VersionedFlow does not exist for identifier DOES-NOT-EXIST", nfe.getMessage());
+            Assert.assertEquals("Error retrieving latest snapshot metadata: Versioned flow does not exist for identifier DOES-NOT-EXIST", nfe.getMessage());
         }
 
         // ---------------------- TEST ITEMS --------------------------//

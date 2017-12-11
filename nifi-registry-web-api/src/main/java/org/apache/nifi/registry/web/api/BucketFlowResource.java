@@ -22,18 +22,16 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.service.QueryParameters;
-import org.apache.nifi.registry.params.SortParameter;
 import org.apache.nifi.registry.web.link.LinkService;
 import org.apache.nifi.registry.web.security.PermissionsService;
 import org.slf4j.Logger;
@@ -51,7 +49,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -128,17 +125,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     public Response getFlows(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-                final String bucketId,
-            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
-            @QueryParam("sort")
-                final List<String> sortParameters) {
+            final String bucketId) {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
-        for (String sortParam : sortParameters) {
-            paramsBuilder.addSort(SortParameter.fromString(sortParam));
-        }
 
         final List<VersionedFlow> flows = registryService.getFlows(bucketId);
         permissionsService.populateItemPermissions(flows);

@@ -136,10 +136,27 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
             return;
         }
 
+        // delete everything under the flow directory
         try {
             org.apache.commons.io.FileUtils.cleanDirectory(flowDir);
         } catch (IOException e) {
             throw new FlowPersistenceException("Error deleting snapshots at " + flowDir.getAbsolutePath(), e);
+        }
+
+        // delete the directory for the flow
+        final boolean flowDirDeleted = flowDir.delete();
+        if (!flowDirDeleted) {
+            LOGGER.error("Unable to delete flow directory: " + flowDir.getAbsolutePath());
+        }
+
+        // delete the directory for the bucket if there is nothing left
+        final File bucketDir = new File(flowStorageDir, bucketId);
+        final File[] bucketFiles = bucketDir.listFiles();
+        if (bucketFiles.length == 0) {
+            final boolean deletedBucket = bucketDir.delete();
+            if (!deletedBucket) {
+                LOGGER.error("Unable to delete bucket directory: " + flowDir.getAbsolutePath());
+            }
         }
     }
 

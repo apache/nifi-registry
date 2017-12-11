@@ -25,14 +25,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.params.SortParameter;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.QueryParameters;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.web.link.LinkService;
 import org.apache.nifi.registry.web.security.PermissionsService;
@@ -50,7 +48,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -125,10 +122,7 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
-    public Response getBuckets(
-            @ApiParam(value = SortParameter.API_PARAM_DESCRIPTION, format = "field:order", allowMultiple = true, example = "name:ASC")
-            @QueryParam("sort")
-            final List<String> sortParameters) {
+    public Response getBuckets() {
 
         // Note: We don't explicitly check for access to (READ, /buckets) because
         // a user might have access to individual buckets without top-level access.
@@ -145,12 +139,7 @@ public class BucketResource extends AuthorizableApplicationResource {
             return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
         }
 
-        final QueryParameters.Builder paramsBuilder = new QueryParameters.Builder();
-        for (String sortParam : sortParameters) {
-            paramsBuilder.addSort(SortParameter.fromString(sortParam));
-        }
-
-        final List<Bucket> buckets = registryService.getBuckets(paramsBuilder.build(), authorizedBucketIds);
+        final List<Bucket> buckets = registryService.getBuckets(authorizedBucketIds);
         permissionsService.populateBucketPermissions(buckets);
         linkService.populateBucketLinks(buckets);
 

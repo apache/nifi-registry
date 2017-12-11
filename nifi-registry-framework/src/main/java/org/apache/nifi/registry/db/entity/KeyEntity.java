@@ -16,22 +16,12 @@
  */
 package org.apache.nifi.registry.db.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-@Entity
-@Table(name = "SIGNING_KEY")
 public class KeyEntity {
 
-    @Id
     private String id;
 
-    @Column(name = "TENANT_IDENTITY", unique = true, nullable = false)
     private String tenantIdentity;
 
-    @Column(name = "KEY_VALUE", nullable = false)
     private String keyValue;
 
     public String getId() {

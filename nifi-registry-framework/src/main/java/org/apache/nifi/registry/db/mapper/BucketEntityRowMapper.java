@@ -14,18 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.repository;
+package org.apache.nifi.registry.db.mapper;
 
-import org.apache.nifi.registry.db.entity.KeyEntity;
-import org.springframework.data.repository.CrudRepository;
+import org.apache.nifi.registry.db.entity.BucketEntity;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.Nullable;
 
-/**
- * Spring Data Repository for KeyEntity.
- */
-public interface KeyRepository extends CrudRepository<KeyEntity, String> {
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-    KeyEntity findOneByTenantIdentity(String identity);
+public class BucketEntityRowMapper implements RowMapper<BucketEntity> {
 
-    void deleteByTenantIdentity(String identity);
+    @Nullable
+    @Override
+    public BucketEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        final BucketEntity b = new BucketEntity();
+        b.setId(rs.getString("ID"));
+        b.setName(rs.getString("NAME"));
+        b.setDescription(rs.getString("DESCRIPTION"));
+        b.setCreated(rs.getTimestamp("CREATED"));
+        return b;
+    }
 
 }

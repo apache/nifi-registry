@@ -14,27 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.db.repository;
+package org.apache.nifi.registry.db.mapper;
 
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import org.apache.nifi.registry.db.entity.KeyEntity;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.lang.Nullable;
 
-import java.util.List;
-import java.util.Set;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
-/**
- * Spring Data Repository for BucketEntity.
- */
-public interface BucketRepository extends PagingAndSortingRepository<BucketEntity,String> {
+public class KeyEntityRowMapper implements RowMapper<KeyEntity> {
 
-    List<BucketEntity> findByNameIgnoreCase(String name);
-
-    List<BucketEntity> findByIdIn(Set<String> id);
-
-    List<BucketEntity> findByIdIn(Set<String> id, Sort sort);
-
-    List<BucketEntity> findByIdIn(Set<String> id, Pageable pageable);
-
+    @Nullable
+    @Override
+    public KeyEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+        final KeyEntity keyEntity = new KeyEntity();
+        keyEntity.setId(rs.getString("ID"));
+        keyEntity.setTenantIdentity(rs.getString("TENANT_IDENTITY"));
+        keyEntity.setKeyValue(rs.getString("KEY_VALUE"));
+        return keyEntity;
+    }
 }
