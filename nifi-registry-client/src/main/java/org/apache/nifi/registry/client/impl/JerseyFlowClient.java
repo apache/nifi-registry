@@ -52,13 +52,13 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
 
     @Override
     public VersionedFlow create(final VersionedFlow flow) throws NiFiRegistryException, IOException {
+        if (flow == null) {
+            throw new IllegalArgumentException("VersionedFlow cannot be null");
+        }
+
         final String bucketId = flow.getBucketIdentifier();
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
-        }
-
-        if (flow == null) {
-            throw new IllegalArgumentException("VersionedFlow cannot be null");
         }
 
         return executeAction("Error creating flow", () -> {
