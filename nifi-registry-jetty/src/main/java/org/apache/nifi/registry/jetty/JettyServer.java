@@ -238,7 +238,9 @@ public class JettyServer {
         webUiContext = loadWar(webUiWar, "/nifi-registry");
 
         webApiContext = loadWar(webApiWar, "/nifi-registry-api");
+        logger.info("Adding {} object to ServletContext with key 'nifi-registry.properties'", properties.getClass().getSimpleName());
         webApiContext.setAttribute("nifi-registry.properties", properties);
+        logger.info("Adding {} object to ServletContext with key 'nifi-registry.key'", masterKeyProvider.getClass().getSimpleName());
         webApiContext.setAttribute("nifi-registry.key", masterKeyProvider);
 
         // there is an issue scanning the asm repackaged jar so narrow down what we are scanning

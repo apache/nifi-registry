@@ -17,14 +17,12 @@
 package org.apache.nifi.registry;
 
 import org.apache.nifi.registry.jetty.JettyServer;
-import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
-import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
-import org.apache.nifi.registry.security.crypto.CryptoKeyLoader;
-import org.apache.nifi.registry.security.crypto.MissingCryptoKeyException;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.NiFiRegistryPropertiesLoader;
 import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
-import org.apache.nifi.registry.security.crypto.VolatileCryptoKeyProvider;
+import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
+import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
+import org.apache.nifi.registry.security.crypto.MissingCryptoKeyException;
 import org.apache.nifi.registry.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +31,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,7 +39,6 @@ import java.util.concurrent.TimeUnit;
 public class NiFiRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NiFiRegistry.class);
-    private static final String KEY_FILE_FLAG = "-K";
 
     public static final String BOOTSTRAP_PORT_PROPERTY = "nifi.registry.bootstrap.listen.port";
 
@@ -153,7 +147,8 @@ public class NiFiRegistry {
         final CryptoKeyProvider masterKeyProvider;
         final NiFiRegistryProperties properties;
         try {
-            masterKeyProvider = createMasterKeyProvider(args);
+            masterKeyProvider = new BootstrapFileCryptoKeyProvider(REGISTRY_BOOTSTRAP_FILE_LOCATION);
+            LOGGER.info("Read property protection key from {}", REGISTRY_BOOTSTRAP_FILE_LOCATION);
             properties = initializeProperties(masterKeyProvider);
         } catch (final IllegalArgumentException iae) {
             throw new RuntimeException("Unable to load properties: " + iae, iae);
@@ -194,56 +189,4 @@ public class NiFiRegistry {
         }
     }
 
-    private static CryptoKeyProvider createMasterKeyProvider(String[] args) {
-        CryptoKeyProvider masterKeyProvider = null;
-        List<String> parsedArgs = parseArgs(args);
-
-        try {
-            if (parsedArgs.contains(KEY_FILE_FLAG)) {
-                LOGGER.debug("The bootstrap process provided the {} flag", KEY_FILE_FLAG);
-                int i = parsedArgs.indexOf(KEY_FILE_FLAG);
-                if (parsedArgs.size() <= i + 1) {
-                    LOGGER.error("The bootstrap process passed the {} flag without a filename", KEY_FILE_FLAG);
-                    throw new IllegalArgumentException("The bootstrap process provided the " + KEY_FILE_FLAG + " flag but no key");
-                }
-                String passwordfilePath = parsedArgs.get(i + 1);
-                String key = CryptoKeyLoader.extractKeyFromKeyFile(passwordfilePath, true);
-                if (!isHexKeyValid(key)) {
-                    throw new IllegalArgumentException("The key was not provided in valid hex format and of a valid length");
-                }
-                masterKeyProvider = new VolatileCryptoKeyProvider(key);
-                LOGGER.info("Read property protection key from key file provided by bootstrap process");
-            } else {
-                // if the key was not passed from bootstrap via -K <KEYFILE> arg, assume it is in bootstrap.conf
-                masterKeyProvider = new BootstrapFileCryptoKeyProvider(REGISTRY_BOOTSTRAP_FILE_LOCATION);
-                LOGGER.info("Read property protection key from {}", REGISTRY_BOOTSTRAP_FILE_LOCATION);
-            }
-        } catch (IOException e) {
-            LOGGER.error("Caught IOException while attempting to load master decryption key; aborting: " + e.toString());
-            System.exit(1);
-        }
-
-        return masterKeyProvider;
-    }
-
-    private static List<String> parseArgs(String[] args) {
-        List<String> parsedArgs = new ArrayList<>(Arrays.asList(args));
-        for (int i = 0; i < parsedArgs.size(); i++) {
-            if (parsedArgs.get(i).startsWith(KEY_FILE_FLAG + " ")) {
-                String[] split = parsedArgs.get(i).split(" ", 2);
-                parsedArgs.set(i, split[0]);
-                parsedArgs.add(i + 1, split[1]);
-                break;
-            }
-        }
-        return parsedArgs;
-    }
-
-    private static boolean isHexKeyValid(String key) {
-        if (key == null || key.trim().isEmpty()) {
-            return false;
-        }
-        // Key length is in "nibbles" (i.e. one hex char = 4 bits)
-        return Arrays.asList(128, 196, 256).contains(key.length() * 4) && key.matches("^[0-9a-fA-F]*$");
-    }
 }

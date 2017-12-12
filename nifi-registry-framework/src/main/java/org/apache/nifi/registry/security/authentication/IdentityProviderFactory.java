@@ -272,7 +272,7 @@ public class IdentityProviderFactory implements IdentityProviderLookup, Disposab
 
     private String decryptValue(String cipherText, String encryptionScheme) throws SensitivePropertyProtectionException {
         if (sensitivePropertyProvider == null) {
-            throw new SensitivePropertyProtectionException("Sensitive Property Provider dependency was never wired, so protected" +
+            throw new SensitivePropertyProtectionException("Sensitive Property Provider dependency was never wired, so protected " +
                     "properties cannot be decrypted. This usually indicates that a master key for this NiFi Registry was not " +
                     "detected and configured during the bootstrap startup sequence. Contact the system administrator.");
         }
