@@ -16,7 +16,6 @@
  */
 package org.apache.nifi.registry.web.api;
 
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -71,8 +70,6 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         super(authorizer, authorizationService);
     }
 
-    // TODO - Verify that access control is done by the resource the policy is for, not the /policies resource itself.
-
     /**
      * Create a new access policy.
      *
@@ -110,7 +107,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         }
         RequestAction.valueOfValue(requestAccessPolicy.getAction());
 
-        authorizeAccessToResource(RequestAction.WRITE, requestAccessPolicy.getResource());
+        authorizeAccess(RequestAction.WRITE);
 
         AccessPolicy createdPolicy = authorizationService.createAccessPolicy(requestAccessPolicy);
 
@@ -172,7 +169,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         verifyAuthorizerIsManaged();
 
         final AccessPolicy accessPolicy = authorizationService.getAccessPolicy(identifier);
-        authorizeAccessToResource(RequestAction.READ, accessPolicy.getResource());
+        authorizeAccess(RequestAction.READ);
 
         return generateOkResponse(accessPolicy).build();
     }
@@ -218,7 +215,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         final RequestAction requestAction = RequestAction.valueOfValue(action);
         final String resource = "/" + rawResource;
 
-        authorizeAccessToResource(RequestAction.READ, resource);
+        authorizeAccess(RequestAction.READ);
 
         AccessPolicy accessPolicy = authorizationService.getAccessPolicy(resource, requestAction);
         return generateOkResponse(accessPolicy).build();
@@ -266,7 +263,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
                     + "policy id of the requested resource (%s).", requestAccessPolicy.getIdentifier(), identifier));
         }
 
-        authorizeAccessToPolicy(RequestAction.WRITE, identifier);
+        authorizeAccess(RequestAction.WRITE);
 
         AccessPolicy createdPolicy = authorizationService.updateAccessPolicy(requestAccessPolicy);
 
@@ -302,7 +299,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             final String identifier) {
 
         verifyAuthorizerSupportsConfigurablePolicies();
-        authorizeAccessToPolicy(RequestAction.DELETE, identifier);
+        authorizeAccess(RequestAction.DELETE);
         AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
         return generateOkResponse(deletedPolicy).build();
     }
@@ -325,18 +322,6 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         authorizationService.authorizeAccess(lookup -> {
             final Authorizable policiesAuthorizable = lookup.getPoliciesAuthorizable();
             policiesAuthorizable.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
-        });
-    }
-
-    private void authorizeAccessToPolicy(RequestAction actionType, String accessPolicyIdentifier) {
-        AccessPolicy accessPolicy = authorizationService.getAccessPolicy(accessPolicyIdentifier);
-        authorizeAccessToResource(actionType, accessPolicy.getResource());
-    }
-
-    private void authorizeAccessToResource(RequestAction actionType, String resource) {
-        authorizationService.authorizeAccess(lookup -> {
-            final Authorizable accessPolicy = lookup.getAccessPolicyByResource(resource);
-            accessPolicy.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
         });
     }
 

@@ -427,6 +427,20 @@ public class SecureLdapIT extends IntegrationTestBase {
         assertEquals(201, adminGrantsReadAccessResponse.getStatus());
 
 
+        // When: nifiadmin tries to list all buckets
+        final Bucket[] adminBuckets = client
+                .target(createURL("buckets"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Bucket[].class);
+
+        // Then: the full list is returned (verifies that per-bucket access policies are additive to base /buckets policy)
+        assertNotNull(adminBuckets);
+        assertEquals(1, adminBuckets.length);
+        assertEquals(createdBucket.getIdentifier(), adminBuckets[0].getIdentifier());
+        assertEquals(new Permissions().withCanRead(true).withCanWrite(true).withCanDelete(true), adminBuckets[0].getPermissions());
+
+
         // When: user nobel re-queries /buckets
         final Bucket[] buckets2 = client
                 .target(createURL("buckets"))

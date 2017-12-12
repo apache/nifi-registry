@@ -466,7 +466,7 @@ public class AuthorizationService {
             resources.add(ResourceFactory.getBucketsResource());
             // add all buckets
             for (final Bucket bucket : registryService.getBuckets()) {
-                resources.add(ResourceFactory.getChildResource(ResourceType.Bucket, bucket.getIdentifier(), bucket.getName()));
+                resources.add(ResourceFactory.getBucketResource(bucket.getIdentifier(), bucket.getName()));
             }
         }
 
