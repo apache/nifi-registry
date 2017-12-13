@@ -34,7 +34,6 @@ import org.apache.nifi.registry.security.authorization.exception.UninheritableAu
 import org.apache.nifi.registry.security.authorization.file.generated.Authorizations;
 import org.apache.nifi.registry.security.authorization.file.generated.Policies;
 import org.apache.nifi.registry.security.authorization.file.generated.Policy;
-import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.util.PropertyValue;
@@ -117,7 +116,6 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     /*  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
      *  (and also gets us away from requiring magic strings here) */
     private static final ResourceActionPair[] INITIAL_ADMIN_ACCESS_POLICIES = {
-            new ResourceActionPair("/resources", READ_CODE),
             new ResourceActionPair("/tenants", READ_CODE),
             new ResourceActionPair("/tenants", WRITE_CODE),
             new ResourceActionPair("/tenants", DELETE_CODE),
@@ -127,6 +125,13 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             new ResourceActionPair("/buckets", READ_CODE),
             new ResourceActionPair("/buckets", WRITE_CODE),
             new ResourceActionPair("/buckets", DELETE_CODE),
+            new ResourceActionPair("/proxy", WRITE_CODE)
+    };
+
+    /*  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
+     *  (and also gets us away from requiring magic strings here) */
+    private static final ResourceActionPair[] NIFI_ACCESS_POLICIES = {
+            new ResourceActionPair("/buckets", READ_CODE),
             new ResourceActionPair("/proxy", WRITE_CODE)
     };
 
@@ -537,13 +542,15 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
      */
     private void populateNiFiIdentities(Authorizations authorizations) {
         for (String nifiIdentity : nifiIdentities) {
-            final User node = userGroupProvider.getUserByIdentity(nifiIdentity);
-            if (node == null) {
+            final User nifiUser = userGroupProvider.getUserByIdentity(nifiIdentity);
+            if (nifiUser == null) {
                 throw new SecurityProviderCreationException("Unable to locate node " + nifiIdentity + " to seed policies.");
             }
 
-            // grant access to the proxy resource
-            addUserToAccessPolicy(authorizations, ResourceType.Proxy.getValue(), node.getIdentifier(), WRITE_CODE);
+            // grant access to the resources needed for initial nifi-proxy identities
+            for (ResourceActionPair resourceAction : NIFI_ACCESS_POLICIES) {
+                addUserToAccessPolicy(authorizations, resourceAction.resource, nifiUser.getIdentifier(), resourceAction.actionCode);
+            }
         }
     }
 

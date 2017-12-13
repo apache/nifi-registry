@@ -27,8 +27,8 @@ import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetec
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.model.authorization.User;
-import org.apache.nifi.registry.model.authorization.UserGroup;
+import org.apache.nifi.registry.authorization.User;
+import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

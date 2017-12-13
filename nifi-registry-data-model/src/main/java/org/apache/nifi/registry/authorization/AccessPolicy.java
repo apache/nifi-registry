@@ -14,7 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.model.authorization;
+
+package org.apache.nifi.registry.authorization;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -24,24 +25,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A user group, used to apply a single set of authorization policies to a group of users.
+ * Access policy details, including the users and user groups to which the policy applies.
  */
-@ApiModel("userGroup")
-public class UserGroup extends Tenant {
+@ApiModel("accessPolicy")
+public class AccessPolicy extends AccessPolicySummary {
 
     private Set<Tenant> users;
-    private Set<AccessPolicySummary> accessPolicies;
+    private Set<Tenant> userGroups;
 
-    public UserGroup() {}
-
-    public UserGroup(String identifier, String identity) {
-        super(identifier, identity);
-    }
-
-    /**
-     * @return The users that belong to this user group.
-     */
-    @ApiModelProperty(value = "The users that belong to this user group. This can only be changed if this group is configurable.")
+    @ApiModelProperty(value = "The set of user IDs associated with this access policy.")
     public Set<Tenant> getUsers() {
         return users;
     }
@@ -56,6 +48,24 @@ public class UserGroup extends Tenant {
                 this.users = new HashSet<>();
             }
             this.users.addAll(users);
+        }
+    }
+
+    @ApiModelProperty(value = "The set of user group IDs associated with this access policy.")
+    public Set<Tenant> getUserGroups() {
+        return userGroups;
+    }
+
+    public void setUserGroups(Set<Tenant> userGroups) {
+        this.userGroups = userGroups;
+    }
+
+    public void addUserGroups(Collection<? extends Tenant> userGroups) {
+        if (userGroups != null) {
+            if (this.userGroups == null) {
+                this.userGroups = new HashSet<>();
+            }
+            this.userGroups.addAll(userGroups);
         }
     }
 

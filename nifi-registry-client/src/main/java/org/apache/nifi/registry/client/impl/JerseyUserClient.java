@@ -18,7 +18,7 @@ package org.apache.nifi.registry.client.impl;
 
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.client.UserClient;
-import org.apache.nifi.registry.model.authorization.CurrentUser;
+import org.apache.nifi.registry.authorization.CurrentUser;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
