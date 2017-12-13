@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.client;
 
-import org.apache.nifi.registry.model.authorization.CurrentUser;
+import org.apache.nifi.registry.authorization.CurrentUser;
 
 import java.io.IOException;
 

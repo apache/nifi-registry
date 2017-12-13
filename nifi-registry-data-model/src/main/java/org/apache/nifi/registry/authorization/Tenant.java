@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.model.authorization;
+package org.apache.nifi.registry.authorization;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,6 +32,7 @@ public class Tenant {
     private String identifier;
     private String identity;
     private Boolean configurable;
+    private ResourcePermissions resourcePermissions;
     private Set<AccessPolicySummary> accessPolicies;
 
     public Tenant() {}
@@ -72,6 +73,18 @@ public class Tenant {
 
     public void setConfigurable(Boolean configurable) {
         this.configurable = configurable;
+    }
+
+    @ApiModelProperty(
+            value = "A summary top-level resource access policies granted to this tenant.",
+            readOnly = true
+    )
+    public ResourcePermissions getResourcePermissions() {
+        return resourcePermissions;
+    }
+
+    public void setResourcePermissions(ResourcePermissions resourcePermissions) {
+        this.resourcePermissions = resourcePermissions;
     }
 
     @ApiModelProperty(

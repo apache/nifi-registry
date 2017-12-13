@@ -17,6 +17,10 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.NiFiRegistryTestApiApplication;
+import org.apache.nifi.registry.authorization.ResourcePermissions;
+import org.apache.nifi.registry.authorization.Tenant;
+import org.apache.nifi.registry.authorization.User;
+import org.apache.nifi.registry.authorization.UserGroup;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -25,9 +29,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Deploy the Web API Application using an embedded Jetty Server for local integration testing, with the follow characteristics:
@@ -53,11 +60,12 @@ public class SecureFileIT extends IntegrationTestBase {
         String expectedJson = "{" +
                 "\"identity\":\"CN=user1, OU=nifi\"," +
                 "\"anonymous\":false," +
-                "\"administrationPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"bucketsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"tenantsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"policiesPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"resourcesPermissions\":{\"canRead\":true}" +
+                "\"resourcePermissions\":{" +
+                "\"anyTopLevelResource\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"buckets\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"tenants\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"policies\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"proxy\":{\"canRead\":false,\"canWrite\":true,\"canDelete\":false}}" +
                 "}";
 
         // When: the /access endpoint is queried
@@ -78,20 +86,85 @@ public class SecureFileIT extends IntegrationTestBase {
         // Given: an empty registry returns these resources
         String expected = "[" +
                 "{\"identifier\":\"/policies\",\"name\":\"Access Policies\"}," +
-                "{\"identifier\":\"/tenants\",\"name\":\"Tenant\"}," +
+                "{\"identifier\":\"/tenants\",\"name\":\"Tenants\"}," +
                 "{\"identifier\":\"/proxy\",\"name\":\"Proxy User Requests\"}," +
-                "{\"identifier\":\"/resources\",\"name\":\"Resources\"}," +
                 "{\"identifier\":\"/buckets\",\"name\":\"Buckets\"}" +
                 "]";
 
         // When: the /resources endpoint is queried
         final String resourcesJson = client
-                .target(createURL("resources"))
+                .target(createURL("/policies/resources"))
                 .request()
                 .get(String.class);
 
         // Then: the expected array of resources is returned
         JSONAssert.assertEquals(expected, resourcesJson, false);
+    }
+
+    @Test
+    public void testCreateUser() throws Exception {
+
+        // Given: the server has been configured with FileUserGroupProvider, which is configurable,
+        //   and: the initial admin client wants to create a tenant
+        Tenant tenant = new Tenant();
+        tenant.setIdentity("New User");
+
+        // When: the POST /tenants/users endpoint is accessed
+        final Response createUserResponse = client
+                .target(createURL("tenants/users"))
+                .request()
+                .post(Entity.entity(tenant, MediaType.APPLICATION_JSON_TYPE), Response.class);
+
+        // Then: "201 created" is returned with the expected user
+        assertEquals(201, createUserResponse.getStatus());
+        User actualUser = createUserResponse.readEntity(User.class);
+        assertNotNull(actualUser.getIdentifier());
+        try {
+            assertEquals(tenant.getIdentity(), actualUser.getIdentity());
+            assertEquals(true, actualUser.getConfigurable());
+            assertEquals(0, actualUser.getUserGroups().size());
+            assertEquals(0, actualUser.getAccessPolicies().size());
+            assertEquals(new ResourcePermissions(), actualUser.getResourcePermissions());
+        } finally {
+            // cleanup user for other tests
+            client.target(createURL("tenants/users/" + actualUser.getIdentifier()))
+                    .request()
+                    .delete();
+        }
+
+    }
+
+    @Test
+    public void testCreateUserGroup() throws Exception {
+
+        // Given: the server has been configured with FileUserGroupProvider, which is configurable,
+        //   and: the initial admin client wants to create a tenant
+        Tenant tenant = new Tenant();
+        tenant.setIdentity("New Group");
+
+        // When: the POST /tenants/user-groups endpoint is used
+        final Response createUserGroupResponse = client
+                .target(createURL("tenants/user-groups"))
+                .request()
+                .post(Entity.entity(tenant, MediaType.APPLICATION_JSON_TYPE), Response.class);
+
+        // Then: 201 created is returned with the expected group
+        assertEquals(201, createUserGroupResponse.getStatus());
+        UserGroup actualUserGroup = createUserGroupResponse.readEntity(UserGroup.class);
+        assertNotNull(actualUserGroup.getIdentifier());
+        try {
+            assertEquals(tenant.getIdentity(), actualUserGroup.getIdentity());
+            assertEquals(true, actualUserGroup.getConfigurable());
+            assertEquals(0, actualUserGroup.getUsers().size());
+            assertEquals(0, actualUserGroup.getAccessPolicies().size());
+            assertEquals(new ResourcePermissions(), actualUserGroup.getResourcePermissions());
+        } finally {
+            // cleanup user for other tests
+            client.target(createURL("tenants/user-groups/" + actualUserGroup.getIdentifier()))
+                    .request()
+                    .delete();
+        }
+
     }
 
 }

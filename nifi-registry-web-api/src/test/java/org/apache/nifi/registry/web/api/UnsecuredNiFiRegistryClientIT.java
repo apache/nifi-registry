@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.web.api;
 
+import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.client.BucketClient;
@@ -33,7 +34,7 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
-import org.apache.nifi.registry.model.authorization.CurrentUser;
+import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.params.SortOrder;
 import org.apache.nifi.registry.params.SortParameter;
 import org.junit.After;
@@ -90,9 +91,16 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
     @Test
     public void testGetAccessStatus() throws IOException, NiFiRegistryException {
         final UserClient userClient = client.getUserClient();
-        final CurrentUser status = userClient.getAccessStatus();
-        Assert.assertEquals("anonymous", status.getIdentity());
-        Assert.assertTrue(status.isAnonymous());
+        final CurrentUser currentUser = userClient.getAccessStatus();
+        Assert.assertEquals("anonymous", currentUser.getIdentity());
+        Assert.assertTrue(currentUser.isAnonymous());
+        Assert.assertNotNull(currentUser.getResourcePermissions());
+        Permissions fullAccess = new Permissions().withCanRead(true).withCanWrite(true).withCanDelete(true);
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getAnyTopLevelResource());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getBuckets());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getTenants());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getPolicies());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getProxy());
     }
 
     @Test

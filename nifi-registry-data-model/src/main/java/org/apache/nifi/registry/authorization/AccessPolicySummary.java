@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.nifi.registry.model.authorization;
+package org.apache.nifi.registry.authorization;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

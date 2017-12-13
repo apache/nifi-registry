@@ -34,13 +34,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.model.authorization.AccessPolicy;
-import org.apache.nifi.registry.model.authorization.AccessPolicySummary;
+import org.apache.nifi.registry.authorization.AccessPolicy;
+import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -302,6 +303,31 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.DELETE);
         AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
         return generateOkResponse(deletedPolicy).build();
+    }
+
+    /**
+     * Gets the available resources that support access/authorization policies.
+     *
+     * @return A resourcesEntity.
+     */
+    @GET
+    @Path("/resources")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Gets the available resources that support access/authorization policies",
+            response = Resource.class,
+            responseContainer = "List"
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
+    public Response getResources() {
+        authorizeAccess(RequestAction.READ);
+
+        final List<Resource> resources = authorizationService.getResources();
+
+        return generateOkResponse(resources).build();
     }
 
 
