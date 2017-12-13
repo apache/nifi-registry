@@ -160,10 +160,14 @@ public class JettyServer {
     private SslContextFactory createSslContextFactory() {
         final SslContextFactory contextFactory = new SslContextFactory();
 
-        logger.error("" + properties.getNeedClientAuth());
-
-        // need client auth
-        contextFactory.setNeedClientAuth(properties.getNeedClientAuth());
+        // if needClientAuth is false then set want to true so we can optionally use certs
+        if (properties.getNeedClientAuth()) {
+            logger.info("Setting Jetty's SSLContextFactory needClientAuth to true");
+            contextFactory.setNeedClientAuth(true);
+        } else {
+            logger.info("Setting Jetty's SSLContextFactory wantClientAuth to true");
+            contextFactory.setWantClientAuth(true);
+        }
 
         /* below code sets JSSE system properties when values are provided */
         // keystore properties
