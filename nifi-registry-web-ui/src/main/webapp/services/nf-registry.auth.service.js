@@ -34,7 +34,7 @@ NfRegistryAuth.prototype = {
      * Gets the jwt token.
      * @returns {*}
      */
-    getToken: function() {
+    getToken: function () {
         return this.nfStorage.getItem('jwt');
     }
 };

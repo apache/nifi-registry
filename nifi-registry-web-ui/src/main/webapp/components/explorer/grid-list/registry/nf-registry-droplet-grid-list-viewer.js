@@ -48,33 +48,30 @@ NfRegistryDropletGridListViewer.prototype = {
         var self = this;
         this.nfRegistryService.inProgress = true;
         this.nfRegistryService.explorerViewType = 'grid-list';
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
-                self.route.params
-                    .switchMap(function (params) {
-                        return new rxjs.Observable.forkJoin(
-                            self.nfRegistryApi.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
-                            self.nfRegistryApi.getBucket(params['bucketId']),
-                            self.nfRegistryApi.getBuckets(),
-                            self.nfRegistryApi.getDroplets(params['bucketId'])
-                        );
-                    })
-                    .subscribe(function (response) {
-                        var droplet = response[0];
-                        var bucket = response[1];
-                        var buckets = response[2];
-                        var droplets = response[3];
-                        self.nfRegistryService.bucket = bucket;
-                        self.nfRegistryService.buckets = buckets;
-                        self.nfRegistryService.droplet = droplet;
-                        self.nfRegistryService.droplets = droplets;
-                        self.nfRegistryService.filterDroplets();
-                        self.nfRegistryService.setBreadcrumbState('in');
-                        self.nfRegistryService.inProgress = false;
-                    });
+
+        // subscribe to the route params
+        self.route.params
+            .switchMap(function (params) {
+                return new rxjs.Observable.forkJoin(
+                    self.nfRegistryApi.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
+                    self.nfRegistryApi.getBucket(params['bucketId']),
+                    self.nfRegistryApi.getBuckets(),
+                    self.nfRegistryApi.getDroplets(params['bucketId'])
+                );
+            })
+            .subscribe(function (response) {
+                var droplet = response[0];
+                var bucket = response[1];
+                var buckets = response[2];
+                var droplets = response[3];
+                self.nfRegistryService.bucket = bucket;
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.droplet = droplet;
+                self.nfRegistryService.droplets = droplets;
+                self.nfRegistryService.filterDroplets();
+                self.nfRegistryService.setBreadcrumbState('in');
+                self.nfRegistryService.inProgress = false;
             });
-        });
     },
 
     /**

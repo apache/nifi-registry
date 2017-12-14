@@ -23,15 +23,17 @@ var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
+var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
+var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
-var NfRegistryAddSelectedToGroup = require('nifi-registry/components/administration/users/dialogs/add-selected-users-to-group/nf-registry-add-selected-users-to-group.js');
-var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
-var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
-var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
+var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
+var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
+var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
+var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
@@ -42,6 +44,7 @@ var fdsCore = require('@fluid-design-system/core');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
+var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 function NfRegistryModule() {
@@ -65,29 +68,37 @@ NfRegistryModule.annotations = [
             NfRegistryExplorer,
             NfRegistryAdministration,
             NfRegistryUsersAdministration,
-            NfRegistryUserDetails,
-            NfRegistryUserPermissions,
-            NfRegistryUserGroupPermissions,
+            NfRegistryManageUser,
+            NfRegistryManageGroup,
             NfRegistryBucketPermissions,
             NfRegistryWorkflowAdministration,
             NfRegistryAddUser,
             NfRegistryCreateBucket,
             NfRegistryCreateNewGroup,
-            NfRegistryAddSelectedToGroup,
+            NfRegistryAddUserToGroups,
+            NfRegistryAddUsersToGroup,
             NfRegistryGridListViewer,
             NfRegistryBucketGridListViewer,
             NfRegistryDropletGridListViewer,
-            NfPageNotFoundComponent
+            NfPageNotFoundComponent,
+            NfLoginComponent,
+            NfUserLoginComponent
         ],
         entryComponents: [
             NfRegistryAddUser,
             NfRegistryCreateBucket,
             NfRegistryCreateNewGroup,
-            NfRegistryAddSelectedToGroup
+            NfRegistryAddUserToGroups,
+            NfRegistryAddUsersToGroup,
+            NfUserLoginComponent
         ],
         providers: [
             NfRegistryService,
             NfRegistryAuthService,
+            nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
+            nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
+            nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
+            nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard,
             NfRegistryApi,
             NfStorage,
             {

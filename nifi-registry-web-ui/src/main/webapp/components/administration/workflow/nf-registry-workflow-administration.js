@@ -39,16 +39,6 @@ function NfRegistryWorkflowAdministration(nfRegistryApi, nfStorage, nfRegistrySe
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialog = matDialog;
-    this.bucketActions = [{
-        'name': 'permissions',
-        'icon': 'fa fa-pencil',
-        'tooltip': 'Manage Bucket Policies',
-        'type': 'sidenav'
-    }, {
-        'name': 'Delete',
-        'icon': 'fa fa-trash',
-        'tooltip': 'Delete Bucket'
-    }];
 };
 
 NfRegistryWorkflowAdministration.prototype = {
@@ -60,21 +50,16 @@ NfRegistryWorkflowAdministration.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.inProgress = true;
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
-                self.route.params
-                    .switchMap(function (params) {
-                        self.nfRegistryService.adminPerspective = 'workflow';
-                        return self.nfRegistryApi.getBuckets();
-                    })
-                    .subscribe(function (buckets) {
-                        self.nfRegistryService.buckets = buckets;
-                        self.nfRegistryService.filterBuckets();
-                        self.nfRegistryService.inProgress = false;
-                    });
+        this.route.params
+            .switchMap(function (params) {
+                self.nfRegistryService.adminPerspective = 'workflow';
+                return self.nfRegistryApi.getBuckets();
+            })
+            .subscribe(function (buckets) {
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.filterBuckets();
+                self.nfRegistryService.inProgress = false;
             });
-        });
     },
 
     /**

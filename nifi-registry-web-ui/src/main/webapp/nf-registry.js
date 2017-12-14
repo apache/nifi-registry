@@ -68,7 +68,8 @@ NfRegistry.prototype = {
      * Invalidate old tokens and route to login page
      */
     logout: function() {
-        this.nfRegistryService.currentUser = {};
+        delete this.nfRegistryService.currentUser.identity;
+        delete this.nfRegistryService.currentUser.anonymous;
         this.nfStorage.removeItem('jwt');
         this.router.navigateByUrl('/nifi-registry/login');
     }

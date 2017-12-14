@@ -15,14 +15,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div fxFill>
-    <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-sm pad-bottom-md pad-left-md pad-right-md">
-        <span class="md-card-title">{{nfRegistryService.user.identity}}</span>
-        <button mat-icon-button (click)="closeSideNav()">
-            <mat-icon color="primary">close</mat-icon>
-        </button>
-    </div>
-    <button id="nf-registry-user-permissions-side-nav-container" class="push-right-md" mat-raised-button color="fds-primary"
-            (click)="closeSideNav()">Close
-    </button>
-</div>
+<div id="nifi-registry-login-perspective"></div>
+<router-outlet></router-outlet>

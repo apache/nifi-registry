@@ -24,47 +24,48 @@ var ngMaterial = require('@angular/material');
 var $ = require('jquery');
 
 /**
- * NfRegistryAddSelectedToGroup constructor.
+ * NfRegistryAddUserToGroups constructor.
  *
  * @param nfRegistryApi         The api service.
  * @param tdDataTableService    The covalent data table service module.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @param fdsSnackBarService    The FDS snack bar service module.
+ * @param data                  The data passed into this component.
  * @constructor
  */
-function NfRegistryAddSelectedToGroup(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService) {
+function NfRegistryAddUserToGroups(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService, data) {
     this.dataTableService = tdDataTableService;
     this.snackBarService = fdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
-    this.filteredUserGroups = [];
+    this.data = data;
     //make an independent copy of the groups for sorting and selecting within the scope of this component
     this.groups = $.extend(true, [], this.nfRegistryService.groups);
-    this.selectedGroups = [];
-    this.allGroupsSelected = false;
-    this.isAddSelectedUsersToSelectedGroupsDisabled = true;
+    this.filteredUserGroups = [];
+    this.isAddToSelectedGroupsDisabled = true;
     this.userGroupsSearchTerms = [];
-    this.userGroupsColumns = [
-        {
-            name: 'identity',
-            label: 'Display Name',
-            sortable: true,
-            tooltip: 'User name.',
-            width: 100
-        }
-    ];
+    this.allGroupsSelected = false;
 };
 
-NfRegistryAddSelectedToGroup.prototype = {
-    constructor: NfRegistryAddSelectedToGroup,
+NfRegistryAddUserToGroups.prototype = {
+    constructor: NfRegistryAddUserToGroups,
 
     /**
      * Initialize the component.
      */
     ngOnInit: function () {
+        var self = this;
+
+        this.data.user.userGroups.forEach(function (userGroup) {
+            self.groups = self.groups.filter(function (group) {
+                return (group.identifier !== userGroup.identifier) ? true : false
+            });
+        });
+
         this.filterGroups();
+        this.determineAllUserGroupsSelectedState();
     },
 
     /**
@@ -80,17 +81,17 @@ NfRegistryAddSelectedToGroup.prototype = {
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
-            var arrayLength = this.userGroupsColumns.length;
+            var arrayLength = this.nfRegistryService.userGroupsColumns.length;
             for (var i = 0; i < arrayLength; i++) {
-                if (this.userGroupsColumns[i].sortable === true) {
-                    sortBy = this.userGroupsColumns[i].name;
+                if (this.nfRegistryService.userGroupsColumns[i].sortable === true) {
+                    sortBy = this.nfRegistryService.userGroupsColumns[i].name;
                     //only one column can be actively sorted so we reset all to inactive
-                    this.userGroupsColumns.forEach(function (c) {
+                    this.nfRegistryService.userGroupsColumns.forEach(function (c) {
                         c.active = false;
                     });
                     //and set this column as the actively sorted column
-                    this.userGroupsColumns[i].active = true;
-                    this.userGroupsColumns[i].sortOrder = sortOrder;
+                    this.nfRegistryService.userGroupsColumns[i].active = true;
+                    this.nfRegistryService.userGroupsColumns[i].sortOrder = sortOrder;
                     break;
                 }
             }
@@ -133,33 +134,33 @@ NfRegistryAddSelectedToGroup.prototype = {
 
     /**
      * Sets the `checked` property of each of the `filteredUserGroups` to true
-     * and sets the `isAddSelectedUsersToSelectedGroupsDisabled` and the `allGroupsSelected`
+     * and sets the `isAddToSelectedGroupsDisabled` and the `allGroupsSelected`
      * properties accordingly.
      */
     selectAllUserGroups: function () {
         this.filteredUserGroups.forEach(function (c) {
             c.checked = true;
         });
-        this.isAddSelectedUsersToSelectedGroupsDisabled = false;
+        this.isAddToSelectedGroupsDisabled = false;
         this.allGroupsSelected = true;
     },
 
     /**
      * Sets the `checked` property of each group to false
-     * and sets the `isAddSelectedUsersToSelectedGroupsDisabled` and the `allGroupsSelected`
+     * and sets the `isAddToSelectedGroupsDisabled` and the `allGroupsSelected`
      * properties accordingly.
      */
     deselectAllUserGroups: function () {
         this.filteredUserGroups.forEach(function (c) {
             c.checked = false;
         });
-        this.isAddSelectedUsersToSelectedGroupsDisabled = true;
+        this.isAddToSelectedGroupsDisabled = true;
         this.allGroupsSelected = false;
     },
 
     /**
      * Checks of each of the `filteredUserGroups`'s checked property state
-     * and sets the `allBucketsSelected` and `isAddSelectedUsersToSelectedGroupsDisabled`
+     * and sets the `allBucketsSelected` and `isAddToSelectedGroupsDisabled`
      * property accordingly.
      */
     determineAllUserGroupsSelectedState: function () {
@@ -175,38 +176,34 @@ NfRegistryAddSelectedToGroup.prototype = {
         });
 
         if (selected > 0) {
-            this.isAddSelectedUsersToSelectedGroupsDisabled = false;
+            this.isAddToSelectedGroupsDisabled = false;
         } else {
-            this.isAddSelectedUsersToSelectedGroupsDisabled = true;
+            this.isAddToSelectedGroupsDisabled = true;
         }
 
         this.allGroupsSelected = allSelected;
     },
 
     /**
-     * Adds the selected users to each of the selected groups.
+     * Adds users to each of the selected groups.
      */
-    addSelectedUsersToSelectedGroups: function () {
+    addToSelectedGroups: function () {
         var self = this;
-        var selectedUsers = this.nfRegistryService.filteredUsers.filter(function (filteredUser) {
-            return filteredUser.checked;
-        });
-        var groupIds = this.filteredUserGroups.filter(function (filteredUserGroup) {
+        var selectedGroups = this.filteredUserGroups.filter(function (filteredUserGroup) {
             return filteredUserGroup.checked;
         });
-        groupIds.forEach(function (groupId) {
-            self.nfRegistryApi.getUserGroup(groupId.identifier).subscribe(function (group) {
-                self.nfRegistryApi.updateUserGroup(groupId.identifier, groupId.identity, selectedUsers.concat(group.users)).subscribe(function (group) {
-                    self.dialogRef.close();
-                    var snackBarRef = self.snackBarService.openCoaster({
-                        title: 'Success',
-                        message: 'Selected users have been added to the ' + group.identity + ' group.',
-                        verticalPosition: 'bottom',
-                        horizontalPosition: 'right',
-                        icon: 'fa fa-check-circle-o',
-                        color: '#1EB475',
-                        duration: 3000
-                    });
+        selectedGroups.forEach(function (selectedGroup) {
+            selectedGroup.users.push(self.data.user);
+            self.nfRegistryApi.updateUserGroup(selectedGroup.identifier, selectedGroup.identity, selectedGroup.users).subscribe(function (group) {
+                self.dialogRef.close();
+                var snackBarRef = self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'User has been added to the ' + group.identity + ' group.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
                 });
             });
         });
@@ -220,18 +217,19 @@ NfRegistryAddSelectedToGroup.prototype = {
     }
 };
 
-NfRegistryAddSelectedToGroup.annotations = [
+NfRegistryAddUserToGroups.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-add-selected-users-to-group.html!text')
+        template: require('./nf-registry-add-user-to-groups.html!text')
     })
 ];
 
-NfRegistryAddSelectedToGroup.parameters = [
+NfRegistryAddUserToGroups.parameters = [
     NfRegistryApi,
     covalentCore.TdDataTableService,
     NfRegistryService,
     ngMaterial.MatDialogRef,
-    fdsSnackBarsModule.FdsSnackBarService
+    fdsSnackBarsModule.FdsSnackBarService,
+    ngMaterial.MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryAddSelectedToGroup;
+module.exports = NfRegistryAddUserToGroups;

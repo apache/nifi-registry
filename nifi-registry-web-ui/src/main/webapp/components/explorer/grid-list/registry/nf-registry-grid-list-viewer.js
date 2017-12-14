@@ -53,25 +53,21 @@ NfRegistryGridListViewer.prototype = {
         this.nfRegistryService.bucket = {};
         this.nfRegistryService.droplet = {};
 
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
-                self.route.params
-                    .switchMap(function (params) {
-                        return new rxjs.Observable.forkJoin(self.nfRegistryApi.getDroplets(),
-                            self.nfRegistryApi.getBuckets());
-                    })
-                    .subscribe(function (response) {
-                        var droplets = response[0];
-                        var buckets = response[1];
-                        self.nfRegistryService.buckets = buckets;
-                        self.nfRegistryService.droplets = droplets;
-                        self.nfRegistryService.filterDroplets();
-                        self.nfRegistryService.setBreadcrumbState('in');
-                        self.nfRegistryService.inProgress = false;
-                    });
+        // subscribe to the route params
+        self.route.params
+            .switchMap(function (params) {
+                return new rxjs.Observable.forkJoin(self.nfRegistryApi.getDroplets(),
+                    self.nfRegistryApi.getBuckets());
+            })
+            .subscribe(function (response) {
+                var droplets = response[0];
+                var buckets = response[1];
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.droplets = droplets;
+                self.nfRegistryService.filterDroplets();
+                self.nfRegistryService.setBreadcrumbState('in');
+                self.nfRegistryService.inProgress = false;
             });
-        });
     },
 
     /**

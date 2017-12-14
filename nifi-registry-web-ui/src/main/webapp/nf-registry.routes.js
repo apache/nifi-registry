@@ -18,17 +18,18 @@
 var ngRouter = require('@angular/router');
 var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
+var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
-var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
-var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
+var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
+var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
+var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
 
 var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     path: 'nifi-registry/explorer',
@@ -36,17 +37,23 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     children: [
         {
             path: 'grid-list',
-            component: NfRegistryGridListViewer
+            component: NfRegistryGridListViewer,
+            canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]
         }, {
             path: 'grid-list/buckets/:bucketId',
-            component: NfRegistryBucketGridListViewer
+            component: NfRegistryBucketGridListViewer,
+            canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]
         },
         {
             path: 'grid-list/buckets/:bucketId/:dropletType/:dropletId',
-            component: NfRegistryDropletGridListViewer
+            component: NfRegistryDropletGridListViewer,
+            canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]
         }
-        ]
-    // canActivate: [AuthGuard] //TODO: https://angular.io/api/router/CanActivate https://scotch.io/tutorials/routing-angular-2-single-page-apps-with-the-component-router
+    ]
+}, {
+    path: 'nifi-registry/login',
+    component: NfLoginComponent,
+    canActivate: [nfRegistryAuthGuardService.NfRegistryLoginAuthGuard]
 }, {
     path: 'nifi-registry/fluid-design-system',
     component: FdsDemo
@@ -55,14 +62,16 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     component: NfRegistryAdministration,
     children: [{
         path: '',
-        redirectTo: 'users',
+        redirectTo: 'workflow',
         pathMatch: 'full'
     }, {
         path: 'users',
-        component: NfRegistryUsersAdministration
+        component: NfRegistryUsersAdministration,
+        canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard]
     }, {
         path: 'workflow',
-        component: NfRegistryWorkflowAdministration
+        component: NfRegistryWorkflowAdministration,
+        canActivate: [nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard]
     }]
 }, {
     path: 'nifi-registry/explorer/grid-list/buckets',
@@ -80,20 +89,19 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     path: '**',
     component: NfPageNotFoundComponent
 }, {
-    path: 'user/details/:userId',
-    component: NfRegistryUserDetails,
+    path: 'manage/user/:userId',
+    component: NfRegistryManageUser,
+    canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard],
     outlet: 'sidenav'
 }, {
-    path: 'user/permissions/:userId',
-    component: NfRegistryUserPermissions,
-    outlet: 'sidenav'
-}, {
-    path: 'group/permissions/:groupId',
-    component: NfRegistryUserGroupPermissions,
+    path: 'manage/group/:groupId',
+    component: NfRegistryManageGroup,
+    canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard],
     outlet: 'sidenav'
 }, {
     path: 'bucket/permissions/:bucketId',
     component: NfRegistryBucketPermissions,
+    canActivate: [nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard],
     outlet: 'sidenav'
 }]);
 

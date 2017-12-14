@@ -28,9 +28,8 @@ var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
-var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
-var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
+var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
+var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
@@ -43,6 +42,8 @@ var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
+var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
 
 xdescribe('NfRegistry API w/ Angular testing utils', function () {
     var nfRegistryApi;
@@ -62,16 +63,17 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
                 NfRegistryExplorer,
                 NfRegistryAdministration,
                 NfRegistryUsersAdministration,
-                NfRegistryUserDetails,
-                NfRegistryUserPermissions,
-                NfRegistryUserGroupPermissions,
+                NfRegistryManageUser,
+                NfRegistryManageGroup,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
                 NfRegistryGridListViewer,
                 NfRegistryBucketGridListViewer,
                 NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent
+                NfPageNotFoundComponent,
+                NfLoginComponent,
+                NfUserLoginComponent
             ],
             providers: [
                 NfRegistryService,
@@ -1037,11 +1039,6 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
             identity: 'User #1',
             identifier: '9999'
         }]).subscribe(function (response) {
-            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 PUT user groups mock error');
-            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
