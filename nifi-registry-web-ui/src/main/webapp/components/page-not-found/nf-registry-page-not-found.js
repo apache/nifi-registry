@@ -15,22 +15,57 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
+var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
+var fdsDialogsModule = require('@fluid-design-system/dialogs');
 
 /**
- * NfPageNotFoundComponent constructor.
+ * NfLoginComponent constructor.
+ *
+ * @param nfRegistryService     The nf-registry.service module.
+ * @param fdsDialogService      The FDS dialog service.
  */
-function NfPageNotFoundComponent() {
-    this.title = "Page Not Found!!!!";
+function NfPageNotFoundComponent(nfRegistryService, fdsDialogService) {
+    // Services
+    this.nfRegistryService = nfRegistryService;
+    this.dialogService = fdsDialogService;
 };
 
 NfPageNotFoundComponent.prototype = {
-    constructor: NfPageNotFoundComponent
+    constructor: NfPageNotFoundComponent,
+
+    /**
+     * Initialize the component
+     */
+    ngOnInit: function () {
+        var self = this;
+        this.nfRegistryService.perspective = 'not-found';
+        this.dialogService.openConfirm({
+            title: 'Page Not Found',
+            acceptButton: 'Home',
+            acceptButtonColor: 'fds-warn'
+        }).afterClosed().subscribe(
+            function (accept) {
+                if (accept) {
+                    self.nfRegistryService.router.navigateByUrl(self.nfRegistryService.redirectUrl);
+                }
+            });
+    }
 };
 
 NfPageNotFoundComponent.annotations = [
     new ngCore.Component({
-        template: '<h1>Hello {{title}}!</h1>'
+        template: require('./nf-registry-page-not-found.html!text'),
+        animations: [nfRegistryAnimations.slideInLeftAnimation],
+        host: {
+            '[@routeAnimation]': 'routeAnimation'
+        }
     })
+];
+
+NfPageNotFoundComponent.parameters = [
+    NfRegistryService,
+    fdsDialogsModule.FdsDialogService,
 ];
 
 module.exports = NfPageNotFoundComponent;

@@ -15,14 +15,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div fxFill>
-    <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-md pad-bottom-md pad-left-sm pad-right-sm">
-        <span class="md-card-title">User Details</span>
-        <button mat-icon-button (click)="closeSideNav()">
-            <mat-icon color="primary">close</mat-icon>
-        </button>
-    </div>
-    <button id="nf-registry-user-details-side-nav-container" mat-raised-button color="fds-primary"
-            (click)="closeSideNav()">Close
-    </button>
-</div>
+<div id="nifi-registry-not-found-perspective"></div>
+<router-outlet></router-outlet>

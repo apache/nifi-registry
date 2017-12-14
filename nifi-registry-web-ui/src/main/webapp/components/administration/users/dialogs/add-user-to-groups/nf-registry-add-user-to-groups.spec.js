@@ -17,12 +17,12 @@
 
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryAddSelectedToGroup = require('nifi-registry/components/administration/users/dialogs/add-selected-users-to-group/nf-registry-add-selected-users-to-group.js');
+var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
 var rxjs = require('rxjs/Rx');
 var covalentCore = require('@covalent/core');
 var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 
-describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function () {
+describe('NfRegistryAddUserToGroups Component isolated unit tests', function () {
     var comp;
     var nfRegistryService;
     var nfRegistryApi;
@@ -32,16 +32,16 @@ describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function 
     beforeEach(function () {
         nfRegistryService = new NfRegistryService();
         // setup the nfRegistryService
-        nfRegistryService.groups = [{identifier: 1, identity: 'Group 1'}];
-        nfRegistryService.filteredUsers = [{identifier: 2, identity: 'User 1'}];
+        nfRegistryService.user = {identifier: 3, identity: 'User 3', userGroups: []};
+        nfRegistryService.groups = [{identifier: 1, identity: 'Group 1', checked: true, users: []}];
 
         nfRegistryApi = new NfRegistryApi();
         snackBarService = new fdsSnackBarsModule.FdsSnackBarService();
         dataTableService = new covalentCore.TdDataTableService();
-        comp = new NfRegistryAddSelectedToGroup(nfRegistryApi, dataTableService, nfRegistryService, {
+        comp = new NfRegistryAddUserToGroups(nfRegistryApi, dataTableService, nfRegistryService, {
             close: function () {
             }
-        }, snackBarService);
+        }, snackBarService, {user: nfRegistryService.user});
 
         // Spy
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
@@ -62,19 +62,19 @@ describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function 
         expect(comp).toBeDefined();
     });
 
-    it('should make a call to the api to add selected users to selected groups', function () {
+    it('should make a call to the api to add user to selected groups', function () {
         // select a group
         comp.filteredUserGroups[0].checked = true;
 
         // the function to test
-        comp.addSelectedUsersToSelectedGroups();
+        comp.addToSelectedGroups();
 
         //assertions
         expect(comp.dialogRef.close).toHaveBeenCalled();
         expect(comp.snackBarService.openCoaster).toHaveBeenCalled();
     });
 
-    it('should determine all user groups are selected', function () {
+    it('should determine if all groups are selected', function () {
         // select a group
         comp.filteredUserGroups[0].checked = true;
 
@@ -83,16 +83,19 @@ describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function 
 
         //assertions
         expect(comp.allGroupsSelected).toBe(true);
-        expect(comp.isAddSelectedUsersToSelectedGroupsDisabled).toBe(false);
+        expect(comp.isAddToSelectedGroupsDisabled).toBe(false);
     });
 
-    it('should determine all user groups are not selected', function () {
+    it('should determine if all groups are not selected', function () {
+        // select a group
+        comp.filteredUserGroups[0].checked = false;
+
         // the function to test
         comp.determineAllUserGroupsSelectedState();
 
         //assertions
         expect(comp.allGroupsSelected).toBe(false);
-        expect(comp.isAddSelectedUsersToSelectedGroupsDisabled).toBe(true);
+        expect(comp.isAddToSelectedGroupsDisabled).toBe(true);
     });
 
     it('should select all groups.', function () {
@@ -101,7 +104,7 @@ describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function 
 
         //assertions
         expect(comp.filteredUserGroups[0].checked).toBe(true);
-        expect(comp.isAddSelectedUsersToSelectedGroupsDisabled).toBe(false);
+        expect(comp.isAddToSelectedGroupsDisabled).toBe(false);
         expect(comp.allGroupsSelected).toBe(true);
     });
 
@@ -114,7 +117,7 @@ describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function 
 
         //assertions
         expect(comp.filteredUserGroups[0].checked).toBe(false);
-        expect(comp.isAddSelectedUsersToSelectedGroupsDisabled).toBe(true);
+        expect(comp.isAddToSelectedGroupsDisabled).toBe(true);
         expect(comp.allGroupsSelected).toBe(false);
     });
 
@@ -159,7 +162,7 @@ describe('NfRegistryAddSelectedToGroup Component isolated unit tests', function 
         expect(filterGroupsCall.args[1]).toBe('ASC');
     });
 
-    it('should cancel the creation of a new user', function () {
+    it('should cancel the addition of the user to any group', function () {
         // the function to test
         comp.cancel();
 

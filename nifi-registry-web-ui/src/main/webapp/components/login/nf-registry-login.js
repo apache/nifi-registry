@@ -15,55 +15,50 @@
  * limitations under the License.
  */
 var ngCore = require('@angular/core');
+var ngMaterial = require('@angular/material');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
+var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
+var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
 
 /**
- * NfRegistryUserDetails constructor.
+ * NfLoginComponent constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
- * @param Router                The angular router module.
- * @constructor
+ * @param matDialog             The angular material dialog module.
  */
-function NfRegistryUserDetails(nfRegistryService, Router) {
+function NfLoginComponent(nfRegistryService, matDialog) {
+    // Services
     this.nfRegistryService = nfRegistryService;
-    this.router = Router;
+    this.dialog = matDialog;
 };
 
-NfRegistryUserDetails.prototype = {
-    constructor: NfRegistryUserDetails,
+NfLoginComponent.prototype = {
+    constructor: NfLoginComponent,
 
     /**
-     * Initialize the component.
+     * Initialize the component
      */
     ngOnInit: function () {
-        this.nfRegistryService.sidenav.open();
-    },
-
-    /**
-     * Destroy the component.
-     */
-    ngOnDestroy: function () {
-        this.nfRegistryService.sidenav.close();
-    },
-
-    /**
-     * Navigate to administer users for current registry.
-     */
-    closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/users');
+        this.nfRegistryService.perspective = 'login';
+        this.dialog.open(NfUserLoginComponent, {
+            disableClose: true
+        });
     }
 };
 
-NfRegistryUserDetails.annotations = [
+NfLoginComponent.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-user-details.html!text')
+        template: require('./nf-registry-login.html!text'),
+        animations: [nfRegistryAnimations.slideInLeftAnimation],
+        host: {
+            '[@routeAnimation]': 'routeAnimation'
+        }
     })
 ];
 
-NfRegistryUserDetails.parameters = [
+NfLoginComponent.parameters = [
     NfRegistryService,
-    ngRouter.Router
+    ngMaterial.MatDialog
 ];
 
-module.exports = NfRegistryUserDetails;
+module.exports = NfLoginComponent;

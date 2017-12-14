@@ -52,30 +52,26 @@ NfRegistryBucketGridListViewer.prototype = {
         // reset the breadcrumb state
         this.nfRegistryService.droplet = {};
 
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
-                self.route.params
-                    .switchMap(function (params) {
-                        return new rxjs.Observable.forkJoin(
-                            self.nfRegistryApi.getBuckets(),
-                            self.nfRegistryApi.getDroplets(params['bucketId']),
-                            self.nfRegistryApi.getBucket(params['bucketId'])
-                        );
-                    })
-                    .subscribe(function (response) {
-                        var buckets = response[0];
-                        var droplets = response[1];
-                        var bucket = response[2];
-                        self.nfRegistryService.bucket = bucket;
-                        self.nfRegistryService.buckets = buckets;
-                        self.nfRegistryService.droplets = droplets;
-                        self.nfRegistryService.filterDroplets();
-                        self.nfRegistryService.setBreadcrumbState('in');
-                        self.nfRegistryService.inProgress = false;
-                    });
+        // subscribe to the route params
+        self.route.params
+            .switchMap(function (params) {
+                return new rxjs.Observable.forkJoin(
+                    self.nfRegistryApi.getBuckets(),
+                    self.nfRegistryApi.getDroplets(params['bucketId']),
+                    self.nfRegistryApi.getBucket(params['bucketId'])
+                );
+            })
+            .subscribe(function (response) {
+                var buckets = response[0];
+                var droplets = response[1];
+                var bucket = response[2];
+                self.nfRegistryService.bucket = bucket;
+                self.nfRegistryService.buckets = buckets;
+                self.nfRegistryService.droplets = droplets;
+                self.nfRegistryService.filterDroplets();
+                self.nfRegistryService.setBreadcrumbState('in');
+                self.nfRegistryService.inProgress = false;
             });
-        });
 
     },
 

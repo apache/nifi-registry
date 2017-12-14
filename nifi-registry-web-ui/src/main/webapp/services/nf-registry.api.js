@@ -264,10 +264,15 @@ NfRegistryApi.prototype = {
             });
     },
 
-    //TODO: REST call to API to get user by id.
+    /**
+     * Get user by id.
+     *
+     * @param userId
+     * @returns {*}
+     */
     getUser: function (userId) {
         var self = this;
-        return this.http.get('/nifi-registry-api/users/' + userId)
+        return this.http.get('/nifi-registry-api/tenants/users/' + userId)
             .map(function (response) {
                 return response;
             })
@@ -285,15 +290,40 @@ NfRegistryApi.prototype = {
     /**
      * Creates a user.
      *
-     * @param {string} identifier   The identifier of the user.
      * @param {string} identity     The identity of the user.
      * @returns {*}
      */
-    addUser: function (identifier, identity) {
+    addUser: function (identity) {
         var self = this;
         return this.http.post('/nifi-registry-api/tenants/users', {
-            'identifier': identifier,
-            'identity': identity
+            identity: identity,
+            resourcePermissions: {
+                anyTopLevelResource: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                buckets: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                tenants: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                policies: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                proxy: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                }
+            }
         }, headers)
             .map(function (response) {
                 return response;
@@ -305,6 +335,27 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
+     * Updates a user.
+     *
+     * @param {string} identifier   The identifier of the user.
+     * @param {string} identity     The identity of the user.
+     * @returns {*}
+     */
+    updateUser: function (identifier, identity) {
+        var self = this;
+        return this.http.put('/nifi-registry-api/tenants/users/' + identifier, {
+            'identifier': identifier,
+            'identity': identity
+        }, headers)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
                 return rxjs.Observable.of(error);
             });
     },
@@ -470,9 +521,109 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
+     * Get policy action resource.
+     *
+     * @param {string} action   The name of the resource action (e.g. READ/WRITE/DELETE).
+     * @param {string} resource   The name of the resource action (e.g. READ/WRITE/DELETE).
+     * @returns {*}
+     */
+    getPolicyActionResource: function (action, resource) {
+        var self = this;
+        return this.http.get('/nifi-registry-api/policies/' + action + resource)
+            .map(function (response) {
+                return response;
+            });
+    },
+
+    /**
+     * Update policy action resource.
+     *
+     * @param {string} identifier   The identifier of the group.
+     * @param {string} action       The name of the resource action (e.g. READ/WRITE/DELETE).
+     * @param {string} resource     The name of the resource.
+     * @param {string} users        The users with resource privileges.
+     * @param {string} userGroups   The user groups with resource privileges.
+     * @returns {*}
+     */
+    putPolicyActionResource: function (identifier, action, resource, users, userGroups) {
+        var self = this;
+        return this.http.put('/nifi-registry-api/policies/' + identifier, {
+            'identifier': identifier,
+            'resource': resource,
+            'action': action,
+            'users': users,
+            'userGroups': userGroups
+        }, headers)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
+     * Creates a policy action resource.
+     *
+     * @param {string} action       The name of the resource action (e.g. READ/WRITE/DELETE).
+     * @param {string} resource     The name of the resource.
+     * @param {string} users        The users with resource privileges.
+     * @param {string} userGroups   The user groups with resource privileges.
+     * @returns {*}
+     */
+    postPolicyActionResource: function (action, resource, users, userGroups) {
+        var self = this;
+        return this.http.post('/nifi-registry-api/policies', {
+            'resource': resource,
+            'action': action,
+            'users': users,
+            'userGroups': userGroups
+        }, headers)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.message,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
+     * Authenticate a user.
+     *
+     * @param {string} username     The name of the user to authenticate.
+     * @param {string} password     The user password.
+     * @returns {*}
+     */
+    postToLogin: function (username, password) {
+        var self = this;
+        return this.http.post('/nifi-registry-api/access/token/login', {
+            'username': username,
+            'password': password
+        }, headers)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: 'Please contact your System Administrator.',
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -494,7 +645,7 @@ NfRegistryApi.prototype = {
                 .map(function (jwt) {
                     // get the payload and store the token with the appropriate expiration
                     var token = self.nfStorage.getJwtPayload(jwt);
-                    if(token) {
+                    if (token) {
                         var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
                         self.nfStorage.setItem('jwt', jwt, expiration);
                     }
@@ -523,7 +674,35 @@ NfRegistryApi.prototype = {
                 if (error.status === 401) {
                     self.router.navigateByUrl('/nifi-registry/login');
                 }
-                return rxjs.Observable.of({});
+                return rxjs.Observable.of({
+                    resourcePermissions: {
+                        anyTopLevelResource: {
+                            canRead: false,
+                            canWrite: false,
+                            canDelete: false
+                        },
+                        buckets: {
+                            canRead: false,
+                            canWrite: false,
+                            canDelete: false
+                        },
+                        tenants: {
+                            canRead: false,
+                            canWrite: false,
+                            canDelete: false
+                        },
+                        policies: {
+                            canRead: false,
+                            canWrite: false,
+                            canDelete: false
+                        },
+                        proxy: {
+                            canRead: false,
+                            canWrite: false,
+                            canDelete: false
+                        }
+                    }
+                });
             });
     }
 };

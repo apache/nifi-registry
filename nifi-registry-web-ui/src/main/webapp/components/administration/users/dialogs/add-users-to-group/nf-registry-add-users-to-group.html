@@ -17,15 +17,15 @@ limitations under the License.
 
 <div id="nifi-registry-admin-add-selected-users-to-group-dialog">
     <div class="pad-bottom-md" fxLayout="row" fxLayoutAlign="space-between center">
-        <span class="md-card-title">Add to group</span>
+        <span class="md-card-title">Add users to group</span>
         <button mat-icon-button (click)="cancel()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div class="pad-bottom-md">
+    <div *ngIf="filteredUsers.length > 0" class="pad-bottom-md">
         <div id="nifi-registry-users-administration-list-container-column-header" class="td-data-table">
-            <div class="td-data-table-column" (click)="sortUserGroups(column)"
-                 *ngFor="let column of userGroupsColumns"
+            <div class="td-data-table-column" (click)="sortUsers(column)"
+                 *ngFor="let column of nfRegistryService.userGroupsColumns"
                  fxFlex="{{column.width}}">
                 {{column.label}}
                 <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
@@ -34,31 +34,36 @@ limitations under the License.
                    aria-hidden="true"></i>
             </div>
             <div class="td-data-table-column">
-                <mat-checkbox [(ngModel)]="allGroupsSelected"
-                              (checked)="allGroupsSelected"
-                              (change)="toggleUserGroupsSelectAll()"></mat-checkbox>
+                <mat-checkbox [(ngModel)]="allUsersSelected"
+                              (checked)="allUsersSelected"
+                              (change)="toggleUsersSelectAll()"></mat-checkbox>
             </div>
         </div>
         <div id="nifi-registry-add-selected-users-to-group-list-container">
-            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUserGroups"
-                 (click)="row.checked = !row.checked;determineAllUserGroupsSelectedState()">
-                <div *ngFor="let column of userGroupsColumns" fxLayout="row"
+            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUsers"
+                 (click)="row.checked = !row.checked;determineAllUsersSelectedState()">
+                <div *ngFor="let column of nfRegistryService.userGroupsColumns" fxLayout="row"
                      fxLayoutAlign="space-between center" class="td-data-table-row">
-                    <div *ngIf="row.users && row.users.length > 0" class="td-data-table-cell" fxFlex="{{column.width}}">
+                    <div class="td-data-table-cell" fxFlex="{{column.width}}">
                         <div>
-                            <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ?
+                            {{column.format ?
                             column.format(row[column.name]) : row[column.name]}}
                         </div>
                     </div>
                     <div class="td-data-table-cell">
-                        <mat-checkbox [(ngModel)]="row.checked" [checked]="row.checked"
-                                      (change)="determineAllUserGroupsSelectedState()"
-                                      (click)="row.checked = !row.checked;determineAllUserGroupsSelectedState()">
+                        <mat-checkbox [(ngModel)]="row.checked"
+                                      [checked]="row.checked"
+                                      (change)="determineAllUsersSelectedState()"
+                                      (click)="row.checked = !row.checked;determineAllUsersSelectedState()">
                         </mat-checkbox>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="mat-padding push-bottom-md" *ngIf="filteredUsers.length === 0" layout="row"
+         layout-align="center center">
+        <h3>All users belong to this group.</h3>
     </div>
     <div fxLayout="row">
         <span fxFlex></span>
@@ -66,7 +71,7 @@ limitations under the License.
                 i18n="Cancel addition of selected users to group|A button for cancelling the addition of selected users to a group in the registry.@@nf-admin-workflow-cancel-add-selected-users-to-group-button">
             Cancel
         </button>
-        <button [disabled]="isAddSelectedUsersToSelectedGroupsDisabled" class="push-left-sm" (click)="addSelectedUsersToSelectedGroups()"
+        <button [disabled]="isAddSelectedUsersToGroupDisabled" class="push-left-sm" (click)="addSelectedUsersToGroup()"
                 color="fds-primary" mat-raised-button
                 i18n="Add selected users to group button|A button for adding users to an existing group in the registry.@@nf-admin-workflow-add-selected-users-to-group-button">
             Add
