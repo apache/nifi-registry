@@ -30,9 +30,8 @@ var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
-var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
-var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
+var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
+var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
@@ -46,6 +45,8 @@ var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
+var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
 
 describe('NfRegistryWorkflowAdministration Component', function () {
     var comp;
@@ -70,9 +71,8 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 NfRegistryExplorer,
                 NfRegistryAdministration,
                 NfRegistryUsersAdministration,
-                NfRegistryUserDetails,
-                NfRegistryUserPermissions,
-                NfRegistryUserGroupPermissions,
+                NfRegistryManageUser,
+                NfRegistryManageGroup,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
@@ -80,7 +80,9 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 NfRegistryGridListViewer,
                 NfRegistryBucketGridListViewer,
                 NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent
+                NfPageNotFoundComponent,
+                NfLoginComponent,
+                NfUserLoginComponent
             ],
             entryComponents: [
                 NfRegistryCreateBucket

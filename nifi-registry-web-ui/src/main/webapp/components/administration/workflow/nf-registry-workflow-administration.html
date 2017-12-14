@@ -65,9 +65,9 @@ limitations under the License.
                 </div>
                 <div class="td-data-table-cell">
                     <div>
-                        <div *ngIf="bucketActions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
+                        <div *ngIf="nfRegistryService.bucketActions.length <= 4" fxLayout="row" fxLayoutAlign="end center">
                             <button (click)="nfRegistryService.executeBucketAction(action, row);row.checked = !row.checked;"
-                                    *ngFor="let action of bucketActions"
+                                    *ngFor="let action of nfRegistryService.bucketActions"
                                     matTooltip="{{action.tooltip}}" mat-icon-button color="accent"
                                     [disabled]="action.disabled ? '' : null">
                                 <i class="{{action.icon}}" aria-hidden="true"></i>
@@ -76,14 +76,14 @@ limitations under the License.
                                           (change)="nfRegistryService.determineAllBucketsSelectedState()"
                                           (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
                         </div>
-                        <div *ngIf="bucketActions.length > 4" fxLayout="row" fxLayoutAlign="end center">
+                        <div *ngIf="nfRegistryService.bucketActions.length > 4" fxLayout="row" fxLayoutAlign="end center">
                             <button (click)="row.checked = !row.checked" matTooltip="Actions" mat-icon-button
                                     [matMenuTriggerFor]="bucketTableActionMenu">
                                 <i class="fa fa-ellipsis-h" aria-hidden="true"></i>
                             </button>
                             <mat-menu #bucketTableActionMenu="matMenu" [overlapTrigger]="false">
                                 <button (click)="nfRegistryService.executeBucketAction(action, row);row.checked = !row.checked;"
-                                        *ngFor="let action of bucketActions"
+                                        *ngFor="let action of nfRegistryService.bucketActions"
                                         matTooltip="{{action.tooltip}}" mat-menu-item
                                         [disabled]="action.disabled ? '' : null">
                                     <i class="{{action.icon}}" aria-hidden="true"></i>
@@ -95,7 +95,7 @@ limitations under the License.
                                           (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>
                         </div>
                     </div>
-                    <div *ngIf="!bucketActions" fxLayout="row" fxLayoutAlign="end center">
+                    <div *ngIf="!nfRegistryService.bucketActions" fxLayout="row" fxLayoutAlign="end center">
                         <mat-checkbox [(ngModel)]="row.checked" [checked]="row.checked"
                                       (change)="nfRegistryService.determineAllBucketsSelectedState(row)"
                                       (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()"></mat-checkbox>

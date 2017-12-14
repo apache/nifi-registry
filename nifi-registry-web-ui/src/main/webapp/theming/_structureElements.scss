@@ -16,8 +16,28 @@
  */
 
 body {
-    background: $grey5 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+    background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
     background-size: 40%;
+}
+
+#nifi-registry-login-perspective {
+    background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+    background-size: 40%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+}
+
+#nifi-registry-not-found-perspective {
+    background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+    background-size: 40%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
 }
 
 #nf-registry-app-container {
@@ -48,7 +68,7 @@ body {
     background-color: #FFFFFF;
     position: absolute;
     z-index: 1000;
-    background: $grey1;
+    background: $grey11;
 }
 
 #nifi-registry-toolbar .mat-icon-button {
@@ -74,7 +94,7 @@ body {
     min-height: 370px;
     min-width: 1045px;
     overflow: auto;
-    background: $grey5;
+    background: $grey12;
     background-size: 40%;
 }
 

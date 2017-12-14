@@ -38,6 +38,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.registry = {
         name: "Nifi Registry"
     };
+    this.redirectUrl = '/nifi-registry/explorer/grid-list';
 
     // Services
     this.router = router;
@@ -47,65 +48,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.snackBarService = fdsSnackBarService;
     this.dataTableService = tdDataTableService;
 
-    //<editor-fold desc="application state objects">
-
-    // General
-    this.bucket = {};
-    this.buckets = [];
-    this.droplet = {};
-    this.droplets = [];
-    this.currentUser = {};
-    this.user = {};
-    this.group = {};
-    this.users = [];
-    this.groups = [];
-    this.alerts = [];
-    this.explorerViewType = '';
-    this.perspective = '';
-    this.breadCrumbState = 'out';
-
-    // Droplets
-    this.filteredDroplets = [];
-    this.dropletActions = [
-        {
-            name: 'Delete',
-            icon: 'fa fa-trash',
-            tooltip: 'Delete'
-        }
-    ];
-    this.dropletColumns = [
-        {
-            name: 'name',
-            label: 'Name',
-            sortable: true
-        },
-        {
-            name: 'modifiedTimestamp',
-            label: 'Updated',
-            sortable: true
-        }
-    ];
-    this.autoCompleteDroplets = [];
-    this.dropletsSearchTerms = [];
-
-    // Buckets
-    this.filteredBuckets = [];
-    this.bucketColumns = [
-        {
-            name: 'name',
-            label: 'Bucket Name',
-            sortable: true,
-            tooltip: 'Sort Buckets by name.'
-        }
-    ];
-    this.allBucketsSelected = false;
-    this.autoCompleteBuckets = [];
-    this.bucketsSearchTerms = [];
-    this.isMultiBucketActionsDisabled = true;
-
-    // Users and Groups
-    this.filteredUsers = [];
-    this.filteredUserGroups = [];
+    // data table column definitions
     this.userColumns = [
         {
             name: 'identity',
@@ -115,11 +58,241 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             width: 100
         }
     ];
+    this.userGroupsColumns = [
+        {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true,
+            tooltip: 'Group name.',
+            width: 100
+        }
+    ];
+    this.userPoliciesColumns = [
+        {
+            name: 'identity',
+            label: 'Bucket Name',
+            sortable: true,
+            tooltip: 'Bucket name.',
+            width: 100
+        },
+        {
+            name: 'identity',
+            label: 'Bucket Name',
+            sortable: true,
+            tooltip: 'Bucket name.',
+            width: 100
+        }
+    ];
+    this.dropletColumns = [
+        {
+            name: 'name',
+            label: 'Name',
+            sortable: true,
+            active: true
+        },
+        {
+            name: 'modifiedTimestamp',
+            label: 'Updated',
+            sortable: true
+        }
+    ];
+    this.bucketColumns = [
+        {
+            name: 'name',
+            label: 'Bucket Name',
+            sortable: true,
+            tooltip: 'Sort Buckets by name.'
+        }
+    ];
+
+    // data table available row action definitions
+    this.bucketActions = [
+        {
+            'name': 'permissions',
+            'icon': 'fa fa-pencil',
+            'tooltip': 'Manage Bucket Policies',
+            'type': 'sidenav'
+        }, {
+            'name': 'Delete',
+            'icon': 'fa fa-trash',
+            'tooltip': 'Delete Bucket'
+        }
+    ];
+    this.dropletActions = [
+        {
+            name: 'delete',
+            icon: 'fa fa-trash',
+            tooltip: 'Delete'
+        }
+    ];
+    this.usersActions = [
+        {
+            name: 'manage',
+            icon: 'fa fa-pencil',
+            tooltip: 'Manage User Policies',
+            type: 'sidenav',
+            tooltip: 'Manage User'
+        }, {
+            name: 'delete',
+            icon: 'fa fa-trash',
+            tooltip: 'Delete User'
+        }
+    ];
+    this.userGroupsActions = [
+        {
+            name: 'manage',
+            icon: 'fa fa-pencil',
+            tooltip: 'Manage User Group Policies',
+            type: 'sidenav'
+        }, {
+            name: 'delete',
+            icon: 'fa fa-trash',
+            tooltip: 'Delete User Group'
+        }
+    ];
+
+    // model for buckets privileges
+    this.BUCKETS_PRIVS = {
+        '/buckets': ['read', 'write', 'delete']
+    };
+
+    // model for tenants privileges
+    this.TENANTS_PRIVS = {
+        '/tenants': ['read', 'write', 'delete']
+    };
+
+    // model for policies privileges
+    this.POLICIES_PRIVS = {
+        '/policies': ['read', 'write', 'delete']
+    };
+
+    // model for proxy privileges
+    this.PROXY_PRIVS = {
+        '/proxy': ['write']
+    };
+
+    //<editor-fold desc="application state objects">
+
+    // General
+    this.alerts = [];
+    this.inProgress = false;
+    this.perspective = '';
+    this.breadCrumbState = 'out';
+    this.explorerViewType = '';
+    this.currentUser = {
+        resourcePermissions: {
+            anyTopLevelResource: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            buckets: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            tenants: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            policies: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            proxy: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            }
+        }
+    };
+    this.bucket = {};
+    this.buckets = [];
+    this.droplet = {};
+    this.droplets = [];
+    this.user = {
+        resourcePermissions: {
+            anyTopLevelResource: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            buckets: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            tenants: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            policies: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            proxy: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            }
+        }
+    };
+    this.users = [];
+    this.group = {
+        resourcePermissions: {
+            anyTopLevelResource: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            buckets: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            tenants: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            policies: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            },
+            proxy: {
+                canRead: false,
+                canWrite: false,
+                canDelete: false
+            }
+        }
+    };
+    this.groups = [];
+
+    // Droplets
+    this.filteredDroplets = [];
+    this.activeDropletColumn = this.dropletColumns[0];
+    this.autoCompleteDroplets = [];
+    this.dropletsSearchTerms = [];
+
+    // Buckets
+    this.filteredBuckets = [];
+    this.allBucketsSelected = false;
+    this.autoCompleteBuckets = [];
+    this.bucketsSearchTerms = [];
+    this.isMultiBucketActionsDisabled = true;
+
+    // Users and Groups
+    this.filteredUsers = [];
+    this.filteredUserGroups = [];
     this.allUsersAndGroupsSelected = false;
     this.autoCompleteUsersAndGroups = [];
     this.usersSearchTerms = [];
 
-    this.inProgress = false;
     //</editor-fold>
 };
 
@@ -347,6 +520,7 @@ NfRegistryService.prototype = {
                                 });
                                 self.bucket = {};
                                 self.filterBuckets();
+                                self.determineAllBucketsSelectedState();
                             });
                         }
                     });
@@ -604,7 +778,7 @@ NfRegistryService.prototype = {
         // get the current user
         return rxjs.Observable.of(this.api.loadCurrentUser().subscribe(function (currentUser) {
             // if the user is logged, we want to determine if they were logged in using a certificate
-            if (currentUser.status !== "UNKNOWN") {
+            if (currentUser.anonymous === false) {
                 // render the users name
                 self.currentUser = currentUser;
 
@@ -798,9 +972,10 @@ NfRegistryService.prototype = {
      */
     executeUserAction: function (action, user) {
         var self = this;
+        this.user = user;
         switch (action.name.toLowerCase()) {
             case 'delete':
-                this.dialogService.openConfirm({
+                return this.dialogService.openConfirm({
                     title: 'Delete User',
                     message: 'This user will lose all access to the registry.',
                     cancelButton: 'Cancel',
@@ -823,12 +998,13 @@ NfRegistryService.prototype = {
                                     duration: 3000
                                 });
                                 self.filterUsersAndGroups();
+                                self.determineAllUsersAndGroupsSelectedState();
                             });
                         }
                     });
                 break;
-            case 'permissions':
-                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':user/' + action.name + '/' + user.identifier + ')');
+            case 'manage':
+                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/user/' + user.identifier + ')');
                 break;
         }
     },
@@ -867,12 +1043,13 @@ NfRegistryService.prototype = {
                                     duration: 3000
                                 });
                                 self.filterUsersAndGroups();
+                                self.determineAllUsersAndGroupsSelectedState();
                             });
                         }
                     });
                 break;
-            case 'permissions':
-                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':group/' + action.name + '/' + group.identifier + ')');
+            case 'manage':
+                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/group/' + group.identifier + ')');
                 break;
         }
     },

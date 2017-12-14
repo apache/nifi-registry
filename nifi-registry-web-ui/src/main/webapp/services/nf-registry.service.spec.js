@@ -28,9 +28,8 @@ var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-
 var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryUserDetails = require('nifi-registry/components/administration/users/details/nf-registry-user-details.js');
-var NfRegistryUserPermissions = require('nifi-registry/components/administration/users/permissions/nf-registry-user-permissions.js');
-var NfRegistryUserGroupPermissions = require('nifi-registry/components/administration/user-group/permissions/nf-registry-user-group-permissions.js');
+var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
+var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
 var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
@@ -45,6 +44,8 @@ var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
+var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
 
 describe('NfRegistry Service isolated unit tests', function () {
     var nfRegistryService;
@@ -86,6 +87,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
     it('should get the `Oldest (update)` sort by label', function () {
         //Setup the nfRegistryService state for this test
+        nfRegistryService.dropletColumns[0].active = false;
         nfRegistryService.dropletColumns[1].active = true;
 
         // The function to test
@@ -97,6 +99,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
     it('should get the `Newest (update)` sort by label', function () {
         //Setup the nfRegistryService state for this test
+        nfRegistryService.dropletColumns[0].active = false;
         nfRegistryService.dropletColumns[1].active = true;
         nfRegistryService.dropletColumns[1].sortOrder = 'ASC';
 
@@ -688,16 +691,17 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 NfRegistryExplorer,
                 NfRegistryAdministration,
                 NfRegistryUsersAdministration,
-                NfRegistryUserDetails,
-                NfRegistryUserPermissions,
-                NfRegistryUserGroupPermissions,
+                NfRegistryManageUser,
+                NfRegistryManageGroup,
                 NfRegistryBucketPermissions,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
                 NfRegistryGridListViewer,
                 NfRegistryBucketGridListViewer,
                 NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent
+                NfPageNotFoundComponent,
+                NfLoginComponent,
+                NfUserLoginComponent
             ],
             providers: [
                 NfRegistryService,
@@ -963,7 +967,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.users[0].identifier).toBe(1);
     });
 
-    it('should execute a `permissions` action on a user.', function () {
+    it('should execute a `manage` action on a user.', function () {
         // from the root injector
         var router = ngCoreTesting.TestBed.get(ngRouter.Router);
 
@@ -975,11 +979,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         var user = {identifier: '999'};
 
         // The function to test
-        nfRegistryService.executeUserAction({name: 'permissions', type: 'sidenav'}, user);
+        nfRegistryService.executeUserAction({name: 'manage', type: 'sidenav'}, user);
 
         //assertions
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:user/permissions/999)');
+        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:manage/user/999)');
     });
 
     it('should execute a `delete` action on a group.', function () {
@@ -1015,7 +1019,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.groups[0].identifier).toBe(1);
     });
 
-    it('should execute a `permissions` action on a group.', function () {
+    it('should execute a `manage` action on a group.', function () {
         // from the root injector
         var router = ngCoreTesting.TestBed.get(ngRouter.Router);
 
@@ -1027,11 +1031,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         var group = {identifier: '999'};
 
         // The function to test
-        nfRegistryService.executeGroupAction({name: 'permissions', type: 'sidenav'}, group);
+        nfRegistryService.executeGroupAction({name: 'manage', type: 'sidenav'}, group);
 
         //assertions
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:group/permissions/999)');
+        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:manage/group/999)');
     });
 
     it('should filter buckets by name.', function () {

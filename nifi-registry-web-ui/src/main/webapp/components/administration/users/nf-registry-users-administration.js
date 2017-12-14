@@ -25,7 +25,6 @@ var ngMaterial = require('@angular/material');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
-var NfRegistryAddSelectedUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-selected-users-to-group/nf-registry-add-selected-users-to-group.js');
 
 /**
  * NfRegistryUsersAdministration constructor.
@@ -45,26 +44,6 @@ function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryServi
     this.nfRegistryApi = nfRegistryApi;
     this.dialogService = fdsDialogService;
     this.dialog = matDialog;
-    this.usersActions = [{
-        name: 'permissions',
-        icon: 'fa fa-pencil',
-        tooltip: 'Manage User Policies',
-        type: 'sidenav'
-    }, {
-        name: 'Delete',
-        icon: 'fa fa-trash',
-        tooltip: 'Delete User'
-    }];
-    this.userGroupsActions = [{
-        name: 'permissions',
-        icon: 'fa fa-pencil',
-        tooltip: 'Manage User Group Policies',
-        type: 'sidenav'
-    }, {
-        name: 'Delete',
-        icon: 'fa fa-trash',
-        tooltip: 'Delete User Group'
-    }];
 };
 
 NfRegistryUsersAdministration.prototype = {
@@ -76,27 +55,22 @@ NfRegistryUsersAdministration.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.inProgress = true;
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.loadCurrentUser().subscribe(function (currentUser) {
-                self.route.params
-                    .switchMap(function (params) {
-                        self.nfRegistryService.adminPerspective = 'users';
-                        return new rxjs.Observable.forkJoin(
-                            self.nfRegistryApi.getUsers(),
-                            self.nfRegistryApi.getUserGroups()
-                        );
-                    })
-                    .subscribe(function (response) {
-                        var users = response[0];
-                        var groups = response[1];
-                        self.nfRegistryService.users = users;
-                        self.nfRegistryService.groups = groups;
-                        self.nfRegistryService.filterUsersAndGroups();
-                        self.nfRegistryService.inProgress = false;
-                    });
+        this.route.params
+            .switchMap(function (params) {
+                self.nfRegistryService.adminPerspective = 'users';
+                return new rxjs.Observable.forkJoin(
+                    self.nfRegistryApi.getUsers(),
+                    self.nfRegistryApi.getUserGroups()
+                );
+            })
+            .subscribe(function (response) {
+                var users = response[0];
+                var groups = response[1];
+                self.nfRegistryService.users = users;
+                self.nfRegistryService.groups = groups;
+                self.nfRegistryService.filterUsersAndGroups();
+                self.nfRegistryService.inProgress = false;
             });
-        });
     },
 
     /**
@@ -121,23 +95,6 @@ NfRegistryUsersAdministration.prototype = {
      */
     createNewGroup: function () {
         this.dialog.open(NfRegistryCreateNewGroup);
-    },
-
-    /**
-     * Opens the add selected users to groups dialog.
-     */
-    addSelectedUsersToGroup: function () {
-        if (this.nfRegistryService.getSelectedGroups().length === 0) {
-            // ok...only users are currently selected...go ahead and open the dialog to select groups
-            this.dialog.open(NfRegistryAddSelectedUsersToGroup);
-        } else {
-            self.dialogService.openConfirm({
-                title: 'Error: Groups may not be added to a group. Please deselect any groups and try again',
-                message: error.message,
-                acceptButton: 'Ok',
-                acceptButtonColor: 'fds-warn'
-            });
-        }
     }
 };
 

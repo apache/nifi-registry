@@ -23,11 +23,11 @@ var ngRouter = require('@angular/router');
  * NfRegistryAdministration constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
- * @param ActivatedRoute        The angular activated route module.
+ * @param router                The angular router module.
  * @constructor
  */
-function NfRegistryAdministration(nfRegistryService, ActivatedRoute) {
-    this.route = ActivatedRoute;
+function NfRegistryAdministration(nfRegistryService, router) {
+    this.router = router;
     this.nfRegistryService = nfRegistryService;
 };
 
@@ -49,6 +49,33 @@ NfRegistryAdministration.prototype = {
     ngOnDestroy: function () {
         this.nfRegistryService.perspective = '';
         this.nfRegistryService.setBreadcrumbState('out');
+    },
+
+    /**
+     * Navigates to admin perspective.
+     *
+     * @param $event
+     */
+    navigateToAdminPerspective: function($event) {
+        this.router.navigateByUrl('nifi-registry/administration/' + $event.value);
+    },
+
+    /**
+     * Generate the user tab tooltip.
+     *
+     * @returns {*}
+     */
+    getUserTooltip: function() {
+        if(this.nfRegistryService.currentUser.anonymous) {
+            return 'Please configure NiFi Registry security to enable.';
+        }
+        else {
+            if(!this.nfRegistryService.currentUser.resourcePermissions.tenants.canRead) {
+                return 'You do not have permission. Please contact your System Administrator.'
+            } else {
+                return 'Manage NiFi Registry users and groups.'
+            }
+        }
     }
 };
 
@@ -64,7 +91,7 @@ NfRegistryAdministration.annotations = [
 
 NfRegistryAdministration.parameters = [
     NfRegistryService,
-    ngRouter.ActivatedRoute
+    ngRouter.Router
 ];
 
 module.exports = NfRegistryAdministration;
