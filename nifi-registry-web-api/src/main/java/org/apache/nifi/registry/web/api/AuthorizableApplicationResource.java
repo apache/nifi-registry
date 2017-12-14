@@ -22,7 +22,7 @@ import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.model.authorization.Resource;
+import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

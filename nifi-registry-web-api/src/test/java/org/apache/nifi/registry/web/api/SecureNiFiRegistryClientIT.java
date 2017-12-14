@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.NiFiRegistryTestApiApplication;
+import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.FlowClient;
@@ -30,7 +31,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.model.authorization.CurrentUser;
+import org.apache.nifi.registry.authorization.CurrentUser;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -86,9 +87,16 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     @Test
     public void testGetAccessStatus() throws IOException, NiFiRegistryException {
         final UserClient userClient = client.getUserClient();
-        final CurrentUser status = userClient.getAccessStatus();
-        Assert.assertEquals("CN=user1, OU=nifi", status.getIdentity());
-        Assert.assertFalse(status.isAnonymous());
+        final CurrentUser currentUser = userClient.getAccessStatus();
+        Assert.assertEquals("CN=user1, OU=nifi", currentUser.getIdentity());
+        Assert.assertFalse(currentUser.isAnonymous());
+        Assert.assertNotNull(currentUser.getResourcePermissions());
+        Permissions fullAccess = new Permissions().withCanRead(true).withCanWrite(true).withCanDelete(true);
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getAnyTopLevelResource());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getBuckets());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getTenants());
+        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getPolicies());
+        Assert.assertEquals(new Permissions().withCanWrite(true), currentUser.getResourcePermissions().getProxy());
     }
 
     @Test

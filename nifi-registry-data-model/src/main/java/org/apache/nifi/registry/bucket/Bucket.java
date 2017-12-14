@@ -19,7 +19,7 @@ package org.apache.nifi.registry.bucket;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.link.LinkableEntity;
-import org.apache.nifi.registry.model.authorization.Permissions;
+import org.apache.nifi.registry.authorization.Permissions;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;

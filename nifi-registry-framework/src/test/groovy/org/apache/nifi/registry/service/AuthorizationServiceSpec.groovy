@@ -16,6 +16,10 @@
  */
 package org.apache.nifi.registry.service
 
+import org.apache.nifi.registry.authorization.AccessPolicy
+import org.apache.nifi.registry.authorization.User
+import org.apache.nifi.registry.authorization.UserGroup
+import org.apache.nifi.registry.bucket.Bucket
 import org.apache.nifi.registry.security.authorization.AccessPolicy as AuthAccessPolicy
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup
 import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider
@@ -27,10 +31,6 @@ import org.apache.nifi.registry.security.authorization.User as AuthUser
 import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException
 import org.apache.nifi.registry.security.authorization.resource.Authorizable
 import org.apache.nifi.registry.security.authorization.resource.ResourceType
-import org.apache.nifi.registry.bucket.Bucket
-import org.apache.nifi.registry.model.authorization.AccessPolicy
-import org.apache.nifi.registry.model.authorization.User
-import org.apache.nifi.registry.model.authorization.UserGroup
 import spock.lang.Specification
 
 class AuthorizationServiceSpec extends Specification {
@@ -536,15 +536,14 @@ class AuthorizationServiceSpec extends Specification {
 
         then:
         resources != null
-        resources.size() == 7
+        resources.size() == 6
         def sortedResources = resources.sort{it.identifier}
         sortedResources[0].identifier == "/buckets"
         sortedResources[1].identifier == "/buckets/b1"
         sortedResources[2].identifier == "/buckets/b2"
         sortedResources[3].identifier == "/policies"
         sortedResources[4].identifier == "/proxy"
-        sortedResources[5].identifier == "/resources"
-        sortedResources[6].identifier == "/tenants"
+        sortedResources[5].identifier == "/tenants"
 
     }
 
@@ -581,7 +580,6 @@ class AuthorizationServiceSpec extends Specification {
         authorizableLookup.getAuthorizableByResource("/buckets/b2") >> denied
         authorizableLookup.getAuthorizableByResource("/policies")   >> authorized
         authorizableLookup.getAuthorizableByResource("/proxy")      >> denied
-        authorizableLookup.getAuthorizableByResource("/resources")  >> authorized
         authorizableLookup.getAuthorizableByResource("/tenants")    >> authorized
 
 
@@ -590,13 +588,12 @@ class AuthorizationServiceSpec extends Specification {
 
         then:
         resources != null
-        resources.size() == 5
+        resources.size() == 4
         def sortedResources = resources.sort{it.identifier}
         sortedResources[0].identifier == "/buckets"
         sortedResources[1].identifier == "/buckets/b1"
         sortedResources[2].identifier == "/policies"
-        sortedResources[3].identifier == "/resources"
-        sortedResources[4].identifier == "/tenants"
+        sortedResources[3].identifier == "/tenants"
 
 
         when:
@@ -610,13 +607,5 @@ class AuthorizationServiceSpec extends Specification {
         sortedFilteredResources[1].identifier == "/buckets/b1"
 
     }
-
-
-
-
-
-
-
-
 
 }

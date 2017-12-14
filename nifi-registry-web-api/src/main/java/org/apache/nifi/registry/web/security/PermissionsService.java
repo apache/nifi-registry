@@ -18,13 +18,21 @@ package org.apache.nifi.registry.web.security;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.model.authorization.Permissions;
+import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * This is a class that Resource classes can utilized to populate fields
+ * on model objects returned by the {@link org.apache.nifi.registry.service.RegistryService}
+ * before returning them to a client.
+ *
+ * The fields cannot be populated by the RegistryService because they require
+ * the {@link AuthorizationService}, which RegistryService does not depend on.
+ */
 @Service
 public class PermissionsService {
 

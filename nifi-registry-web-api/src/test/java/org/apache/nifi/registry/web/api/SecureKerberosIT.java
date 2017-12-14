@@ -190,11 +190,12 @@ public class SecureKerberosIT extends IntegrationTestBase {
         String expectedJson = "{" +
                 "\"identity\":\"kerberosUser@LOCALHOST\"," +
                 "\"anonymous\":false," +
-                "\"administrationPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"bucketsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"tenantsPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"policiesPermissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"resourcesPermissions\":{\"canRead\":true}" +
+                "\"resourcePermissions\":{" +
+                "\"anyTopLevelResource\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"buckets\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"tenants\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"policies\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
+                "\"proxy\":{\"canRead\":false,\"canWrite\":true,\"canDelete\":false}}" +
                 "}";
 
         // When: the /access endpoint is queried using a JWT for the kerberos user

@@ -74,24 +74,7 @@ public final class ResourceFactory {
         }
     };
 
-    private final static Resource RESOURCE_RESOURCE = new Resource() {
-        @Override
-        public String getIdentifier() {
-            return ResourceType.Resource.getValue();
-        }
-
-        @Override
-        public String getName() {
-            return "Resources";
-        }
-
-        @Override
-        public String getSafeDescription() {
-            return "resources";
-        }
-    };
-
-    private final static Resource TENANT_RESOURCE = new Resource() {
+    private final static Resource TENANTS_RESOURCE = new Resource() {
         @Override
         public String getIdentifier() {
             return ResourceType.Tenant.getValue();
@@ -99,7 +82,7 @@ public final class ResourceFactory {
 
         @Override
         public String getName() {
-            return "Tenant";
+            return "Tenants";
         }
 
         @Override
@@ -136,21 +119,12 @@ public final class ResourceFactory {
     }
 
     /**
-     * Gets the Resource for detailing all available NiFi Resources.
-     *
-     * @return  The Resource resource
-     */
-    public static Resource getResourceResource() {
-        return RESOURCE_RESOURCE;
-    }
-
-    /**
      * Gets the Resource for accessing Tenants which includes creating, modifying, and deleting Users and UserGroups.
      *
      * @return The Resource for accessing Tenants
      */
-    public static Resource getTenantResource() {
-        return TENANT_RESOURCE;
+    public static Resource getTenantsResource() {
+        return TENANTS_RESOURCE;
     }
 
     /**
@@ -213,7 +187,7 @@ public final class ResourceFactory {
      * @param name - Optional, the name of the subresource
      * @return A resource for this object
      */
-    public static Resource getChildResource(final ResourceType parentResourceType, final String childIdentifier, final String name) {
+    private static Resource getChildResource(final ResourceType parentResourceType, final String childIdentifier, final String name) {
         Objects.requireNonNull(parentResourceType, "The base resource type must be specified.");
         Objects.requireNonNull(childIdentifier, "The child identifier identifier must be specified.");
 
