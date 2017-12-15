@@ -129,7 +129,23 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketItemEntity> getBucketItems(final String bucketIdentifier) {
-        final String sql = "SELECT * FROM bucket_item WHERE bucket_id = ?";
+        final String sql =
+                "SELECT " +
+                    "item.id as ID, " +
+                    "item.name as NAME, " +
+                    "item.description as DESCRIPTION, " +
+                    "item.created as CREATED, " +
+                    "item.modified as MODIFIED, " +
+                    "item.item_type as ITEM_TYPE, " +
+                    "b.id as BUCKET_ID, " +
+                    "b.name as BUCKET_NAME " +
+                "FROM " +
+                        "bucket_item item, bucket b " +
+                "WHERE " +
+                        "item.bucket_id = b.id " +
+                "AND " +
+                        "item.bucket_id = ?";
+
         final List<BucketItemEntity> items = jdbcTemplate.query(sql, new Object[] { bucketIdentifier }, new BucketItemEntityRowMapper());
         return getItemsWithCounts(items);
     }
@@ -140,7 +156,23 @@ public class DatabaseMetadataService implements MetadataService {
             return Collections.emptyList();
         }
 
-        final StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bucket_item WHERE bucket_id IN (");
+        final StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT " +
+                        "item.id as ID, " +
+                        "item.name as NAME, " +
+                        "item.description as DESCRIPTION, " +
+                        "item.created as CREATED, " +
+                        "item.modified as MODIFIED, " +
+                        "item.item_type as ITEM_TYPE, " +
+                        "b.id as BUCKET_ID, " +
+                        "b.name as BUCKET_NAME " +
+                "FROM " +
+                        "bucket_item item, bucket b " +
+                "WHERE " +
+                        "item.bucket_id = b.id " +
+                "AND " +
+                        "item.bucket_id IN (");
+
         for (int i=0; i < bucketIds.size(); i++) {
             if (i > 0) {
                 sqlBuilder.append(", ");
@@ -241,6 +273,12 @@ public class DatabaseMetadataService implements MetadataService {
     public List<FlowEntity> getFlowsByName(final String name) {
         final String sql = "SELECT * FROM flow f, bucket_item item WHERE item.name = ? AND item.id = f.id";
         return jdbcTemplate.query(sql, new Object[] {name}, new FlowEntityRowMapper());
+    }
+
+    @Override
+    public List<FlowEntity> getFlowsByName(final String bucketIdentifier, final String name) {
+        final String sql = "SELECT * FROM flow f, bucket_item item WHERE item.name = ? AND item.id = f.id AND item.bucket_id = ?";
+        return jdbcTemplate.query(sql, new Object[] {name, bucketIdentifier}, new FlowEntityRowMapper());
     }
 
     @Override

@@ -18,7 +18,6 @@ package org.apache.nifi.registry.client;
 
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.params.SortParameter;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,16 +43,6 @@ public interface ItemsClient {
     List<BucketItem> getAll() throws NiFiRegistryException, IOException;
 
     /**
-     * Gets all bucket items in the registry in sorted order.
-     *
-     * @param sortParameters the sort parameters
-     * @return the sorted list of items
-     * @throws NiFiRegistryException if an error is encountered other than IOException
-     * @throws IOException if an I/O error is encountered
-     */
-    List<BucketItem> getAll(List<SortParameter> sortParameters) throws NiFiRegistryException, IOException;
-
-    /**
      * Gets all bucket items for the given bucket.
      *
      * @param bucketId the bucket id
@@ -62,17 +51,6 @@ public interface ItemsClient {
      * @throws IOException if an I/O error is encountered
      */
     List<BucketItem> getByBucket(String bucketId) throws NiFiRegistryException, IOException;
-
-    /**
-     * Gets all bucket items in the given bucket in sorted order.
-     *
-     * @param bucketId the bucket id
-     * @param sortParameters the sort parameters
-     * @return the list of items
-     * @throws NiFiRegistryException if an error is encountered other than IOException
-     * @throws IOException if an I/O error is encountered
-     */
-    List<BucketItem> getByBucket(String bucketId, List<SortParameter> sortParameters) throws NiFiRegistryException, IOException;
 
     /**
      * Gets the field info for bucket items.

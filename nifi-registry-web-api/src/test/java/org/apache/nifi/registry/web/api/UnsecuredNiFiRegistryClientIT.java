@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.web.api;
 
+import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
@@ -34,9 +35,6 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
-import org.apache.nifi.registry.authorization.CurrentUser;
-import org.apache.nifi.registry.params.SortOrder;
-import org.apache.nifi.registry.params.SortParameter;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,21 +256,14 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // get all items
         final List<BucketItem> allItems = itemsClient.getAll();
         Assert.assertEquals(2, allItems.size());
+        allItems.stream().forEach(i -> Assert.assertNotNull(i.getBucketName()));
         allItems.stream().forEach(i -> LOGGER.info("All items, item " + i.getIdentifier()));
-
-        // get all items with sorting
-        final SortParameter itemsSortParam = new SortParameter("created", SortOrder.ASC);
-        final List<BucketItem> allItemsSorted = itemsClient.getAll(Arrays.asList(itemsSortParam));
-        Assert.assertEquals(2, allItemsSorted.size());
 
         // get items for bucket
         final List<BucketItem> bucketItems = itemsClient.getByBucket(flowsBucket.getIdentifier());
         Assert.assertEquals(2, bucketItems.size());
+        allItems.stream().forEach(i -> Assert.assertNotNull(i.getBucketName()));
         bucketItems.stream().forEach(i -> LOGGER.info("Items in bucket, item " + i.getIdentifier()));
-
-        // get items for bucket with sorting
-        final List<BucketItem> bucketItemsSorted = itemsClient.getByBucket(flowsBucket.getIdentifier(), Arrays.asList(itemsSortParam));
-        Assert.assertEquals(2, bucketItemsSorted.size());
 
         // ---------------------- DELETE DATA --------------------------//
 

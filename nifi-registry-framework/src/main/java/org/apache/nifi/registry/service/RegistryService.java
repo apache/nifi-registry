@@ -323,9 +323,9 @@ public class RegistryService {
             }
 
             // ensure another flow with the same name doesn't exist
-            final List<FlowEntity> flowsWithSameName = metadataService.getFlowsByName(versionedFlow.getName());
+            final List<FlowEntity> flowsWithSameName = metadataService.getFlowsByName(existingBucket.getId(), versionedFlow.getName());
             if (flowsWithSameName != null && flowsWithSameName.size() > 0) {
-                throw new IllegalStateException("A versioned flow with the same name already exists");
+                throw new IllegalStateException("A versioned flow with the same name already exists in the selected bucket");
             }
 
             // convert from dto to entity and set the bucket relationship
@@ -425,11 +425,11 @@ public class RegistryService {
             // ensure a different flow with the same name does not exist
             // since we're allowing partial updates here, only check this if a non-null name is provided
             if (StringUtils.isNotBlank(versionedFlow.getName())) {
-                final List<FlowEntity> flowsWithSameName = metadataService.getFlowsByName(versionedFlow.getName());
+                final List<FlowEntity> flowsWithSameName = metadataService.getFlowsByName(existingBucket.getId(), versionedFlow.getName());
                 if (flowsWithSameName != null) {
                     for (final FlowEntity flowWithSameName : flowsWithSameName) {
                          if(!flowWithSameName.getId().equals(existingFlow.getId())) {
-                            throw new IllegalStateException("A versioned flow with the same name already exists - " + versionedFlow.getName());
+                            throw new IllegalStateException("A versioned flow with the same name already exists in the selected bucket");
                         }
                     }
                 }

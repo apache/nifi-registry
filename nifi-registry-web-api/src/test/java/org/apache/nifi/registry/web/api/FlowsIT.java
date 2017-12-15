@@ -21,10 +21,12 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.test.context.jdbc.Sql;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -387,6 +389,55 @@ public class FlowsIT extends UnsecuredITBase {
         assertFlowSnapshotsEqual(createdFlowSnapshot, flowSnapshotByLatest, true);
         assertNotNull(flowSnapshotByLatest.getFlow());
         assertNotNull(flowSnapshotByLatest.getBucket());
+
+    }
+
+    @Test
+    public void testFlowNameUniquePerBucket() throws Exception {
+
+        final String flowName = "Flow 1";
+
+        // verify we have an existing flow with the name "Flow 1" in bucket 1
+        final VersionedFlow existingFlow = client
+                .target(createURL("buckets/1/flows/1"))
+                .request()
+                .get(VersionedFlow.class);
+
+        assertNotNull(existingFlow);
+        assertEquals(flowName, existingFlow.getName());
+
+        // create a new flow with the same name
+
+        final String bucketId = "3";
+
+        final VersionedFlow flow = new VersionedFlow();
+        flow.setBucketIdentifier(bucketId);
+        flow.setName(flowName);
+        flow.setDescription("This is a flow created by an integration test.");
+
+        // saving this flow to bucket 3 should work because bucket 3 is empty
+
+        final VersionedFlow createdFlow = client
+                .target(createURL("buckets/3/flows"))
+                .resolveTemplate("bucketId", bucketId)
+                .request()
+                .post(Entity.entity(flow, MediaType.APPLICATION_JSON), VersionedFlow.class);
+
+        assertNotNull(createdFlow);
+
+        // saving the flow to bucket 1 should not work because there is a flow with the same name
+        flow.setBucketIdentifier("1");
+        try {
+            client.target(createURL("buckets/1/flows"))
+                    .resolveTemplate("bucketId", bucketId)
+                    .request()
+                    .post(Entity.entity(flow, MediaType.APPLICATION_JSON), VersionedFlow.class);
+
+            Assert.fail("Should have thrown exception");
+        } catch (WebApplicationException e) {
+            final String errorMessage = e.getResponse().readEntity(String.class);
+            Assert.assertEquals("A versioned flow with the same name already exists in the selected bucket", errorMessage);
+        }
 
     }
 
