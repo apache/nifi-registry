@@ -16,25 +16,13 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.nifi.registry.authorization.Resource;
+import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.RequestAction;
@@ -48,7 +36,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -96,6 +97,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             final AccessPolicy requestAccessPolicy) {
 
         verifyAuthorizerSupportsConfigurablePolicies();
+        authorizeAccess(RequestAction.WRITE);
 
         if (requestAccessPolicy == null) {
             throw new IllegalArgumentException("Access policy details must be specified when creating a new policy.");
@@ -107,8 +109,6 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             throw new IllegalArgumentException("Resource must be specified when creating a new access policy.");
         }
         RequestAction.valueOfValue(requestAccessPolicy.getAction());
-
-        authorizeAccess(RequestAction.WRITE);
 
         AccessPolicy createdPolicy = authorizationService.createAccessPolicy(requestAccessPolicy);
 
@@ -132,14 +132,16 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
-            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_409),
-            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_409) })
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicies() {
 
         verifyAuthorizerIsManaged();
         authorizeAccess(RequestAction.READ);
 
-        final List<AccessPolicy> accessPolicies = authorizationService.getAccessPolicies();
+        List<AccessPolicy> accessPolicies = authorizationService.getAccessPolicies();
+        if (accessPolicies == null) {
+            accessPolicies = Collections.emptyList();
+        }
 
         return generateOkResponse(accessPolicies).build();
     }
@@ -168,9 +170,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @PathParam("id") final String identifier) {
 
         verifyAuthorizerIsManaged();
+        authorizeAccess(RequestAction.READ);
 
         final AccessPolicy accessPolicy = authorizationService.getAccessPolicy(identifier);
-        authorizeAccess(RequestAction.READ);
+        if (accessPolicy == null) {
+            throw new ResourceNotFoundException("No access policy found with ID + " + identifier);
+        }
 
         return generateOkResponse(accessPolicy).build();
     }
@@ -211,14 +216,16 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             final String rawResource) {
 
         verifyAuthorizerIsManaged();
+        authorizeAccess(RequestAction.READ);
 
         // parse the action and resource type
         final RequestAction requestAction = RequestAction.valueOfValue(action);
         final String resource = "/" + rawResource;
 
-        authorizeAccess(RequestAction.READ);
-
         AccessPolicy accessPolicy = authorizationService.getAccessPolicy(resource, requestAction);
+        if (accessPolicy == null) {
+            throw new ResourceNotFoundException("No policy found for action='" + action + "', resource='" + resource + "'");
+        }
         return generateOkResponse(accessPolicy).build();
     }
 
@@ -255,6 +262,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             final AccessPolicy requestAccessPolicy) {
 
         verifyAuthorizerSupportsConfigurablePolicies();
+        authorizeAccess(RequestAction.WRITE);
 
         if (requestAccessPolicy == null) {
             throw new IllegalArgumentException("Access policy details must be specified when updating a policy.");
@@ -263,8 +271,6 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             throw new IllegalArgumentException(String.format("The policy id in the request body (%s) does not equal the "
                     + "policy id of the requested resource (%s).", requestAccessPolicy.getIdentifier(), identifier));
         }
-
-        authorizeAccess(RequestAction.WRITE);
 
         AccessPolicy createdPolicy = authorizationService.updateAccessPolicy(requestAccessPolicy);
 
@@ -302,6 +308,9 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         verifyAuthorizerSupportsConfigurablePolicies();
         authorizeAccess(RequestAction.DELETE);
         AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
+        if (deletedPolicy == null) {
+            throw new ResourceNotFoundException("No access policy found with ID + " + identifier);
+        }
         return generateOkResponse(deletedPolicy).build();
     }
 

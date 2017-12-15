@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.RequestAction;
@@ -180,6 +181,9 @@ public class TenantResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.READ);
 
         final User user = authorizationService.getUser(identifier);
+        if (user == null) {
+            throw new ResourceNotFoundException("No user found with identifier " + identifier);
+        }
         return generateOkResponse(user).build();
     }
 
@@ -214,6 +218,7 @@ public class TenantResource extends AuthorizableApplicationResource {
             final User requestUser) {
 
         verifyAuthorizerSupportsConfigurableUserGroups();
+        authorizeAccess(RequestAction.WRITE);
 
         if (requestUser == null) {
             throw new IllegalArgumentException("User details must be specified when updating a user.");
@@ -223,9 +228,11 @@ public class TenantResource extends AuthorizableApplicationResource {
                     + "user id of the requested resource (%s).", requestUser.getIdentifier(), identifier));
         }
 
-        authorizeAccess(RequestAction.WRITE);
-
         final User updatedUser = authorizationService.updateUser(requestUser);
+        if (updatedUser == null) {
+            throw new ResourceNotFoundException("No user found with identifier " + identifier);
+        }
+
         return generateOkResponse(updatedUser).build();
     }
 
@@ -260,6 +267,9 @@ public class TenantResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.DELETE);
 
         final User user = authorizationService.deleteUser(identifier);
+        if (user == null) {
+            throw new ResourceNotFoundException("No user found with identifier " + identifier);
+        }
         return generateOkResponse(user).build();
     }
 
@@ -296,6 +306,7 @@ public class TenantResource extends AuthorizableApplicationResource {
             ) final UserGroup requestUserGroup) {
 
         verifyAuthorizerSupportsConfigurableUserGroups();
+        authorizeAccess(RequestAction.WRITE);
 
         if (requestUserGroup == null) {
             throw new IllegalArgumentException("User group details must be specified when creating a new group.");
@@ -307,11 +318,9 @@ public class TenantResource extends AuthorizableApplicationResource {
             throw new IllegalArgumentException("User group identity must be specified when creating a new group.");
         }
 
-        authorizeAccess(RequestAction.WRITE);
-
         UserGroup createdGroup = authorizationService.createUserGroup(requestUserGroup);
-        String locationUri = generateUserGroupUri(createdGroup);
 
+        String locationUri = generateUserGroupUri(createdGroup);
         return generateCreatedResponse(URI.create(locationUri), createdGroup).build();
     }
 
@@ -372,6 +381,10 @@ public class TenantResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.READ);
 
         final UserGroup userGroup = authorizationService.getUserGroup(identifier);
+        if (userGroup == null) {
+            throw new ResourceNotFoundException("No group found with identifier " + identifier);
+        }
+
         return generateOkResponse(userGroup).build();
     }
 
@@ -418,6 +431,10 @@ public class TenantResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.WRITE);
 
         UserGroup updatedUserGroup = authorizationService.updateUserGroup(requestUserGroup);
+        if (updatedUserGroup == null) {
+            throw new ResourceNotFoundException("No group found with identifier " + identifier);
+        }
+
         return generateOkResponse(updatedUserGroup).build();
     }
 
@@ -452,6 +469,10 @@ public class TenantResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.DELETE);
 
         final UserGroup userGroup = authorizationService.deleteUserGroup(identifier);
+        if (userGroup == null) {
+            throw new ResourceNotFoundException("No group found with identifier " + identifier);
+        }
+
         return generateOkResponse(userGroup).build();
     }
 

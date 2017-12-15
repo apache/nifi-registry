@@ -214,6 +214,9 @@ public class AuthorizationService {
         try {
             final org.apache.nifi.registry.security.authorization.User updatedUser =
                     ((ConfigurableUserGroupProvider) userGroupProvider).updateUser(userFromDTO(user));
+            if (updatedUser == null) {
+                return null;
+            }
             return userToDTO(updatedUser);
         } finally {
             this.writeLock.unlock();
@@ -225,7 +228,9 @@ public class AuthorizationService {
         this.writeLock.lock();
         try {
             User deletedUserDTO = getUser(identifier);
-            ((ConfigurableUserGroupProvider) userGroupProvider).deleteUser(identifier);
+            if (deletedUserDTO != null) {
+                ((ConfigurableUserGroupProvider) userGroupProvider).deleteUser(identifier);
+            }
             return deletedUserDTO;
         } finally {
             this.writeLock.unlock();
@@ -271,6 +276,9 @@ public class AuthorizationService {
         try {
             final org.apache.nifi.registry.security.authorization.Group updatedGroup =
                     ((ConfigurableUserGroupProvider) userGroupProvider).updateGroup(userGroupFromDTO(userGroup));
+            if (updatedGroup == null) {
+                return null;
+            }
             return userGroupToDTO(updatedGroup);
         } finally {
             writeLock.unlock();
@@ -282,7 +290,9 @@ public class AuthorizationService {
         writeLock.lock();
         try {
             final UserGroup userGroupDTO = getUserGroup(identifier);
-            ((ConfigurableUserGroupProvider) userGroupProvider).deleteGroup(identifier);
+            if (userGroupDTO != null) {
+                ((ConfigurableUserGroupProvider) userGroupProvider).deleteGroup(identifier);
+            }
             return userGroupDTO;
         } finally {
             writeLock.unlock();
@@ -371,11 +381,17 @@ public class AuthorizationService {
             // Don't allow changing action or resource of existing policy (should only be adding/removing users/groups)
             org.apache.nifi.registry.security.authorization.AccessPolicy currentAccessPolicy =
                     accessPolicyProvider.getAccessPolicy(accessPolicy.getIdentifier());
+            if (currentAccessPolicy == null) {
+                return null;
+            }
             accessPolicy.setResource(currentAccessPolicy.getResource());
             accessPolicy.setAction(currentAccessPolicy.getAction().toString());
 
             org.apache.nifi.registry.security.authorization.AccessPolicy updatedAccessPolicy =
                     ((ConfigurableAccessPolicyProvider) accessPolicyProvider).updateAccessPolicy(accessPolicyFromDTO(accessPolicy));
+            if (updatedAccessPolicy == null) {
+                return null;
+            }
             return accessPolicyToDTO(updatedAccessPolicy);
         } finally {
             writeLock.unlock();
@@ -387,7 +403,9 @@ public class AuthorizationService {
         writeLock.lock();
         try {
             AccessPolicy deletedAccessPolicyDTO = getAccessPolicy(identifier);
-            ((ConfigurableAccessPolicyProvider) accessPolicyProvider).deleteAccessPolicy(identifier);
+            if (deletedAccessPolicyDTO != null) {
+                ((ConfigurableAccessPolicyProvider) accessPolicyProvider).deleteAccessPolicy(identifier);
+            }
             return deletedAccessPolicyDTO;
         } finally {
             writeLock.unlock();
