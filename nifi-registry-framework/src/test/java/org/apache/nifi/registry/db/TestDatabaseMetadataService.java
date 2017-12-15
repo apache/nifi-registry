@@ -150,6 +150,8 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final List<BucketItemEntity> items = metadataService.getBucketItems(bucket.getId());
         assertNotNull(items);
         assertEquals(2, items.size());
+
+        items.stream().forEach(i -> assertNotNull(i.getBucketName()));
     }
 
     @Test
@@ -157,6 +159,8 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final List<BucketItemEntity> items = metadataService.getBucketItems(new HashSet<>(Arrays.asList("1", "2")));
         assertNotNull(items);
         assertEquals(3, items.size());
+
+        items.stream().forEach(i -> assertNotNull(i.getBucketName()));
     }
 
     @Test
@@ -173,6 +177,8 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
         final FlowEntity flowEntity = (FlowEntity) item1;
         assertEquals(3, flowEntity.getSnapshotCount());
+
+        items.stream().forEach(i -> assertNotNull(i.getBucketName()));
     }
 
     @Test
@@ -189,6 +195,8 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
         final FlowEntity flowEntity = (FlowEntity) item1;
         assertEquals(3, flowEntity.getSnapshotCount());
+
+        items.stream().forEach(i -> assertNotNull(i.getBucketName()));
     }
 
     //----------------- Flows ---------------------------------
@@ -255,8 +263,18 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     public void testGetFlowsByName() {
         final List<FlowEntity> flows = metadataService.getFlowsByName("Flow 1");
         assertNotNull(flows);
+        assertEquals(2, flows.size());
+        assertEquals("Flow 1", flows.get(0).getName());
+        assertEquals("Flow 1", flows.get(1).getName());
+    }
+
+    @Test
+    public void testGetFlowsByNameByBucket() {
+        final List<FlowEntity> flows = metadataService.getFlowsByName("2","Flow 1");
+        assertNotNull(flows);
         assertEquals(1, flows.size());
         assertEquals("Flow 1", flows.get(0).getName());
+        assertEquals("2", flows.get(0).getBucketId());
     }
 
     @Test

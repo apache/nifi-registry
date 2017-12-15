@@ -37,17 +37,17 @@ insert into bucket (id, name, description, created)
 -- test data for flows
 
 insert into bucket_item (id, name, description, created, modified, item_type, bucket_id)
-  values ('1', 'Flow 1', 'This is flow 1', parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'FLOW', '1');
+  values ('1', 'Flow 1', 'This is flow 1 bucket 1', parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'FLOW', '1');
 
 insert into flow (id) values ('1');
 
 insert into bucket_item (id, name, description, created, modified, item_type, bucket_id)
-  values ('2', 'Flow 2', 'This is flow 2', parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'FLOW', '1');
+  values ('2', 'Flow 2', 'This is flow 2 bucket 1', parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'FLOW', '1');
 
 insert into flow (id) values ('2');
 
 insert into bucket_item (id, name, description, created, modified, item_type, bucket_id)
-  values ('3', 'Flow 3', 'This is flow 3', parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'FLOW', '2');
+  values ('3', 'Flow 1', 'This is flow 1 bucket 2', parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), parsedatetime('2017-09-11 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'), 'FLOW', '2');
 
 insert into flow (id) values ('3');
 
