@@ -50,7 +50,7 @@ public enum RequestAction {
                 stringJoiner.add(ra.toString());
             }
             String allowableValues = stringJoiner.toString();
-            throw new IllegalArgumentException("Action must be one of [" + allowableValues + "]");
+            throw new IllegalArgumentException("Action '" + action + "' is invalid. Must be one of [" + allowableValues + "]");
         }
     }
 }
