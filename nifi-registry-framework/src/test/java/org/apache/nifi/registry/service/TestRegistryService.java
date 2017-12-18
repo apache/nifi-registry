@@ -318,7 +318,7 @@ public class TestRegistryService {
         flowWithSameName.setCreated(new Date());
         flowWithSameName.setModified(new Date());
 
-        when(metadataService.getFlowsByName(flowWithSameName.getName())).thenReturn(Collections.singletonList(flowWithSameName));
+        when(metadataService.getFlowsByName(existingBucket.getId(), flowWithSameName.getName())).thenReturn(Collections.singletonList(flowWithSameName));
 
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setName(flowWithSameName.getName());
@@ -478,7 +478,7 @@ public class TestRegistryService {
         otherFlow.setModified(new Date());
         otherFlow.setBucketId(existingBucket.getId());
 
-        when(metadataService.getFlowsByName(otherFlow.getName())).thenReturn(Collections.singletonList(otherFlow));
+        when(metadataService.getFlowsByName(existingBucket.getId(), otherFlow.getName())).thenReturn(Collections.singletonList(otherFlow));
 
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setIdentifier(flowToUpdate.getId());

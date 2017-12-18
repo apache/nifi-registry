@@ -78,6 +78,8 @@ public class DataModelMapper {
 
         if (bucketEntity != null) {
             versionedFlow.setBucketName(bucketEntity.getName());
+        } else {
+            versionedFlow.setBucketName(flowEntity.getBucketName());
         }
 
         return versionedFlow;

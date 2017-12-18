@@ -36,6 +36,8 @@ public class BucketItemEntity {
 
     private String bucketId;
 
+    private String bucketName;
+
 
     public String getId() {
         return id;
@@ -91,6 +93,14 @@ public class BucketItemEntity {
 
     public void setBucketId(String bucketId) {
         this.bucketId = bucketId;
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
     }
 
     @Override

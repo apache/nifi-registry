@@ -51,6 +51,7 @@ public class BucketItemEntityRowMapper implements RowMapper<BucketItemEntity> {
         item.setCreated(rs.getTimestamp("CREATED"));
         item.setModified(rs.getTimestamp("MODIFIED"));
         item.setBucketId(rs.getString("BUCKET_ID"));
+        item.setBucketName(rs.getString("BUCKET_NAME"));
         item.setType(type);
         return item;
     }

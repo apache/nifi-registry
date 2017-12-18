@@ -138,6 +138,15 @@ public interface MetadataService {
     List<FlowEntity> getFlowsByName(String name);
 
     /**
+     * Retrieves the versioned flows with the given name in the given bucket. The name comparison must be case-insensitive.
+     *
+     * @param  bucketIdentifier the identifier of the bucket
+     * @param name the name of the flow to retrieve
+     * @return the versioned flows with the given name in the given bucket, or empty list if no flows with the given name exists
+     */
+    List<FlowEntity> getFlowsByName(String bucketIdentifier, String name);
+
+    /**
      * Retrieves the versioned flows for the given bucket.
      *
      * @param bucketIdentifier the bucket id to retrieve flows for

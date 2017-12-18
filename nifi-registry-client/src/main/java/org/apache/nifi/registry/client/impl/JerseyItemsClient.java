@@ -21,7 +21,6 @@ import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.client.ItemsClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.params.SortParameter;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
@@ -46,52 +45,28 @@ public class JerseyItemsClient extends AbstractJerseyClient implements ItemsClie
         this.itemsTarget = baseTarget.path("/items");
     }
 
+
+
     @Override
     public List<BucketItem> getAll() throws NiFiRegistryException, IOException {
-        return getAll(Collections.emptyList());
-    }
-
-    @Override
-    public List<BucketItem> getAll(final List<SortParameter> sorts) throws NiFiRegistryException, IOException {
-        if (sorts == null) {
-            throw new IllegalArgumentException("Sort Parameters cannot be null");
-        }
-
         return executeAction("", () -> {
             WebTarget target = itemsTarget;
-            for (final SortParameter sortParam : sorts) {
-                target = target.queryParam("sort", sortParam.toString());
-            }
-
             final BucketItem[] bucketItems = getRequestBuilder(target).get(BucketItem[].class);
             return bucketItems == null ? Collections.emptyList() : Arrays.asList(bucketItems);
         });
     }
 
     @Override
-    public List<BucketItem> getByBucket(final String bucketId) throws NiFiRegistryException, IOException {
-        return getByBucket(bucketId, Collections.emptyList());
-    }
-
-    @Override
-    public List<BucketItem> getByBucket(final String bucketId, final List<SortParameter> sorts)
+    public List<BucketItem> getByBucket(final String bucketId)
             throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
-        }
-
-        if (sorts == null) {
-            throw new IllegalArgumentException("Sort Parameters cannot be null");
         }
 
         return executeAction("", () -> {
             WebTarget target = itemsTarget
                     .path("/{bucketId}")
                     .resolveTemplate("bucketId", bucketId);
-
-            for (final SortParameter sortParam : sorts) {
-                target = target.queryParam("sort", sortParam.toString());
-            }
 
             final BucketItem[] bucketItems = getRequestBuilder(target).get(BucketItem[].class);
             return bucketItems == null ? Collections.emptyList() : Arrays.asList(bucketItems);
