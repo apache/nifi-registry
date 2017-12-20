@@ -41,7 +41,7 @@ public class VersionedFlow extends BucketItem {
     private long versionCount;
 
     public VersionedFlow() {
-        super(BucketItemType.FLOW);
+        super(BucketItemType.Flow);
     }
 
     @ApiModelProperty(value = "The number of versions of this flow.", readOnly = true)

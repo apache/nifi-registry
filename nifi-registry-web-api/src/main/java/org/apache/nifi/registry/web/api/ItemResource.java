@@ -19,6 +19,8 @@ package org.apache.nifi.registry.web.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -42,6 +44,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -81,11 +84,21 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Get items across all buckets",
-            notes = "The returned items will include only items from buckets for which the is authorized.",
+            notes = "The returned items will include only items from buckets for which the user is authorized. " +
+                    "If the user is not authorized to any buckets, an empty list will be returned.",
             response = BucketItem.class,
             responseContainer = "List"
     )
+    @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getItems() {
+
+        // Note: We don't explicitly check for access to (READ, /buckets) or
+        // (READ, /items ) because a user might have access to individual buckets
+        // without top-level access. For example, a user that has
+        // (READ, /buckets/bucket-id-1) but not access to /buckets should not
+        // get a 403 error returned from this endpoint. This has the side effect
+        // that a user with no access to any buckets gets an empty array returned
+        // from this endpoint instead of 403 as one might expect.
 
         final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
@@ -93,7 +106,10 @@ public class ItemResource extends AuthorizableApplicationResource {
             return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
         }
 
-        final List<BucketItem> items = registryService.getBucketItems(authorizedBucketIds);
+        List<BucketItem> items = registryService.getBucketItems(authorizedBucketIds);
+        if (items == null) {
+            items = Collections.emptyList();
+        }
         permissionsService.populateItemPermissions(items);
         linkService.populateItemLinks(items);
 
@@ -110,6 +126,11 @@ public class ItemResource extends AuthorizableApplicationResource {
             responseContainer = "List",
             nickname = "getItemsInBucket"
     )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
     public Response getItems(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")

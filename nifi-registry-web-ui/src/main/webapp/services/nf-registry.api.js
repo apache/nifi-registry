@@ -613,21 +613,26 @@ NfRegistryApi.prototype = {
      */
     postToLogin: function (username, password) {
         var self = this;
-        return this.http.post('/nifi-registry-api/access/token/login', {
-            'username': username,
-            'password': password
-        }, headers)
-            .map(function (response) {
-                return response;
-            })
-            .catch(function (error) {
-                self.dialogService.openConfirm({
-                    title: 'Error',
-                    message: 'Please contact your System Administrator.',
-                    acceptButton: 'Ok',
-                    acceptButtonColor: 'fds-warn'
-                });
-                return rxjs.Observable.of(error);
+
+        var encodedCredentials = btoa(username + ":" + password);
+        var headers = new ngCommonHttp.HttpHeaders({
+            'Authorization': 'Basic ' + encodedCredentials
+        });
+
+        var options = {
+            headers: headers,
+            withCredentials: true,
+            responseType: 'text'
+        };
+        return this.http.post('/nifi-registry-api/access/token/login', null, options)
+            .map(function (jwt) {
+                // get the payload and store the token with the appropriate expiration
+                var token = self.nfStorage.getJwtPayload(jwt);
+                if (token) {
+                    var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
+                    self.nfStorage.setItem('jwt', jwt, expiration);
+                }
+                return jwt;
             });
     },
 
