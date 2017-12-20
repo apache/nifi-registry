@@ -22,14 +22,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.exception.AdministrationException;
 import org.apache.nifi.registry.authorization.CurrentUser;
+import org.apache.nifi.registry.exception.AdministrationException;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
+import org.apache.nifi.registry.security.authentication.BasicAuthIdentityProvider;
 import org.apache.nifi.registry.security.authentication.IdentityProvider;
 import org.apache.nifi.registry.security.authentication.IdentityProviderUsage;
-import org.apache.nifi.registry.security.authentication.UsernamePasswordAuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.exception.IdentityAccessException;
 import org.apache.nifi.registry.security.authentication.exception.InvalidCredentialsException;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
@@ -47,7 +47,6 @@ import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -196,12 +195,14 @@ public class AccessResource extends ApplicationResource {
      * @return A JWT (string)
      */
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token/login")
     @ApiOperation(
             value = "Creates a token for accessing the REST API via username/password",
-            notes = "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
+            notes = "The user credentials must be passed in standard HTTP Basic Auth format. " +
+                    "That is: 'Authorization: Basic <credentials>', where <credentials> is the base64 encoded value of '<username>:<password>'. " +
+                    "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
                     "the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header " +
                     "in the format 'Authorization: Bearer <token>'.",
             response = String.class
@@ -211,34 +212,38 @@ public class AccessResource extends ApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry may not be configured to support login with username/password."),
             @ApiResponse(code = 500, message = HttpStatusMessages.MESSAGE_500) })
-    public Response createAccessTokenUsingFormLogin(
-            @Context HttpServletRequest httpServletRequest,
-            @FormParam("username") String username,
-            @FormParam("password") String password) {
+    public Response createAccessTokenUsingFormLogin(@Context HttpServletRequest httpServletRequest) {
 
         // only support access tokens when communicating over HTTPS
         if (!httpServletRequest.isSecure()) {
             throw new IllegalStateException("Access tokens are only issued over HTTPS");
         }
 
-        // if not configured with custom identity provider, or if provider doesn't support username/password authentication, don't consider credentials
-        if (identityProvider == null || !identityProvider.supports(UsernamePasswordAuthenticationRequest.class)) {
-            throw new IllegalStateException("Username/Password login not supported by this NiFi");
+        // if not configured with custom identity provider, or if provider doesn't support HTTP Basic Auth, don't consider credentials
+        if (identityProvider == null) {
+            logger.debug("An Identity Provider must be configured to use this endpoint. Please consult the administration guide.");
+            throw new IllegalStateException("Username/Password login not supported by this NiFi. Contact System Administrator.");
         }
-
-        // ensure we have login credentials
-        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
-            throw new IllegalArgumentException("The username and password must be specified");
+        if (!(identityProvider instanceof BasicAuthIdentityProvider)) {
+            logger.debug("An Identity Provider is configured, but it does not support HTTP Basic Auth authentication. " +
+                    "The configured Identity Provider must extend {}", BasicAuthIdentityProvider.class);
+            throw new IllegalStateException("Username/Password login not supported by this NiFi. Contact System Administrator.");
         }
 
         // generate JWT for response
-        AuthenticationRequest authenticationRequest = new UsernamePasswordAuthenticationRequest(username, password);
+        AuthenticationRequest authenticationRequest = identityProvider.extractCredentials(httpServletRequest);
+
+        if (authenticationRequest == null) {
+            throw new UnauthorizedException("The client credentials are missing from the request.")
+                    .withAuthenticateChallenge(IdentityProviderUsage.AuthType.OTHER);
+        }
+
         final String token;
         try {
              token = createAccessToken(identityProvider, authenticationRequest);
         } catch (final InvalidCredentialsException ice){
             throw new UnauthorizedException("The supplied client credentials are not valid.", ice)
-                    .withAuthenticateChallenge("form-login");
+                    .withAuthenticateChallenge(IdentityProviderUsage.AuthType.OTHER);
         }
 
         // form the response

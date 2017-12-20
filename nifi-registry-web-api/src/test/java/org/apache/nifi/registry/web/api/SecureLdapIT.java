@@ -18,13 +18,13 @@ package org.apache.nifi.registry.web.api;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.SecureLdapTestApiApplication;
-import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.authorization.AccessPolicy;
 import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.authorization.Tenant;
+import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
@@ -104,11 +104,12 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     @Before
     public void setup() {
-        final Form form = encodeCredentialsForURLFormParams("nifiadmin", "password");
+        final String basicAuthCredentials = encodeCredentialsForBasicAuth("nifiadmin", "password");
         final String token = client
-                .target(createURL(tokenLoginPath))
+                .target(createURL(tokenIdentityProviderPath))
                 .request()
-                .post(Entity.form(form), String.class);
+                .header("Authorization", "Basic " + basicAuthCredentials)
+                .post(null, String.class);
         adminAuthToken = token;
 
         beforeTestAccessPoliciesSnapshot = createAccessPoliciesSnapshot();
@@ -137,11 +138,12 @@ public class SecureLdapIT extends IntegrationTestBase {
                 "}";
 
         // When: the /access/token/login endpoint is queried
-        final Form form = encodeCredentialsForURLFormParams("nobel", "password");
+        final String basicAuthCredentials = encodeCredentialsForBasicAuth("nobel", "password");
         final Response tokenResponse = client
-                .target(createURL(tokenLoginPath))
+                .target(createURL(tokenIdentityProviderPath))
                 .request()
-                .post(Entity.form(form), Response.class);
+                .header("Authorization", "Basic " + basicAuthCredentials)
+                .post(null, Response.class);
 
         // Then: the server returns 200 OK with an access token
         assertEquals(201, tokenResponse.getStatus());
@@ -371,11 +373,12 @@ public class SecureLdapIT extends IntegrationTestBase {
         String nobelId = getTenantIdentifierByIdentity("nobel");
         String chemistsId = getTenantIdentifierByIdentity("chemists"); // a group containing user "nobel"
 
-        final Form form = encodeCredentialsForURLFormParams("nobel", "password");
+        final String basicAuthCredentials = encodeCredentialsForBasicAuth("nobel", "password");
         final String nobelAuthToken = client
-                .target(createURL(tokenLoginPath))
+                .target(createURL(tokenIdentityProviderPath))
                 .request()
-                .post(Entity.form(form), String.class);
+                .header("Authorization", "Basic " + basicAuthCredentials)
+                .post(null, String.class);
 
         // When: user nobel re-checks top-level permissions
         final CurrentUser currentUser = client

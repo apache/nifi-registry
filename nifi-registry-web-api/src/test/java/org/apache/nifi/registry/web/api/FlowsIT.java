@@ -75,7 +75,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"bucketIdentifier\":\"1\"," +
                 "\"createdTimestamp\":1505091360000," +
                 "\"modifiedTimestamp\":1505091360000," +
-                "\"type\":\"FLOW\"," +
+                "\"type\":\"Flow\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1/flows/1\"}}," +
                 "{\"identifier\":\"2\",\"name\":\"Flow 2\"," +
@@ -83,7 +83,7 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"bucketIdentifier\":\"1\"," +
                 "\"createdTimestamp\":1505091360000," +
                 "\"modifiedTimestamp\":1505091360000," +
-                "\"type\":\"FLOW\"," +
+                "\"type\":\"Flow\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"versionCount\":0," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1/flows/2\"}}" +
@@ -129,7 +129,7 @@ public class FlowsIT extends UnsecuredITBase {
         assertNotNull(createdFlow.getIdentifier());
         assertNotNull(createdFlow.getBucketName());
         assertEquals(0, createdFlow.getVersionCount());
-        assertEquals(createdFlow.getType(), BucketItemType.FLOW);
+        assertEquals(createdFlow.getType(), BucketItemType.Flow);
         assertTrue(createdFlow.getCreatedTimestamp() - testStartTime > 0L); // both server and client in same JVM, so there shouldn't be skew
         assertEquals(createdFlow.getCreatedTimestamp(), createdFlow.getModifiedTimestamp());
         assertNotNull(createdFlow.getLink());

@@ -118,10 +118,7 @@ public class BucketResource extends AuthorizableApplicationResource {
             response = Bucket.class,
             responseContainer = "List"
     )
-    @ApiResponses({
-            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
-            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
-            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
+    @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getBuckets() {
 
         // Note: We don't explicitly check for access to (READ, /buckets) because
