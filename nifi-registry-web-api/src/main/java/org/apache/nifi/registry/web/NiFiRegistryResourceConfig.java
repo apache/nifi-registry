@@ -16,25 +16,20 @@
  */
 package org.apache.nifi.registry.web;
 
+import org.apache.nifi.registry.web.api.AccessPolicyResource;
 import org.apache.nifi.registry.web.api.AccessResource;
 import org.apache.nifi.registry.web.api.BucketFlowResource;
 import org.apache.nifi.registry.web.api.BucketResource;
 import org.apache.nifi.registry.web.api.FlowResource;
 import org.apache.nifi.registry.web.api.ItemResource;
-import org.apache.nifi.registry.web.api.AccessPolicyResource;
 import org.apache.nifi.registry.web.api.TenantResource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.filter.HiddenHttpMethodFilter;
 
-import javax.servlet.Filter;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 
@@ -74,11 +69,4 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
     }
 
-    // Disable default SpringMVC filter beans that are not compatible with Jersey
-    @Bean
-    public FilterRegistrationBean registration(@Autowired HiddenHttpMethodFilter filter) {
-        FilterRegistrationBean registration = new FilterRegistrationBean((Filter) filter);
-        registration.setEnabled(false);
-        return registration;
-    }
 }

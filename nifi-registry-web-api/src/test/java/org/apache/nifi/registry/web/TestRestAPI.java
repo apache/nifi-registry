@@ -37,7 +37,7 @@ public class TestRestAPI {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(TestRestAPI.class);
 
-    public static final String REGISTRY_API_URL = "http://localhost:8080/nifi-registry-api";
+    public static final String REGISTRY_API_URL = "http://localhost:18080/nifi-registry-api";
     public static final String REGISTRY_API_BUCKETS_URL = REGISTRY_API_URL + "/buckets";
     public static final String REGISTRY_API_FLOWS_URL = REGISTRY_API_URL + "/flows";
 

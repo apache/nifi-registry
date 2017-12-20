@@ -673,17 +673,14 @@ NfRegistryApi.prototype = {
      */
     postToLogin: function (username, password) {
         var self = this;
+
+        var encodedCredentials = btoa(username + ":" + password);
         var headers = new ngCommonHttp.HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Authorization': 'Basic ' + encodedCredentials
         });
-        var params = new ngCommonHttp.HttpParams()
-            .set('username', username)
-            .set('password', password)
-            .set('grant_type', 'password');
 
         var options = {
             headers: headers,
-            params: params,
             withCredentials: true,
             responseType: 'text'
         };

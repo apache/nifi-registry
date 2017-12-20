@@ -21,6 +21,7 @@ package org.apache.nifi.registry.bucket;
  */
 public enum BucketItemType {
 
-    FLOW;
-
+    // The case of these enum names matches what we want to return in
+    // the BucketItem.type field when serialized in an API response.
+    Flow;
 }
