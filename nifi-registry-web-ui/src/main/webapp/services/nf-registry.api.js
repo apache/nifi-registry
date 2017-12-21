@@ -66,7 +66,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -92,7 +92,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 }).afterClosed().subscribe(
@@ -127,7 +127,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -155,7 +155,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -178,7 +178,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -201,7 +201,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -225,7 +225,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 }).afterClosed().subscribe(
@@ -256,10 +256,31 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
+     * Updates a bucket.
+     *
+     * @param {string} identifier   The identifier of the bucket.
+     * @param {string} name         The name of the bucket.
+     * @returns {*}
+     */
+    updateBucket: function (identifier, name) {
+        var self = this;
+        return this.http.put('/nifi-registry-api/buckets/' + identifier, {
+            'identifier': identifier,
+            'name': name
+        }, headers)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
                 return rxjs.Observable.of(error);
             });
     },
@@ -279,11 +300,11 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.message);
+                return rxjs.Observable.throw(error.error);
             });
     },
 
@@ -331,7 +352,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -374,7 +395,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -397,7 +418,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -419,7 +440,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -442,7 +463,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -465,7 +486,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -476,9 +497,9 @@ NfRegistryApi.prototype = {
     /**
      * Creates a new group.
      *
-     * @param {string} identifier   The identifier of the user.
-     * @param {string} identity     The identity of the user.
-     * @param {array} users         The array of users to be added to the new group.
+     * @param {string}  identifier      The identifier of the user.
+     * @param {string}  identity        The identity of the user.
+     * @param {array}   users           The array of users to be added to the new group.
      * @returns {*}
      */
     createNewGroup: function (identifier, identity, users) {
@@ -494,7 +515,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -505,9 +526,9 @@ NfRegistryApi.prototype = {
     /**
      * Updates a group.
      *
-     * @param {string} identifier   The identifier of the group.
-     * @param {string} identity     The identity of the group.
-     * @param {array} users         The array of users in the new group.
+     * @param {string}  identifier   The identifier of the group.
+     * @param {string}  identity     The identity of the group.
+     * @param {array}   users         The array of users in the new group.
      * @returns {*}
      */
     updateUserGroup: function (identifier, identity, users) {
@@ -526,10 +547,46 @@ NfRegistryApi.prototype = {
     },
 
     /**
+     * Get metadata for all policies in the registry for which the client is authorized.
+     *
+     * @returns {*}
+     */
+    getPolicies: function () {
+        var self = this;
+        var url = '/nifi-registry-api/policies';
+        return this.http.get(url)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
+     * Get resource policies by resource identifier.
+     *
+     * @param {string} action       The name of the resource action (e.g. READ/WRITE/DELETE).
+     * @param {string} resource     The name of the resource (e.g. /buckets, /tenants, /policies, /proxy).
+     * @param {string} resourceId   The resource identifier.
+     * @returns {*}
+     */
+    getResourcePoliciesById: function (action, resource, resourceId) {
+        var self = this;
+        return this.http.get('/nifi-registry-api/policies/' + action + resource + '/' + resourceId)
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                return rxjs.Observable.of(error);
+            });
+    },
+
+    /**
      * Get policy action resource.
      *
      * @param {string} action   The name of the resource action (e.g. READ/WRITE/DELETE).
-     * @param {string} resource   The name of the resource action (e.g. READ/WRITE/DELETE).
+     * @param {string} resource     The name of the resource (e.g. /buckets, /tenants, /policies, /proxy).
      * @returns {*}
      */
     getPolicyActionResource: function (action, resource) {
@@ -537,6 +594,9 @@ NfRegistryApi.prototype = {
         return this.http.get('/nifi-registry-api/policies/' + action + resource)
             .map(function (response) {
                 return response;
+            })
+            .catch(function (error) {
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -545,7 +605,7 @@ NfRegistryApi.prototype = {
      *
      * @param {string} identifier   The identifier of the group.
      * @param {string} action       The name of the resource action (e.g. READ/WRITE/DELETE).
-     * @param {string} resource     The name of the resource.
+     * @param {string} resource     The name of the resource (e.g. /buckets, /tenants, /policies, /proxy).
      * @param {string} users        The users with resource privileges.
      * @param {string} userGroups   The user groups with resource privileges.
      * @returns {*}
@@ -565,7 +625,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -577,7 +637,7 @@ NfRegistryApi.prototype = {
      * Creates a policy action resource.
      *
      * @param {string} action       The name of the resource action (e.g. READ/WRITE/DELETE).
-     * @param {string} resource     The name of the resource.
+     * @param {string} resource     The name of the resource (e.g. /buckets, /tenants, /policies, /proxy).
      * @param {string} users        The users with resource privileges.
      * @param {string} userGroups   The user groups with resource privileges.
      * @returns {*}
@@ -596,7 +656,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 self.dialogService.openConfirm({
                     title: 'Error',
-                    message: error.message,
+                    message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
@@ -613,12 +673,29 @@ NfRegistryApi.prototype = {
      */
     postToLogin: function (username, password) {
         var self = this;
-        return this.http.post('/nifi-registry-api/access/token/login', {
-            'username': username,
-            'password': password
-        }, headers)
-            .map(function (response) {
-                return response;
+        var headers = new ngCommonHttp.HttpHeaders({
+            'Content-Type': 'application/x-www-form-urlencoded'
+        });
+        var params = new ngCommonHttp.HttpParams()
+            .set('username', username)
+            .set('password', password)
+            .set('grant_type', 'password');
+
+        var options = {
+            headers: headers,
+            params: params,
+            withCredentials: true,
+            responseType: 'text'
+        };
+        return this.http.post('/nifi-registry-api/access/token/login', null, options)
+            .map(function (jwt) {
+                // get the payload and store the token with the appropriate expiration
+                var token = self.nfStorage.getJwtPayload(jwt);
+                if (token) {
+                    var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
+                    self.nfStorage.setItem('jwt', jwt, expiration);
+                }
+                return jwt;
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
@@ -627,7 +704,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return rxjs.Observable.of('');
             });
     },
 

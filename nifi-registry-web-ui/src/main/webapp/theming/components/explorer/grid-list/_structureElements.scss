@@ -29,6 +29,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: end;
+    width: 105px;
 }
 
 #nifi-registry-explorer-grid-list-viewer-droplet-container-details {
@@ -38,6 +39,6 @@
 #nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log {
     position: relative;
     left: 0px;
-    max-height: 230px;
+    max-height: 500px;
     overflow: auto;
 }

@@ -55,7 +55,7 @@ NfRegistryUsersAdministration.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.inProgress = true;
-        this.route.params
+        this.$subscription = this.route.params
             .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'users';
                 return new rxjs.Observable.forkJoin(
@@ -81,20 +81,25 @@ NfRegistryUsersAdministration.prototype = {
         this.nfRegistryService.users = this.nfRegistryService.filteredUsers = [];
         this.nfRegistryService.groups = this.nfRegistryService.filteredUserGroups = [];
         this.nfRegistryService.allUsersAndGroupsSelected = false;
+        this.$subscription.unsubscribe();
     },
 
     /**
      * Opens the create new bucket dialog.
      */
     addUser: function () {
-        this.dialog.open(NfRegistryAddUser);
+        this.dialog.open(NfRegistryAddUser, {
+            disableClose: true
+        });
     },
 
     /**
      * Opens the create new group dialog.
      */
     createNewGroup: function () {
-        this.dialog.open(NfRegistryCreateNewGroup);
+        this.dialog.open(NfRegistryCreateNewGroup, {
+            disableClose: true
+        });
     }
 };
 

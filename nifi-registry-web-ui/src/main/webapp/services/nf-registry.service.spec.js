@@ -30,7 +30,7 @@ var NfRegistryUsersAdministration = require('nifi-registry/components/administra
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
 var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
+var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
@@ -85,7 +85,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(label).toBe('Name (a - z)');
     });
 
-    it('should get the `Oldest (update)` sort by label', function () {
+    it('should get the `Newest (update)` sort by label', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.dropletColumns[0].active = false;
         nfRegistryService.dropletColumns[1].active = true;
@@ -94,10 +94,10 @@ describe('NfRegistry Service isolated unit tests', function () {
         var label = nfRegistryService.getSortByLabel();
 
         //assertions
-        expect(label).toBe('Oldest (update)');
+        expect(label).toBe('Newest (update)');
     });
 
-    it('should get the `Newest (update)` sort by label', function () {
+    it('should get the `Oldest (update)` sort by label', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.dropletColumns[0].active = false;
         nfRegistryService.dropletColumns[1].active = true;
@@ -107,7 +107,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         var label = nfRegistryService.getSortByLabel();
 
         //assertions
-        expect(label).toBe('Newest (update)');
+        expect(label).toBe('Oldest (update)');
     });
 
     it('should generate the sort menu\'s `Name (a - z)` label', function () {
@@ -131,15 +131,15 @@ describe('NfRegistry Service isolated unit tests', function () {
         expect(label).toBe('Name (z - a)');
     });
 
-    it('should generate the sort menu\'s `Newest (update)` label', function () {
+    it('should generate the sort menu\'s `Oldest (update)` label', function () {
         // The function to test
         var label = nfRegistryService.generateSortMenuLabels({name: 'updated', label: 'Updated', sortable: true});
 
         //assertions
-        expect(label).toBe('Newest (update)');
+        expect(label).toBe('Oldest (update)');
     });
 
-    it('should generate the sort menu\'s `Oldest (update)` label', function () {
+    it('should generate the sort menu\'s `Newest (update)` label', function () {
         // The function to test
         var label = nfRegistryService.generateSortMenuLabels({
             name: 'updated',
@@ -149,7 +149,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         });
 
         //assertions
-        expect(label).toBe('Oldest (update)');
+        expect(label).toBe('Newest (update)');
     });
 
     it('should sort `droplets` by `column`', function () {
@@ -275,10 +275,12 @@ describe('NfRegistry Service isolated unit tests', function () {
         //Setup the nfRegistryService state for this test
         nfRegistryService.filteredBuckets = [{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
-            'name': 'Bucket #1'
+            'name': 'Bucket #1',
+            'permissions': []
         }, {
             'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
-            'name': 'Bucket #2'
+            'name': 'Bucket #2',
+            'permissions': []
         }];
 
         // The function to test
@@ -294,11 +296,13 @@ describe('NfRegistry Service isolated unit tests', function () {
         nfRegistryService.filteredBuckets = [{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Bucket #1',
-            'checked': true
+            'checked': true,
+            'permissions': []
         }, {
             'identifier': '5c04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Bucket #2',
-            'checked': true
+            'checked': true,
+            'permissions': []
         }];
 
         // The function to test
@@ -693,7 +697,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 NfRegistryUsersAdministration,
                 NfRegistryManageUser,
                 NfRegistryManageGroup,
-                NfRegistryBucketPermissions,
+                NfRegistryManageBucket,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
                 NfRegistryGridListViewer,
@@ -915,7 +919,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.buckets[0].identifier).toBe(1);
     });
 
-    it('should execute a `permissions` action on a bucket.', function () {
+    it('should execute a `manage` action on a bucket.', function () {
         // from the root injector
         var router = ngCoreTesting.TestBed.get(ngRouter.Router);
 
@@ -927,11 +931,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         var bucket = {identifier: '999'};
 
         // The function to test
-        nfRegistryService.executeBucketAction({name: 'permissions', type: 'sidenav'}, bucket);
+        nfRegistryService.executeBucketAction({name: 'manage', type: 'sidenav'}, bucket);
 
         //assertions
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:bucket/permissions/999)');
+        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:manage/bucket/999)');
     });
 
     it('should execute a `delete` action on a user.', function () {

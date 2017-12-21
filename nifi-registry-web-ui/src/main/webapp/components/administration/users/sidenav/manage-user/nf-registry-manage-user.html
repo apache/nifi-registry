@@ -17,137 +17,189 @@ limitations under the License.
 
 <div fxFill>
     <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-sm pad-bottom-md pad-left-md pad-right-md">
-        <span class="md-card-title">{{nfRegistryService.user.identity}}</span>
+        <span class="md-card-title ellipsis">{{nfRegistryService.user.identity}}</span>
         <button mat-icon-button (click)="closeSideNav()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-        <mat-input-container flex>
-            <input #usernameInput
-                   matInput
-                   [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
-                   placeholder="Identity/User Name"
-                   value="{{nfRegistryService.user.identity}}"
-                   [(ngModel)]="_username">
-        </mat-input-container>
-        <button [disabled]="nfRegistryService.user.identity === _username || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
-                (click)="updateUserName(usernameInput.value)"
-                class="input-button"
-                color="fds-regular"
-                mat-raised-button>
-            Save
-        </button>
-    </div>
-    <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayout="column" fxLayoutAlign="space-between start">
-        <div>
+    <div class="sidenav-content">
+        <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
+            <mat-input-container flex>
+                <input #usernameInput
+                       matInput
+                       [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
+                       placeholder="Identity/User Name"
+                       value="{{nfRegistryService.user.identity}}"
+                       [(ngModel)]="_username">
+            </mat-input-container>
+            <button [disabled]="nfRegistryService.user.identity === _username || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
+                    (click)="updateUserName(usernameInput.value)"
+                    class="input-button"
+                    color="fds-regular"
+                    mat-raised-button>
+                Save
+            </button>
+        </div>
+        <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayout="column" fxLayoutAlign="space-between start">
+            <div>
             <span class="header">Special Privileges
-                <i matTooltip="Allows a user to manage NiFi Registry users and groups, buckets, proxies, and policies."
-                          class="pad-left-sm fa fa-question-circle-o help-icon"></i>
+                <i matTooltip="Additional permissions that allow a user to manage or access certain aspects of the registry."
+                   class="pad-left-sm fa fa-question-circle-o help-icon"></i>
             </span>
-        </div>
-        <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [checked]="nfRegistryService.user.resourcePermissions.buckets.canRead && nfRegistryService.user.resourcePermissions.buckets.canWrite && nfRegistryService.user.resourcePermissions.buckets.canDelete" (change)="toggleUserManageBucketsPrivileges($event)">
-            <span class="description">Can manage buckets</span>
-        </mat-checkbox>
-        <div flex fxLayout="row" fxLayoutAlign="space-around center">
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canRead" (change)="toggleUserManageBucketsPrivileges($event, 'read')">
-                <span class="description">Read</span>
-            </mat-checkbox>
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canWrite" (change)="toggleUserManageBucketsPrivileges($event, 'write')">
-                <span class="description">Write</span>
-            </mat-checkbox>
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canDelete" (change)="toggleUserManageBucketsPrivileges($event, 'delete')">
-                <span class="description">Delete</span>
-            </mat-checkbox>
-        </div>
-        <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [checked]="nfRegistryService.user.resourcePermissions.tenants.canRead && nfRegistryService.user.resourcePermissions.tenants.canWrite && nfRegistryService.user.resourcePermissions.tenants.canDelete" (change)="toggleUserManageTenantsPrivileges($event)">
-            <span class="description">Can manage users</span>
-        </mat-checkbox>
-        <div flex fxLayout="row" fxLayoutAlign="space-around center">
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canRead" (change)="toggleUserManageTenantsPrivileges($event, 'read')">
-                <span class="description">Read</span>
-            </mat-checkbox>
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canWrite" (change)="toggleUserManageTenantsPrivileges($event, 'write')">
-                <span class="description">Write</span>
-            </mat-checkbox>
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canDelete" (change)="toggleUserManageTenantsPrivileges($event, 'delete')">
-                <span class="description">Delete</span>
-            </mat-checkbox>
-        </div>
-        <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [checked]="nfRegistryService.user.resourcePermissions.policies.canRead && nfRegistryService.user.resourcePermissions.policies.canWrite && nfRegistryService.user.resourcePermissions.policies.canDelete" (change)="toggleUserManagePoliciesPrivileges($event)">
-            <span class="description">Can manage policies</span>
-        </mat-checkbox>
-        <div flex fxLayout="row" fxLayoutAlign="space-around center">
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.policies.canRead" (change)="toggleUserManagePoliciesPrivileges($event, 'read')">
-                <span class="description">Read</span>
-            </mat-checkbox>
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.policies.canWrite" (change)="toggleUserManagePoliciesPrivileges($event, 'write')">
-                <span class="description">Write</span>
-            </mat-checkbox>
-            <mat-checkbox class="pad-left-md" [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [(checked)]="nfRegistryService.user.resourcePermissions.policies.canDelete" (change)="toggleUserManagePoliciesPrivileges($event, 'delete')">
-                <span class="description">Delete</span>
-            </mat-checkbox>
-        </div>
-        <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)" [checked]="nfRegistryService.user.resourcePermissions.proxy.canWrite" (change)="toggleUserManageProxyPrivileges($event)">
-            <span class="description">Can proxy user requests</span>
-        </mat-checkbox>
-    </div>
-    <mat-button-toggle-group name="nifi-registry-manage-user-perspective" class="pad-left-md tab-toggle-group">
-        <mat-button-toggle [checked]="manageUserPerspective === 'membership'"
-                           value="membership"
-                           class="uppercase"
-                           (change)="manageUserPerspective = 'membership'"
-                           i18n="Group membership tab, user management sidenav|View the groups to which this user belongs.@@nf-admin-user-management-sidenav-membership-tab-title">
-            Membership
-        </mat-button-toggle>
-    </mat-button-toggle-group>
-    <div *ngIf="manageUserPerspective === 'membership'">
-        <div *ngIf="nfRegistryService.user.userGroups" fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-            <div flex fxLayout="row" fxLayoutAlign="space-between center">
-                <span class="md-card-title">Membership ({{nfRegistryService.user.userGroups.length}})</span>
-                <button color="fds-secondary"
-                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite"
-                        mat-raised-button
-                        (click)="addUserToGroups()">
-                    Add To Group
-                </button>
             </div>
-            <div id="nifi-registry-user-membership-list-container-column-header" fxLayout="row"
-                 fxLayoutAlign="space-between center" class="td-data-table">
-                <div class="td-data-table-column" (click)="sortGroups(column)"
-                     *ngFor="let column of nfRegistryService.userGroupsColumns"
-                     fxFlex="{{column.width}}">
-                    {{column.label}}
-                    <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
-                       aria-hidden="true"></i>
-                    <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'" class="fa fa-caret-down"
-                       aria-hidden="true"></i>
+            <mat-checkbox
+                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [checked]="nfRegistryService.user.resourcePermissions.buckets.canRead && nfRegistryService.user.resourcePermissions.buckets.canWrite && nfRegistryService.user.resourcePermissions.buckets.canDelete"
+                    (change)="toggleUserManageBucketsPrivileges($event)">
+            <span class="description">Can manage buckets<i
+                    matTooltip="Allow a user to manage all buckets in the registry, as well as provide the user access to all buckets from a connected system (e.g., NiFi)."
+                    class="pad-left-sm fa fa-question-circle-o help-icon"></i></span>
+            </mat-checkbox>
+            <div flex fxLayout="row" fxLayoutAlign="space-around center">
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canRead"
+                              (change)="toggleUserManageBucketsPrivileges($event, 'read')">
+                    <span class="description">Read</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canWrite"
+                              (change)="toggleUserManageBucketsPrivileges($event, 'write')">
+                    <span class="description">Write</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canDelete"
+                              (change)="toggleUserManageBucketsPrivileges($event, 'delete')">
+                    <span class="description">Delete</span>
+                </mat-checkbox>
+            </div>
+            <mat-checkbox
+                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [checked]="nfRegistryService.user.resourcePermissions.tenants.canRead && nfRegistryService.user.resourcePermissions.tenants.canWrite && nfRegistryService.user.resourcePermissions.tenants.canDelete"
+                    (change)="toggleUserManageTenantsPrivileges($event)">
+            <span class="description">Can manage users<i
+                    matTooltip="Allow a user to manage all registry users and groups."
+                    class="pad-left-sm fa fa-question-circle-o help-icon"></i></span>
+            </mat-checkbox>
+            <div flex fxLayout="row" fxLayoutAlign="space-around center">
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canRead"
+                              (change)="toggleUserManageTenantsPrivileges($event, 'read')">
+                    <span class="description">Read</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canWrite"
+                              (change)="toggleUserManageTenantsPrivileges($event, 'write')">
+                    <span class="description">Write</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canDelete"
+                              (change)="toggleUserManageTenantsPrivileges($event, 'delete')">
+                    <span class="description">Delete</span>
+                </mat-checkbox>
+            </div>
+            <mat-checkbox
+                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [checked]="nfRegistryService.user.resourcePermissions.policies.canRead && nfRegistryService.user.resourcePermissions.policies.canWrite && nfRegistryService.user.resourcePermissions.policies.canDelete"
+                    (change)="toggleUserManagePoliciesPrivileges($event)">
+            <span class="description">Can manage policies<i
+                    matTooltip="Allow a user to grant all registry users read, write, and delete permission to a bucket."
+                    class="pad-left-sm fa fa-question-circle-o help-icon"></i></span>
+            </mat-checkbox>
+            <div flex fxLayout="row" fxLayoutAlign="space-around center">
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.policies.canRead"
+                              (change)="toggleUserManagePoliciesPrivileges($event, 'read')">
+                    <span class="description">Read</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.policies.canWrite"
+                              (change)="toggleUserManagePoliciesPrivileges($event, 'write')">
+                    <span class="description">Write</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [(checked)]="nfRegistryService.user.resourcePermissions.policies.canDelete"
+                              (change)="toggleUserManagePoliciesPrivileges($event, 'delete')">
+                    <span class="description">Delete</span>
+                </mat-checkbox>
+            </div>
+            <mat-checkbox
+                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [checked]="nfRegistryService.user.resourcePermissions.proxy.canWrite"
+                    (change)="toggleUserManageProxyPrivileges($event)">
+            <span class="description">Can proxy user requests<i
+                    matTooltip="Allow a connected system (e.g., NiFi) to process requests of authorized users of that system."
+                    class="pad-left-sm fa fa-question-circle-o help-icon"></i></span>
+            </mat-checkbox>
+        </div>
+        <mat-button-toggle-group name="nifi-registry-manage-user-perspective" class="pad-left-md tab-toggle-group">
+            <mat-button-toggle [checked]="manageUserPerspective === 'membership'"
+                               value="membership"
+                               class="uppercase"
+                               (change)="manageUserPerspective = 'membership'"
+                               i18n="Group membership tab, user management sidenav|View the groups to which this user belongs.@@nf-admin-user-management-sidenav-membership-tab-title">
+                Membership
+            </mat-button-toggle>
+        </mat-button-toggle-group>
+        <div *ngIf="manageUserPerspective === 'membership'">
+            <div *ngIf="nfRegistryService.user.userGroups" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+                <div flex fxLayout="row" fxLayoutAlign="space-between center">
+                    <span class="md-card-title">Membership ({{nfRegistryService.user.userGroups.length}})</span>
+                    <button color="fds-secondary"
+                            [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite"
+                            mat-raised-button
+                            (click)="addUserToGroups()">
+                        Add To Group
+                    </button>
                 </div>
-            </div>
-            <div id="nifi-registry-user-membership-list-container">
-                <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
-                     [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUserGroups"
-                     (click)="row.checked = !row.checked">
-                    <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                <div id="nifi-registry-user-membership-list-container-column-header" fxLayout="row"
+                     fxLayoutAlign="space-between center" class="td-data-table">
+                    <div class="td-data-table-column" (click)="sortGroups(column)"
+                         *ngFor="let column of nfRegistryService.userGroupsColumns"
                          fxFlex="{{column.width}}">
-                        <div matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
-                            <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ? column.format(row[column.name]) : row[column.name]}}
-                        </div>
+                        {{column.label}}
+                        <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
+                           aria-hidden="true"></i>
+                        <i *ngIf="column.active && column.sortable && column.sortOrder === 'DESC'"
+                           class="fa fa-caret-down"
+                           aria-hidden="true"></i>
                     </div>
-                    <div class="td-data-table-cell">
-                        <div>
-                            <button (click)="removeUserFromGroup(row);row.checked = !row.checked;"
-                                    matTooltip="'Remove user from group'" mat-icon-button color="accent"
-                                    *ngIf="nfRegistryService.currentUser.resourcePermissions.tenants.canWrite">
-                                <i class="fa fa-minus-circle" aria-hidden="true"></i>
-                            </button>
+                </div>
+                <div id="nifi-registry-user-membership-list-container">
+                    <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
+                         [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUserGroups"
+                         (click)="row.checked = !row.checked">
+                        <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                             fxFlex="{{column.width}}">
+                            <div class="ellipsis"
+                                 matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
+                                <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ?
+                                column.format(row[column.name]) : row[column.name]}}
+                            </div>
+                        </div>
+                        <div class="td-data-table-cell">
+                            <div>
+                                <button (click)="removeUserFromGroup(row);row.checked = !row.checked;"
+                                        [disabled]="!row.configurable"
+                                        matTooltip="'Remove user from group'" mat-icon-button color="accent">
+                                    <i class="fa fa-minus-circle" aria-hidden="true"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="mat-padding" *ngIf="nfRegistryService.user.userGroups.length === 0" layout="row"
-                 layout-align="center center">
-                <h3>This user does not belong to any groups yet.</h3>
+                <div class="mat-padding" *ngIf="nfRegistryService.user.userGroups.length === 0" layout="row"
+                     layout-align="center center">
+                    <h3>This user does not belong to any groups yet.</h3>
+                </div>
             </div>
         </div>
     </div>

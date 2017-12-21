@@ -54,7 +54,7 @@ NfRegistryGridListViewer.prototype = {
         this.nfRegistryService.droplet = {};
 
         // subscribe to the route params
-        self.route.params
+        this.$subscription = this.route.params
             .switchMap(function (params) {
                 return new rxjs.Observable.forkJoin(self.nfRegistryApi.getDroplets(),
                     self.nfRegistryApi.getBuckets());
@@ -77,6 +77,7 @@ NfRegistryGridListViewer.prototype = {
         this.nfRegistryService.explorerViewType = '';
         this.nfRegistryService.setBreadcrumbState('out');
         this.nfRegistryService.filteredDroplets = [];
+        this.$subscription.unsubscribe();
     }
 };
 

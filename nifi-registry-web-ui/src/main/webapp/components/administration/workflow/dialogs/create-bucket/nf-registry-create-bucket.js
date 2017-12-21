@@ -45,10 +45,14 @@ NfRegistryCreateBucket.prototype = {
     createBucket: function (newBucketInput) {
         var self = this;
         this.nfRegistryApi.createBucket(newBucketInput.value).subscribe(function (bucket) {
-            self.nfRegistryService.buckets.push(bucket);
-            self.nfRegistryService.filterBuckets();
-            self.nfRegistryService.allBucketsSelected = false;
-            if (self.keepDialogOpen !== true) {
+            if (!bucket.error) {
+                self.nfRegistryService.buckets.push(bucket);
+                self.nfRegistryService.filterBuckets();
+                self.nfRegistryService.allBucketsSelected = false;
+                if (self.keepDialogOpen !== true) {
+                    self.dialogRef.close();
+                }
+            } else {
                 self.dialogRef.close();
             }
         })

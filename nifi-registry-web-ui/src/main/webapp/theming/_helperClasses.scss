@@ -50,6 +50,14 @@
     color: $green3;
 }
 
+.nonconfigurable {
+    background: $grey9;
+}
+
+.selected-nonconfigurable {
+    background: repeating-linear-gradient(-45deg, $grey5, $grey5 10px, #fff 10px, #fff 20px) !important;
+}
+
 .nf-registry-button-container {
     position: absolute;
     bottom: 0px;

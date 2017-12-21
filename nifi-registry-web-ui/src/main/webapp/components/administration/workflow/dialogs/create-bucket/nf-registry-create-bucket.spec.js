@@ -17,7 +17,7 @@
 
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
+var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
 var rxjs = require('rxjs/Rx');
 
 describe('NfRegistryCreateBucket Component isolated unit tests', function () {

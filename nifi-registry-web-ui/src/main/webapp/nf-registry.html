@@ -75,11 +75,14 @@ limitations under the License.
                 <div id="current-user" matTooltip="{{nfRegistryService.currentUser.identity}}">{{nfRegistryService.currentUser.identity}}</div>
                 <a id="logout-link-container" *ngIf="nfRegistryService.currentUser.canLogout" class="link" (click)="logout()">logout</a>
             </div>
-            <button mat-ripple *ngIf="nfRegistryService.currentUser.resourcePermissions.anyTopLevelResource.canRead && nfRegistryService.perspective === 'explorer'" mat-icon-button
+            <div id="nifi-registry-documentation" class="pad-right-sm">
+                <a [matTooltip]="'Help'" href="{{nfRegistryService.documentation.link}}" target="_blank"><i class="fa fa-question-circle help-icon" aria-hidden="true"></i></a>
+            </div>
+            <button [matTooltip]="'Settings'" mat-ripple *ngIf="nfRegistryService.currentUser.resourcePermissions.anyTopLevelResource.canRead && nfRegistryService.perspective === 'explorer'" mat-icon-button
                     routerLink="/nifi-registry/administration/workflow">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
-            <button [matTooltip]="'Close administration.'" mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
+            <button [matTooltip]="'Close settings.'" mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
                     routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                 <mat-icon color="primary">close</mat-icon>
             </button>

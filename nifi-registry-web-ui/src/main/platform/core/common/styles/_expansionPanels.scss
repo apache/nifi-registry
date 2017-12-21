@@ -42,10 +42,6 @@ body[fds] td-expansion-panel .td-expansion-panel-header .td-expansion-panel-head
   font-weight: bold;
 }
 
-body[fds] td-expansion-panel {
-  box-shadow: none;
-}
-
 body[fds] td-expansion-panel .td-expansion-panel-header:hover:not(.mat-disabled) {
   background: $blue4;
 }

@@ -19,9 +19,15 @@ limitations under the License.
     <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
         <span class="md-card-title">Buckets ({{nfRegistryService.buckets.length}})</span>
         <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
-            <td-chips class="push-right-sm" [items]="nfRegistryService.autoCompleteBuckets" (add)="nfRegistryService.bucketsSearchAdd($event)"
+            <td-chips class="push-right-sm"
+                      [items]="nfRegistryService.autoCompleteBuckets"
+                      (add)="nfRegistryService.bucketsSearchAdd($event)"
                       (remove)="nfRegistryService.bucketsSearchRemove($event)"></td-chips>
-            <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="createBucket()">
+            <button class="push-top-sm push-right-sm"
+                    color="fds-secondary"
+                    mat-raised-button
+                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite"
+                    (click)="createBucket()">
                 New Bucket
             </button>
             <button class="push-top-sm" [disabled]="nfRegistryService.isMultiBucketActionsDisabled" color="fds-primary" mat-raised-button [matMenuTriggerFor]="bucketActionMenu">
@@ -30,6 +36,7 @@ limitations under the License.
         </div>
         <mat-menu class="fds-primary-dropdown-button-menu" #bucketActionMenu="matMenu" [overlapTrigger]="false">
             <button mat-menu-item
+                    [disabled]="nfRegistryService.disableMultiBucketDeleteAction"
                     (click)="nfRegistryService.deleteSelectedBuckets()">
                 <span>Delete</span>
             </button>
@@ -55,11 +62,12 @@ limitations under the License.
         </div>
         <div id="nifi-registry-workflow-administration-buckets-list-container">
             <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
-                 [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredBuckets"
+                 [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}"
+                 *ngFor="let row of nfRegistryService.filteredBuckets"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllBucketsSelectedState()">
                 <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.bucketColumns"
                      fxFlex="{{column.width}}">
-                    <div matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
+                    <div class="ellipsis" matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
                         {{column.format ? column.format(row[column.name]) : row[column.name]}}
                     </div>
                 </div>
@@ -69,7 +77,7 @@ limitations under the License.
                             <button (click)="nfRegistryService.executeBucketAction(action, row);row.checked = !row.checked;"
                                     *ngFor="let action of nfRegistryService.bucketActions"
                                     matTooltip="{{action.tooltip}}" mat-icon-button color="accent"
-                                    [disabled]="action.disabled ? '' : null">
+                                    [disabled]="action.disabled(row)">
                                 <i class="{{action.icon}}" aria-hidden="true"></i>
                             </button>
                             <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
@@ -85,7 +93,7 @@ limitations under the License.
                                 <button (click)="nfRegistryService.executeBucketAction(action, row);row.checked = !row.checked;"
                                         *ngFor="let action of nfRegistryService.bucketActions"
                                         matTooltip="{{action.tooltip}}" mat-menu-item
-                                        [disabled]="action.disabled ? '' : null">
+                                        [disabled]="action.disabled(row)">
                                     <i class="{{action.icon}}" aria-hidden="true"></i>
                                     <span>{{action.name}}</span>
                                 </button>
