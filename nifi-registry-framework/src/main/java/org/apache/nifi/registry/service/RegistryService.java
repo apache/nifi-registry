@@ -111,7 +111,7 @@ public class RegistryService {
         bucket.setIdentifier(UUID.randomUUID().toString());
         bucket.setCreatedTimestamp(System.currentTimeMillis());
 
-        validate(bucket, "Bucket is not valid");
+        validate(bucket, "Cannot create Bucket");
 
         writeLock.lock();
         try {
@@ -172,6 +172,10 @@ public class RegistryService {
 
         if (bucket.getIdentifier() == null) {
             throw new IllegalArgumentException("Bucket identifier cannot be null");
+        }
+
+        if (bucket.getName() != null && StringUtils.isBlank(bucket.getName())) {
+            throw new IllegalArgumentException("Bucket name cannot be blank");
         }
 
         writeLock.lock();
@@ -312,7 +316,7 @@ public class RegistryService {
         versionedFlow.setCreatedTimestamp(timestamp);
         versionedFlow.setModifiedTimestamp(timestamp);
 
-        validate(versionedFlow, "Versioned flow is not valid");
+        validate(versionedFlow, "Cannot create versioned flow");
 
         writeLock.lock();
         try {
@@ -403,6 +407,10 @@ public class RegistryService {
 
         if (StringUtils.isBlank(versionedFlow.getBucketIdentifier())) {
             throw new IllegalArgumentException("Versioned flow bucket identifier cannot be null or blank");
+        }
+
+        if (versionedFlow.getName() != null && StringUtils.isBlank(versionedFlow.getName())) {
+            throw new IllegalArgumentException("Versioned flow name cannot be blank");
         }
 
         writeLock.lock();
@@ -506,7 +514,7 @@ public class RegistryService {
         flowSnapshot.setFlow(null);
         flowSnapshot.setBucket(null);
 
-        validate(flowSnapshot, "Versioned flow snapshot is not valid");
+        validate(flowSnapshot, "Cannot create versioned flow snapshot");
 
         writeLock.lock();
         try {

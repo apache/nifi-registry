@@ -390,6 +390,14 @@ NfRegistryManageBucket.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
+            } else if (response.status === 400) {
+                self._bucketname = self.nfRegistryService.bucket.name;
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
             }
         });
     }
