@@ -129,7 +129,7 @@ public class IdentityAuthenticationProvider implements AuthenticationProvider {
             final Set<Group> userGroups = userAndGroups.getGroups();
 
             if (userGroups == null || userGroups.isEmpty()) {
-                return Collections.EMPTY_SET;
+                return Collections.emptySet();
             } else {
                 return userAndGroups.getGroups().stream().map(Group::getName).collect(Collectors.toSet());
             }

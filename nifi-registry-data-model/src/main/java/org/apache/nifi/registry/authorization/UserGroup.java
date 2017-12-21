@@ -59,4 +59,13 @@ public class UserGroup extends Tenant {
         }
     }
 
+    public void addUser(Tenant user) {
+        if (user != null) {
+            if (this.users == null) {
+                this.users = new HashSet<>();
+            }
+            this.users.add(user);
+        }
+    }
+
 }

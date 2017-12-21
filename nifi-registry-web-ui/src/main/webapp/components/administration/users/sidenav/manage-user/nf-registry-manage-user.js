@@ -499,27 +499,31 @@ NfRegistryManageUser.prototype = {
      */
     removeUserFromGroup: function (group) {
         var self = this;
-        var userGroups = this.nfRegistryService.user.userGroups.filter(function (userGroup) {
-            if (userGroup.identifier !== group.identifier) {
-                return userGroup;
-            }
-        });
-
-        this.nfRegistryApi.updateUserGroup(group.identifier, group.identity, userGroups).subscribe(function (response) {
-            self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
-                .subscribe(function (response) {
-                    self.nfRegistryService.user = response;
-                    self.filterGroups();
+        this.nfRegistryApi.getUserGroup(group.identifier).subscribe(function (response) {
+            if (!response.error) {
+                var fullGroup = response;
+                var users = fullGroup.users.filter(function (user) {
+                    if (self.nfRegistryService.user.identifier !== user.identifier) {
+                        return user;
+                    }
+                })
+                self.nfRegistryApi.updateUserGroup(fullGroup.identifier, fullGroup.identity, users).subscribe(function (response) {
+                    self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
+                        .subscribe(function (response) {
+                            self.nfRegistryService.user = response;
+                            self.filterGroups();
+                        });
+                    var snackBarRef = self.snackBarService.openCoaster({
+                        title: 'Success',
+                        message: 'This user has been removed from the ' + group.identity + ' group.',
+                        verticalPosition: 'bottom',
+                        horizontalPosition: 'right',
+                        icon: 'fa fa-check-circle-o',
+                        color: '#1EB475',
+                        duration: 3000
+                    });
                 });
-            var snackBarRef = self.snackBarService.openCoaster({
-                title: 'Success',
-                message: 'This user has been removed from the ' + group.identity + ' group.',
-                verticalPosition: 'bottom',
-                horizontalPosition: 'right',
-                icon: 'fa fa-check-circle-o',
-                color: '#1EB475',
-                duration: 3000
-            });
+            }
         });
     },
 

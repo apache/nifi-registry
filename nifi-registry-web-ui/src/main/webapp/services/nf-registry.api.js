@@ -746,6 +746,7 @@ NfRegistryApi.prototype = {
             .catch(function (error) {
                 // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
                 if (error.status === 401) {
+                    self.nfStorage.removeItem('jwt');
                     self.router.navigateByUrl('/nifi-registry/login');
                 }
                 return rxjs.Observable.of({

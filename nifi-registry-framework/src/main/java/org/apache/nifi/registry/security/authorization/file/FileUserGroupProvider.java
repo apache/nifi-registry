@@ -310,9 +310,6 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         final UserGroupHolder holder = userGroupHolder.get();
         final Tenants tenants = holder.getTenants();
 
-        // determine that all users in the group exist before doing anything, throw an exception if they don't
-        checkGroupUsers(group, tenants.getUsers().getUser());
-
         // create a new JAXB Group based on the incoming Group
         final org.apache.nifi.registry.security.authorization.file.tenants.generated.Group jaxbGroup =
                 new org.apache.nifi.registry.security.authorization.file.tenants.generated.Group();
@@ -593,27 +590,6 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         return jaxbUser;
     }
 
-    private Set<org.apache.nifi.registry.security.authorization.file.tenants.generated.User> checkGroupUsers(
-            final Group group,
-            final List<org.apache.nifi.registry.security.authorization.file.tenants.generated.User> users) {
-        final Set<org.apache.nifi.registry.security.authorization.file.tenants.generated.User> jaxbUsers = new HashSet<>();
-        for (String groupUser : group.getUsers()) {
-            boolean found = false;
-            for (org.apache.nifi.registry.security.authorization.file.tenants.generated.User jaxbUser : users) {
-                if (jaxbUser.getIdentifier().equals(groupUser)) {
-                    jaxbUsers.add(jaxbUser);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                throw new IllegalStateException("Unable to add group because user " + groupUser + " does not exist");
-            }
-        }
-        return jaxbUsers;
-    }
-
     /**
      * Loads the authorizations file and populates the AuthorizationsHolder, only called during start-up.
      *
@@ -632,13 +608,8 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
 
         final UserGroupHolder userGroupHolder = new UserGroupHolder(tenants);
         final boolean emptyTenants = userGroupHolder.getAllUsers().isEmpty() && userGroupHolder.getAllGroups().isEmpty();
-//        final boolean hasLegacyAuthorizedUsers = (legacyAuthorizedUsersFile != null && !StringUtils.isBlank(legacyAuthorizedUsersFile));
 
         if (emptyTenants) {
-//            if (hasLegacyAuthorizedUsers) {
-//                logger.info("Loading users from legacy model " + legacyAuthorizedUsersFile + " into new users file.");
-//                convertLegacyAuthorizedUsers(tenants);
-//            }
 
             populateInitialUsers(tenants);
 

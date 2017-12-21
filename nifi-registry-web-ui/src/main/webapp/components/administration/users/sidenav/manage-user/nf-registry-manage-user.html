@@ -188,7 +188,7 @@ limitations under the License.
                         <div class="td-data-table-cell">
                             <div>
                                 <button (click)="removeUserFromGroup(row);row.checked = !row.checked;"
-                                        [disabled]="!row.configurable"
+                                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || row.configurable === false"
                                         matTooltip="'Remove user from group'" mat-icon-button color="accent">
                                     <i class="fa fa-trash" aria-hidden="true"></i>
                                 </button>

@@ -182,7 +182,7 @@
     <!-- To enable the composite-configurable-user-group-provider remove 2 lines. This is 1 of 2.
     <userGroupProvider>
         <identifier>composite-configurable-user-group-provider</identifier>
-        <class>org.apache.nifi.authorization.CompositeConfigurableUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.CompositeConfigurableUserGroupProvider</class>
         <property name="Configurable User Group Provider">file-user-group-provider</property>
         <property name="User Group Provider 1"></property>
     </userGroupProvider>

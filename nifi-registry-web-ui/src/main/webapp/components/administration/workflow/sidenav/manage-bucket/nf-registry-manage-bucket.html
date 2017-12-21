@@ -83,7 +83,7 @@ limitations under the License.
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </button>
                         <button (click)="removePolicyFromBucket(row);row.checked = !row.checked;"
-                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canDelete"
+                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
                                 matTooltip="'Remove group policies from bucket'" mat-icon-button color="accent">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
@@ -107,7 +107,7 @@ limitations under the License.
                         </button>
                         <button (click)="removePolicyFromBucket(row);row.checked = !row.checked;"
                                 matTooltip="'Remove user policies from this bucket'" mat-icon-button color="accent"
-                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canDelete">
+                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
                     </div>
