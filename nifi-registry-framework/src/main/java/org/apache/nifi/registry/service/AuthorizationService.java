@@ -16,16 +16,16 @@
  */
 package org.apache.nifi.registry.service;
 
-import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.authorization.AccessPolicy;
 import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.authorization.Resource;
-import org.apache.nifi.registry.authorization.Tenant;
 import org.apache.nifi.registry.authorization.ResourcePermissions;
+import org.apache.nifi.registry.authorization.Tenant;
 import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
+import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
@@ -622,6 +622,7 @@ public class AuthorizationService {
             return null;
         }
         Tenant tenantDTO = new Tenant(user.getIdentifier(), user.getIdentity());
+        tenantDTO.setConfigurable(AuthorizerCapabilityDetection.isUserConfigurable(authorizer, user));
         return tenantDTO;
     }
 
@@ -630,6 +631,7 @@ public class AuthorizationService {
             return null;
         }
         Tenant tenantDTO = new Tenant(group.getIdentifier(), group.getName());
+        tenantDTO.setConfigurable(AuthorizerCapabilityDetection.isGroupConfigurable(authorizer, group));
         return tenantDTO;
     }
 

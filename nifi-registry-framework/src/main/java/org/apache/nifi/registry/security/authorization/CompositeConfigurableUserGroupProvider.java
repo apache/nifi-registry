@@ -181,17 +181,43 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
 
     @Override
     public UserAndGroups getUserAndGroups(String identity) throws AuthorizationAccessException {
-        UserAndGroups userAndGroups = configurableUserGroupProvider.getUserAndGroups(identity);
 
-        if (userAndGroups.getUser() == null) {
-            userAndGroups = super.getUserAndGroups(identity);
+        final CompositeUserAndGroups combinedResult;
+
+        // First, lookup user and groups by identity and combine data from all providers
+        UserAndGroups configurableProviderResult = configurableUserGroupProvider.getUserAndGroups(identity);
+        UserAndGroups compositeProvidersResult = super.getUserAndGroups(identity);
+
+        if (configurableProviderResult.getUser() != null && compositeProvidersResult.getUser() != null) {
+            throw new IllegalStateException("Multiple UserGroupProviders claim to provide user " + identity);
+
+        } else if (configurableProviderResult.getUser() != null) {
+            combinedResult = new CompositeUserAndGroups(configurableProviderResult.getUser(), configurableProviderResult.getGroups());
+            combinedResult.addAllGroups(compositeProvidersResult.getGroups());
+
+        } else if (compositeProvidersResult.getUser() != null) {
+            combinedResult = new CompositeUserAndGroups(compositeProvidersResult.getUser(), compositeProvidersResult.getGroups());
+            combinedResult.addAllGroups(configurableProviderResult.getGroups());
+
+        } else {
+            return UserAndGroups.EMPTY;
         }
 
-        return userAndGroups;
+        // Second, lookup groups containing the user identifier
+        // Don't have to check super.getGroups() because this step is done as part of super.getUserAndGroups(...)
+        String userIdentifier = combinedResult.getUser().getIdentifier();
+        for (final Group group : configurableUserGroupProvider.getGroups()) {
+            if (group.getUsers() != null && group.getUsers().contains(userIdentifier)) {
+                combinedResult.addGroup(group);
+            }
+        }
+
+        return combinedResult;
     }
 
     @Override
     public void preDestruction() throws SecurityProviderDestructionException {
         super.preDestruction();
     }
+
 }

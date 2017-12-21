@@ -104,7 +104,7 @@ limitations under the License.
                           [checked]="nfRegistryService.group.resourcePermissions.policies.canRead && nfRegistryService.group.resourcePermissions.policies.canWrite && nfRegistryService.group.resourcePermissions.policies.canDelete"
                           (change)="toggleGroupManagePoliciesPrivileges($event)">
             <span class="description">Can manage policies<i
-                    matTooltip="Additional permissions that allow a user to manage or access certain aspects of the registry."
+                    matTooltip="Allow a user to grant all registry users read, write, and delete permission to a bucket."
                     class="pad-left-sm fa fa-question-circle-o help-icon"></i></span>
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
@@ -182,7 +182,7 @@ limitations under the License.
                         <div class="td-data-table-cell">
                             <div>
                                 <button (click)="removeUserFromGroup(row);row.checked = !row.checked;"
-                                        [disabled]="!nfRegistryService.group.configurable"
+                                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || !nfRegistryService.group.configurable"
                                         matTooltip="'Remove user from group'" mat-icon-button color="accent">
                                     <i class="fa fa-trash" aria-hidden="true"></i>
                                 </button>

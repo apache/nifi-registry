@@ -35,6 +35,7 @@ var rxjs = require('rxjs/Observable');
  * @constructor
  */
 function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router, fdsDialogService, fdsSnackBarService) {
+    var self = this;
     this.registry = {
         name: "NiFi Registry"
     };
@@ -163,7 +164,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             icon: 'fa fa-trash',
             tooltip: 'Delete User',
             disabled: function(row) {
-                return (!row.configurable);
+                return (!self.currentUser.resourcePermissions.tenants.canWrite || !row.configurable);
             }
         }
     ];
@@ -181,7 +182,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             icon: 'fa fa-trash',
             tooltip: 'Delete User Group',
             disabled: function(row) {
-                return (!row.configurable);
+                return (!self.currentUser.resourcePermissions.tenants.canWrite || !row.configurable);
             }
         }
     ];
