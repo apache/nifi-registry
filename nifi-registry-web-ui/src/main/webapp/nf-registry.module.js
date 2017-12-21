@@ -18,7 +18,6 @@
 var ngCore = require('@angular/core');
 var ngMoment = require('angular2-moment');
 var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
@@ -65,7 +64,6 @@ NfRegistryModule.annotations = [
             NfRegistryRoutes
         ],
         declarations: [
-            FdsDemo,
             NfRegistry,
             NfRegistryExplorer,
             NfRegistryAdministration,
