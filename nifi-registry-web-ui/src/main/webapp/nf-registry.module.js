@@ -30,13 +30,15 @@ var NfRegistryAdministration = require('nifi-registry/components/administration/
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
+var NfRegistryEditBucketPolicy = require('nifi-registry/components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy.js');
+var NfRegistryAddPolicyToBucket = require('nifi-registry/components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket.js');
 var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
 var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
 var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
 var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
+var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
+var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
 var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
@@ -70,13 +72,15 @@ NfRegistryModule.annotations = [
             NfRegistryUsersAdministration,
             NfRegistryManageUser,
             NfRegistryManageGroup,
-            NfRegistryBucketPermissions,
+            NfRegistryManageBucket,
             NfRegistryWorkflowAdministration,
             NfRegistryAddUser,
             NfRegistryCreateBucket,
             NfRegistryCreateNewGroup,
             NfRegistryAddUserToGroups,
             NfRegistryAddUsersToGroup,
+            NfRegistryAddPolicyToBucket,
+            NfRegistryEditBucketPolicy,
             NfRegistryGridListViewer,
             NfRegistryBucketGridListViewer,
             NfRegistryDropletGridListViewer,
@@ -90,6 +94,8 @@ NfRegistryModule.annotations = [
             NfRegistryCreateNewGroup,
             NfRegistryAddUserToGroups,
             NfRegistryAddUsersToGroup,
+            NfRegistryAddPolicyToBucket,
+            NfRegistryEditBucketPolicy,
             NfUserLoginComponent
         ],
         providers: [

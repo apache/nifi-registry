@@ -36,8 +36,11 @@ var rxjs = require('rxjs/Observable');
  */
 function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router, fdsDialogService, fdsSnackBarService) {
     this.registry = {
-        name: "Nifi Registry"
+        name: "NiFi Registry"
     };
+    this.documentation = {
+        link: 'nifi-registry-docs/documentation'
+    }
     this.redirectUrl = '/nifi-registry/explorer/grid-list';
 
     // Services
@@ -67,20 +70,20 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             width: 100
         }
     ];
-    this.userPoliciesColumns = [
+    this.bucketPoliciesColumns = [
         {
             name: 'identity',
-            label: 'Bucket Name',
+            label: 'Display Name',
             sortable: true,
-            tooltip: 'Bucket name.',
-            width: 100
+            tooltip: 'User/Group name.',
+            width: 40
         },
         {
-            name: 'identity',
-            label: 'Bucket Name',
-            sortable: true,
-            tooltip: 'Bucket name.',
-            width: 100
+            name: 'permissions',
+            label: 'Permissions',
+            sortable: false,
+            tooltip: 'User/Group permissions for this bucket.',
+            width: 40
         }
     ];
     this.dropletColumns = [
@@ -106,16 +109,35 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     ];
 
     // data table available row action definitions
+    this.disableMultiBucketDeleteAction = false;
     this.bucketActions = [
         {
-            'name': 'permissions',
-            'icon': 'fa fa-pencil',
-            'tooltip': 'Manage Bucket Policies',
-            'type': 'sidenav'
+            name: 'manage',
+            icon: 'fa fa-pencil',
+            tooltip: 'Manage Bucket',
+            type: 'sidenav',
+            disabled: function(row) {
+                return false;
+            }
         }, {
-            'name': 'Delete',
-            'icon': 'fa fa-trash',
-            'tooltip': 'Delete Bucket'
+            name: 'Delete',
+            icon: 'fa fa-trash',
+            tooltip: 'Delete Bucket',
+            disabled: function(row) {
+                return (!row.permissions.canDelete);
+            }
+        }
+    ];
+    this.bucketPoliciesActions = [
+        {
+            name: 'manage',
+            icon: 'fa fa-pencil',
+            tooltip: 'Manage Policy',
+            type: 'dialog'
+        }, {
+            name: 'Delete',
+            icon: 'fa fa-trash',
+            tooltip: 'Delete Policy'
         }
     ];
     this.dropletActions = [
@@ -125,17 +147,24 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             tooltip: 'Delete'
         }
     ];
+    this.disableMultiDeleteAction = false;
     this.usersActions = [
         {
             name: 'manage',
             icon: 'fa fa-pencil',
             tooltip: 'Manage User Policies',
             type: 'sidenav',
-            tooltip: 'Manage User'
+            tooltip: 'Manage User',
+            disabled: function(row) {
+                return false;
+            }
         }, {
             name: 'delete',
             icon: 'fa fa-trash',
-            tooltip: 'Delete User'
+            tooltip: 'Delete User',
+            disabled: function(row) {
+                return (!row.configurable);
+            }
         }
     ];
     this.userGroupsActions = [
@@ -143,11 +172,17 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             name: 'manage',
             icon: 'fa fa-pencil',
             tooltip: 'Manage User Group Policies',
-            type: 'sidenav'
+            type: 'sidenav',
+            disabled: function(row) {
+                return false;
+            }
         }, {
             name: 'delete',
             icon: 'fa fa-trash',
-            tooltip: 'Delete User Group'
+            tooltip: 'Delete User Group',
+            disabled: function(row) {
+                return (!row.configurable);
+            }
         }
     ];
 
@@ -327,7 +362,7 @@ NfRegistryService.prototype = {
             var label = '';
             switch (sortByColumn.label) {
                 case 'Updated':
-                    label = (sortByColumn.sortOrder === 'ASC') ? 'Newest (update)' : 'Oldest (update)';
+                    label = (sortByColumn.sortOrder === 'ASC') ? 'Oldest (update)' : 'Newest (update)';
                     break;
                 case 'Name':
                     label = (sortByColumn.sortOrder === 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
@@ -347,7 +382,7 @@ NfRegistryService.prototype = {
         var label = '';
         switch (col.label) {
             case 'Updated':
-                label = (col.sortOrder !== 'ASC') ? 'Newest (update)' : 'Oldest (update)';
+                label = (col.sortOrder !== 'ASC') ? 'Oldest (update)' : 'Newest (update)';
                 break;
             case 'Name':
                 label = (col.sortOrder !== 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
@@ -465,7 +500,7 @@ NfRegistryService.prototype = {
         }
 
         for (var i = 0; i < this.dropletsSearchTerms.length; i++) {
-            newData = this.filterData(newData, this.dropletsSearchTerms[i], true, sortBy);
+            newData = this.dataTableService.filterData(newData, this.dropletsSearchTerms[i], true);
         }
 
         newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
@@ -525,8 +560,8 @@ NfRegistryService.prototype = {
                         }
                     });
                 break;
-            case 'permissions':
-                this.router.navigateByUrl('/nifi-registry/administration/workflow(' + action.type + ':bucket/' + action.name + '/' + bucket.identifier + ')');
+            case 'manage':
+                this.router.navigateByUrl('/nifi-registry/administration/workflow(' + action.type + ':' + action.name + '/bucket/' + bucket.identifier + ')');
                 break;
             default:
                 break;
@@ -566,7 +601,7 @@ NfRegistryService.prototype = {
         var newData = this.buckets;
 
         for (var i = 0; i < this.bucketsSearchTerms.length; i++) {
-            newData = this.filterData(newData, this.bucketsSearchTerms[i], true, sortBy);
+            newData = this.dataTableService.filterData(newData, this.bucketsSearchTerms[i], true);
         }
 
         newData = this.dataTableService.sortData(newData, sortBy, sortOrder);
@@ -625,15 +660,20 @@ NfRegistryService.prototype = {
     allFilteredBucketsSelected: function () {
         var selected = 0;
         var allSelected = true;
-        this.filteredBuckets.forEach(function (c) {
-            if (c.checked) {
+        var disableMultiBucketDeleteAction = false;
+        this.filteredBuckets.forEach(function (bucket) {
+            if (bucket.checked) {
                 selected++;
             }
-            if (c.checked === undefined || c.checked === false) {
+            if (bucket.checked === undefined || bucket.checked === false) {
                 allSelected = false;
+            }
+            if (bucket.permissions.canDelete === false) {
+                disableMultiBucketDeleteAction = true;
             }
         });
 
+        this.disableMultiBucketDeleteAction = disableMultiBucketDeleteAction;
         this.isMultiBucketActionsDisabled = (selected > 0) ? false : true;
         return allSelected;
     },
@@ -852,14 +892,14 @@ NfRegistryService.prototype = {
         var newUserGroupsData = this.groups;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newUsersData = this.filterData(newUsersData, this.usersSearchTerms[i], true);
+            newUsersData = this.dataTableService.filterData(newUsersData, this.usersSearchTerms[i], true);
         }
 
         newUsersData = this.dataTableService.sortData(newUsersData, sortBy, sortOrder);
         this.filteredUsers = newUsersData;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newUserGroupsData = this.filterData(newUserGroupsData, this.usersSearchTerms[i], true);
+            newUserGroupsData = this.dataTableService.filterData(newUserGroupsData, this.usersSearchTerms[i], true);
         }
 
         newUserGroupsData = this.dataTableService.sortData(newUserGroupsData, sortBy, sortOrder);
@@ -874,17 +914,25 @@ NfRegistryService.prototype = {
      */
     determineAllUsersAndGroupsSelectedState: function () {
         var allSelected = true;
-        this.filteredUserGroups.forEach(function (c) {
-            if (c.checked === undefined || c.checked === false) {
+        var disableMultiDeleteAction = false;
+        this.filteredUserGroups.forEach(function (group) {
+            if (group.checked === undefined || group.checked === false) {
                 allSelected = false;
+            }
+            if (group.checked && group.configurable === false) {
+                disableMultiDeleteAction = true;
             }
         });
 
-        this.filteredUsers.forEach(function (c) {
-            if (c.checked === undefined || c.checked === false) {
+        this.filteredUsers.forEach(function (user) {
+            if (user.checked === undefined || user.checked === false) {
                 allSelected = false;
             }
+            if (user.checked && user.configurable === false) {
+                disableMultiDeleteAction = true;
+            }
         });
+        this.disableMultiDeleteAction = disableMultiDeleteAction;
         this.allUsersAndGroupsSelected = allSelected;
     },
 
@@ -933,7 +981,7 @@ NfRegistryService.prototype = {
         this.filteredUserGroups.forEach(function (c) {
             c.checked = true;
         });
-        this.allUsersAndGroupsSelected = true;
+        this.determineAllUsersAndGroupsSelectedState();
     },
 
     /**
@@ -947,7 +995,7 @@ NfRegistryService.prototype = {
         this.filteredUserGroups.forEach(function (c) {
             c.checked = false;
         });
-        this.allUsersAndGroupsSelected = false;
+        this.determineAllUsersAndGroupsSelectedState();
     },
 
     /**
@@ -1006,6 +1054,8 @@ NfRegistryService.prototype = {
             case 'manage':
                 this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/user/' + user.identifier + ')');
                 break;
+            default:
+                break;
         }
     },
 
@@ -1050,6 +1100,8 @@ NfRegistryService.prototype = {
                 break;
             case 'manage':
                 this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/group/' + group.identifier + ')');
+                break;
+            default:
                 break;
         }
     },
@@ -1112,6 +1164,7 @@ NfRegistryService.prototype = {
             });
     },
 
+
     /**
      * Utility method that performs the custom search capability for data tables.
      *
@@ -1120,7 +1173,7 @@ NfRegistryService.prototype = {
      * @param ignoreCase    Ignore case.
      * @returns {*}
      */
-    filterData: function (data, searchTerm, ignoreCase) {
+    experimental_filterData: function (data, searchTerm, ignoreCase) {
         var field = '';
         if (searchTerm.indexOf(":") > -1) {
             field = searchTerm.split(':')[0].trim();

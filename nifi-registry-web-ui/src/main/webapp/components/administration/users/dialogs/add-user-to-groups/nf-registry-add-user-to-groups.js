@@ -58,6 +58,12 @@ NfRegistryAddUserToGroups.prototype = {
     ngOnInit: function () {
         var self = this;
 
+        // filter out any groups that
+        // 1) that are not configurable
+        self.groups = self.groups.filter(function (group) {
+            return (group.configurable) ? true : false
+        });
+        // 2) the user already belongs to
         this.data.user.userGroups.forEach(function (userGroup) {
             self.groups = self.groups.filter(function (group) {
                 return (group.identifier !== userGroup.identifier) ? true : false

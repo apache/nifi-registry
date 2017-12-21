@@ -18,7 +18,7 @@ var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/nf-registry-create-bucket.js');
+var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var ngRouter = require('@angular/router');
 var ngMaterial = require('@angular/material');
@@ -50,7 +50,7 @@ NfRegistryWorkflowAdministration.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.inProgress = true;
-        this.route.params
+        this.$subscription = this.route.params
             .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'workflow';
                 return self.nfRegistryApi.getBuckets();
@@ -69,13 +69,16 @@ NfRegistryWorkflowAdministration.prototype = {
         this.nfRegistryService.adminPerspective = '';
         this.nfRegistryService.buckets = this.nfRegistryService.filteredBuckets = [];
         this.nfRegistryService.allBucketsSelected = false;
+        this.$subscription.unsubscribe();
     },
 
     /**
      * Opens the create new bucket dialog.
      */
     createBucket: function () {
-        this.dialog.open(NfRegistryCreateBucket);
+        this.dialog.open(NfRegistryCreateBucket, {
+            disableClose: true
+        });
     }
 };
 

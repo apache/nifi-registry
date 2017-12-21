@@ -192,6 +192,7 @@
                                     <filtering>false</filtering>
                                     <includes>
                                         <!-- roboto -->
+                                        <include>roboto-fontface/fonts/Roboto-Slab/Roboto-Slab-Regular.ttf</include>
                                         <include>roboto-fontface/fonts/Roboto/Roboto-Regular.ttf</include>
                                         <include>roboto-fontface/fonts/Roboto/Roboto-Medium.ttf</include>
                                         <include>roboto-fontface/fonts/Roboto/Roboto-Light.ttf</include>
@@ -484,7 +485,22 @@
                                             <directory>${frontend.working.dir}/node_modules</directory>
                                             <filtering>false</filtering>
                                             <includes>
-                                                <include>**/*</include>
+                                                <include>@fluid-design-system/**/*</include>
+                                                <include>@angular/**/*</include>
+                                                <include>hammerjs/**/*</include>
+                                                <include>@covalent/**/*</include>
+                                                <include>rxjs/**/*</include>
+                                                <include>moment/**/*</include>
+                                                <include>angular2-moment/**/*</include>
+                                                <include>zone.js/**/*</include>
+                                                <include>core-js/**/*</include>
+                                                <include>superagent/**/*</include>
+                                                <include>querystring/**/*</include>
+                                                <include>tslib/**/*</include>
+                                                <include>systemjs/**/*</include>
+                                                <include>systemjs-plugin-text/**/*</include>
+                                                <include>jquery/**/*</include>
+                                                <include>roboto-fontface/**/*</include>
                                             </includes>
                                         </resource>
                                     </resources>
