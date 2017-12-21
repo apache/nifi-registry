@@ -19,7 +19,6 @@ var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
 var ngCoreTesting = require('@angular/core/testing');
 var ngCommonHttpTesting = require('@angular/common/http/testing');
 var ngCommon = require('@angular/common');
-var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
@@ -690,7 +689,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 ngCommonHttpTesting.HttpClientTestingModule
             ],
             declarations: [
-                FdsDemo,
                 NfRegistry,
                 NfRegistryExplorer,
                 NfRegistryAdministration,

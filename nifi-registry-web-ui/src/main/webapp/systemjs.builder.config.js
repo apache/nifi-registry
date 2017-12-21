@@ -94,7 +94,6 @@
             'nifi-registry/nf-registry.module.js': 'nf-registry.module.js',
             'nifi-registry/nf-registry.animations.js': 'nf-registry.animations.js',
             'nifi-registry/nf-registry.routes.js': 'nf-registry.routes.js',
-            'nifi-registry/components/fluid-design-system/fds-demo.js': 'components/fluid-design-system/fds-demo.js',
             'nifi-registry/nf-registry.js': 'nf-registry.js',
             'nifi-registry/services/nf-registry.api.js': 'services/nf-registry.api.js',
             'nifi-registry/services/nf-registry.service.js': 'services/nf-registry.service.js',

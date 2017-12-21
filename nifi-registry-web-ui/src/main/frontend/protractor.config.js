@@ -37,7 +37,7 @@ exports.config = {
     useAllAngular2AppRoots: true,
 
     // Base URL for application server
-    baseUrl: 'http://localhost:8080/nifi-registry',
+    baseUrl: 'http://localhost:18080/nifi-registry',
 
     // See https://github.com/angular/protractor/blob/master/docs/server-setup.md for the various protractor
     // browser driver setup. Here we directly use Chrome or Firefox drivers. If Chrome or Firefox are not
