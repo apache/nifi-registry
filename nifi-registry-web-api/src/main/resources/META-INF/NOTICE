@@ -1,4 +1,4 @@
-Apache NiFi Registry
+nifi-registry-web-api
 Copyright 2014-2017 The Apache Software Foundation
 
 This product includes software developed at
@@ -9,28 +9,6 @@ Apache Software License v2
 ===========================================
 
 The following binary components are provided under the Apache Software License v2
-
-  (ASLv2) Jetty
-    The following NOTICE information applies:
-       Jetty Web Container
-       Copyright 1995-2017 Mort Bay Consulting Pty Ltd.
-
-  (ASLv2) Apache Commons Codec
-    The following NOTICE information applies:
-      Apache Commons Codec
-      Copyright 2002-2014 The Apache Software Foundation
-
-      src/test/org/apache/commons/codec/language/DoubleMetaphoneTest.java
-      contains test data from http://aspell.net/test/orig/batch0.tab.
-      Copyright (C) 2002 Kevin Atkinson (kevina@gnu.org)
-
-      ===============================================================================
-
-      The content of package org.apache.commons.codec.language.bm has been translated
-      from the original php source code available at http://stevemorse.org/phoneticinfo.htm
-      with permission from the original authors.
-      Original source copyright:
-      Copyright (c) 2008 Alexander Beider & Stephen P. Morse.
 
   (ASLv2) Apache Commons Lang
     The following NOTICE information applies:
@@ -62,85 +40,6 @@ The following binary components are provided under the Apache Software License v
       A list of contributors may be found from CREDITS file, which is included
       in some artifacts (usually source distributions); but is always available
       from the source code management (SCM) system project uses.
-
-  (ASLv2) Java Native Access Platform
-    The following NOTICE information applies:
-      Java Native Access Platform
-      Copyright 2013 Timothy Wall, Matthias Bläsing
-
-      This product includes software developed by
-      The Apache Software Foundation (http://www.apache.org/).
-
-      ===============================================================================
-
-      The BracketFinder (package org.apache.commons.math3.optimization.univariate)
-      and PowellOptimizer (package org.apache.commons.math3.optimization.general)
-      classes are based on the Python code in module "optimize.py" (version 0.5)
-      developed by Travis E. Oliphant for the SciPy library (http://www.scipy.org/)
-      Copyright © 2003-2009 SciPy Developers.
-      ===============================================================================
-
-      The LinearConstraint, LinearObjectiveFunction, LinearOptimizer,
-      RelationShip, SimplexSolver and SimplexTableau classes in package
-      org.apache.commons.math3.optimization.linear include software developed by
-      Benjamin McCann (http://www.benmccann.com) and distributed with
-      the following copyright: Copyright 2009 Google Inc.
-      ===============================================================================
-
-      This product includes software developed by the
-      University of Chicago, as Operator of Argonne National
-      Laboratory.
-      The LevenbergMarquardtOptimizer class in package
-      org.apache.commons.math3.optimization.general includes software
-      translated from the lmder, lmpar and qrsolv Fortran routines
-      from the Minpack package
-      Minpack Copyright Notice (1999) University of Chicago.  All rights reserved
-      ===============================================================================
-
-      The GraggBulirschStoerIntegrator class in package
-      org.apache.commons.math3.ode.nonstiff includes software translated
-      from the odex Fortran routine developed by E. Hairer and G. Wanner.
-      Original source copyright:
-      Copyright (c) 2004, Ernst Hairer
-      ===============================================================================
-
-      The EigenDecompositionImpl class in package
-      org.apache.commons.math3.linear includes software translated
-      from some LAPACK Fortran routines.  Original source copyright:
-      Copyright (c) 1992-2008 The University of Tennessee.  All rights reserved.
-      ===============================================================================
-
-      The MersenneTwister class in package org.apache.commons.math3.random
-      includes software translated from the 2002-01-26 version of
-      the Mersenne-Twister generator written in C by Makoto Matsumoto and Takuji
-      Nishimura. Original source copyright:
-      Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
-      All rights reserved
-      ===============================================================================
-
-      The LocalizedFormatsTest class in the unit tests is an adapted version of
-      the OrekitMessagesTest class from the orekit library distributed under the
-      terms of the Apache 2 licence. Original source copyright:
-      Copyright 2010 CS Systèmes d'Information
-      ===============================================================================
-
-      The HermiteInterpolator class and its corresponding test have been imported from
-      the orekit library distributed under the terms of the Apache 2 licence. Original
-      source copyright:
-      Copyright 2010-2012 CS Systèmes d'Information
-      ===============================================================================
-
-      The creation of the package "o.a.c.m.analysis.integration.gauss" was inspired
-      by an original code donated by Sébastien Brisard.
-      ===============================================================================
-
-  (ASLv2) JSON-SMART
-    The following NOTICE information applies:
-      Copyright 2011 JSON-SMART authors
-
-   (ASLv2) JsonPath
-     The following NOTICE information applies:
-       Copyright 2011 JsonPath authors
 
   (ASLv2) Classmate
     The following NOTICE information applies
@@ -245,9 +144,6 @@ Common Development and Distribution License 1.1
 
 The following binary components are provided under the Common Development and Distribution License 1.1. See project link for details.
 
-    (CDDL 1.1) (GPL2 w/ CPE) JavaMail API (compat) (javax.mail:mail:jar:1.4.7 - http://kenai.com/projects/javamail/mail)
-    (CDDL 1.1) (GPL2 w/ CPE) Java Servlet API  (javax.servlet:javax.servlet-api:jar:3.1.0 - http://servlet-spec.java.net)
-    (CDDL 1.1) (GPL2 w/ CPE) JavaServer Pages Standard Tag Library  (javax.servlet.jsp.jstl:jstl:jar:1.2 - https://javaee.github.io/jstl-api/)
     (CDDL 1.1) (GPL2 w/ CPE) javax.annotation API (javax.annotation:javax.annotation-api:jar:1.2 - http://jcp.org/en/jsr/detail?id=250)
     (CDDL 1.1) (GPL2 w/ CPE) aopalliance-repackaged (org.glassfish.hk2.external:aopalliance-repackaged:jar:2.5.0-b42 - https://javaee.github.io/glassfish/)
     (CDDL 1.1) (GPL2 w/ CPE) asm-all-repackaged (org.glassfish.hk2.external:asm-all-repackaged:jar:2.5.0-b42 - https://javaee.github.io/glassfish/)
@@ -275,16 +171,6 @@ The following binary components are provided under the Common Development and Di
     (CDDL 1.1) (GPL2 w/ CPE) jersey-server (org.glassfish.jersey.core:jersey-server:jar:2.26 - https://jersey.github.io/)
     (CDDL 1.1) (GPL2 w/ CPE) jersey-spring4 (org.glassfish.jersey.ext:jersey-spring4:jar:2.26 - https://jersey.github.io/)
     (CDDL 1.1) (GPL2 w/ CPE) OSGi resource locator bundle (org.glassfish.hk2:osgi-resource-locator:jar:1.0.1 - http://glassfish.org/osgi-resource-locator)
-
-
-************************
-Common Development and Distribution License 1.0
-************************
-
-The following binary components are provided under the Common Development and Distribution License 1.0.  See project link for details.
-
-    (CDDL 1.0) JavaBeans Activation Framework (JAF) (javax.activation:activation:jar:1.1 - http://java.sun.com/products/javabeans/jaf/index.jsp)
-
 
 ************************
 Eclipse Public License 1.0
