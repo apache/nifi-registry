@@ -35,7 +35,7 @@ limitations under the License.
     <div fxLayout="row">
         <span fxFlex></span>
         <button (click)="cancel()" color="fds-regular" mat-raised-button
-                i18n="Cancel creation of new bucket|A button for cancelling the creation of a new bucket in the registry.@@nf-admin-workflow-create-bucket-button">
+                i18n="Cancel creation of new bucket|A button for cancelling the creation of a new bucket in the registry.@@nf-admin-workflow-cancel-create-bucket-button">
             Cancel
         </button>
         <button [disabled]="newBucketInput.value.length === 0" class="push-left-sm" (click)="createBucket(newBucketInput)" color="fds-primary" mat-raised-button

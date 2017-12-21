@@ -51,7 +51,6 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
         this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
                 self.nfRegistryService.currentUser = currentUser;
-                // if the user is logged, we want to determine if they were logged in using a certificate
                 if (currentUser.anonymous === false) {
                     // render the logout button if there is a token locally
                     if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
@@ -113,7 +112,6 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
         this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
                 self.nfRegistryService.currentUser = currentUser;
-                // if the user is logged, we want to determine if they were logged in using a certificate
                 if (currentUser.anonymous === false) {
                     // render the logout button if there is a token locally
                     if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
@@ -175,14 +173,15 @@ NfRegistryLoginAuthGuard.prototype = {
         this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
                 self.nfRegistryService.currentUser = currentUser;
-                // if the user is logged, we want to determine if they were logged in using a certificate
                 if (currentUser.anonymous === false) {
                     // render the logout button if there is a token locally
                     if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
                         self.nfRegistryService.currentUser.canLogout = true;
                     }
+                    self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
                     self.nfRegistryService.router.navigateByUrl(self.nfRegistryService.redirectUrl);
                 } else {
+                    self.nfRegistryService.currentUser.anonymous = true;
                     self.nfRegistryService.router.navigateByUrl('/nifi-registry/login');
                 }
             });
@@ -221,7 +220,7 @@ NfRegistryResourcesAuthGuard.prototype = {
 
     checkLogin: function (url) {
         var self = this;
-        if (this.nfRegistryService.currentUser.resourcePermissions.buckets.canRead) { return true; }
+        if (this.nfRegistryService.currentUser.canActivateResourcesAuthGuard === true) { return true; }
 
         // Store the attempted URL for redirecting
         this.nfRegistryService.redirectUrl = url;
@@ -230,14 +229,22 @@ NfRegistryResourcesAuthGuard.prototype = {
         this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
             self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
                 self.nfRegistryService.currentUser = currentUser;
-                // if the user is logged, we want to determine if they were logged in using a certificate
-                if (currentUser.anonymous === false) {
+                if (!currentUser || currentUser.anonymous === false) {
+                    if(self.nfRegistryService.nfStorage.hasItem('jwt')){
+                        self.nfRegistryService.currentUser.canLogout = true;
+                        self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
+                        self.nfRegistryService.router.navigateByUrl(url);
+                    } else {
+                        self.nfRegistryService.router.navigateByUrl('/nifi-registry/login');
+                    }
+                } else if (currentUser.anonymous === true) {
                     // render the logout button if there is a token locally
                     if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
                         self.nfRegistryService.currentUser.canLogout = true;
                     }
+                    self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
+                    self.nfRegistryService.router.navigateByUrl(url);
                 }
-                self.nfRegistryService.router.navigateByUrl(url);
             });
         });
 

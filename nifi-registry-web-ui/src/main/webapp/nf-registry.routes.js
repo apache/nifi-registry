@@ -24,7 +24,7 @@ var NfRegistryAdministration = require('nifi-registry/components/administration/
 var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
 var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
 var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
+var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
@@ -79,8 +79,7 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     pathMatch: 'full'
 }, {
     path: 'nifi-registry',
-    redirectTo: '/nifi-registry/explorer/grid-list',
-    pathMatch: 'full'
+    redirectTo: '/nifi-registry/explorer/grid-list'
 }, {
     path: '',
     redirectTo: '/nifi-registry/explorer/grid-list',
@@ -99,8 +98,8 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard],
     outlet: 'sidenav'
 }, {
-    path: 'bucket/permissions/:bucketId',
-    component: NfRegistryBucketPermissions,
+    path: 'manage/bucket/:bucketId',
+    component: NfRegistryManageBucket,
     canActivate: [nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard],
     outlet: 'sidenav'
 }]);

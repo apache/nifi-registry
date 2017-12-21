@@ -19,7 +19,8 @@ limitations under the License.
     <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
         <span class="md-card-title">Authorized Users ({{nfRegistryService.users.length + nfRegistryService.groups.length}})</span>
         <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
-            <td-chips class="push-right-sm" [items]="nfRegistryService.autoCompleteUsersAndGroups"
+            <td-chips class="push-right-sm"
+                      [items]="nfRegistryService.autoCompleteUsersAndGroups"
                       (add)="nfRegistryService.usersSearchAdd($event)"
                       (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
             <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()">
@@ -31,15 +32,19 @@ limitations under the License.
             </button>
         </div>
         <mat-menu class="fds-primary-dropdown-button-menu" #userActionMenu="matMenu" [overlapTrigger]="false">
-            <button mat-menu-item
-                    [disabled]="(nfRegistryService.getSelectedGroups().length === 0) && (nfRegistryService.getSelectedUsers().length === 0)"
+            <div matTooltip="{{nfRegistryService.disableMultiDeleteAction ? 'Please deselect any non-configurable users or groups to enable multi-delete.': ''}}">
+                <button mat-menu-item
+                    [disabled]="((nfRegistryService.getSelectedGroups().length === 0) && (nfRegistryService.getSelectedUsers().length === 0)) || nfRegistryService.disableMultiDeleteAction"
                     (click)="nfRegistryService.deleteSelectedUsersAndGroups()">
-                <span>Delete</span>
-            </button>
-            <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0)"
+                    <span>Delete</span>
+                </button>
+            </div>
+            <div matTooltip="{{(nfRegistryService.getSelectedGroups().length > 0) ? 'Only users can be added when creating a new group. Please deselect any groups to enable.': ''}}">
+                <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0)"
                     (click)="createNewGroup()">
-                <span>Create new group</span>
-            </button>
+                    <span>Create new group</span>
+                </button>
+            </div>
         </mat-menu>
         <div id="nifi-registry-users-administration-list-container-column-header" fxLayout="row"
              fxLayoutAlign="space-between center" class="td-data-table">
@@ -61,11 +66,12 @@ limitations under the License.
             </div>
         </div>
         <div id="nifi-registry-users-administration-list-container">
-            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredUserGroups"
+            <div [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}"
+                 *ngFor="let row of nfRegistryService.filteredUserGroups"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllUsersAndGroupsSelectedState(row)">
                 <div *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
                     <div class="td-data-table-cell" fxFlex="{{column.width}}">
-                        <div>
+                        <div class="ellipsis" matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
                             <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ? column.format(row[column.name]) : row[column.name]}}
                         </div>
                     </div>
@@ -75,7 +81,7 @@ limitations under the License.
                                 <button (click)="row.checked = !row.checked;nfRegistryService.executeGroupAction(action, row)"
                                         *ngFor="let action of nfRegistryService.userGroupsActions"
                                         matTooltip="{{action.tooltip}}" mat-icon-button color="accent"
-                                        [disabled]="action.disabled ? '' : null">
+                                        [disabled]="action.disabled(row)">
                                     <i class="{{action.icon}}" aria-hidden="true"></i>
                                 </button>
                                 <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
@@ -91,7 +97,7 @@ limitations under the License.
                                     <button (click)="nfRegistryService.executeGroupAction(action, row)"
                                             *ngFor="let action of nfRegistryService.userGroupsActions"
                                             matTooltip="{{action.tooltip}}" mat-menu-item
-                                            [disabled]="action.disabled ? '' : null"
+                                            [disabled]="action.disabled(row)">
                                             (click)="nfRegistryService.sidenav.toggle()">
                                         <i class="{{action.icon}}" aria-hidden="true"></i>
                                         <span>{{action.name}}</span>
@@ -110,11 +116,12 @@ limitations under the License.
                     </div>
                 </div>
             </div>
-            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of nfRegistryService.filteredUsers"
+            <div [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}"
+                 *ngFor="let row of nfRegistryService.filteredUsers"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllUsersAndGroupsSelectedState(row)">
                 <div *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
                     <div class="td-data-table-cell" fxFlex="{{column.width}}">
-                        <div>
+                        <div class="ellipsis" matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
                             {{column.format ? column.format(row[column.name]) : row[column.name]}}
                         </div>
                     </div>
@@ -124,7 +131,7 @@ limitations under the License.
                                 <button (click)="row.checked = !row.checked;nfRegistryService.executeUserAction(action, row)"
                                         *ngFor="let action of nfRegistryService.usersActions"
                                         matTooltip="{{action.tooltip}}" mat-icon-button color="accent"
-                                        [disabled]="action.disabled ? '' : null">
+                                        [disabled]="action.disabled(row)">
                                     <i class="{{action.icon}}" aria-hidden="true"></i>
                                 </button>
                                 <mat-checkbox class="pad-left-sm" [(ngModel)]="row.checked" [checked]="row.checked"
@@ -140,7 +147,7 @@ limitations under the License.
                                     <button (click)="nfRegistryService.executeUserAction(action, row)"
                                             *ngFor="let action of nfRegistryService.usersActions"
                                             matTooltip="{{action.tooltip}}" mat-menu-item
-                                            [disabled]="action.disabled ? '' : null"
+                                            [disabled]="action.disabled(row)">
                                             (click)="nfRegistryService.sidenav.toggle()">
                                         <i class="{{action.icon}}" aria-hidden="true"></i>
                                         <span>{{action.name}}</span>

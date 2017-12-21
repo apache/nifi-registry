@@ -19,19 +19,22 @@ var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
+var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
 
 /**
  * NfRegistryUserLogin constructor.
  *
- * @param nfRegistryApi         The api service.
- * @param nfRegistryService     The nf-registry.service module.
- * @param matDialogRef          The angular material dialog ref.
+ * @param nfRegistryApi                     The api service.
+ * @param nfRegistryService                 The nf-registry.service module.
+ * @param matDialogRef                      The angular material dialog ref.
+ * @param nfRegistryLoginAuthGuard          The login auth guard.
  * @constructor
  */
-function NfRegistryUserLogin(nfRegistryApi, nfRegistryService, matDialogRef) {
+function NfRegistryUserLogin(nfRegistryApi, nfRegistryService, matDialogRef, nfRegistryLoginAuthGuard) {
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
+    this.nfRegistryLoginAuthGuard = nfRegistryLoginAuthGuard;
 };
 
 NfRegistryUserLogin.prototype = {
@@ -46,9 +49,11 @@ NfRegistryUserLogin.prototype = {
     login: function (username, password) {
         var self = this;
         this.nfRegistryApi.postToLogin(username.value, password.value).subscribe(function(response){
-            if(!response.status || response.status === 200) {
+            if(response || response.status === 200) {
                 //successful login
-                self.nfRegistryService.router.navigateByUrl(self.nfRegistryService.redirectUrl);
+                self.dialogRef.close();
+                self.nfRegistryService.currentUser.anonymous = false;
+                self.nfRegistryLoginAuthGuard.checkLogin(self.nfRegistryService.redirectUrl)
             }
         });
     }
@@ -63,7 +68,8 @@ NfRegistryUserLogin.annotations = [
 NfRegistryUserLogin.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    ngMaterial.MatDialogRef
+    ngMaterial.MatDialogRef,
+    nfRegistryAuthGuardService.NfRegistryLoginAuthGuard
 ];
 
 module.exports = NfRegistryUserLogin;

@@ -33,7 +33,7 @@ describe('NfRegistryAddUserToGroups Component isolated unit tests', function () 
         nfRegistryService = new NfRegistryService();
         // setup the nfRegistryService
         nfRegistryService.user = {identifier: 3, identity: 'User 3', userGroups: []};
-        nfRegistryService.groups = [{identifier: 1, identity: 'Group 1', checked: true, users: []}];
+        nfRegistryService.groups = [{identifier: 1, identity: 'Group 1', configurable: true, checked: true, users: []}];
 
         nfRegistryApi = new NfRegistryApi();
         snackBarService = new fdsSnackBarsModule.FdsSnackBarService();

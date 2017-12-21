@@ -53,6 +53,11 @@ body[fds] .td-data-table-cell .mat-icon-button {
   color: $linkColor;
 }
 
+body[fds] .td-data-table-cell .mat-icon-button:disabled {
+  color:  $grey13;
+  cursor: not-allowed;
+}
+
 body[fds] .td-data-table-cell .mat-button, body[fds] .td-data-table-cell .mat-icon-button, body[fds] .td-data-table-cell .mat-raised-button {
   height: 24px;
   width: 24px;

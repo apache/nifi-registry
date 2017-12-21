@@ -50,7 +50,7 @@ NfRegistryDropletGridListViewer.prototype = {
         this.nfRegistryService.explorerViewType = 'grid-list';
 
         // subscribe to the route params
-        self.route.params
+        this.$subscription = this.route.params
             .switchMap(function (params) {
                 return new rxjs.Observable.forkJoin(
                     self.nfRegistryApi.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
@@ -81,6 +81,7 @@ NfRegistryDropletGridListViewer.prototype = {
         this.nfRegistryService.explorerViewType = '';
         this.nfRegistryService.setBreadcrumbState('out');
         this.nfRegistryService.filteredDroplets = [];
+        this.$subscription.unsubscribe();
     }
 };
 

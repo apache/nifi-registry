@@ -46,10 +46,14 @@ NfRegistryAddUser.prototype = {
     addUser: function (addUserInput) {
         var self = this;
         this.nfRegistryApi.addUser(addUserInput.value).subscribe(function (user) {
-            self.nfRegistryService.users.push(user);
-            self.nfRegistryService.allUsersAndGroupsSelected = false;
-            self.nfRegistryService.filterUsersAndGroups();
-            if (self.keepDialogOpen !== true) {
+            if (!user.error) {
+                self.nfRegistryService.users.push(user);
+                self.nfRegistryService.allUsersAndGroupsSelected = false;
+                self.nfRegistryService.filterUsersAndGroups();
+                if (self.keepDialogOpen !== true) {
+                    self.dialogRef.close();
+                }
+            } else {
                 self.dialogRef.close();
             }
         });

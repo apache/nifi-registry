@@ -16,114 +16,123 @@
  */
 
 body {
-    background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
-    background-size: 40%;
+  background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+  background-size: 40%;
 }
 
 #nifi-registry-login-perspective {
-    background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
-    background-size: 40%;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+  background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+  background-size: 40%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
 }
 
 #nifi-registry-not-found-perspective {
-    background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
-    background-size: 40%;
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+  background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+  background-size: 40%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
 }
 
 #nf-registry-app-container {
-    margin: 0;
-    width: 100%;
-    height: 100%;
+  margin: 0;
+  width: 100%;
+  height: 100%;
 }
 
 #nifi-registry-logo {
-    height: 44px;
+  height: 44px;
 }
 
 #nifi-registry-alerts-count {
-    border-radius: 50%;
-    background: $warnColor;
-    height: 14px;
-    width: 14px;
-    position: relative;
-    left: 9px;
-    color: #FFFFFF;
-    font-size: 9px;
-    text-align: center;
-    line-height: 14px;
+  border-radius: 50%;
+  background: $warnColor;
+  height: 14px;
+  width: 14px;
+  position: relative;
+  left: 9px;
+  color: #FFFFFF;
+  font-size: 9px;
+  text-align: center;
+  line-height: 14px;
 }
 
 #nifi-registry-toolbar {
-    min-width: 1045px;
-    background-color: #FFFFFF;
-    position: absolute;
-    z-index: 1000;
-    background: $grey11;
+  min-width: 1045px;
+  background-color: #FFFFFF;
+  position: absolute;
+  z-index: 1000;
+  background: $grey11;
 }
 
 #nifi-registry-toolbar .mat-icon-button {
-    color: $grey5;
-    font-size: 20px;
-    margin: 0;
+  color: $grey5;
+  font-size: 20px;
+  margin: 0;
 }
 
-#nifi-registry-toolbar .mat-select-value-text, #nifi-registry-toolbar .mat-select-arrow{
-    color: white;
+#nifi-registry-toolbar .mat-select-value-text, #nifi-registry-toolbar .mat-select-arrow {
+  color: white;
 }
 
-#nifi-registry-toolbar span, #nifi-registry-toolbar .link{
-    color: $grey5;
+#nifi-registry-toolbar span, #nifi-registry-toolbar .link {
+  color: $grey5;
 }
 
 #nf-registry-perspectives-container {
-    position: absolute;
-    top: 64px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    min-height: 370px;
-    min-width: 1045px;
-    overflow: auto;
-    background: $grey12;
-    background-size: 40%;
+  position: absolute;
+  top: 64px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  min-height: 370px;
+  min-width: 1045px;
+  overflow: auto;
+  background: $grey12;
+  background-size: 40%;
 }
 
 #current-user {
-    font-family: 'Roboto Slab';
-    font-style: normal;
-    font-weight: normal;
-    font-size: 12px;
-    max-width: 250px;
-    text-overflow: ellipsis;
-    line-height: normal;
-    overflow: hidden;
-    white-space: nowrap;
-    color: $grey5;
+  font-family: 'Roboto Slab';
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  max-width: 250px;
+  text-overflow: ellipsis;
+  line-height: normal;
+  overflow: hidden;
+  white-space: nowrap;
+  color: $grey5;
 }
 
 #logout-link-container {
-    font-size: 12px;
-    text-transform:uppercase;
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
 #loading-spinner {
-    position: absolute;
-    top: calc(50% - 50px);
-    left: calc(50% - 50px);
-    z-index: 2;
+  position: absolute;
+  top: calc(50% - 50px);
+  left: calc(50% - 50px);
+  z-index: 2;
 }
 
 mat-sidenav {
-    width: 40%;
-    min-width: 418px;
+  width: 40%;
+  min-width: 418px;
+}
+
+.sidenav-content {
+  position: absolute;
+  bottom: 60px;
+  top: 80px;
+  right: 0px;
+  left: 0px;
+  overflow: auto;
 }

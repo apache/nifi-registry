@@ -30,7 +30,7 @@ var NfRegistryUsersAdministration = require('nifi-registry/components/administra
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
 var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryBucketPermissions = require('nifi-registry/components/administration/workflow/buckets/permissions/nf-registry-bucket-permissions.js');
+var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
 var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
 var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
 var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
@@ -44,6 +44,7 @@ var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.ser
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
+var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
 
 xdescribe('NfRegistry API w/ Angular testing utils', function () {
     var nfRegistryApi;
@@ -65,7 +66,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
                 NfRegistryUsersAdministration,
                 NfRegistryManageUser,
                 NfRegistryManageGroup,
-                NfRegistryBucketPermissions,
+                NfRegistryManageBucket,
                 NfRegistryAddUser,
                 NfRegistryWorkflowAdministration,
                 NfRegistryGridListViewer,
@@ -77,6 +78,10 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
             ],
             providers: [
                 NfRegistryService,
+                nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
+                nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
+                nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
+                nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard,
                 NfRegistryAuthService,
                 NfRegistryApi,
                 NfStorage,
@@ -236,7 +241,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for /nifi-registry-api/flow/test/versions: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -300,7 +305,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -376,7 +381,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for /nifi-registry-api/items: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -435,7 +440,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for /nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -477,7 +482,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'DELETE droplet mock error'});
+        req.flush('Http failure response for /nifi-registry-api/flows/1234: 401 DELETE droplet mock error', {status: 401, statusText: 'DELETE droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -521,7 +526,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'POST bucket mock error'});
+        req.flush('Http failure response for /nifi-registry-api/buckets: 401 POST bucket mock error', {status: 401, statusText: 'POST bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -561,7 +566,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'DELETE bucket mock error'});
+        req.flush('Http failure response for /nifi-registry-api/buckets/1234: 401 DELETE bucket mock error', {status: 401, statusText: 'DELETE bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -621,7 +626,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET bucket mock error'});
+        req.flush('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error', {status: 401, statusText: 'GET bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -667,7 +672,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET metadata mock error'});
+        req.flush('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error', {status: 401, statusText: 'GET metadata mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -712,7 +717,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'POST add user mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/users: 401 POST add user mock error', {status: 401, statusText: 'POST add user mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -758,7 +763,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET users mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/users: 401 GET users mock error', {status: 401, statusText: 'GET users mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -804,7 +809,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'DELETE users mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/users/123: 401 DELETE users mock error', {status: 401, statusText: 'DELETE users mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -850,7 +855,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET user groups mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -896,7 +901,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET user groups mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -942,7 +947,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'DELETE user groups mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error', {status: 401, statusText: 'DELETE user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -997,7 +1002,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'POST user groups mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups: 401 POST user groups mock error', {status: 401, statusText: 'POST user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();

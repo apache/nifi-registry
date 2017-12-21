@@ -66,7 +66,7 @@ NfRegistryManageUser.prototype = {
         this.nfRegistryService.sidenav.open();
 
         // subscribe to the route params
-        self.route.params
+        this.$subscription = self.route.params
             .switchMap(function (params) {
                 return self.nfRegistryApi.getUser(params['userId']);
             })
@@ -82,6 +82,7 @@ NfRegistryManageUser.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.sidenav.close();
+        this.$subscription.unsubscribe();
     },
 
     /**
@@ -152,7 +153,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
                                         return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
-                                    })
+                                    });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
                                         function (response) {
@@ -232,7 +233,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
                                         return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
-                                    })
+                                    });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
                                         function (response) {
@@ -312,7 +313,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
                                         return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
-                                    })
+                                    });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
                                         function (response) {
@@ -418,7 +419,8 @@ NfRegistryManageUser.prototype = {
         var self = this;
         this.dialog.open(NfRegistryAddUserToGroups, {
             data: {
-                user: this.nfRegistryService.user
+                user: this.nfRegistryService.user,
+                disableClose: true
             }
         }).afterClosed().subscribe(function () {
             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)

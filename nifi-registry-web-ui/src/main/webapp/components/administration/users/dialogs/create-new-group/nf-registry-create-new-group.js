@@ -47,10 +47,14 @@ NfRegistryCreateNewGroup.prototype = {
         var self = this;
         // create new group with any selected users added to the new group
         this.nfRegistryApi.createNewGroup(null, createNewGroupInput.value, this.nfRegistryService.getSelectedUsers()).subscribe(function (group) {
-            self.nfRegistryService.groups.push(group);
-            self.nfRegistryService.filterUsersAndGroups();
-            self.nfRegistryService.allUsersAndGroupsSelected = false;
-            if (self.keepDialogOpen !== true) {
+            if (!group.error) {
+                self.nfRegistryService.groups.push(group);
+                self.nfRegistryService.filterUsersAndGroups();
+                self.nfRegistryService.allUsersAndGroupsSelected = false;
+                if (self.keepDialogOpen !== true) {
+                    self.dialogRef.close();
+                }
+            } else {
                 self.dialogRef.close();
             }
         });
