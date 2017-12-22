@@ -35,7 +35,7 @@ var $ = require('jquery');
  * @constructor
  */
 function NfRegistryAddUsersToGroup(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService, data) {
-    //Services
+    //  Services
     this.dataTableService = tdDataTableService;
     this.snackBarService = fdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
@@ -67,6 +67,7 @@ NfRegistryAddUsersToGroup.prototype = {
         });
 
         this.filterUsers();
+        this.deselectAllUsers();
         this.determineAllUsersSelectedState();
     },
 
