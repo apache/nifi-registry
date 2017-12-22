@@ -839,53 +839,6 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
     });
 
-    it('should filter droplets by `type:flow` (demonstrate ability to do advanced searching of a droplet by a property `name:value` pair).', function () {
-        //Setup the nfRegistryService state for this test
-        nfRegistryService.dropletsSearchTerms = ['type:FLOW'];
-        nfRegistryService.droplets = [{
-            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
-            'name': 'Flow #1',
-            'description': 'This is flow #1',
-            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'createdTimestamp': 1505931890999,
-            'modifiedTimestamp': 1505931890999,
-            'type': 'FLOW',
-            'snapshotMetadata': null,
-            'link': {
-                'params': {
-                    'rel': 'self'
-                },
-                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
-            }
-        }, {
-            'identifier': '5d04b4fb-9513-47bb-aa74-1ae34616bfdc',
-            'name': 'Flow #2',
-            'description': 'This is not a flow #2',
-            'bucketIdentifier': '3g7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'createdTimestamp': 1505931890999,
-            'modifiedTimestamp': 1505931890999,
-            'type': 'something',
-            'snapshotMetadata': null,
-            'link': {
-                'params': {
-                    'rel': 'self'
-                },
-                'href': 'flows/5d04b4fb-9513-47bb-aa74-1ae34616bfdc'
-            }
-        }];
-
-        //Spy
-        spyOn(nfRegistryService, 'getAutoCompleteDroplets');
-
-        // The function to test
-        nfRegistryService.filterDroplets();
-
-        //assertions
-        expect(nfRegistryService.filteredDroplets.length).toBe(1);
-        expect(nfRegistryService.filteredDroplets[0].name).toBe('Flow #1');
-        expect(nfRegistryService.getAutoCompleteDroplets).toHaveBeenCalled();
-    });
-
     it('should execute a `delete` action on a bucket.', function () {
         // from the root injector
         var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);

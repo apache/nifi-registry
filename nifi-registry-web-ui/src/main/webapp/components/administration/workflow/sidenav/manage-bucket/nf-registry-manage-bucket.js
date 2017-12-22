@@ -51,7 +51,6 @@ function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableSer
     this.userIdentitiesWithPolicies = [];
     this.groupIdentitiesWithPolicies = [];
 
-
     // Services
     this.nfRegistryService = nfRegistryService;
     this.route = activatedRoute;

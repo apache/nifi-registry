@@ -19,19 +19,24 @@ var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
+var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 
 /**
  * NfRegistryAddUser constructor.
  *
  * @param nfRegistryApi         The api service.
  * @param nfRegistryService     The nf-registry.service module.
+ * @param fdsSnackBarService    The FDS snack bar service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryAddUser(nfRegistryApi, nfRegistryService, matDialogRef) {
+function NfRegistryAddUser(nfRegistryApi, nfRegistryService, fdsSnackBarService, matDialogRef) {
+    // Services
+    this.snackBarService = fdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
+    // local state
     this.keepDialogOpen = false;
 };
 
@@ -53,6 +58,15 @@ NfRegistryAddUser.prototype = {
                 if (self.keepDialogOpen !== true) {
                     self.dialogRef.close();
                 }
+                self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'User has been added.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
+                });
             } else {
                 self.dialogRef.close();
             }
@@ -76,6 +90,7 @@ NfRegistryAddUser.annotations = [
 NfRegistryAddUser.parameters = [
     NfRegistryApi,
     NfRegistryService,
+    fdsSnackBarsModule.FdsSnackBarService,
     ngMaterial.MatDialogRef
 ];
 

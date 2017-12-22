@@ -37,6 +37,7 @@ var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
  * @constructor
  */
 function NfRegistryAddPolicyToBucket(nfRegistryApi, tdDataTableService, fdsSnackBarService, nfRegistryService, activatedRoute, matDialogRef, data) {
+    // local state
     this.users = [];
     this.groups = [];
     this.userOrGroup = {};
@@ -115,7 +116,7 @@ NfRegistryAddPolicyToBucket.prototype = {
         var newUserGroupsData = this.groups;
 
         for (var i = 0; i < this.userGroupsSearchTerms.length; i++) {
-            newUserGroupsData = this.nfRegistryService.filterData(newUserGroupsData, this.userGroupsSearchTerms[i], true);
+            newUserGroupsData = this.dataTableService.filterData(newUserGroupsData, this.userGroupsSearchTerms[i], true);
         }
 
         newUserGroupsData = this.dataTableService.sortData(newUserGroupsData, sortBy, sortOrder);
@@ -124,7 +125,7 @@ NfRegistryAddPolicyToBucket.prototype = {
         var newUsersData = this.users;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newUsersData = this.nfRegistryService.filterData(newUsersData, this.usersSearchTerms[i], true);
+            newUsersData = this.dataTableService.filterData(newUsersData, this.usersSearchTerms[i], true);
         }
 
         newUsersData = this.dataTableService.sortData(newUsersData, sortBy, sortOrder);

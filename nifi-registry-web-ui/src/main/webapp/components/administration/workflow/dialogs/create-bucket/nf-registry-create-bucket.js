@@ -18,19 +18,24 @@ var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
+var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
 
 /**
  * NfRegistryCreateBucket constructor.
  *
  * @param nfRegistryApi         The api service.
+ * @param fdsSnackBarService    The FDS snack bar service module.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @constructor
  */
-function NfRegistryCreateBucket(nfRegistryApi, nfRegistryService, matDialogRef) {
+function NfRegistryCreateBucket(nfRegistryApi, fdsSnackBarService, nfRegistryService, matDialogRef) {
+    // Services
+    this.snackBarService = fdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
+    // local state
     this.keepDialogOpen = false;
 };
 
@@ -52,6 +57,15 @@ NfRegistryCreateBucket.prototype = {
                 if (self.keepDialogOpen !== true) {
                     self.dialogRef.close();
                 }
+                self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'Bucket has been added.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
+                });
             } else {
                 self.dialogRef.close();
             }
@@ -74,6 +88,7 @@ NfRegistryCreateBucket.annotations = [
 
 NfRegistryCreateBucket.parameters = [
     NfRegistryApi,
+    fdsSnackBarsModule.FdsSnackBarService,
     NfRegistryService,
     ngMaterial.MatDialogRef
 ];

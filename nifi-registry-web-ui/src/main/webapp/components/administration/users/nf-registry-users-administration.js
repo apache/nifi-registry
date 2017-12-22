@@ -38,6 +38,7 @@ var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/
  * @constructor
  */
 function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute, fdsDialogService, matDialog) {
+    // Services
     this.route = activatedRoute;
     this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
