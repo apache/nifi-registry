@@ -570,6 +570,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                             if (tenantExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
                                                 throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
                                             }
+                                            if (!allGroupUsersExist(baseUserGroupProvider, group)) {
+                                                throw new IllegalStateException(String.format("Cannot create group '%s' with users that don't exist.", group.getName()));
+                                            }
                                             return baseConfigurableUserGroupProvider.addGroup(group);
                                         }
 
@@ -585,6 +588,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                             }
                                             if (!baseConfigurableUserGroupProvider.isConfigurable(group)) {
                                                 throw new IllegalArgumentException("The specified group does not support modification.");
+                                            }
+                                            if (!allGroupUsersExist(baseUserGroupProvider, group)) {
+                                                throw new IllegalStateException(String.format("Cannot update group '%s' to add users that don't exist.", group.getName()));
                                             }
                                             return baseConfigurableUserGroupProvider.updateGroup(group);
                                         }
@@ -782,10 +788,11 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     }
 
     /**
-     * Checks if another user exists with the same identity.
+     * Checks if another user or group exists with the same identity.
      *
-     * @param identifier identity of the user
-     * @param identity identity of the user
+     * @param userGroupProvider the userGroupProvider to use to lookup the tenant
+     * @param identifier identity of the tenant
+     * @param identity identity of the tenant
      * @return true if another user exists with the same identity, false otherwise
      */
     private static boolean tenantExists(final UserGroupProvider userGroupProvider, final String identifier, final String identity) {
@@ -804,6 +811,24 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         }
 
         return false;
+    }
+
+    /**
+     * Check that all users in the group exist.
+     *
+     * @param userGroupProvider the userGroupProvider to use to lookup the users
+     * @param group the group whose users will be checked for existence.
+     * @return true if another user exists with the same identity, false otherwise
+     */
+    private static boolean allGroupUsersExist(final UserGroupProvider userGroupProvider, final Group group) {
+        for (String userIdentifier : group.getUsers()) {
+            User user = userGroupProvider.getUser(userIdentifier);
+            if (user == null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
 }
