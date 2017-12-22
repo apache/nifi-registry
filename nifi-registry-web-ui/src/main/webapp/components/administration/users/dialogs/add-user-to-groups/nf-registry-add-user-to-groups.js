@@ -73,6 +73,7 @@ NfRegistryAddUserToGroups.prototype = {
         });
 
         this.filterGroups();
+        this.deselectAllUserGroups();
         this.determineAllUserGroupsSelectedState();
     },
 
