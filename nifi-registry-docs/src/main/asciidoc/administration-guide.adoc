@@ -15,15 +15,16 @@
 // limitations under the License.
 //
 Apache NiFi Registry System Administrator's Guide
-==========================================
+=================================================
 Apache NiFi Team <dev@nifi.apache.org>
 :homepage: http://nifi.apache.org
 
 System Requirements
 -------------------
+
 NiFi Registry has the following minimum system requirements:
 
-* Requires Java 8 or newer
+* Requires Java 8, newer than 1.8.0_45
 * Supported Operating Systems:
 ** Linux
 ** Unix
@@ -32,8 +33,6 @@ NiFi Registry has the following minimum system requirements:
 ** Google Chrome:  Current & (Current - 1)
 ** Mozilla FireFox: Current & (Current - 1)
 ** Safari:  Current & (Current - 1)
-
-**Note** Under sustained and extremely high throughput the CodeCache settings may need to be tuned to avoid sudden performance loss.  See the <<bootstrap_properties>> section for more information.
 
 How to install and start NiFi Registry
 --------------------------------------
@@ -55,59 +54,12 @@ How to install and start NiFi Registry
 When NiFi Registry first starts up, the following files and directories are created:
 
 * flow_storage directory
+* database directory
 * work directory
 * logs directory
 * run directory
 
 See the <<system_properties>> section of this guide for more information about NiFi Registry configuration files.
-
-
-Configuration Best Practices
-----------------------------
-
-NOTE: If you are running on Linux, consider these best practices. Typical Linux defaults are not necessarily well tuned for the needs of an IO intensive application like NiFi Registry.  For all of these areas, your distribution's requirements may vary.  Use these sections as advice, but consult your distribution-specific documentation for how best to achieve these recommendations.
-
-Maximum File Handles::
-NiFi Registry will at any one time potentially have a very large number of file handles open.  Increase the limits by editing '/etc/security/limits.conf' to add something like
-----
-*  hard  nofile  50000
-*  soft  nofile  50000
-----
-Maximum Forked Processes::
-NiFi Registry may be configured to generate a significant number of threads.  To increase the allowable number edit '/etc/security/limits.conf'
-----
-*  hard  nproc  10000
-*  soft  nproc  10000
-----
-And your distribution may require an edit to /etc/security/limits.d/90-nproc.conf by adding
-----
-*  soft  nproc  10000
-----
-
-Increase the number of TCP socket ports available::
-This is particularly important if your flow will be setting up and tearing
-down a large number of sockets in small period of time.
-----
-sudo sysctl -w net.ipv4.ip_local_port_range="10000 65000"
-----
-
-Set how long sockets stay in a TIMED_WAIT state when closed::
-You don't want your sockets to sit and linger too long given that you want to be able to quickly setup and teardown new sockets.  It is a good idea to read more about it but to adjust do something like
-----
-sudo sysctl -w net.ipv4.netfilter.ip_conntrack_tcp_timeout_time_wait="1"
-----
-
-Tell Linux you never want NiFi to swap::
-Swapping is fantastic for some applications.  It isn't good for something like
-NiFi Registry that always wants to be running.  To tell Linux you'd like swapping off you
-can edit '/etc/sysctl.conf' to add the following line
-----
-vm.swappiness = 0
-----
-For the partitions handling the various NiFi Registry repos turn off things like 'atime'.
-Doing so can cause a surprising bump in throughput.  Edit the '/etc/fstab' file
-and for the partition(s) of interest add the 'noatime' option.
-
 
 Security Configuration
 ----------------------
@@ -125,173 +77,45 @@ NiFi Registry provides several different configuration options for security purp
 |`nifi.registry.security.truststore` | Filename of the Truststore that will be used to authorize those connecting to NiFi Registry.  A secured instance with no Truststore will refuse all incoming connections.
 |`nifi.registry.security.truststoreType` | The type of the Truststore. Must be either `PKCS12` or `JKS`.  JKS is the preferred type, PKCS12 files will be loaded with BouncyCastle provider.
 |`nifi.registry.security.truststorePasswd` | The password for the Truststore.
-|`nifi.registry.security.needClientAuth` | Set to `true` to specify that connecting clients must authenticate themselves. This property is used by the NiFi Registry cluster protocol to indicate that nodes in the cluster will be authenticated and must have certificates that are trusted by the Truststores.
+|`nifi.registry.security.needClientAuth` | This specifies that connecting clients must authenticate with a client cert. Setting this to `false` will specify that connecting clients may optionally authenticate with a client cert, but may also login with a username and password against a configured identity provider. The default value is true.
 |==================================================================================================================================================
 
 Once the above properties have been configured, we can enable the User Interface to be accessed over HTTPS instead of HTTP. This is accomplished
-by setting the `nifi.web.https.host` and `nifi.web.https.port` properties. The `nifi.web.https.host` property indicates which hostname the server
-should run on. If it is desired that the HTTPS interface be accessible from all network interfaces, a value of `0.0.0.0` should be used.  To allow
-admins to configure the application to run only on specific network interfaces, `nifi.registry.web.http.network.interface*` or `nifi.registry.web.https.network.interface*` properties can be specified.
+by setting the `nifi.registry.web.https.host` and `nifi.registry.web.https.port` properties. The `nifi.registry.web.https.host` property indicates which hostname the server
+should run on. If it is desired that the HTTPS interface be accessible from all network interfaces, a value of `0.0.0.0` should be used.
 
 NOTE: It is important when enabling HTTPS that the `nifi.registry.web.http.port` property be unset.
-
-Similar to `nifi.registry.security.needClientAuth`, the web server can be configured to require certificate based client authentication for users accessing
-the User Interface. In order to do this it must be configured to not support username/password authentication using  <<ldap_login_identity_provider>> or <<kerberos_login_identity_provider>>. Either of these options
-will configure the web server to WANT certificate based client authentication. This will allow it to support users with certificates and those without
-that may be logging in with their credentials or those accessing anonymously. If username/password authentication and anonymous access are not configured,
-the web server will REQUIRE certificate based client authentication. See <<user_authentication>> for more details.
-
-
-TLS Generation Toolkit
-~~~~~~~~~~~~~~~~~~~~~~
-
-In order to facilitate the secure setup of NiFi Registry, you can use the `tls-toolkit` command line utility to automatically generate the required keystores, truststore, and relevant configuration files.
-
-NOTE: JKS keystores and truststores are recommended for NiFi Registry.  This tool allows the specification of other keystore types on the command line but will ignore a type of PKCS12 for use as the truststore because that format has some compatibility issues between BouncyCastle and Oracle implementations.
-
-The `tls-toolkit` command line tool has two primary modes of operation:
-
-1. Standalone -- generates the certificate authority, keystores, truststores, and nifi-registry.properties files in one command.
-2. Client/Server mode -- uses a Certificate Authority Server that accepts Certificate Signing Requests from clients, signs them, and sends the resulting certificates back.  Both client and server validate the other’s identity through a shared secret.
-
-Standalone
-^^^^^^^^^^
-Standalone mode is invoked by running `./bin/tls-toolkit.sh standalone -h` which prints the usage information along with descriptions of options that can be specified.
-
-You can use the following command line options with the `tls-toolkit` in standalone mode:
-
-* `-a`,`--keyAlgorithm <arg>`                   Algorithm to use for generated keys (default: `RSA`)
-* `-B`,`--clientCertPassword <arg>`             Password for client certificate. Must either be one value or one for each client DN (auto-generate if not specified)
-* `-c`,`--certificateAuthorityHostname <arg>`   Hostname of NiFi Certificate Authority (default: `localhost`)
-* `-C`,`--clientCertDn <arg>`                   Generate client certificate suitable for use in browser with specified DN (Can be specified multiple times)
-* `-d`,`--days <arg>`                           Number of days issued certificate should be valid for (default: `1095`)
-* `-f`,`--nifiPropertiesFile <arg>`             Base `nifi.properties` file to update (Embedded file identical to the one in a default NiFi install will be used if not specified)
-* `-g`,`--differentKeyAndKeystorePasswords`     Use different generated password for the key and the keystore
-* `-G`,`--globalPortSequence <arg>`             Use sequential ports that are calculated for all hosts according to the provided hostname expressions (Can be specified multiple times, MUST BE SAME FROM RUN TO RUN)
-* `-h`,`--help`                                 Print help and exit
-* `-k`,`--keySize <arg>`                        Number of bits for generated keys (default: `2048`)
-* `-K`,`--keyPassword <arg>`                    Key password to use. Must either be one value or one for each host (auto-generate if not specified)
-* `-n`,`--hostnames <arg>`                      Comma separated list of hostnames
-* `--nifiDnPrefix <arg>`                        String to prepend to hostname(s) when determining DN (default: `CN=`)
-* `--nifiDnSuffix <arg>`                        String to append to hostname(s) when determining DN (default: `, OU=NIFI`)
-* `-o`,`--outputDirectory <arg>`                The directory to output keystores, truststore, config files (default: `../bin`)
-* `-O`,`--isOverwrite`                          Overwrite existing host output
-* `-P`,`--trustStorePassword <arg>`             Keystore password to use. Must either be one value or one for each host (auto-generate if not specified)
-* `-s`,`--signingAlgorithm <arg>`               Algorithm to use for signing certificates (default: `SHA256WITHRSA`)
-* `-S`,`--keyStorePassword <arg>`               Keystore password to use. Must either be one value or one for each host (auto-generate if not specified)
-* `--subjectAlternativeNames <arg>`             Comma-separated list of domains to use as Subject Alternative Names in the certificate
-* `-T`,`--keyStoreType <arg>`                   The type of keystores to generate (default: `jks`)
-
-
-Hostname Patterns:
-
-* Square brackets can be used in order to easily specify a range of hostnames. Example: `[01-20]`
-* Parentheses can be used in order to specify that more than one NiFi instance will run on the given host(s). Example: `(5)`
-
-Examples:
-
-Create 4 sets of keystore, truststore, nifi.properties for localhost along with a client certificate with the given DN:
-----
-bin/tls-toolkit.sh standalone -n 'localhost(4)' -C 'CN=username,OU=NIFI'
-----
-
-Create keystore, truststore, nifi.properties for 10 NiFi hostnames in each of 4 subdomains:
-----
-bin/tls-toolkit.sh standalone -n 'nifi[01-10].subdomain[1-4].domain'
-----
-
-Create 2 sets of keystore, truststore, nifi.properties for 10 NiFi hostnames in each of 4 subdomains along with a client certificate with the given DN:
-----
-bin/tls-toolkit.sh standalone -n 'nifi[01-10].subdomain[1-4].domain(2)' -C 'CN=username,OU=NIFI'
-----
-
-
-Client/Server
-^^^^^^^^^^^^^
-Client/Server mode relies on a long-running Certificate Authority (CA) to issue certificates. The CA can be stopped when you’re not bringing nodes online.
-
-
-===== Server
-
-The CA server is invoked by running `./bin/tls-toolkit.sh server -h` which prints the usage information along with descriptions of options that can be specified.
-
-You can use the following command line options with the `tls-toolkit` in server mode:
-
-* `-a`,`--keyAlgorithm <arg>`                   Algorithm to use for generated keys (default: `RSA`)
-* `--configJsonIn <arg>`                        The place to read configuration info from (defaults to the value of configJson), implies useConfigJson if set (default: `configJson` value)
-* `-d`,`--days <arg>`                           Number of days issued certificate should be valid for (default: `1095`)
-* `-D`,`--dn <arg>`                             The dn to use for the CA certificate (default: `CN=YOUR_CA_HOSTNAME,OU=NIFI`)
-* `-f`,`--configJson <arg>`                     The place to write configuration info (default: `config.json`)
-* `-F`,`--useConfigJson`                        Flag specifying that all configuration is read from `configJson` to facilitate automated use (otherwise `configJson` will only be written to)
-* `-g`,`--differentKeyAndKeystorePasswords`     Use different generated password for the key and the keystore
-* `-h`,`--help`                                 Print help and exit
-* `-k`,`--keySize <arg>`                        Number of bits for generated keys (default: `2048`)
-* `-p`,`--PORT <arg>`                           The port for the Certificate Authority to listen on (default: `8443`)
-* `-s`,`--signingAlgorithm <arg>`               Algorithm to use for signing certificates (default: `SHA256WITHRSA`)
-* `-T`,`--keyStoreType <arg>`                   The type of keystores to generate (default: `jks`)
-* `-t`,`--token <arg>`                          The token to use to prevent MITM (required and must be same as one used by clients)
-
-===== Client
-
-The client can be used to request new Certificates from the CA. The client utility generates a keypair and Certificate Signing Request (CSR) and sends the CSR to the Certificate Authority. The client is invoked by running `./bin/tls-toolkit.sh client -h` which prints the usage information along with descriptions of options that can be specified.
-
-You can use the following command line options with the `tls-toolkit` in client mode:
-
-* `-a`,`--keyAlgorithm <arg>`                   Algorithm to use for generated keys (default: `RSA`)
-* `-c`,`--certificateAuthorityHostname <arg>`   Hostname of NiFi Certificate Authority (default: `localhost`)
-* `-C`,`--certificateDirectory <arg>`           The directory to write the CA certificate (default: `.`)
-* `--configJsonIn <arg>`                        The place to read configuration info from, implies `useConfigJson` if set (default: `configJson` value)
-* `-D`,`--dn <arg>`                             The DN to use for the client certificate (default: `CN=<localhost name>,OU=NIFI`) (this is auto-populated by the tool)
-* `-f`,`--configJson <arg>`                     The place to write configuration info (default: `config.json`)
-* `-F`,`--useConfigJson`                        Flag specifying that all configuration is read from `configJson` to facilitate automated use (otherwise `configJson` will only be written to)
-* `-g`,`--differentKeyAndKeystorePasswords`     Use different generated password for the key and the keystore
-* `-h`,`--help`                                 Print help and exit
-* `-k`,`--keySize <arg>`                        Number of bits for generated keys (default: `2048`)
-* `-p`,`--PORT <arg>`                           The port to use to communicate with the Certificate Authority (default: `8443`)
-* `--subjectAlternativeNames <arg>`             Comma-separated list of domains to use as Subject Alternative Names in the certificate
-* `-T`,`--keyStoreType <arg>`                   The type of keystores to generate (default: `jks`)
-* `-t`,`--token <arg>`                          The token to use to prevent MITM (required and must be same as one used by CA)
-
-After running the client you will have the CA’s certificate, a keystore, a truststore, and a `config.json` with information about them as well as their passwords.
-
-For a client certificate that can be easily imported into the browser, specify: `-T PKCS12`
 
 [[user_authentication]]
 User Authentication
 -------------------
 
-NiFi Registry supports user authentication via client certificates, via username/password, via Apache Knox, or via OpenId Connect (http://openid.net/connect).
+NiFi Registry supports user authentication via client certificates, or via username/password.
 
-Username/password authentication is performed by a 'Login Identity Provider'. The Login Identity Provider is a pluggable mechanism for
-authenticating users via their username/password. Which Login Identity Provider to use is configured in the _nifi-registry.properties_ file.
-Currently NiFi offers username/password with Login Identity Providers options for LDAP and Kerberos.
+Username/password authentication is performed by an 'Identity Provider'. The Identity Provider is a pluggable mechanism for
+authenticating users via their username/password. Which Identity Provider to use is configured in the _nifi-registry.properties_ file.
+Currently NiFi Registry offers Identity Providers for LDAP and Kerberos.
 
-The `nifi.registry.security.login.identity.provider.configuration.file` property specifies the configuration file for Login Identity Providers.
-The `nifi.registry.security.identity.provider` property indicates which of the configured Login Identity Provider should be
+The `nifi.registry.security.identity.provider.configuration.file` property specifies the configuration file for Identity Providers.
+The `nifi.registry.security.identity.provider` property indicates which of the configured Identity Providers should be
 used. By default, this property is not configured meaning that username/password must be explicitly enabled.
 
-During OpenId Connect authentication, NiFi Registry will redirect users to login with the Provider before returning to NiFi Registry. NiFi Registry will then call the Provider to obtain the user identity.
+NOTE: NiFi Registry can only be configured to use one Identity Provider at a given time.
 
-During Apache Knox authentication, NiFi Registry will redirect users to login with Apache Knox before returning to NiFi Registry. NiFi Registry will verify the Apache Knox
-token during authentication.
+A secured instance of NiFi Registry cannot be accessed anonymously.
 
-NOTE: NiFi Registry can only be configured for username/password, OpenId Connect, or Apache Knox at a given time. It does not support running each of
-these concurrently. NiFi Registrywill require client certificates for authenticating users over HTTPS if none of these are configured.
-
-A secured instance of NiFi Registry cannot be accessed anonymously unless configured to use an LDAP or Kerberos Login Identity Provider, which in turn must be configured to explicitly allow anonymous access. Anonymous access is not currently possible by the default FileAuthorizer (see <<authorizer-configuration>>), but is a future effort (https://issues.apache.org/jira/browse/NIFI-2730[NIFI-2730]).
-
-NOTE: NiFi Registry does not perform user authentication over HTTP. Using HTTP, all users will be granted all roles.
+NOTE: NiFi Registry does not perform user authentication over HTTP. Using HTTP, all users will have full permissions.
 
 [[ldap_login_identity_provider]]
 Lightweight Directory Access Protocol (LDAP)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below is an example and description of configuring a Login Identity Provider that integrates with a Directory Server to authenticate users.
+Below is an example and description of configuring a Identity Provider that integrates with a Directory Server to authenticate users.
 
 ----
 <provider>
-    <identifier>ldap-provider</identifier>
-    <class>org.apache.nifi.ldap.LdapProvider</class>
+    <identifier>ldap-identity-provider</identifier>
+    <class>org.apache.nifi.registry.security.ldap.LdapIdentityProvider</class>
     <property name="Authentication Strategy">START_TLS</property>
 
     <property name="Manager DN"></property>
@@ -323,7 +147,7 @@ Below is an example and description of configuring a Login Identity Provider tha
 With this configuration, username/password authentication can be enabled by referencing this provider in _nifi-registry.properties_.
 
 ----
-nifi.registry.security.identity.provider=ldap-provider
+nifi.registry.security.identity.provider=ldap-identity-provider
 ----
 
 [options="header,footer"]
@@ -360,8 +184,8 @@ Below is an example and description of configuring a Login Identity Provider tha
 
 ----
 <provider>
-    <identifier>kerberos-provider</identifier>
-    <class>org.apache.nifi.kerberos.KerberosProvider</class>
+    <identifier>kerberos-identity-provider</identifier>
+    <class>org.apache.nifi.registry.web.security.authentication.kerberos.KerberosIdentityProvider</class>
     <property name="Default Realm">NIFI.APACHE.ORG</property>
     <property name="Kerberos Config File">/etc/krb5.conf</property>
     <property name="Authentication Expiration">12 hours</property>
@@ -371,7 +195,7 @@ Below is an example and description of configuring a Login Identity Provider tha
 With this configuration, username/password authentication can be enabled by referencing this provider in _nifi-registry.properties_.
 
 ----
-nifi.registry.security.user.identity.provider=kerberos-provider
+nifi.registry.security.user.identity.provider=kerberos-identity-provider
 ----
 
 [options="header,footer"]
@@ -384,49 +208,11 @@ nifi.registry.security.user.identity.provider=kerberos-provider
 
 See also <<kerberos_service>> to allow single sign-on access via client Kerberos tickets.
 
-[[openid_connect]]
-OpenId Connect
-~~~~~~~~~~~~~~
-
-To enable authentication via OpenId Connect the following properties must be configured in _nifi-registry.properties_.
-
-[options="header,footer"]
-|==================================================================================================================================================
-| Property Name | Description
-|`nifi.security.user.oidc.discovery.url` | The discovery URL for the desired OpenId Connect Provider (http://openid.net/specs/openid-connect-discovery-1_0.html).
-|`nifi.security.user.oidc.connect.timeout` | Connect timeout when communicating with the OpenId Connect Provider.
-|`nifi.security.user.oidc.read.timeout` | Read timeout when communicating with the OpenId Connect Provider.
-|`nifi.security.user.oidc.client.id` | The client id for NiFi after registration with the OpenId Connect Provider.
-|`nifi.security.user.oidc.client.secret` | The client secret for NiFi after registration with the OpenId Connect Provider.
-|`nifi.security.user.oidc.preferred.jwsalgorithm` | The preferred algorithm for for validating identity tokens. If this value is blank, it will default to 'RS256' which is required to be supported
-by the OpenId Connect Provider according to the specification. If this value is 'HS256', 'HS384', or 'HS512', NiFi will attempt to validate HMAC protected tokens using the specified client secret.
-If this value is 'none', NiFi will attempt to validate unsecured/plain tokens. Other values for this algorithm will attempt to parse as an RSA or EC algorithm to be used in conjunction with the
-JSON Web Key (JWK) provided through the jwks_uri in the metadata found at the discovery URL.
-|==================================================================================================================================================
-
-[[apache_knox]]
-Apache Knox
-~~~~~~~~~~~
-
-To enable authentication via Apache Knox the following properties must be configured in nifi-registry.properties.
-
-[options="header,footer"]
-|==================================================================================================================================================
-| Property Name | Description
-|`nifi.security.user.knox.url` | The URL for the Apache Knox log in page.
-|`nifi.security.user.knox.publicKey` | The path to the Apache Knox public key that will be used to verify the signatures of the authentication tokens in the HTTP Cookie.
-|`nifi.security.user.knox.cookieName` | The name of the HTTP Cookie that Apache Knox will generate after successful log in.
-|`nifi.security.user.knox.audiences` | Optional. A comma separate listed of allowed audiences. If set, the audience in the token must be present in
-this listing. The audience that is populated in the token can be configured in Knox.
-|==================================================================================================================================================
-
 [[multi-tenant-authorization]]
-Multi-Tenant Authorization
---------------------------
-After you have configured NiFi to run securely and with an authentication mechanism, you must configure who has access to the system, and the level of their access.
-You can do this using 'multi-tenant authorization'. Multi-tenant authorization enables multiple groups of users (tenants) to command, control, and observe different
-parts of the dataflow, with varying levels of authorization. When an authenticated user attempts to view or modify a NiFi resource, the system checks whether the
-user has privileges to perform that action. These privileges are defined by policies that you can apply system-wide or to individual components.
+Authorization
+-------------
+After you have configured NiFi Registry to run securely and with an authentication mechanism, you must configure who has access to the system, and the level of their access.
+This is done by defining policies that give users and groups permissions to perform a particular action. These policies are defined in an 'authorizer'.
 
 [[authorizer-configuration]]
 Authorizer Configuration
@@ -434,10 +220,10 @@ Authorizer Configuration
 
 An 'authorizer' grants users the privileges to manage users and policies by creating preliminary authorizations at startup.
 
-Authorizers are configured using two properties in the 'nifi.properties' file:
+Authorizers are configured using two properties in the 'nifi-registry.properties' file:
 
-* The `nifi.authorizer.configuration.file` property specifies the configuration file where authorizers are defined.  By default, the 'authorizers.xml' file located in the root installation conf directory is selected.
-* The `nifi.security.user.authorizer` property indicates which of the configured authorizers in the 'authorizers.xml' file to use.
+* The `nifi.registry.security.authorizers.configuration.file` property specifies the configuration file where authorizers are defined.  By default, the 'authorizers.xml' file located in the root installation conf directory is selected.
+* The `nifi.registry.security.authorizer` property indicates which of the configured authorizers in the 'authorizers.xml' file to use.
 
 [[authorizers-setup]]
 Authorizers.xml Setup
@@ -455,7 +241,8 @@ The default UserGroupProvider is the FileUserGroupProvider, however, you can dev
 * Legacy Authorized Users File - The full path to an existing authorized-users.xml that will be automatically be used to load the users and groups into the Users File.
 * Initial User Identity - The identity of a users and systems to seed the Users File. The name of each property must be unique, for example: "Initial User Identity A", "Initial User Identity B", "Initial User Identity C" or "Initial User Identity 1", "Initial User Identity 2", "Initial User Identity 3"
 
-Another option for the UserGroupProvider is the LdapUserGroupProvider. By default, this option is commented out but can be configured in lieu of the FileUserGroupProvider. This will sync users and groups from a directory server and will present them in NiFi UI in read only form. The LdapUserGroupProvider has the following properties:
+Another option for the UserGroupProvider is the LdapUserGroupProvider. By default, this option is commented out but can be configured in lieu of the FileUserGroupProvider.
+This will sync users and groups from a directory server and will present them in NiFi Registry UI in read only form. The LdapUserGroupProvider has the following properties:
 
 * Authentication Strategy - How the connection to the LDAP server is authenticated. Possible values are ANONYMOUS, SIMPLE, LDAPS, or START_TLS
 * Manager DN - The DN of the manager that is used to bind to the LDAP server to search for users.
@@ -480,15 +267,14 @@ Another option for the UserGroupProvider is the LdapUserGroupProvider. By defaul
 * User Search Scope - Search scope for searching users (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching users.
 * User Search Filter - Filter for searching for users against the 'User Search Base' (i.e. (memberof=cn=team1,ou=groups,o=nifi) ). Optional.
 * User Identity Attribute - Attribute to use to extract user identity (i.e. cn). Optional. If not set, the entire DN is used.
-* User Group Name Attribute - Attribute to use to define group membership (i.e. memberof). Optional. If not set group membership will not be calculated through the users. Will rely on group membership being defined through 'Group Member Attribute' if set. The value of this property is the name of the attribute in the user ldap entry that associates them with a group. The value of that user attribute could be a dn or group name for instance. What value is expected is configured in the 'User Group Name Attribute - Referenced Group Attribute'.
-* User Group Name Attribute - Referenced Group Attribute - If blank, the value of the attribute defined in 'User Group Name Attribute' is expected to be the full dn of the group. If not blank, this property will define the attribute of the group ldap entry that the value of the attribute defined in 'User Group Name Attribute' is referencing (i.e. name). Use of this property requires that 'Group Search Base' is also configured.
+* User Group Name Attribute - Attribute to use to define group membership (i.e. memberof). Optional. If not set group membership will not be calculated through the users. Will rely on group membership being defined through Group Member Attribute if set.
 * Group Search Base - Base DN for searching for groups (i.e. ou=groups,o=nifi). Required to search groups.
 * Group Object Class - Object class for identifying groups (i.e. groupOfNames). Required if searching groups.
 * Group Search Scope - Search scope for searching groups (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching groups.
 * Group Search Filter - Filter for searching for groups against the 'Group Search Base'. Optional.
 * Group Name Attribute - Attribute to use to extract group name (i.e. cn). Optional. If not set, the entire DN is used.
-* Group Member Attribute - Attribute to use to define group membership (i.e. member). Optional. If not set group membership will not be calculated through the groups. Will rely on group membership being defined through 'User Group Name Attribute' if set. The value of this property is the name of the attribute in the group ldap entry that associates them with a user. The value of that group attribute could be a dn or memberUid for instance. What value is expected is configured in the 'Group Member Attribute - Referenced User Attribute'. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)
-* Group Member Attribute - Referenced User Attribute - If blank, the value of the attribute defined in 'Group Member Attribute' is expected to be the full dn of the user. If not blank, this property will define the attribute of the user ldap entry that the value of the attribute defined in 'Group Member Attribute' is referencing (i.e. uid). Use of this property requires that 'User Search Base' is also configured. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)
+* Group Member Attribute - Group Member Attribute - Attribute to use to define group membership (i.e. member). Optional. If not set group membership will not be calculated through the groups. Will rely on group member being defined through User Group Name Attribute if set.
+
 
 Another option for the UserGroupProvider are composite implementations. This means that multiple sources/implementations can be configured and composed. For instance, an admin can configure users/groups to be loaded from a file and a directory server. There are two composite implementations, one that supports multiple UserGroupProviders and one that supports multiple UserGroupProviders and a single configurable UserGroupProvider.
 
@@ -506,10 +292,9 @@ The default AccessPolicyProvider is the FileAccessPolicyProvider, however, you c
 * User Group Provider - The identifier for an User Group Provider defined above that will be used to access users and groups for use in the managed access policies.
 * Authorizations File - The file where the FileAccessPolicyProvider will store policies.
 * Initial Admin Identity - The identity of an initial admin user that will be granted access to the UI and given the ability to create additional users, groups, and policies. The value of this property could be a DN when using certificates or LDAP, or a Kerberos principal. This property will only be used when there are no other policies defined. If this property is specified then a Legacy Authorized Users File can not be specified.
-* Legacy Authorized Users File - The full path to an existing authorized-users.xml that will be automatically converted to the new authorizations model. If this property is specified then an Initial Admin Identity can not be specified, and this property will only be used when there are no other users, groups, and policies defined.
-* Node Identity - The identity of a NiFi cluster node. When clustered, a property for each node should be defined, so that every node knows about every other node. If not clustered these properties can be ignored. The name of each property must be unique, for example for a three node cluster: "Node Identity A", "Node Identity B", "Node Identity C" or "Node Identity 1", "Node Identity 2", "Node Identity 3"
+* NiFi Identity - The identity of a NiFi instance/node that will be accessing this registry. Each NiFi Identity will be granted permission to proxy user requests, as well as read any bucket to perform status checks.
 
-The identities configured in the Initial Admin Identity, the Node Identity properties, or discovered in a Legacy Authorized Users File must be available in the configured User Group Provider.
+The identities configured in the Initial Admin Identity and NiFi Identity properties must be available in the configured User Group Provider.
 
 The default authorizer is the StandardManagedAuthorizer, however, you can develop additional authorizers as extensions.  The StandardManagedAuthorizer has the following properties:
 
@@ -521,40 +306,42 @@ FileAuthorizer has the following properties.
 * Authorizations File - The file where the FileAuthorizer stores policies.  By default, the 'authorizations.xml' in the 'conf' directory is chosen.
 * Users File - The file where the FileAuthorizer stores users and groups.  By default, the 'users.xml' in the 'conf' directory is chosen.
 * Initial Admin Identity - The identity of an initial admin user that is granted access to the UI and given the ability to create additional users, groups, and policies. This property is only used when there are no other users, groups, and policies defined.
-* Legacy Authorized Users File - The full path to an existing authorized-users.xml that is automatically converted to the multi-tenant authorization model.  This property is only used when there  are no other users, groups, and policies defined.
-* Node Identity - The identity of a NiFi cluster node. When clustered, a property for each node should be defined, so that every node knows about every other node. If not clustered, these properties can be ignored.
+* NiFi Identity - The identity of a NiFi instance/node that will be accessing this registry. Each NiFi Identity will be granted permission to proxy user requests, as well as read any bucket to perform status checks.
 
 [[initial-admin-identity]]
-Initial Admin Identity  (New NiFi Instance)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Initial Admin Identity  (New NiFi Registry Instance)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are setting up a secured NiFi instance for the first time, you must manually designate an “Initial Admin Identity” in the 'authorizers.xml' file.  This initial admin user is granted access to the UI and given the ability to create additional users, groups, and policies. The value of this property could be a DN (when using certificates or LDAP) or a Kerberos principal.  If you are the NiFi administrator, add yourself as the “Initial Admin Identity”.
+If you are setting up a secured NiFi Registry instance for the first time, you must manually designate an “Initial Admin Identity” in the 'authorizers.xml' file.
+This initial admin user is granted access to the UI and given the ability to create additional users, groups, and policies.
+The value of this property could be a DN (when using certificates or LDAP) or a Kerberos principal.
+If you are the NiFi Registry administrator, add yourself as the “Initial Admin Identity”.
 
 Here is an example LDAP entry using the name John Smith:
 
 ----
 <authorizers>
+
     <userGroupProvider>
         <identifier>file-user-group-provider</identifier>
-        <class>org.apache.nifi.authorization.FileUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider</class>
         <property name="Users File">./conf/users.xml</property>
         <property name="Legacy Authorized Users File"></property>
-
         <property name="Initial User Identity 1">cn=John Smith,ou=people,dc=example,dc=com</property>
     </userGroupProvider>
+
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
-        <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileAccessPolicyProvider</class>
         <property name="User Group Provider">file-user-group-provider</property>
         <property name="Authorizations File">./conf/authorizations.xml</property>
-        <property name="Initial Admin Identity">cn=John Smith,ou=people,dc=example,dc=com</property>
-        <property name="Legacy Authorized Users File"></property>
-
-        <property name="Node Identity 1"></property>
+        <property name="Initial Admin Identity">cn=John Smith,ou=people,dc=example,dc=com</property
+        <property name="NiFi Identity 1"></property>
     </accessPolicyProvider>
+
     <authorizer>
         <identifier>managed-authorizer</identifier>
-        <class>org.apache.nifi.authorization.StandardManagedAuthorizer</class>
+        <class>org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer</class>
         <property name="Access Policy Provider">file-access-policy-provider</property>
     </authorizer>
 </authorizers>
@@ -564,37 +351,40 @@ Here is an example Kerberos entry using the name John Smith and realm `NIFI.APAC
 
 ----
 <authorizers>
+
     <userGroupProvider>
         <identifier>file-user-group-provider</identifier>
-        <class>org.apache.nifi.authorization.FileUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider</class>
         <property name="Users File">./conf/users.xml</property>
-        <property name="Legacy Authorized Users File"></property>
-
         <property name="Initial User Identity 1">johnsmith@NIFI.APACHE.ORG</property>
     </userGroupProvider>
+
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
-        <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileAccessPolicyProvider</class>
         <property name="User Group Provider">file-user-group-provider</property>
         <property name="Authorizations File">./conf/authorizations.xml</property>
         <property name="Initial Admin Identity">johnsmith@NIFI.APACHE.ORG</property>
-        <property name="Legacy Authorized Users File"></property>
-
-        <property name="Node Identity 1"></property>
+        <property name="NiFi Identity 1"></property>
     </accessPolicyProvider>
+
     <authorizer>
         <identifier>managed-authorizer</identifier>
-        <class>org.apache.nifi.authorization.StandardManagedAuthorizer</class>
+        <class>org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer</class>
         <property name="Access Policy Provider">file-access-policy-provider</property>
     </authorizer>
 </authorizers>
 ----
 
-After you have edited and saved the 'authorizers.xml' file, restart NiFi.  The “Initial Admin Identity” user and administrative policies are added to the 'users.xml' and 'authorizations.xml' files during restart. Once NiFi starts, the “Initial Admin Identity” user is able to access the UI and begin managing users, groups, and policies.
+After you have edited and saved the 'authorizers.xml' file, restart NiFi Registry.  The “Initial Admin Identity” user and administrative policies are
+added to the 'users.xml' and 'authorizations.xml' files during restart. Once NiFi Registry starts, the “Initial Admin Identity” user is able to access
+the UI and begin managing users, groups, and policies.
 
-NOTE: For a brand new secure flow, providing the "Initial Admin Identity" gives that user access to get into the UI and to manage users, groups and policies.  But if that user wants to start modifying the flow, they need to grant themselves policies for the root process group. The system is unable to do this automatically because in a new flow the UUID of the root process group is not permanent until the flow.xml.gz is generated.  If the NiFi instance is an upgrade from an existing flow.xml.gz or a 1.x instance going from unsecure to secure, then the "Initial Admin Identity" user is automatically given the privileges to modify the flow.
+NOTE: If initial NiFi identities are not provided, that can be added through the UI at a later time by first creating a user for the given
+NiFi identity, and then giving that user Proxy permissions, and permission to Buckets/READ in order to read all buckets.
 
-Here is an example loading users and groups from LDAP. Group membership will be driven through the member attribute of each group. Authorization will still use file based access policies:
+Here is an example loading users and groups from LDAP. Group membership will be driven through the member attribute of each group.
+Authorization will still use file based access policies:
 
 ----
 dn: cn=User 1,ou=users,o=nifi
@@ -625,7 +415,7 @@ member: cn=User 2,ou=users,o=nifi
 <authorizers>
     <userGroupProvider>
         <identifier>ldap-user-group-provider</identifier>
-        <class>org.apache.nifi.ldap.tenants.LdapUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.ldap.tenants.LdapUserGroupProvider</class>
         <property name="Authentication Strategy">ANONYMOUS</property>
 
         <property name="Manager DN"></property>
@@ -655,7 +445,6 @@ member: cn=User 2,ou=users,o=nifi
         <property name="User Search Filter"></property>
         <property name="User Identity Attribute">cn</property>
         <property name="User Group Name Attribute"></property>
-        <property name="User Group Name Attribute - Referenced Group Attribute"></property>
 
         <property name="Group Search Base">ou=groups,o=nifi</property>
         <property name="Group Object Class">groupOfNames</property>
@@ -663,21 +452,20 @@ member: cn=User 2,ou=users,o=nifi
         <property name="Group Search Filter"></property>
         <property name="Group Name Attribute">cn</property>
         <property name="Group Member Attribute">member</property>
-        <property name="Group Member Attribute - Referenced User Attribute"></property>
     </userGroupProvider>
+
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
-        <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileAccessPolicyProvider</class>
         <property name="User Group Provider">ldap-user-group-provider</property>
         <property name="Authorizations File">./conf/authorizations.xml</property>
         <property name="Initial Admin Identity">John Smith</property>
-        <property name="Legacy Authorized Users File"></property>
-
-        <property name="Node Identity 1"></property>
+        <property name="NiFi Identity 1"></property>
     </accessPolicyProvider>
+
     <authorizer>
         <identifier>managed-authorizer</identifier>
-        <class>org.apache.nifi.authorization.StandardManagedAuthorizer</class>
+        <class>org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer</class>
         <property name="Access Policy Provider">file-access-policy-provider</property>
     </authorizer>
 </authorizers>
@@ -685,106 +473,23 @@ member: cn=User 2,ou=users,o=nifi
 
 The 'Initial Admin Identity' value would have loaded from the cn from John Smith's entry based on the 'User Identity Attribute' value.
 
-Here is an example loading users and groups from LDAP. Group membership will be driven through the member attribute of each group. Authorization will still use file based access policies:
-
-----
-dn: uid=User 1,ou=Users,dc=local
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-uid: user1
-cn: User 1
-
-dn: uid=User 2,ou=Users,dc=local
-objectClass: inetOrgPerson
-objectClass: posixAccount
-objectClass: shadowAccount
-uid: user2
-cn: User 2
-
-dn: cn=Managers,ou=Groups,dc=local
-objectClass: posixGroup
-cn: Managers
-memberUid: user1
-memberUid: user2
-
-<authorizers>
-    <userGroupProvider>
-        <identifier>ldap-user-group-provider</identifier>
-        <class>org.apache.nifi.ldap.tenants.LdapUserGroupProvider</class>
-        <property name="Authentication Strategy">ANONYMOUS</property>
-
-        <property name="Manager DN"></property>
-        <property name="Manager Password"></property>
-
-        <property name="TLS - Keystore"></property>
-        <property name="TLS - Keystore Password"></property>
-        <property name="TLS - Keystore Type"></property>
-        <property name="TLS - Truststore"></property>
-        <property name="TLS - Truststore Password"></property>
-        <property name="TLS - Truststore Type"></property>
-        <property name="TLS - Client Auth"></property>
-        <property name="TLS - Protocol"></property>
-        <property name="TLS - Shutdown Gracefully"></property>
-
-        <property name="Referral Strategy">FOLLOW</property>
-        <property name="Connect Timeout">10 secs</property>
-        <property name="Read Timeout">10 secs</property>
-
-        <property name="Url">ldap://localhost:10389</property>
-        <property name="Page Size"></property>
-        <property name="Sync Interval">30 mins</property>
-
-        <property name="User Search Base">ou=Groups,dc=local</property>
-        <property name="User Object Class">posixAccount</property>
-        <property name="User Search Scope">ONE_LEVEL</property>
-        <property name="User Search Filter"></property>
-        <property name="User Identity Attribute">cn</property>
-        <property name="User Group Name Attribute"></property>
-        <property name="User Group Name Attribute - Referenced Group Attribute"></property>
-
-        <property name="Group Search Base">ou=Groups,dc=local</property>
-        <property name="Group Object Class">posixGroup</property>
-        <property name="Group Search Scope">ONE_LEVEL</property>
-        <property name="Group Search Filter"></property>
-        <property name="Group Name Attribute">cn</property>
-        <property name="Group Member Attribute">memberUid</property>
-        <property name="Group Member Attribute - Referenced User Attribute">uid</property>
-    </userGroupProvider>
-    <accessPolicyProvider>
-        <identifier>file-access-policy-provider</identifier>
-        <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
-        <property name="User Group Provider">ldap-user-group-provider</property>
-        <property name="Authorizations File">./conf/authorizations.xml</property>
-        <property name="Initial Admin Identity">John Smith</property>
-        <property name="Legacy Authorized Users File"></property>
-
-        <property name="Node Identity 1"></property>
-    </accessPolicyProvider>
-    <authorizer>
-        <identifier>managed-authorizer</identifier>
-        <class>org.apache.nifi.authorization.StandardManagedAuthorizer</class>
-        <property name="Access Policy Provider">file-access-policy-provider</property>
-    </authorizer>
-</authorizers>
-----
-
-Here is an example composite implementation loading users and groups from LDAP and a local file. Group membership will be driven through the member attribute of each group. The users from LDAP will be read only while the users loaded from the file will be configurable in UI.
+Here is an example composite implementation loading users and groups from LDAP and a local file. Group membership will be driven through
+the member attribute of each group. The users from LDAP will be read only while the users loaded from the file will be configurable in UI.
 
 ----
 <authorizers>
+
     <userGroupProvider>
         <identifier>file-user-group-provider</identifier>
-        <class>org.apache.nifi.authorization.FileUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider</class>
         <property name="Users File">./conf/users.xml</property>
-        <property name="Legacy Authorized Users File"></property>
-
         <property name="Initial User Identity 1">cn=nifi-node1,ou=servers,dc=example,dc=com</property>
         <property name="Initial User Identity 2">cn=nifi-node2,ou=servers,dc=example,dc=com</property>
     </userGroupProvider>
+
     <userGroupProvider>
         <identifier>ldap-user-group-provider</identifier>
-        <class>org.apache.nifi.ldap.tenants.LdapUserGroupProvider</class>
+        <class>org.apache.nifi.registry.security.ldap.tenants.LdapUserGroupProvider</class>
         <property name="Authentication Strategy">ANONYMOUS</property>
 
         <property name="Manager DN"></property>
@@ -814,7 +519,6 @@ Here is an example composite implementation loading users and groups from LDAP a
         <property name="User Search Filter"></property>
         <property name="User Identity Attribute">cn</property>
         <property name="User Group Name Attribute"></property>
-        <property name="User Group Name Attribute - Referenced Group Attribute"></property>
 
         <property name="Group Search Base">ou=groups,o=nifi</property>
         <property name="Group Object Class">groupOfNames</property>
@@ -822,145 +526,135 @@ Here is an example composite implementation loading users and groups from LDAP a
         <property name="Group Search Filter"></property>
         <property name="Group Name Attribute">cn</property>
         <property name="Group Member Attribute">member</property>
-        <property name="Group Member Attribute - Referenced User Attribute"></property>
     </userGroupProvider>
+
     <userGroupProvider>
         <identifier>composite-user-group-provider</identifier>
-        <class>org.apache.nifi.authorization.CompositeConfigurableUserGroupProvider</class>
-        <property name="Configurable User Group Provider">file-user-group-provider</property>
-        <property name="User Group Provider 1">ldap-user-group-provider</property>
+        <class>org.apache.nifi.registry.security.authorization.CompositeUserGroupProvider</class>
+        <property name="User Group Provider 1">file-user-group-provider</property>
+        <property name="User Group Provider 2">ldap-user-group-provider</property>
     </userGroupProvider>
+
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
-        <class>org.apache.nifi.authorization.FileAccessPolicyProvider</class>
+        <class>org.apache.nifi.registry.security.authorization.file.FileAccessPolicyProvider</class>
         <property name="User Group Provider">composite-user-group-provider</property>
         <property name="Authorizations File">./conf/authorizations.xml</property>
         <property name="Initial Admin Identity">John Smith</property>
-        <property name="Legacy Authorized Users File"></property>
-
-        <property name="Node Identity 1">cn=nifi-node1,ou=servers,dc=example,dc=com</property>
-        <property name="Node Identity 2">cn=nifi-node2,ou=servers,dc=example,dc=com</property>
+        <property name="NiFi Identity 1">cn=nifi-node1,ou=servers,dc=example,dc=com</property>
+        <property name="NiFi Identity 2">cn=nifi-node2,ou=servers,dc=example,dc=com</property>
     </accessPolicyProvider>
+
     <authorizer>
         <identifier>managed-authorizer</identifier>
-        <class>org.apache.nifi.authorization.StandardManagedAuthorizer</class>
+        <class>org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer</class>
         <property name="Access Policy Provider">file-access-policy-provider</property>
     </authorizer>
 </authorizers>
 ----
 
-In this example, the users and groups are loaded from LDAP but the servers are managed in a local file. The 'Initial Admin Identity' value came from an attribute in a LDAP entry based on the 'User Identity Attribute'. The 'Node Identity' values are established in the local file using the 'Initial User Identity' properties.
-
-
-After you have edited and saved the 'authorizers.xml' file, restart NiFi. Users and roles from the 'authorized-users.xml' file are converted and added as identities and policies in the 'users.xml' and 'authorizations.xml' files.  Once the application starts, users who previously had a legacy Administrator role can access the UI and begin managing users, groups, and policies.
-
+In this example, the users and groups are loaded from LDAP but the servers are managed in a local file. The 'Initial Admin Identity' value came
+from an attribute in a LDAP entry based on the 'User Identity Attribute'. The 'NiFi Identity' values are established in the local file using the
+'Initial User Identity' properties.
 
 
 Encrypted Passwords in Configuration Files
 ------------------------------------------
 
-In order to facilitate the secure setup of NiFi, you can use the `encrypt-config` command line utility to encrypt raw configuration values that NiFi decrypts in memory on startup. This extensible protection scheme transparently allows NiFi to use raw values in operation, while protecting them at rest.  In the future, hardware security modules (HSM) and external secure storage mechanisms will be integrated, but for now, an AES encryption provider is the default implementation.
-
-This is a change in behavior; prior to 1.0, all configuration values were stored in plaintext on the file system. POSIX file permissions were recommended to limit unauthorized access to these files
+In order to facilitate the secure setup of NiFi Registry, you can use the `encrypt-config` command line utility to encrypt raw configuration values
+that NiFi Registry decrypts in memory on startup. This extensible protection scheme transparently allows NiFi Registry to use raw values in operation,
+while protecting them at rest.  In the future, hardware security modules (HSM) and external secure storage mechanisms will be integrated, but for now,
+an AES encryption provider is the default implementation.
 
 If no administrator action is taken, the configuration values remain unencrypted.
+
+NOTE: The `encrypt-config` tool for NiFi Registry is implemented as an additional mode to the existing tool in the `nifi-toolkit`. The following sections
+assume you have downloaded the binary for the nifi-toolkit.
 
 [[encrypt-config_tool]]
 Encrypt-Config Tool
 ~~~~~~~~~~~~~~~~~~~
 
-The `encrypt-config` command line tool (invoked as `./bin/encrypt-config.sh` or `bin\encrypt-config.bat`) reads from a 'nifi.properties' file with plaintext sensitive configuration values, prompts for a master password or raw hexadecimal key, and encrypts each value. It replaces the plain values with the protected value in the same file, or writes to a new 'nifi.properties' file if specified.
+The `encrypt-config` command line tool can be used to encrypt NiFi Registry configuration by invoking the tool with the following command:
 
-The default encryption algorithm utilized is AES/GCM 128/256-bit. 128-bit is used if the JCE Unlimited Strength Cryptographic Jurisdiction Policy files are not installed, and 256-bit is used if they are installed.
+----
+./bin/encrypt-config nifi-registry [options]
+----
 
-You can use the following command line options with the `encrypt-config` tool:
+The options are the following:
 
- * `-A`,`--newFlowAlgorithm <arg>`               The algorithm to use to encrypt the sensitive processor properties in flow.xml.gz
- * `-b`,`--bootstrapConf <arg>`                  The bootstrap.conf file to persist master key
- * `-e`,`--oldKey <arg>`                         The old raw hexadecimal key to use during key migration
- * `-f`,`--flowXml <arg>`                        The flow.xml.gz file currently protected with old password (will be overwritten)
- * `-g`,`--outputFlowXml <arg>`                  The destination flow.xml.gz file containing protected config values (will not modify input flow.xml.gz)
- * `-h`,`--help`                                 Prints this usage message
- * `-i`,`--outputLoginIdentityProviders <arg>`   The destination login-identity-providers.xml file containing protected config values (will not modify input login-identity-providers.xml)
- * `-k`,`--key <arg>`                            The raw hexadecimal key to use to encrypt the sensitive properties
- * `-l`,`--loginIdentityProviders <arg>`         The login-identity-providers.xml file containing unprotected config values (will be overwritten)
- * `-m`,`--migrate`                              If provided, the nifi.properties and/or login-identity-providers.xml sensitive properties will be re-encrypted with a new key
- * `-n`,`--niFiProperties <arg>`                 The nifi.properties file containing unprotected config values (will be overwritten)
- * `-o`,`--outputNiFiProperties <arg>`           The destination nifi.properties file containing protected config values (will not modify input nifi.properties)
- * `-p`,`--password <arg>`                       The password from which to derive the key to use to encrypt the sensitive properties
- * `-P`,`--newFlowProvider <arg>`                The security provider to use to encrypt the sensitive processor properties in flow.xml.gz
- * `-r`,`--useRawKey`                            If provided, the secure console will prompt for the raw key value in hexadecimal form
- * `-s`,`--propsKey <arg>`                       The password or key to use to encrypt the sensitive processor properties in flow.xml.gz
- * `-v`,`--verbose`                              Sets verbose mode (default false)
- * `-w`,`--oldPassword <arg>`                    The old password from which to derive the key during migration
- * `-x`,`--encryptFlowXmlOnly`                   If provided, the properties in flow.xml.gz will be re-encrypted with a new key but the nifi.properties and/or login-identity-providers.xml files will not be modified
+ * -a,--authorizers-xml <ARG>                   The authorizers.xml file containing unprotected config values. This file will be overwritten if no output file is specified.
+ * -A,--output-authorizers-xml <ARG>            The destination authorizers.xml file containing protected config values. If specified, the input authorizers.xml will not be modified.
+ * -b,--bootstrap-conf <ARG>                    The bootstrap.conf file containing no master key or an existing master key. If a new password/key is specified and no output bootstrap.conf file is specified, then this file will be overwritten to persist the new master key.
+ * -B,--output-bootstrap-conf <ARG>             The destination bootstrap.conf file to persist master key. If specified, the  input bootstrap.conf will not be modified.
+ * -h,--help                                    Show usage information (this message)
+ * -i,--identity-providers-xml <ARG>            The identity-providers.xml file containing unprotected config values. This file will be overwritten if no output file is specified.
+ * -I,--output-identity-providers-xml <ARG>     The destination identity-providers.xml file containing protected config values. If specified, the input identity-providers.xml will not be modified.
+ * -k,--key <KEY>                               Protect the files using a raw hexadecimal key. If an argument is not provided to this flag, interactive mode will be triggered to prompt the user to enter the key.
+ * --old-key <KEY>                           If the input files are already protected using a key, this specifies the raw hexadecimal key so that the files can be unprotected before re-protecting.
+ * --old-password <PASSWORD>                 If the input files are already protected using a password-derived key, this specifies the old password so that the files can be unprotected before re-protecting.
+ * -p,--password <PASSWORD>                     Protect the files using a password-derived key. If an argument is not provided to this flag, interactive mode will be triggered to prompt the user to enter the password.
+ * -r,--nifi-registry-properties <ARG>          The nifi-registry.properties file containing unprotected config values. This file will be overwritten if no output file is specified.
+ * -R,--output-nifi-registry-properties <ARG>   The destination nifi-registry.properties file containing protected config values. If specified, the input nifi-registry.properties will not be modified.
+ * -v,--verbose                                 Enables verbose mode (off by default)
 
-As an example of how the tool works, assume that you have installed the tool on a machine supporting 256-bit encryption and with the following existing values in the 'nifi.properties' file:
+
+As an example of how the tool works, assume that you have installed the tool on a machine supporting 256-bit encryption and with the following existing values in the 'nifi-registry.properties' file:
 
 ----
 # security properties #
-nifi.sensitive.props.key=thisIsABadSensitiveKeyPassword
-nifi.sensitive.props.algorithm=PBEWITHMD5AND256BITAES-CBC-OPENSSL
-nifi.sensitive.props.provider=BC
-nifi.sensitive.props.additional.keys=
-
-nifi.security.keystore=/path/to/keystore.jks
-nifi.security.keystoreType=JKS
-nifi.security.keystorePasswd=thisIsABadKeystorePassword
-nifi.security.keyPasswd=thisIsABadKeyPassword
-nifi.security.truststore=
-nifi.security.truststoreType=
-nifi.security.truststorePasswd=
+nifi.registry.security.keystore=/path/to/keystore.jks
+nifi.registry.security.keystoreType=JKS
+nifi.registry.security.keystorePasswd=thisIsABadKeystorePassword
+nifi.registry.security.keyPasswd=thisIsABadKeyPassword
+nifi.registry.security.truststore=
+nifi.registry.security.truststoreType=
+nifi.registry.security.truststorePasswd=
 ----
 
 Enter the following arguments when using the tool:
 
 ----
-encrypt-config.sh
+encrypt-config.sh nifi-registry
 -b bootstrap.conf
 -k 0123456789ABCDEFFEDCBA98765432100123456789ABCDEFFEDCBA9876543210
--n nifi.properties
+-r nifi-registry.properties
 ----
 
-As a result, the 'nifi.properties' file is overwritten with protected properties and sibling encryption identifiers (`aes/gcm/256`, the currently supported algorithm):
+As a result, the 'nifi-registry.properties' file is overwritten with protected properties and sibling encryption identifiers (`aes/gcm/256`, the currently supported algorithm):
 
 ----
 # security properties #
-nifi.sensitive.props.key=n2z+tTTbHuZ4V4V2||uWhdasyDXD4ZG2lMAes/vqh6u4vaz4xgL4aEbF4Y/dXevqk3ulRcOwf1vc4RDQ==
-nifi.sensitive.props.key.protected=aes/gcm/256
-nifi.sensitive.props.algorithm=PBEWITHMD5AND256BITAES-CBC-OPENSSL
-nifi.sensitive.props.provider=BC
-nifi.sensitive.props.additional.keys=
-
-nifi.security.keystore=/path/to/keystore.jks
-nifi.security.keystoreType=JKS
-nifi.security.keystorePasswd=oBjT92hIGRElIGOh||MZ6uYuWNBrOA6usq/Jt3DaD2e4otNirZDytac/w/KFe0HOkrJR03vcbo
-nifi.security.keystorePasswd.protected=aes/gcm/256
-nifi.security.keyPasswd=ac/BaE35SL/esLiJ||+ULRvRLYdIDA2VqpE0eQXDEMjaLBMG2kbKOdOwBk/hGebDKlVg==
-nifi.security.keyPasswd.protected=aes/gcm/256
-nifi.security.truststore=
-nifi.security.truststoreType=
-nifi.security.truststorePasswd=
+nifi.registry.security.keystore=/path/to/keystore.jks
+nifi.registry.security.keystoreType=JKS
+nifi.registry.security.keystorePasswd=oBjT92hIGRElIGOh||MZ6uYuWNBrOA6usq/Jt3DaD2e4otNirZDytac/w/KFe0HOkrJR03vcbo
+nifi.registry.security.keystorePasswd.protected=aes/gcm/256
+nifi.registry.security.keyPasswd=ac/BaE35SL/esLiJ||+ULRvRLYdIDA2VqpE0eQXDEMjaLBMG2kbKOdOwBk/hGebDKlVg==
+nifi.registry.security.keyPasswd.protected=aes/gcm/256
+nifi.registry.security.truststore=
+nifi.registry.security.truststoreType=
+nifi.registry.security.truststorePasswd=
 ----
 
 Additionally, the 'bootstrap.conf' file is updated with the encryption key as follows:
 
 ----
 # Master key in hexadecimal format for encrypted sensitive configuration values
-nifi.bootstrap.sensitive.key=0123456789ABCDEFFEDCBA98765432100123456789ABCDEFFEDCBA9876543210
+nifi.registry.bootstrap.sensitive.key=0123456789ABCDEFFEDCBA98765432100123456789ABCDEFFEDCBA9876543210
 ----
 
-Sensitive configuration values are encrypted by the tool by default, however you can encrypt any additional properties, if desired.  To encrypt additional properties, specify them as comma-separated values in the `nifi.sensitive.props.additional.keys` property.
+Sensitive configuration values are encrypted by the tool by default, however you can encrypt any additional properties, if desired.
+To encrypt additional properties, specify them as comma-separated values in the `nifi.registry.sensitive.props.additional.keys` property.
 
-If the 'nifi.properties' file already has valid protected values, those property values are not modified by the tool.
+If the 'nifi-registry.properties' file already has valid protected values, those property values are not modified by the tool.
 
-When applied to 'login-identity-providers.xml', the property elements are updated with an `encryption` attribute:
+When applied to 'identity-providers.xml', the property elements are updated with an `encryption` attribute:
 
 ----
 <!-- LDAP Provider -->
 <provider>
        <identifier>ldap-provider</identifier>
-       <class>org.apache.nifi.ldap.LdapProvider</class>
+       <class>org.apache.nifi.registry.security.ldap.LdapProvider</class>
        <property name="Authentication Strategy">START_TLS</property>
        <property name="Manager DN">someuser</property>
        <property name="Manager Password" encryption="aes/gcm/128">q4r7WIgN0MaxdAKM||SGgdCTPGSFEcuH4RraMYEdeyVbOx93abdWTVSWvh1w+klA</property>
@@ -975,114 +669,15 @@ When applied to 'login-identity-providers.xml', the property elements are update
 Sensitive Property Key Migration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In order to change the key used to encrypt the sensitive values, indicate *migration mode* using the `-m` or `--migrate` flag, provide the new key or password using the `-k` or `-p` flags as usual, and provide the existing key or password using `-e` or `-w` respectively. This will allow the toolkit to decrypt the existing values and re-encrypt them, and update `bootstrap.conf` with the new key. Only one of the key or password needs to be specified for each phase (old vs. new), and any combination is sufficient:
+In order to change the key used to encrypt the sensitive values, provide the new key or password using the `-k` or `-p` flags as usual,
+and provide the existing key or password using `--old-key` or `--old-password` respectively. This will allow the toolkit to decrypt the
+existing values and re-encrypt them, and update `bootstrap.conf` with the new key. Only one of the key or password needs to be specified
+for each phase (old vs. new), and any combination is sufficient:
 
 * old key -> new key
 * old key -> new password
 * old password -> new key
 * old password -> new password
-
-[encrypt_config_flow_migration]
-Existing Flow Migration
-~~~~~~~~~~~~~~~~~~~~~~~
-
-This tool can also be used to change the value of `nifi.sensitive.props.key` for an existing flow. The tool will read the existing `flow.xml.gz` and decrypt any sensitive component properties using the original key,
-then re-encrypt the sensitive properties with the new key, and write out a new version of the `flow.xml.gz`, or overwrite the existing one.
-
-The current sensitive properties key is not provided as a command-line argument, as it is read directly from `nifi.properties`. As this file is a required parameter, the `-x`/`--encryptFlowXmlOnly` flags tell the tool *not* to attempt to encrypt the properties in `nifi.properties`, but rather to *only* update the `nifi.sensitive.props.key` value with the new key. The exception to this is if the `nifi.properties` is *already* encrypted, the new sensitive property key will also be encrypted before being written to `nifi.properties`.
-
-The following command would migrate the sensitive properties key in place, meaning it would overwrite the existing `flow.xml.gz` and `nifi.properties`:
-----
-./encrypt-config.sh -f /path/to/flow.xml.gz -n ./path/to/nifi.properties -s newpassword -x
-----
-
-The following command would migrate the sensitive properties key and write out a separate `flow.xml.gz` and `nifi.properties`:
-----
-./encrypt-config.sh -f ./path/to/src/flow.xml.gz -g /path/to/dest/flow.xml.gz -n /path/to/src/nifi.properties -o /path/to/dest/nifi.properties -s newpassword -x
-----
-
-[[encrypt-config_password]]
-Password Key Derivation
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Instead of providing a 32 or 64 character raw hexadecimal key, you can provide a password from which the key will be derived. As of 1.0.0, the password must be at least 12 characters, and the key will be derived using `SCrypt` with the parameters:
-
-* `pw` -- the password bytes in `UTF-8`
-* `salt` -- the fixed salt value (`NIFI_SCRYPT_SALT`) bytes in `UTF-8`
-* `N` -- 2^16^
-* `r` -- 8
-* `p` -- 1
-* `dkLen` -- determined by the JCE policies available
-
-As of August 2016, these values are determined to be strong for this threat model but may change in future versions.
-
-NOTE: While fixed salts are counter to best practices, a static salt is necessary for deterministic key derivation without additional storage of the salt value.
-
-[[encrypt-config_secure_prompt]]
-Secure Prompt
-~~~~~~~~~~~~~
-
-If you prefer not to provide the password or raw key in the command-line invocation of the tool, leaving these arguments absent will prompt a secure console read of the password (by default) or raw key (if the `-r` flag is provided at invocation).
-
-[[admin-toolkit]]
-Administrative Tools
---------------------
-The admin toolkit contains command line utilities for administrators to support NiFi maintenance in standalone
-and clustered environments. These utilities include:
-
-* Notify -- The notification tool allows administrators to send bulletins to the NiFi UI using the command line.
-* Node Manager -- The node manager tool allows administrators to perform a status check on a node as well as to connect, disconnect, or remove nodes that are part of a cluster.
-* File Manager -- The file manager tool allows administrators to backup, install or restore a NiFi installation from backup.
-
-The admin toolkit is bundled with the nifi-toolkit and can be executed with scripts found in the _bin_ folder.
-
-=== Prerequisites for Running Admin Toolkit in a Secure Environment
-For secured nodes and clusters, two policies should be configured in advance:
-
-* Access the controller – A user that will have access to these utilities should be authorized in NiFi by creating an “access
-the controller” policy (`/controller`) with both view and modify rights.
-* Proxy user request – If not previously set node’s identity (the DN value of the node’s certificate) should be authorized to proxy requests on behalf of a user
-
-When executing either the notify or node manager tools in a secured environment the `proxyDN` flag option should be used in
-order to properly identify the user that was authorized to execute these commands. In non-secure environments, or if running
-the status operation on the Node Manager tool, the flag is ignored.
-
-=== Notify
-Notify allows administrators to send messages as bulletins to NiFi.  Notify is supported on NiFi version 1.2.0 and higher.
-The notification tool is also available in a _notify.bat_ file for use on Windows machines.
-
-To send notifications:
-
- notify.sh -d {$NIFI_HOME} –b {nifi bootstrap file path} -m {message} [-l {level}] [-v]
-
-To show help:
-
- notify.sh -h
-
-The following are available options:
-
-* `-b`,`--bootstrapConf <arg>`      Existing Bootstrap Configuration file (required)
-* `-d`,`--nifiInstallDir <arg>`     NiFi Root Folder (required)
-* `-h`,`--help`                     Help Text (optional)
-* `-l`,`--level <arg>`              Status level of bulletin – INFO, WARN, ERROR
-* `-m`,`--message <arg>`            Bulletin message (required)
-* `-p`,`--proxyDN <arg>`            Proxy or User DN (required for secured nodes)
-* `-v`,`--verbose`                  Verbose messaging (optional)
-
-
-Example usage on Linux:
-
- ./notify.sh -d /usr/nifi/nifi_current -b /usr/nifi/nifi_current/conf/bootstrap.conf -m "Test Message Server 1" -l "WARN" –p “ydavis@nifi” -v
-
-Example usage on Windows:
-
-  notify.bat -v -d "C:\\Program Files\\nifi\\nifi-1.2.0-SNAPSHOT" -b "C:\\Program Files\\nifi\\nifi-1.2.0-SNAPSHOT\\conf\\bootstrap.conf" -m "Test Message Server 1" -v
-
-Executing the above command line should result in a bulletin appearing in NiFi:
-
-image::nifi-notifications.png["NiFi Notifications"]
-
-
 
 [[bootstrap_properties]]
 Bootstrap Properties
@@ -1102,42 +697,31 @@ Here, we will address the different properties that are made available in the fi
 |====
 
 
-
 [[proxy_configuration]]
 Proxy Configuration
 -------------------
 ​When running Apache NiFi Registry behind a proxy there are a couple of key items to be aware of during deployment.
 
-* NiFi is comprised of a number of web applications (web UI, web API, documentation, custom UIs, data viewers, etc), so the mapping needs to be configured for the *root path*. That way all context
-paths are passed through accordingly. For instance, if only the `/nifi` context path was mapped, the custom UI for `UpdateAttribute` will not work, since it is available at `/update-attribute-ui-<version>`.
+* NiFi Registry is comprised of a number of web applications (web UI, web API, documentation), so the mapping needs to be configured for the *root path*.
+That way all context paths are passed through accordingly.
 
-* NiFi's REST API will generate URIs for each component on the graph. Since requests are coming through a proxy, certain elements of the URIs being generated need to be overridden. Without
-overriding, the users will be able to view the dataflow on the canvas but will be unable to modify existing components. Requests will be attempting to call back directly to NiFi, not through the
-proxy. The elements of the URI can be overridden by adding the following HTTP headers when the proxy generates the HTTP request to the NiFi instance:
-
-....
-X-ProxyScheme - the scheme to use to connect to the proxy
-X-ProxyHost - the host of the proxy
-X-ProxyPort - the port the proxy is listening on
-X-ProxyContextPath - the path configured to map to the NiFi instance
-....
-
-* If NiFi is running securely, any proxy needs to be authorized to proxy user requests. These can be configured in the NiFi UI through the Global Menu. Once these permissions are in place, proxies
-can begin proxying user requests. The end user identity must be relayed in a HTTP header. For example, if the end user sent a request to the proxy, the proxy must authenticate the user. Following
-this the proxy can send the request to NiFi. In this request an HTTP header should be added as follows.
+* If NiFi Registry is running securely, any proxy needs to be authorized to proxy user requests. These can be configured in the NiFi Registry UI through the
+Users administration section, by selecting 'Proxy' for the given user. Once these permissions are in place, proxies can begin proxying user requests.
+The end user identity must be relayed in a HTTP header. For example, if the end user sent a request to the proxy, the proxy must authenticate the user. Following
+this the proxy can send the request to NiFi Registry. In this request an HTTP header should be added as follows.
 
 ....
 X-ProxiedEntitiesChain: <end-user-identity>
 ....
 
-If the proxy is configured to send to another proxy, the request to NiFi from the second proxy should contain a header as follows.
+If the proxy is configured to send to another proxy, the request to NiFi Registry from the second proxy should contain a header as follows.
 
 ....
 X-ProxiedEntitiesChain: <end-user-identity><proxy-1-identity>
 ....
 
-An example Apache proxy configuration that sets the required properties may look like the following. Complete proxy configuration is outside of the scope of this document. Please refer the
-documentation of the proxy for guidance for your deployment environment and use case.
+An example Apache proxy configuration that sets the required properties may look like the following. Complete proxy configuration is outside of the scope of this document.
+Please refer the documentation of the proxy for guidance for your deployment environment and use case.
 
 ....
 ...
@@ -1151,10 +735,10 @@ documentation of the proxy for guidance for your deployment environment and use 
 	RequestHeader add X-ProxyScheme "https"
 	RequestHeader add X-ProxyHost "proxy-host"
 	RequestHeader add X-ProxyPort "443"
-	RequestHeader add X-ProxyContextPath "/my-nifi"
+	RequestHeader add X-ProxyContextPath "/my-nifi-registry"
 	RequestHeader add X-ProxiedEntitiesChain "<%{SSL_CLIENT_S_DN}>"
-	ProxyPass https://nifi-host:8443
-	ProxyPassReverse https://nifi-host:8443
+	ProxyPass https://nifi-registry-host:8443
+	ProxyPassReverse https://nifi-registry-host:8443
 	...
 </Location>
 ...
@@ -1163,17 +747,15 @@ documentation of the proxy for guidance for your deployment environment and use 
 [[kerberos_service]]
 Kerberos Service
 ----------------
-NiFi can be configured to use Kerberos SPNEGO (or "Kerberos Service") for authentication. In this scenario, users will hit the REST endpoint `/access/kerberos` and the server will respond with a `401` status code and the challenge response header `WWW-Authenticate: Negotiate`. This communicates to the browser to use the GSS-API and load the user's Kerberos ticket and provide it as a Base64-encoded header value in the subsequent request. It will be of the form `Authorization: Negotiate YII...`. NiFi will attempt to validate this ticket with the KDC. If it is successful, the user's _principal_ will be returned as the identity, and the flow will follow login/credential authentication, in that a JWT will be issued in the response to prevent the unnecessary overhead of Kerberos authentication on every subsequent request. If the ticket cannot be validated, it will return with the appropriate error response code. The user will then be able to provide their Kerberos credentials to the login form if the `KerberosLoginIdentityProvider` has been configured. See <<kerberos_login_identity_provider>> login identity provider for more details.
+NiFi Registry can be configured to use Kerberos SPNEGO (or "Kerberos Service") for authentication. In this scenario, users will hit the REST endpoint `/access/token/kerberos`
+and the server will respond with a `401` status code and the challenge response header `WWW-Authenticate: Negotiate`. This communicates to the browser to use the GSS-API
+and load the user's Kerberos ticket and provide it as a Base64-encoded header value in the subsequent request. It will be of the form `Authorization: Negotiate YII...`.
+NiFi Registry will attempt to validate this ticket with the KDC. If it is successful, the user's _principal_ will be returned as the identity, and the flow will follow
+login/credential authentication, in that a JWT will be issued in the response to prevent the unnecessary overhead of Kerberos authentication on every subsequent request.
+If the ticket cannot be validated, it will return with the appropriate error response code. The user will then be able to provide their Kerberos credentials to the login
+form if the `KerberosLoginIdentityProvider` has been configured. See <<kerberos_login_identity_provider>> login identity provider for more details.
 
-NiFi will only respond to Kerberos SPNEGO negotiation over an HTTPS connection, as unsecured requests are never authenticated.
-
-The following properties must be set in _nifi.properties_ to enable Kerberos service authentication.
-
-|====
-|*Property*|*Required*|*Description*
-|Service Principal|true|The service principal used by NiFi to communicate with the KDC
-|Keytab Location|true|The file path to the keytab containing the service principal
-|====
+NiFi Registry will only respond to Kerberos SPNEGO negotiation over an HTTPS connection, as unsecured requests are never authenticated.
 
 See <<kerberos_properties>> for complete documentation.
 
@@ -1216,10 +798,11 @@ root@kdc:~#
 [[system_properties]]
 System Properties
 -----------------
-The _nifi-registry.properties_ file in the _conf_ directory is the main configuration file for controlling how NiFi Registry runs. This section provides an overview of the properties in this file and includes some notes on how to configure it in a way that will make upgrading easier. *After making changes to this file, restart NiFi Registry in order for the changes to take effect.*
+The _nifi-registry.properties_ file in the _conf_ directory is the main configuration file for controlling how NiFi Registry runs. This section
+provides an overview of the properties in this file and includes some notes on how to configure it in a way that will make upgrading easier.
+*After making changes to this file, restart NiFi Registry in order for the changes to take effect.*
 
-NOTE: Values for periods of time and data sizes must include the unit of measure,
-for example "10 secs" or "10 MB", not simply "10".
+NOTE: Values for periods of time and data sizes must include the unit of measure, for example "10 secs" or "10 MB", not simply "10".
 
 === Web Properties
 
@@ -1229,9 +812,9 @@ These properties pertain to the web-based User Interface.
 |*Property*|*Description*
 |nifi.registry.web.war.directory|This is the location of the web war directory. The default value is `./lib`.
 |nifi.registry.web.http.host|The HTTP host. It is blank by default.
-|nifi.web.registry.http.port|The HTTP port. The default value is `8080`.
-|nifi.web.registry.https.host|The HTTPS host. It is blank by default.
-|nifi.web.registry.https.port|The HTTPS port. It is blank by default. When configuring NiFi Registry to run securely, this port should be configured.
+|nifi.registry.web.http.port|The HTTP port. The default value is `8080`.
+|nifi.registry.web.https.host|The HTTPS host. It is blank by default.
+|nifi.registry.web.https.port|The HTTPS port. It is blank by default. When configuring NiFi Registry to run securely, this port should be configured.
 |nifi.registry.web.jetty.working.directory|The location of the Jetty working directory. The default value is `./work/jetty`.
 |nifi.registry.web.jetty.threads|The number of Jetty threads. The default value is `200`.
 |====
@@ -1250,7 +833,7 @@ Security Configuration section of this Administrator's Guide.
 |nifi.registry.security.truststore|The full path and name of the truststore. It is blank by default.
 |nifi.registry.security.truststoreType|The truststore type. It is blank by default.
 |nifi.registry.security.truststorePasswd|The truststore password. It is blank by default.
-|nifi.registry.security.needClientAuth|This indicates whether client authentication in the cluster protocol is required. It is blank by default.
+|nifi.registry.security.needClientAuth| This specifies that connecting clients must authenticate with a client cert. Setting this to `false` will specify that connecting clients may optionally authenticate with a client cert, but may also login with a username and password against a configured identity provider. The default value is true.
 |nifi.registry.security.authorizers.configuration.file|This is the location of the file that specifies how authorizers are defined. The default value is ./conf/authorizers.xml`.
 |nifi.registry.security.authorizer|Specifies which of the configured Authorizers in the authorizers.xml file to use. By default, it is set to `managed-authorizer`.
 |nifi.registry.security.identity.providers.configuration.file|This is the location of the file that specifies how username/password authentication is performed. This file is only considered if `nifi.registry.security.identity.provider` is configured with a provider identifier. The default value is ./conf/identity-providers.xml.
@@ -1259,16 +842,17 @@ Security Configuration section of this Administrator's Guide.
 
 === Providers Properties
 
-These properties pertain to <INSERT>
+These properties pertain to flow persistence providers. NiFi Registry uses a pluggable flow persistence provider to store the
+content of the flows saved to the registry. NiFi Registry provides the `FileSystemFlowPersistenceProvider`.
 
 |====
 |*Property*|*Description*
-|nifi.registry.providers.configuration.file|This is the location of the file that specifies how providers are defined. The default value is `./conf/providers.xml`.
+|nifi.registry.providers.configuration.file|This is the location of the file where flow persistence providers are configured. The default value is `./conf/providers.xml`.
 |====
 
 === Database Properties
 
-These properties define the settings for the Registry database, which keeps track of <INSERT>
+These properties define the settings for the Registry database, which keeps track of metadata about buckets and all items stored in buckets.
 
 |====
 |*Property*|*Description*
@@ -1278,21 +862,16 @@ These properties define the settings for the Registry database, which keeps trac
 
 === Extension Directories
 
-Each property beginning with "nifi.registry.extension.dir." will be treated as location for an extension, and a class loader will be created for each location, with the system class loader as the parent
+Each property beginning with "nifi.registry.extension.dir." will be treated as location for an extension, and a class loader will be created for each location, with the system class loader as the parent.
 
 |====
 |*Property*|*Description*
-|nifi.registry.extension.dir.1| <INSERT> +
- +
-*NOTE*: Multiple extension directories can be specified by using the *_nifi.registry.extension.dir._* prefix with unique suffixes and separate paths as values. +
- +
-For example, to provide an additional extension directory, a user could also specify additional properties with keys of: +
- +
-`nifi.registry.extension.dir.2=/path/to/extension2` +
- +
-Providing 2 total locations, including `nifi.registry.extension.dir.1`.
-
+|nifi.registry.extension.dir.1| The full path on the filesystem to the location of the JARs for the given extension
 |====
+
+NOTE: Multiple extension directories can be specified by using the *_nifi.registry.extension.dir._* prefix with unique suffixes and separate paths as values.
+For example, to provide an additional extension directory, a user could also specify additional properties with keys of: `nifi.registry.extension.dir.2=/path/to/extension2`
+Providing 2 total locations, including `nifi.registry.extension.dir.1`.
 
 
 [[kerberos_properties]]
@@ -1300,17 +879,13 @@ Providing 2 total locations, including `nifi.registry.extension.dir.1`.
 
 |====
 |*Property*|*Description*
-|nifi.kerberos.krb5.file|The location of the krb5 file, if used. It is blank by default. At this time, only a single krb5 file is allowed to
+|nifi.registry.kerberos.krb5.file|The location of the krb5 file, if used. It is blank by default. At this time, only a single krb5 file is allowed to
     be specified per NiFi instance, so this property is configured here to support SPNEGO and service principals rather than in individual Processors.
     If necessary the krb5 file can support multiple realms.
     Example: `/etc/krb5.conf`
-|nifi.kerberos.service.principal|The name of the NiFi Kerberos service principal, if used. It is blank by default. Note that this property is for NiFi to authenticate as a client other systems.
-   Example: `nifi/nifi.example.com` or `nifi/nifi.example.com@EXAMPLE.COM`
-|nifi.kerberos.service.keytab.location|The file path of the NiFi Kerberos keytab, if used. It is blank by default. Note that this property is for NiFi to authenticate as a client other systems.
-  Example: `/etc/nifi.keytab`
-|nifi.kerberos.spnego.principal|The name of the NiFi Kerberos service principal, if used. It is blank by default. Note that this property is used to authenticate NiFi users.
-   Example: `HTTP/nifi.example.com` or `HTTP/nifi.example.com@EXAMPLE.COM`
-|nifi.kerberos.spnego.keytab.location|The file path of the NiFi Kerberos keytab, if used. It is blank by default. Note that this property is used to authenticate NiFi users.
-  Example: `/etc/http-nifi.keytab`
-|nifi.kerberos.spengo.authentication.expiration|The expiration duration of a successful Kerberos user authentication, if used. The default value is `12 hours`.
+|nifi.registry.kerberos.spnego.principal|The name of the NiFi Registry Kerberos SPNEGO principal, if used. It is blank by default. Note that this property is used to authenticate NiFi Registry users.
+   Example: `HTTP/nifi.registry.example.com` or `HTTP/nifi.registry.example.com@EXAMPLE.COM`
+|nifi.registry.kerberos.spnego.keytab.location|The file path of the NiFi Registry Kerberos SPNEGO keytab, if used. It is blank by default. Note that this property is used to authenticate NiFi Registry users.
+  Example: `/etc/http-nifi-registry.keytab`
+|nifi.registry.kerberos.spengo.authentication.expiration|The expiration duration of a successful Kerberos user authentication, if used. The default value is `12 hours`.
 |====
