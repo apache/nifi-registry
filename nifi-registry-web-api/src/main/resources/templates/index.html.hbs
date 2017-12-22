@@ -165,6 +165,8 @@
             div.endpoint div.path {
                 float: left;
                 line-height: 22px;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             div.summary {
@@ -174,7 +176,7 @@
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
-                width: 50%;
+                width: 40%;
                 text-align: right;
             }
 
@@ -441,7 +443,6 @@
                 organizeEndpoints('/items', $('#item-endpoints'));
                 organizeEndpoints('/tenants', $('#tenant-endpoints'));
                 organizeEndpoints('/policies', $('#policy-endpoints'));
-                organizeEndpoints('/resources', $('#resource-endpoints'));
                 organizeEndpoints('/access', $('#access-endpoints'));
 
                 // handle expanding/collapsing the sections
@@ -491,14 +492,6 @@
                   <div class="clear"></div>
               </div>
               <div id="policy-endpoints" class="section-endpoints hidden"></div>
-          </div>
-          <div class="section">
-              <div class="section-header">
-                  <div class="title link">Resources</div>
-                  <div class="sub-title section-description">Resource endpoints</div>
-                  <div class="clear"></div>
-              </div>
-              <div id="resource-endpoints" class="section-endpoints hidden"></div>
           </div>
           <div class="section">
               <div class="section-header">

@@ -23,7 +23,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <link rel="shortcut icon" href="../nifi/images/nifi16.ico"/>
         <title>NiFi Registry Documentation</title>
-        <script type="text/javascript" src="../nifi/assets/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript" src="js/jquery.min.js"></script>
         <script type="text/javascript" src="js/application.js"></script>
         <link href="css/main.css" rel="stylesheet" type="text/css" />
         <link href="css/component-usage.css" rel="stylesheet" type="text/css" />
@@ -57,6 +57,7 @@
                         <div class="header">General</div>
                         <div id="general-links" class="component-links">
                             <ul>
+                                <li class="component-item"><a class="document-link admin-guide" href="html/user-guide.html" target="component-usage">User Guide</a></li>
                                 <li class="component-item"><a class="document-link admin-guide" href="html/administration-guide.html" target="component-usage">Admin Guide</a></li>
                             </ul>
                             <span class="no-matching no-components hidden">No matching guides</span>
@@ -72,6 +73,9 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div id="component-usage-container">
+                <iframe id="component-usage" name="component-usage" frameborder="0" class="component-usage"></iframe>
             </div>
         </div>
         <div id="banner-footer" class="main-banner-footer"></div>
