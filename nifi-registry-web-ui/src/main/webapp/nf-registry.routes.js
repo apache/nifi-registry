@@ -16,7 +16,6 @@
  */
 
 var ngRouter = require('@angular/router');
-var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
 var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
@@ -54,9 +53,6 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     path: 'nifi-registry/login',
     component: NfLoginComponent,
     canActivate: [nfRegistryAuthGuardService.NfRegistryLoginAuthGuard]
-}, {
-    path: 'nifi-registry/fluid-design-system',
-    component: FdsDemo
 }, {
     path: 'nifi-registry/administration',
     component: NfRegistryAdministration,

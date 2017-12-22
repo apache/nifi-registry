@@ -23,7 +23,6 @@ var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.tok
 var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngPlatformBrowser = require('@angular/platform-browser');
-var FdsDemo = require('nifi-registry/components/fluid-design-system/fds-demo.js');
 var NfRegistry = require('nifi-registry/nf-registry.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
@@ -62,7 +61,6 @@ describe('NfRegistryAdministration Component', function () {
                 NfRegistryRoutes
             ],
             declarations: [
-                FdsDemo,
                 NfRegistry,
                 NfRegistryExplorer,
                 NfRegistryAdministration,
