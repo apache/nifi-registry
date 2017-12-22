@@ -34,6 +34,7 @@ var ngMaterial = require('@angular/material');
  * @constructor
  */
 function NfRegistryWorkflowAdministration(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute, matDialog) {
+    // Services
     this.route = activatedRoute;
     this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
