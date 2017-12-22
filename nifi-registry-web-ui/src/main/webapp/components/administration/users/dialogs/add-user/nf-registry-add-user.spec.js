@@ -28,10 +28,16 @@ describe('NfRegistryAddUser Component isolated unit tests', function () {
     beforeEach(function () {
         nfRegistryService = new NfRegistryService();
         nfRegistryApi = new NfRegistryApi();
-        comp = new NfRegistryAddUser(nfRegistryApi, nfRegistryService, {
-            close: function () {
-            }
-        });
+        comp = new NfRegistryAddUser(nfRegistryApi,
+            nfRegistryService,
+            {
+                openCoaster: function () {
+                }
+            },
+            {
+                close: function () {
+                }
+            });
 
         // Spy
         spyOn(nfRegistryApi, 'addUser').and.callFake(function () {

@@ -207,8 +207,6 @@
                                         <include>
                                             @fluid-design-system/dist/platform/core/common/styles/css/*
                                         </include>
-                                        <include>@fluid-design-system/dist/platform/core/dialogs/**/*</include>
-                                        <include>@fluid-design-system/dist/platform/core/snackbars/**/*</include>
                                         <include>@fluid-design-system/dist/platform/core/LICENSE.md</include>
                                         <!-- font-awesome -->
                                         <include>font-awesome/css/font-awesome.css</include>

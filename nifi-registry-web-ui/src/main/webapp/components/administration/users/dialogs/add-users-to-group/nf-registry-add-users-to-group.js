@@ -35,12 +35,14 @@ var $ = require('jquery');
  * @constructor
  */
 function NfRegistryAddUsersToGroup(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService, data) {
+    //Services
     this.dataTableService = tdDataTableService;
     this.snackBarService = fdsSnackBarService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.data = data;
+    // local state
     //make an independent copy of the users for sorting and selecting within the scope of this component
     this.users = $.extend(true, [], this.nfRegistryService.users);
     this.filteredUsers = [];
@@ -100,7 +102,7 @@ NfRegistryAddUsersToGroup.prototype = {
         var newUsersData = this.users;
 
         for (var i = 0; i < this.usersSearchTerms.length; i++) {
-            newUsersData = this.nfRegistryService.filterData(newUsersData, this.usersSearchTerms[i], true);
+            newUsersData = this.dataTableService.filterData(newUsersData, this.usersSearchTerms[i], true);
         }
 
         newUsersData = this.dataTableService.sortData(newUsersData, sortBy, sortOrder);

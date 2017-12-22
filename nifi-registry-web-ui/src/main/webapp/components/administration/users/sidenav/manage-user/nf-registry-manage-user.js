@@ -39,6 +39,7 @@ var NfRegistryAddUserToGroups = require('nifi-registry/components/administration
  * @constructor
  */
 function NfRegistryManageUser(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
+    // local state
     this.filteredUserGroups = [];
     this.userGroupsSearchTerms = [];
     this._username = '';
@@ -464,7 +465,7 @@ NfRegistryManageUser.prototype = {
         var newUserGroupsData = this.nfRegistryService.user.userGroups || [];
 
         for (var i = 0; i < this.userGroupsSearchTerms.length; i++) {
-            newUserGroupsData = this.filterData(newUserGroupsData, this.userGroupsSearchTerms[i], true);
+            newUserGroupsData = this.dataTableService.filterData(newUserGroupsData, this.userGroupsSearchTerms[i], true);
         }
 
         newUserGroupsData = this.dataTableService.sortData(newUserGroupsData, sortBy, sortOrder);

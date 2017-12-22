@@ -25,6 +25,7 @@ var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
  * @constructor
  */
 function NfRegistryExplorer(nfRegistryService) {
+    //Services
     this.nfRegistryService = nfRegistryService;
 };
 

@@ -27,6 +27,7 @@ var ngRouter = require('@angular/router');
  * @constructor
  */
 function NfRegistryAdministration(nfRegistryService, router) {
+    //Services
     this.router = router;
     this.nfRegistryService = nfRegistryService;
 };
