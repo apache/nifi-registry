@@ -85,7 +85,7 @@ limitations under the License.
                         <button (click)="removePolicyFromBucket(row);row.checked = !row.checked;"
                                 [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canDelete"
                                 matTooltip="'Remove group policies from bucket'" mat-icon-button color="accent">
-                            <i class="fa fa-minus-circle" aria-hidden="true"></i>
+                            <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>

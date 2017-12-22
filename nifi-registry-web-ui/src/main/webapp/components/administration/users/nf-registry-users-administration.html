@@ -66,10 +66,10 @@ limitations under the License.
             </div>
         </div>
         <div id="nifi-registry-users-administration-list-container">
-            <div [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}"
+            <div
                  *ngFor="let row of nfRegistryService.filteredUserGroups"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllUsersAndGroupsSelectedState(row)">
-                <div *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
+                <div [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}" *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
                     <div class="td-data-table-cell" fxFlex="{{column.width}}">
                         <div class="ellipsis" matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
                             <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ? column.format(row[column.name]) : row[column.name]}}
@@ -116,10 +116,10 @@ limitations under the License.
                     </div>
                 </div>
             </div>
-            <div [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}"
+            <div
                  *ngFor="let row of nfRegistryService.filteredUsers"
                  (click)="row.checked = !row.checked;nfRegistryService.determineAllUsersAndGroupsSelectedState(row)">
-                <div *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
+                <div [ngClass]="{'nonconfigurable' : row.configurable === false, 'selected-nonconfigurable' : (row.checked === true && row.configurable === false), 'selected' : row.checked === true}" *ngFor="let column of nfRegistryService.userColumns" fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row">
                     <div class="td-data-table-cell" fxFlex="{{column.width}}">
                         <div class="ellipsis" matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
                             {{column.format ? column.format(row[column.name]) : row[column.name]}}
