@@ -22,9 +22,11 @@ Apache NiFi Team <dev@nifi.apache.org>
 
 Introduction
 ------------
-Apache NiFi Registry—a subproject of Apache NiFi—is a complementary application that provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.  The first implementation of the Registry supports versioned flows.  Process group level dataflows created in NiFi can be placed under version control and stored in a registry. The registry organizes where flows are stored and manages the permissions users have to create, modify or delete them.
+Apache NiFi Registry—a subproject of Apache NiFi—is a complementary application that provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.
 
-See the link:administration-guide.html[System Administrator’s Guide] for information about system requirements, installation, and configuration. Once NiFi Registry is installed, use a supported web browser to view the UI.
+The first implementation of the Registry supports versioned flows.  Process group level dataflows created in NiFi can be placed under version control and stored in a registry. The registry organizes where flows are stored and manages the permissions to access, create, modify or delete them.
+
+See the link:administration-guide.html[System Administrator’s Guide] for information about Registry system requirements, installation, and configuration. Once NiFi Registry is installed, use a supported web browser to view the UI.
 
 
 Browser Support
@@ -50,7 +52,7 @@ While the UI may run successfully in unsupported browsers, it is not actively te
 === Viewing the UI in Variably Sized Browsers
 In most environments, all of the UI is visible in your browser. However, the UI has a responsive design that allows you to scroll through screens as needed, in smaller sized browsers or tablet environments.
 
-In environments where your browser width is less than 800 pixels and the height less than 600 pixels, portions of the UI may become unavailable.
+NOTE: The minimum recommended screen size is 1080px X 445px.
 
 Terminology
 -----------
@@ -58,334 +60,359 @@ Terminology
 
 *Bucket*: A container that stores and organizes flows.
 
-*Policy*: Defines a user's ability to read, write and/or delete flows in a bucket.
-
-*Administrator*: A NiFi Registry user who has permissions to add, remove and modify flows, buckets, users and policies.
+*Policy*: Defines a user or group's ability to import, view, commit changes and/or delete flows.
 
 
 [[User_Interface]]
 NiFi Registry User Interface
 ----------------------------
-The NiFi Registry UI displays the shared resources available and provides mechanisms for creating and administering users, groups, buckets and policies.
+The NiFi Registry UI displays the shared resources available and provides mechanisms for creating and administering users/groups, buckets and policies.
 
 When the application is started, the user is able to navigate to the UI by going to the default address of `http://<hostname>:18080/nifi-registry` in a web browser. There are no permissions configured by default, so anyone is able to view and modify the flows and buckets. For information on securing the system, see the link:administration-guide.html[System Administrator’s Guide].
 
-When an administrator navigates to the UI for the first time, the registry is empty as there are no resources available to share yet:
+When an administrator navigates to the UI for the first time, the registry is empty as there are no flow resources available to share yet:
 
-<SCREENSHOT>
+image::nifi-registry-components.png["NiFi Registry Components"]
 
-The Buckets menu is available at the top left of the screen.  It allows the user to display flows based on which bucket they are contained in.  On the top right of the screen is the Administration button (wrench icon) which accesses functionality for managing users, groups, buckets and policies.
-
+The Buckets menu is available at the top left of the screen.  It allows the user to display flows based on which bucket they are contained in.  On the top right of the screen is the Settings button (image:iconSettings.png["Settings Icon"]) which accesses functionality for managing users, groups, buckets and policies.  Next to the Settings button is the Help button (image:iconHelp.png["Help Icon"]) which accesses the NiFi Registry Documentation.
 
 [[logging-in]]
 Logging In
 ----------
-If NiFi Registry is configured to run securely, users will be able to request access to the DataFlow. For information on configuring NiFi Registry to run securely, see the link:administration-guide.html[System Administrator’s Guide]. If NiFi Registry supports anonymous access, users will be given access accordingly and given an option to log in.
+If NiFi Registry is configured to run securely, users will have to be granted permissions to buckets by an administrator. For information on configuring NiFi Registry to run securely, see the link:administration-guide.html[System Administrator’s Guide].
 
 If the user is logging in with their username/password they will be presented with a screen to do so.
 
-<SCREENSHOT>
+image::loginRegistry.png["NiFi Registry Login"]
 
 
-Navigating Flows
-----------------
+Manage Flows
+------------
 ==== View a Flow
-Flows in all buckets are listed in the main window of the UI by default.
+Flows in all buckets are listed in the main window of the UI by default.  If the registry is secured, only the flows in the buckets that the user has access to are listed.
 
-<SCREENSHOT>
+image::flows_all.png["All Flows"]
 
-To see the flows in a particular bucket, select the Bucket from the drop-down menu at the top left of the UI.
+To see the flows in a particular bucket, select that bucket from the drop-down menu at the top left of the UI.
 
-<SCREENSHOT>
+image::bucket_menu.png["Bucket Menu"]
 
 Click on a flow to see its Description and Change Log:
 
-<SCREENSHOT>
+image::flow_change_log.png["Flow Change Log"]
 
-The Change Log includes all versions that were saved for a flow.  Clicking on the version reveals details about the date/time when the version was saved, which user committed the save and any comments entered by the user.
-
-<SCREENSHOT>
+The Change Log includes all versions that were saved for a flow.  Clicking on the version reveals details about when the version was saved, which user committed the save, and any comments entered by the user.
 
 ===== Sorting & Filtering Flows
 Flows can be sorted alphabetically by Name (ascending or descending) or by Update (newest or oldest) using the drop-down at the top right of the UI.
 
-<SCREENSHOT>
+image::flows_sort_menu.png["Flows Sort Menu"]
 
-The flow list can also be filtered using the filter field.
+The flow list can be filtered by:
 
-<SCREENSHOT>
+* flow name
+* flow description
+* flow ID
+* bucket name
+* bucket ID
+
+Here is an example filtering by flow name:
+
+image::flows_filter_by_name.png["Flows Filter By Name"]
 
 ==== Delete a Flow
-1. Click on a flow.
+To delete a flow from the registry:
+
+1. Click on the flow to see its details.
 
 2. Select the "Actions" drop-down and click the "Delete" menu option.
 
-<SCREENSHOT>
+image::flow_delete_action.png["Flow Delete Action"]
 
-3. Select "Delete" in the confirmation dialog.
+[start=3]
+3. Select "Delete" to confirm.
 
-<SCREENSHOT>
+image::flow_delete_confirm.png["Flow Delete Confirm"]
 
-WARNING:  It is possible to delete a flow that is actively being used.
+WARNING:  It is possible to delete a flow that is actively being used in NiFi.
 
 
 Manage Buckets
 --------------
+To manage buckets, enter the Administration section of the Registry by clicking the Settings button (image:iconSettings.png["Settings Icon"]) on the top right of the UI.  The Buckets window appears by default.
+
+==== Sorting & Filtering Buckets
+Buckets can be sorted alphabetically by Name (ascending or descending) using the up/down arrows.
+
+image::buckets_sort_by_name.png["Buckets Sort By Name"]
+
+The buckets listed can be filtered by:
+
+* bucket name
+* bucket description
+* bucket ID
+
+Here is an example filtering by bucket name:
+
+image::buckets_filter_by_name.png["Buckets Filter By Name"]
 
 ==== Create a Bucket
-1. Enter the Administration section of the Registry by clicking the Administration button (wrench icon) on the top right of the UI.  The Bucket window appears by default.
+1. Select the "New Bucket" button.
 
-<SCREENSHOT>
+image::new_bucket_button.png["New Bucket Button"]
 
-2. Select the "New Bucket" button. Enter the desired bucket name and select the "Create" button.
+[start=2]
+2. Enter the desired bucket name and select the "Create" button.
 
-<SCREENSHOT>
+image::new_bucket_dialog.png["New Bucket Dialog"]
 
-NOTE: To quickly create multiple buckets, check the "Keep this dialog open after creating bucket" checkbox.
+NOTE: To quickly create multiple buckets, check "Keep this dialog open after creating bucket".
 
 
 ==== Delete a Bucket
-1. Select the Delete button (trash icon) in the row of the bucket.
+1. Select the Delete button (image:iconDelete.png["Delete Icon"]) in the row of the bucket.
 
-<SCREENSHOT>
+image::delete_bucket_single.png["Delete Single Bucket"]
 
+[start=2]
 2. From the Delete Bucket dialog, select "Delete".
 
-<SCREENSHOT>
+image::delete_bucket_dialog.png["Delete Bucket Dialog"]
 
 ==== Delete Multiple Buckets
-1. Select the checkboxes in the row of the desired buckets to delete.
+1. Select the checkboxes in the rows of the desired buckets to delete.
 
-<SCREENSHOT>
+image::check_multiple_buckets.png["Check Multiple Buckets"]
 
-2. Select the "Actions" drop-down and click the "Delete selected buckets" option.
+[start=2]
+2. Select the "Actions" drop-down and click the "Delete" option.
 
-<SCREENSHOT>
+image::delete_multiple_buckets.png["Delete Multiple Buckets"]
+
+[start=3]
+3. From the Delete Buckets dialog, select "Delete".
+
+image::delete_buckets_dialog.png["Delete Buckets Dialog"]
 
 
-==== Configure a Bucket
+==== Edit a Bucket Name
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the bucket.
 
-===== Edit a Bucket Name
-1. Select the Edit button (pencil icon) in the row of the bucket.
+image::manage_bucket.png["Manage Bucket"]
 
-<SCREENSHOT>
-
+[start=2]
 2. Enter a new name for the bucket and select the "Save" button.
 
-<SCREENSHOT>
+image::bucket_nav_name_edit.png["Edit Bucket Name"]
+
+==== Bucket Policies
+Bucket policies define user privileges on buckets/flows in the Registry and in NiFi.  The available permissions are:
+
+* *All* - In the Registry, the assigned user is able to view and delete flows in the bucket. In NiFi, the selected user is able to import flows from the bucket and commit changes to flows in the bucket.
+
+* *Read* - In the Registry, the assigned user is able to view flows in the bucket. In NiFi, the selected user is able to import flows from the bucket.
+
+* *Write* - In NiFi, the assigned user is able to commit changes to flows in the bucket.
+
+* *Delete* - In the Registry, the assigned user is able to delete flows in the bucket.
+
+NOTE: Users would typically have Read permissions at a minimum.  A user with Write permission would not commit changes to a flow if they were not able to import it initially.  A user with Delete permission would not delete a flow if they could not view it.
+
+NOTE: If a user has a bucket policy and the group that the user is in also has a policy, all policies are used to determine access.  For example, assume User1 is in Group1, User1 has READ privileges on Bucket1 and Group1 has READ privileges on Bucket2. In this scenario, User1 will have READ privileges on both Bucket1 and Bucket2.
 
 ===== Create a Bucket Policy
-1. Select the Edit button (pencil icon) in the row of the bucket.
-
-<SCREENSHOT>
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the bucket.
 
 2. Select the "New Policy" button.
 
-<SCREENSHOT>
+image::new_bucket_policy_create.png["Create New Bucket Policy"]
 
-3. Enter or select a username.
+[start=3]
+3. Select a user, check the desired permissions and select the "Apply" button:
 
-<SCREENSHOT>
+image::new_bucket_policy_user_permission.png["New Bucket Policy User and Permissions"]
 
-4. Select the checkbox next to the desired permission for the user:
+[start=4]
+4. The policy is added to the bucket:
 
-* All - The selected user is able to view, add and delete flows in the bucket.
-
-* Read - The selected user is able to view flows in the bucket.
-
-* Write - The selected user is able to view and add flows in the bucket.
-
-* Delete - The selected user is able to view and delete flows in the bucket.
+image::new_bucket_policy_added.png["New Bucket Policy Added"]
 
 ===== Delete a Bucket Policy
-1. Select the Edit button (pencil icon) in the row of the bucket.
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the bucket.
 
-<SCREENSHOT>
+2. Select the Delete button (image:iconDelete.png["Delete Icon"]) in the row of the policy.
 
-2. Select the Delete button (trash icon) in the row of the policy.
+image::delete_bucket_policy.png["Delete Policy"]
 
-<SCREENSHOT>
-
+[start=3]
 3. From the Delete Policy dialog, select "Delete".
 
-<SCREENSHOT>
+image::delete_bucket_policy_dialog.png["Delete Policy Dialog"]
 
 
-Manage Users
--------------
+Manage Users & Groups
+---------------------
+To manage users/groups, enter the Administration section of the Registry by clicking the Settings button (image:iconSettings.png["Settings Icon"]) on the top right of the UI.  Select Users from the top menu to open the Users window.
+
+==== Sorting & Filtering Users/Groups
+Users/groups can be sorted alphabetically by Name (ascending or descending) using the up/down arrows.
+
+image::users_sort_by_name.png["Users Sort By Name"]
+
+The Users/groups listed can be filtered by:
+
+* user name
+* user ID
+* group name
+* group ID
+
+Here is an example of filtering by user name:
+
+image::users_filter_by_name.png["Users Filter By Name"]
 
 ==== Add a User
-1. Enter the Administration section of the Registry by clicking the Administration button (wrench icon) on the top right of the UI.
+1. Select the "Add User" button.
 
-<SCREENSHOT>
+image::add_user_button.png["Add User"]
 
-2. Select Users from the top menu to open the Users window.
+[start=2]
+2. Enter the desired username or appropriate Identity information. Select the "Add" button.
 
-<SCREENSHOT>
+image::add_user_dialog.png["New User Dialog"]
 
-2. Select the "Add User" button. Enter the desired username or 'Identity' information relevant to the authentication method chosen to secure your NiFi Registry instance. Select the "Add" button.
-
-<SCREENSHOT>
-
-NOTE: To quickly create multiple users, check the "Keep this dialog open after adding user" checkbox.
-
-==== Edit a Username
-1. Select the Edit button (pencil icon) in the row of the user.
-
-<SCREENSHOT>
-
-2. Enter a new username for the user and select the "Save" button.
-
-<SCREENSHOT>
+NOTE: To quickly create multiple users, check "Keep this dialog open after adding user".
 
 ==== Delete a User
-1. Select the Delete button (trash icon) in the row of the user.
+1. Select the Delete button (image:iconDelete.png["Delete Icon"]) in the row of the user.
 
-<SCREENSHOT>
+image::delete_user_single.png["Delete Single User"]
 
+[start=2]
 2. From the Delete User dialog, select "Delete".
 
-<SCREENSHOT>
+image::delete_user_dialog.png["Delete User Dialog"]
 
 ==== Delete Multiple Users
 1. Select the checkboxes in the rows of the desired users to delete.
 
-<SCREENSHOT>
+image::check_multiple_users.png["Check Multiple Users"]
 
-2. Select the "Actions" drop-down and click the "Delete selected users" option.
+[start=2]
+2. Select the "Actions" drop-down and click the "Delete" option.
 
-<SCREENSHOT>
+image::delete_multiple_users.png["Delete Multiple Users"]
 
-==== Grant Administrator Privileges
-Users with administrator privileges can add, edit and delete users, groups, buckets and policies.
+[start=3]
+3. From the Delete Users dialog, select "Delete".
 
-1. Select the Edit button (pencil icon) in the row of the user.
+image::delete_users_groups_dialog.png["Delete Users Dialog"]
 
-<SCREENSHOT>
 
-2. Check the "Grant this user administrator permissions" checkbox
+==== Edit a User Name
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the user.
 
-<SCREENSHOT>
+image::manage_user.png["Manage User"]
+
+[start=2]
+2. Enter a new user name and select the "Save" button.
+
+image::user_nav_name_edit.png["Edit User Name"]
+
+WARNING: Some users cannot have their names edited.  For example, those defined by LDAP.  These users will be specially highlighted in the list.
+
+image::users_non_configurable.png["Non-configurable Users"]
+
+==== Special Privileges
+Special privileges are additional permissions that allow a user to manage or access certain aspects of the Registry.  The special privileges are:
+
+* *Can manage buckets* - Allow a user to manage all buckets in the registry, as well as provide the user access to all buckets from a connected system (e.g., NiFi).
+
+* *Can manage users* - Allow a user to manage all registry users and groups.
+
+* *Can manage policies* - Allow a user to grant all registry users read, write, and delete permission to a bucket.
+
+* *Can proxy user requests* - Allow a connected system (e.g., NiFi) to process requests of authorized users of that system.
+
+===== Grant Special Privileges to a User
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the user.
+
+image::manage_user.png["Manage User"]
+
+[start=2]
+2. Check the desired privileges:
+
+image::user_special_privileges.png["User Special Privileges"]
+
+[start=3]
+3. Changes made to special privileges are automatically saved.
 
 Manage Groups
 -------------
 
-==== Add a Group
-1. Enter the Administration section of the Registry by clicking the Administration button (wrench icon) on the top right of the UI.
+==== Add an Empty Group
+1. With no users checked, select the "Actions" drop-down and click the "Create new group" option.
 
-<SCREENSHOT>
+image::create_new_group.png["Create New Group"]
 
-2. Select Users from the top menu to open the Users window.
+[start=2]
+2. Enter a name for the Group and select the "Create" button.
 
-<SCREENSHOT>
+image::create_new_group_dialog.png["Create New Group Dialog"]
 
-3. Select the "Actions" drop-down and click the "Create new group" option.
+NOTE: To quickly create multiple empty groups, check the "Keep this dialog open after creating user" checkbox.
 
-<SCREENSHOT>
 
-4. Enter a name for the Group and select the "Create" button.
-
-<SCREENSHOT>
-
-NOTE: To quickly create multiple groups, check the "Keep this dialog open after creating user" checkbox.
-
-==== Edit a Group
-1. Select the Edit button (pencil icon) in the row of the group.
-
-<SCREENSHOT>
-
-2. Enter a new username for the group and select the "Save" button.
-
-<SCREENSHOT>
-
-==== Delete a Group
-1. Select the Delete button (trash icon) in the row of the group.
-
-<SCREENSHOT>
-
-2. From the Delete Group dialog, select "Delete".
-
-<SCREENSHOT>
-
-==== Delete Multiple Groups
-1. Select the checkboxes in the rows of the desired groups to delete.
-
-<SCREENSHOT>
-
-2. Select the "Actions" drop-down and click the "Delete selected groups" option.
-
-<SCREENSHOT>
-
-==== Add Users to a Group
-1. Select the Edit button (pencil icon) in the row of the user. The Membership tab is selected by default.
-
-<SCREENSHOT>
+==== Add User to a Group
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the user.
 
 2. Select the "Add To Group" button.
 
-<SCREENSHOT>
+image::user_nav_add_to_group.png["Add User to Group"]
 
-3. In the "Add to Group" dialog, select the group(s) to add the user to.  Select the "Add" button when all desired groups have been selected.
+[start=3]
+3. In the "Add User to Groups" dialog, select the group(s) to add the user to.  Select the "Add" button when all desired groups have been selected.
 
-<SCREENSHOT>
+image::add_user_to_groups_dialog.png["Add User to Groups Dialog"]
 
-==== Add Multiple Users to a Group
-1. Select the checkboxes in the rows of the desired users.
+[start=4]
+4.  The user is added to the group:
 
-<SCREENSHOT>
+image::group_added.png["Group Added"]
 
-2. Select the "Actions" drop-down and click the "Add selected to group" option.
+NOTE:  Groups cannot contain other groups.
 
-<SCREENSHOT>
+==== Create a New Group with Selected Users
+1. Select the checkboxes in the rows of the desired users. From the "Actions" drop-down, click the "Create new group" option.
+
+image::select_users_create_new_group.png["Select Users for New Group"]
+
+[start=2]
+2. Enter a name for the Group and select the "Create" button.
+
+image::select_users_create_new_group_dialog.png["Create New Group Dialog"]
+
+[start=3]
+3. The new group is created with the selected users as members:
+
+image::select_users_new_group_added.png["New Group Added with Selected Users"]
 
 ==== Remove a User from a Group
+There are two ways to remove a user from a group.
 
 ===== User Window
-1. Select the Edit button (pencil icon) in the row of the user. The Membership tab is selected by default.
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the user.
 
-<SCREENSHOT>
+2. In the Membership section of the window, select the Remove button (image:iconDelete.png["Delete Icon"]) in the row of the group.
 
-2. Select the remove button (remove icon) in the row of the group.
-
-<SCREENSHOT>
+image::remove_group_from_user.png["Remove Group From User"]
 
 ===== Group Window
-1. Select the Edit button (pencil icon) in the row of the group. The Members tab is selected by default.
+1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the group. The Members tab is selected by default.
 
-<SCREENSHOT>
+2. In the Membership section of the window, select the Remove button (image:iconDelete.png["Delete Icon"]) in the row of the user.
 
-2. Select the remove button (remove icon) in the row of the desired user(s).
+image::remove_user_from_group.png["Remove User From Group"]
 
-<SCREENSHOT>
+==== Other Group Level Actions
 
-==== Add a Policy
-1. Select the Edit button (pencil icon) in the row of the group. Select the "Policies" tab.
-
-<SCREENSHOT>
-
-2. Select the "New Policy" button.
-
-<SCREENSHOT>
-
-3. Enter or select a bucket.
-
-<SCREENSHOT>
-
-4. Select the checkbox next to the desired permission for the group:
-
-* All - The users in the group are able to view, add and delete flows in the bucket.
-
-* Read - The users in the group are able to view flows in the bucket.
-
-* Write - The users in the group are able to view and add flows in the bucket.
-
-* Delete - The users in the group are able to view and delete flows in the bucket.
-
-==== Delete a Policy
-1. Select the Edit button (pencil icon) in the row of the group. Select the "Policies" tab.
-
-<SCREENSHOT>
-
-2. Select the Delete button (trash icon) in the row of the desired policy to delete.
-
-<SCREENSHOT>
+Editing group names, deleting groups, adding policies to/deleting policies from groups and granting special privileges to groups follow similar procedures described earlier for corresponding user level actions.
