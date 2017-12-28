@@ -18,12 +18,28 @@ Registry—a subproject of Apache NiFi—is a complementary application that pro
 
 ## Table of Contents
 
+- [Requirements](#requirements)
 - [Getting Started](#getting-started)
+- [Getting Help](#getting-help)
 - [License](#license)
+
+## Requirements
+
+* Java 1.8 (above 1.8.0_45)
 
 ## Getting Started
 
-TBD
+To start NiFi:
+- [linux/osx] execute bin/nifi-registry.sh start
+- [windows] execute bin/start-nifi-registry.bat
+- Direct your browser to http://localhost:18080/nifi-registry/
+
+## Getting Help
+If you have questions, you can reach out to our mailing list: dev@nifi.apache.org
+([archive](http://mail-archives.apache.org/mod_mbox/nifi-dev)).
+We're also often available in IRC: #nifi on
+[irc.freenode.net](http://webchat.freenode.net/?channels=#nifi) 
+and in #NiFi on [ASF HipChat](https://www.hipchat.com/gzh2m5YML).
 
 ## License
 
