@@ -17,7 +17,7 @@
     <parent>
         <groupId>org.apache.nifi.registry</groupId>
         <artifactId>nifi-registry</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>nifi-registry-framework</artifactId>
@@ -140,17 +140,17 @@
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-data-model</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-properties</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-utils</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1-SNAPSHOT</version>
             <scope>provided</scope> <!-- will be in lib dir -->
         </dependency>
         <dependency>
@@ -166,7 +166,7 @@
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-security-utils</artifactId>
-            <version>0.1.0</version>
+            <version>0.1.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
