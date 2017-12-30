@@ -54,7 +54,7 @@ Registry—a subproject of Apache NiFi—is a complementary application that pro
 
 4) Launch the application
  
-    With the default settings, the application will be available at[http://localhost:18080/nifi-registry](http://localhost:8080/nifi-registry) 
+    With the default settings, the application will be available at [http://localhost:18080/nifi-registry](http://localhost:18080/nifi-registry) 
    
 5) Logging
 
