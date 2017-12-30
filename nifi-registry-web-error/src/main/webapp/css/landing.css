@@ -14,12 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@font-face {
-    font-family: 'Roboto';
-    font-style: normal;
-    font-weight: normal;
-    src: local("Roboto Regular"), local("Roboto-Regular"), url("../../../../../../../roboto-fontface/fonts/Roboto/Roboto-Regular.ttf") format("truetype");
-}
 body {
     background: #EEEFF0 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
     background-size: 40%;
@@ -29,7 +23,7 @@ body, html {
     min-height: 100%;
     margin: 0;
     padding: 0;
-    font-family: "Roboto";
+    font-family: "sans-serif";
     font-size: 14px;
 }
 p{
