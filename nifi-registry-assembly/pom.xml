@@ -118,6 +118,12 @@
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-web-error</artifactId>
+            <type>war</type>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-resources</artifactId>
             <classifier>resources</classifier>
             <scope>runtime</scope>

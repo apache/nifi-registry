@@ -79,6 +79,7 @@ public class JettyServer {
     private WebAppContext webUiContext;
     private WebAppContext webApiContext;
     private WebAppContext webDocsContext;
+    private WebAppContext webErrorContext;
 
     public JettyServer(final NiFiRegistryProperties properties, final CryptoKeyProvider cryptoKeyProvider) {
         final QueuedThreadPool threadPool = new QueuedThreadPool(properties.getWebThreads());
@@ -217,6 +218,7 @@ public class JettyServer {
         File webUiWar = null;
         File webApiWar = null;
         File webDocsWar = null;
+        File webErrorWar = null;
         for (final File war : wars) {
             if (war.getName().startsWith("nifi-registry-web-ui")) {
                 webUiWar = war;
@@ -224,6 +226,8 @@ public class JettyServer {
                 webApiWar = war;
             } else if (war.getName().startsWith("nifi-registry-web-docs")) {
                 webDocsWar = war;
+            } else if (war.getName().startsWith("nifi-registry-web-error")) {
+                webErrorWar = war;
             }
         }
 
@@ -233,6 +237,8 @@ public class JettyServer {
             throw new IllegalStateException("Unable to locate NiFi Registry Web API");
         } else if (webDocsWar == null) {
             throw new IllegalStateException("Unable to locate NiFi Registry Web Docs");
+        } else if (webErrorWar == null) {
+            throw new IllegalStateException("Unable to locate NiFi Registry Web Error");
         }
 
         webUiContext = loadWar(webUiWar, "/nifi-registry");
@@ -249,11 +255,14 @@ public class JettyServer {
         final String docsContextPath = "/nifi-registry-docs";
         webDocsContext = loadWar(webDocsWar, docsContextPath);
 
+        webErrorContext = loadWar(webErrorWar, "/");
+
         final HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(webUiContext);
         handlers.addHandler(webApiContext);
         handlers.addHandler(createDocsWebApp(docsContextPath));
         handlers.addHandler(webDocsContext);
+        handlers.addHandler(webErrorContext);
         server.setHandler(handlers);
     }
 

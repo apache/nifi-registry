@@ -45,6 +45,7 @@
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
         <module>nifi-registry-web-docs</module>
+        <module>nifi-registry-web-error</module>
 	    <module>nifi-registry-bootstrap</module>
         <module>nifi-registry-docs</module>
         <module>nifi-registry-assembly</module>
