@@ -20,12 +20,16 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.diff.ComponentDifference;
+import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
 import org.junit.Before;
@@ -43,16 +47,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -1006,6 +1014,85 @@ public class TestRegistryService {
         return existingBucket;
     }
 
+    // -----------------Test Flow Diff Service Method---------------------
+    @Test
+    public void testGetDiffReturnsRemovedComponentChanges() {
+        when(flowPersistenceProvider.getFlowContent(
+                anyString(), anyString(), anyInt()
+        )).thenReturn(new byte[10], new byte[10]);
+
+        final VersionedProcessGroup pgA = createVersionedProcessGroupA();
+        final VersionedProcessGroup pgB = createVersionedProcessGroupB();
+        when(snapshotSerializer.deserialize(any())).thenReturn(pgA, pgB);
+
+        final VersionedFlowDifference diff = registryService.getFlowDiff(
+                "bucketIdentifier", "flowIdentifier", 1, 2);
+
+        assertNotNull(diff);
+        Optional<ComponentDifferenceGroup> removedComponent = diff.getComponentDifferenceGroups().stream()
+                .filter(p->p.getComponentId().equals("ID-pg1")).findFirst();
+
+        assertTrue(removedComponent.isPresent());
+        assertTrue(removedComponent.get().getDifferences().iterator().next().getDifferenceType().equals("COMPONENT_REMOVED"));
+    }
+
+    @Test
+    public void testGetDiffReturnsChangesInChronologicalOrder() {
+        when(flowPersistenceProvider.getFlowContent(
+                anyString(), anyString(), anyInt()
+        )).thenReturn(new byte[10], new byte[10]);
+
+        final VersionedProcessGroup pgA = createVersionedProcessGroupA();
+        final VersionedProcessGroup pgB = createVersionedProcessGroupB();
+        when(snapshotSerializer.deserialize(any())).thenReturn(pgA, pgB);
+
+        // getFlowDiff orders the changes in ascending order of version number regardless of param order
+        final VersionedFlowDifference diff = registryService.getFlowDiff(
+                "bucketIdentifier", "flowIdentifier", 2,1);
+
+        assertNotNull(diff);
+        Optional<ComponentDifferenceGroup> nameChangedComponent = diff.getComponentDifferenceGroups().stream()
+                .filter(p->p.getComponentId().equals("ProcessorFirstV1")).findFirst();
+
+        assertTrue(nameChangedComponent.isPresent());
+
+        ComponentDifference nameChangeDifference = nameChangedComponent.get().getDifferences().stream()
+                .filter(d-> d.getDifferenceType().equals("NAME_CHANGED")).findFirst().get();
+
+        assertEquals("ProcessorFirstV1", nameChangeDifference.getValueA());
+        assertEquals("ProcessorFirstV2", nameChangeDifference.getValueB());
+    }
+
+    private VersionedProcessGroup createVersionedProcessGroupA() {
+        VersionedProcessGroup root = new VersionedProcessGroup();
+        root.setProcessGroups(new HashSet<>(Arrays.asList(createProcessGroup("ID-pg1"), createProcessGroup("ID-pg2"))));
+        // Add processors
+        root.setProcessors(new HashSet<>(Arrays.asList(createVersionedProcessor("ProcessorFirstV1"), createVersionedProcessor("ProcessorSecondV1"))));
+        return root;
+    }
+
+    private VersionedProcessGroup createProcessGroup(String identifier){
+        VersionedProcessGroup processGroup = new VersionedProcessGroup();
+        processGroup.setIdentifier(identifier);
+        return processGroup;
+    }
+    private VersionedProcessGroup createVersionedProcessGroupB() {
+        VersionedProcessGroup updated = createVersionedProcessGroupA();
+        // remove a process group
+        updated.getProcessGroups().removeIf(pg->pg.getIdentifier().equals("ID-pg1"));
+        // change the name of a processor
+        updated.getProcessors().stream().forEach(p->p.setPenaltyDuration(p.getName().equals("ProcessorFirstV1") ? "1" : "2"));
+        updated.getProcessors().stream().forEach(p->p.setName(p.getName().equals("ProcessorFirstV1") ? "ProcessorFirstV2" : p.getName()));
+        return updated;
+    }
+
+    private VersionedProcessor createVersionedProcessor(String name){
+        VersionedProcessor processor = new VersionedProcessor();
+        processor.setName(name);
+        processor.setIdentifier(name);
+        processor.setProperties(new HashMap<>());
+        return processor;
+    }
     // -------------------------------------------------------------------
 
     private Answer<BucketEntity> createBucketAnswer() {
