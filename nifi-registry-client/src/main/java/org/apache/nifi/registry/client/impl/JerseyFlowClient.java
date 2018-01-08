@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.FlowClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
 
@@ -184,5 +185,26 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
         });
     }
 
+    @Override
+    public VersionedFlowDifference diff(final String bucketId, final String flowId,
+                                        final Integer versionA, final Integer versionB) throws NiFiRegistryException, IOException {
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalArgumentException("Bucket Identifier cannot be blank");
+        }
 
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Identifier cannot be blank");
+        }
+
+        return executeAction("Error retrieving flow", () -> {
+            final WebTarget target = bucketFlowsTarget
+                    .path("/{flowId}/diff/{versionA}/{versionB}")
+                    .resolveTemplate("bucketId", bucketId)
+                    .resolveTemplate("flowId", flowId)
+                    .resolveTemplate("versionA", versionA)
+                    .resolveTemplate("versionB", versionB);
+
+            return  getRequestBuilder(target).get(VersionedFlowDifference.class);
+        });
+    }
 }

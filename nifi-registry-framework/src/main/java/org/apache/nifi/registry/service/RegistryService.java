@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.service;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.bucket.Bucket;
@@ -24,13 +25,23 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
+import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.flow.diff.ComparableDataFlow;
+import org.apache.nifi.registry.flow.diff.ConciseEvolvingDifferenceDescriptor;
+import org.apache.nifi.registry.flow.diff.FlowComparator;
+import org.apache.nifi.registry.flow.diff.FlowComparison;
+import org.apache.nifi.registry.flow.diff.FlowDifference;
+import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
+import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.slf4j.Logger;
@@ -47,7 +58,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -779,6 +792,98 @@ public class RegistryService {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    /**
+     * Returns the differences between two specified versions of a flow.
+     *
+     * @param bucketIdentifier the id of the bucket the flow exists in
+     * @param flowIdentifier the flow to be examined
+     * @param versionA the first version of the comparison
+     * @param versionB the second version of the comparison
+     * @return The differences between two specified versions, grouped by component.
+     */
+    public VersionedFlowDifference getFlowDiff(final String bucketIdentifier, final String flowIdentifier,
+                                               final Integer versionA, final Integer versionB) {
+        if (StringUtils.isBlank(bucketIdentifier)) {
+            throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(flowIdentifier)) {
+            throw new IllegalArgumentException("Flow identifier cannot be null or blank");
+        }
+
+        if (versionA == null || versionB == null) {
+            throw new IllegalArgumentException("Version cannot be null or blank");
+        }
+        // older version is always the lower, regardless of the order supplied
+        final Integer older = Math.min(versionA, versionB);
+        final Integer newer = Math.max(versionA, versionB);
+
+        readLock.lock();
+        try {
+            // Get the content for both versions of the flow
+            final byte[] serializedSnapshotA = flowPersistenceProvider.getFlowContent(bucketIdentifier, flowIdentifier, older);
+            if (serializedSnapshotA == null || serializedSnapshotA.length == 0) {
+                throw new IllegalStateException("No serialized content found for snapshot with flow identifier "
+                        + flowIdentifier + " and version " + older);
+            }
+
+            final byte[] serializedSnapshotB = flowPersistenceProvider.getFlowContent(bucketIdentifier, flowIdentifier, newer);
+            if (serializedSnapshotB == null || serializedSnapshotB.length == 0) {
+                throw new IllegalStateException("No serialized content found for snapshot with flow identifier "
+                        + flowIdentifier + " and version " + newer);
+            }
+
+            // deserialize the contents
+            final InputStream inputA = new ByteArrayInputStream(serializedSnapshotA);
+            final VersionedProcessGroup flowContentsA = processGroupSerializer.deserialize(inputA);
+            final InputStream inputB = new ByteArrayInputStream(serializedSnapshotB);
+            final VersionedProcessGroup flowContentsB = processGroupSerializer.deserialize(inputB);
+
+            final ComparableDataFlow comparableFlowA = new StandardComparableDataFlow(String.format("Version %d", older), flowContentsA);
+            final ComparableDataFlow comparableFlowB = new StandardComparableDataFlow(String.format("Version %d", newer), flowContentsB);
+
+            // Compare the two versions of the flow
+            final FlowComparator flowComparator = new StandardFlowComparator(comparableFlowA, comparableFlowB,
+                    null, new ConciseEvolvingDifferenceDescriptor());
+            final FlowComparison flowComparison = flowComparator.compare();
+
+            VersionedFlowDifference result = new VersionedFlowDifference();
+            result.setBucketId(bucketIdentifier);
+            result.setFlowId(flowIdentifier);
+            result.setVersionA(older);
+            result.setVersionB(newer);
+
+            Set<ComponentDifferenceGroup> differenceGroups = getStringComponentDifferenceGroupMap(flowComparison.getDifferences());
+            result.setComponentDifferenceGroups(differenceGroups);
+
+            return result;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    /**
+     * Group the differences in the comparison by component
+     * @param flowDifferences The differences to group together by component
+     * @return A set of componentDifferenceGroups where each entry contains a set of differences specific to that group
+     */
+    private Set<ComponentDifferenceGroup> getStringComponentDifferenceGroupMap(Set<FlowDifference> flowDifferences) {
+        Map<String, ComponentDifferenceGroup> differenceGroups = new HashMap<>();
+        for (FlowDifference diff : flowDifferences) {
+            ComponentDifferenceGroup group;
+            // A component may only exist on only one version for new/removed components
+            VersionedComponent component = ObjectUtils.firstNonNull(diff.getComponentA(), diff.getComponentB());
+            if(differenceGroups.containsKey(component.getIdentifier())){
+                group = differenceGroups.get(component.getIdentifier());
+            }else{
+                group = DataModelMapper.map(component);
+                differenceGroups.put(component.getIdentifier(), group);
+            }
+            group.getDifferences().add(DataModelMapper.map(diff));
+        }
+        return differenceGroups.values().stream().collect(Collectors.toSet());
     }
 
     // ---------------------- Field methods ---------------------------------------------

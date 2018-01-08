@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.VersionedFlow;
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -400,6 +401,32 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         populateLinksAndPermissions(snapshot);
 
         return Response.status(Response.Status.OK).entity(snapshot).build();
+    }
+
+    @GET
+    @Path("{flowId}/diff/{versionA: \\d+}/{versionB: \\d+}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Returns a list of differences between 2 versions of a flow",
+            response = VersionedFlowDifference.class
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409)})
+    public Response getFlowDiff(@PathParam("bucketId")
+                                @ApiParam("The bucket identifier") final String bucketId,
+                                @PathParam("flowId")
+                                @ApiParam("The flow identifier") final String flowId,
+                                @PathParam("versionA")
+                                @ApiParam("The first version number") final Integer versionNumberA,
+                                @PathParam("versionB")
+                                @ApiParam("The second version number") final Integer versionNumberB) {
+        VersionedFlowDifference result = registryService.getFlowDiff(bucketId, flowId, versionNumberA, versionNumberB);
+        return Response.status(Response.Status.OK).entity(result).build();
     }
 
     private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
