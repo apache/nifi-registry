@@ -14,13 +14,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 //
-Apache NiFi Registry System Administrator's Guide
-=================================================
+= Apache NiFi Registry System Administrator's Guide
 Apache NiFi Team <dev@nifi.apache.org>
 :homepage: http://nifi.apache.org
 
-System Requirements
--------------------
+== System Requirements
 
 NiFi Registry has the following minimum system requirements:
 
@@ -34,8 +32,7 @@ NiFi Registry has the following minimum system requirements:
 ** Mozilla FireFox: Current & (Current - 1)
 ** Safari:  Current & (Current - 1)
 
-How to install and start NiFi Registry
---------------------------------------
+== How to install and start NiFi Registry
 
 * Linux/Unix/OS X
 ** Decompress and untar into desired installation directory
@@ -61,8 +58,7 @@ When NiFi Registry first starts up, the following files and directories are crea
 
 See the <<system_properties>> section of this guide for more information about NiFi Registry configuration files.
 
-Security Configuration
-----------------------
+== Security Configuration
 
 NiFi Registry provides several different configuration options for security purposes. The most important properties are those under the
 "security properties" heading in the _nifi-registry.properties_ file. In order to run securely, the following properties must be set:
@@ -87,8 +83,7 @@ should run on. If it is desired that the HTTPS interface be accessible from all 
 NOTE: It is important when enabling HTTPS that the `nifi.registry.web.http.port` property be unset.
 
 [[user_authentication]]
-User Authentication
--------------------
+== User Authentication
 
 A secured instance of NiFi Registry cannot be accessed anonymously, so a method of user authentication must be configured.
 
@@ -109,8 +104,7 @@ Identity Providers are configured using two properties in the 'nifi-registry.pro
 NOTE: NiFi Registry can only be configured to use one Identity Provider at a given time.
 
 [[ldap_identity_provider]]
-Lightweight Directory Access Protocol (LDAP)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=== Lightweight Directory Access Protocol (LDAP)
 
 Below is an example and description of configuring a Identity Provider that integrates with a Directory Server to authenticate users.
 
@@ -179,8 +173,7 @@ compatibility. USE_DN will use the full DN of the user entry if possible. USE_US
 |==================================================================================================================================================
 
 [[kerberos_identity_provider]]
-Kerberos
-~~~~~~~~
+=== Kerberos
 
 Below is an example and description of configuring an Identity Provider that integrates with a Kerberos Key Distribution Center (KDC) to authenticate users.
 
@@ -210,15 +203,14 @@ nifi.registry.security.user.identity.provider=kerberos-identity-provider
 
 See also <<kerberos_service>> to allow single sign-on access via client Kerberos tickets.
 
-[[multi-tenant-authorization]]
-Authorization
--------------
+[[authorization]]
+== Authorization
+
 After you have configured NiFi Registry to run securely and with an authentication mechanism, you must configure who has access to the system and their level of access.
 This is done by defining policies that give users and groups permissions to perform a particular action. These policies are defined in an 'authorizer'.
 
 [[authorizer-configuration]]
-Authorizer Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~
+=== Authorizer Configuration
 
 An 'authorizer' manages known users and their access policies. Authorizers are configured using two properties in the 'nifi-registry.properties' file:
 
@@ -226,8 +218,7 @@ An 'authorizer' manages known users and their access policies. Authorizers are c
 * The `nifi.registry.security.authorizer` property indicates which of the configured authorizers in the 'authorizers.xml' file to use.
 
 [[authorizers-setup]]
-Authorizers.xml Setup
-~~~~~~~~~~~~~~~~~~~~~
+=== Authorizers.xml Setup
 
 The 'authorizers.xml' file is used to define and configure available authorizers.  The default authorizer is the StandardManagedAuthorizer.  The managed authorizer is comprised of a UserGroupProvider
 and a AccessPolicyProvider.  The users, group, and access policies will be loaded and optionally configured through these providers.  The managed authorizer will make all access decisions based on
@@ -308,8 +299,7 @@ The default Authorizer is the StandardManagedAuthorizer, however, you can develo
 * Access Policy Provider - The identifier for an Access Policy Provider defined above.
 
 [[initial-admin-identity]]
-Initial Admin Identity  (New NiFi Registry Instance)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==== Initial Admin Identity  (New NiFi Registry Instance)
 
 If you are setting up a secured NiFi Registry instance for the first time, you must manually designate an “Initial Admin Identity” in the 'authorizers.xml' file.
 This initial admin user is granted access to the UI and given the ability to create additional users, groups, and policies.
@@ -563,8 +553,7 @@ from an attribute in a LDAP entry based on the 'User Identity Attribute'. The 'N
 'Initial User Identity' properties.
 
 
-Encrypted Passwords in Configuration Files
-------------------------------------------
+== Encrypted Passwords in Configuration Files
 
 In order to facilitate the secure setup of NiFi Registry, you can use the `encrypt-config` command line utility to encrypt raw configuration values
 that NiFi Registry decrypts in memory on startup. This extensible protection scheme transparently allows NiFi Registry to use raw values in operation,
@@ -577,8 +566,7 @@ NOTE: The `encrypt-config` tool for NiFi Registry is implemented as an additiona
 assume you have downloaded the binary for the nifi-toolkit.
 
 [[encrypt-config_tool]]
-Encrypt-Config Tool
-~~~~~~~~~~~~~~~~~~~
+=== Encrypt-Config Tool
 
 The `encrypt-config` command line tool can be used to encrypt NiFi Registry configuration by invoking the tool with the following command:
 
@@ -678,9 +666,8 @@ same master key already present in your 'bootstrap.conf', then run the tool with
 ./bin/encrypt-config.sh nifi-registry -b bootstrap.conf -r nifi-registry.properties
 ----
 
-[encrypt_config_property_migration]
-Sensitive Property Key Migration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[sensistive_property_key_migration]
+=== Sensitive Property Key Migration
 
 In order to change the key used to encrypt the sensitive values, provide the new key or password using the `-k` or `-p` flags as usual,
 and provide the existing key or password using `--old-key` or `--old-password` respectively. This will allow the toolkit to decrypt the
@@ -693,8 +680,8 @@ for each phase (old vs. new), and any combination is sufficient:
 * old password -> new password
 
 [[bootstrap_properties]]
-Bootstrap Properties
---------------------
+== Bootstrap Properties
+
 The _bootstrap.conf_ file in the _conf_ directory allows users to configure settings for how NiFi Registry should be started. This includes parameters, such as the size of the Java Heap, what Java command to run, and Java System Properties.
 
 Here, we will address the different properties that are made available in the file. Any changes to this file will take effect only after NiFi Registry has been stopped and restarted.
@@ -711,8 +698,8 @@ Here, we will address the different properties that are made available in the fi
 
 
 [[proxy_configuration]]
-Proxy Configuration
--------------------
+== Proxy Configuration
+
 ​When running Apache NiFi Registry behind a proxy there are a couple of key items to be aware of during deployment.
 
 * NiFi Registry is comprised of a number of web applications (web UI, web API, documentation), so the mapping needs to be configured for the *root path*.
@@ -758,8 +745,8 @@ Please refer the documentation of the proxy for guidance for your deployment env
 ....
 
 [[kerberos_service]]
-Kerberos Service
-----------------
+== Kerberos Service
+
 NiFi Registry can be configured to use Kerberos SPNEGO (or "Kerberos Service") for authentication. In this scenario, users will hit the REST endpoint `/access/token/kerberos`
 and the server will respond with a `401` status code and the challenge response header `WWW-Authenticate: Negotiate`. This communicates to the browser to use the GSS-API
 and load the user's Kerberos ticket and provide it as a Base64-encoded header value in the subsequent request. It will be of the form `Authorization: Negotiate YII...`.
@@ -773,8 +760,7 @@ NiFi Registry will only respond to Kerberos SPNEGO negotiation over an HTTPS con
 See <<kerberos_properties>> for complete documentation.
 
 [[kerberos_service_notes]]
-Notes
-~~~~~
+=== Notes
 
 * Kerberos is case-sensitive in many places and the error messages (or lack thereof) may not be sufficiently explanatory.
   Check the case sensitivity of the service principal in your configuration files. The convention is `HTTP/fully.qualified.domain@REALM`.
@@ -811,8 +797,8 @@ root@kdc:~#
 ....
 
 [[system_properties]]
-System Properties
------------------
+== System Properties
+
 The _nifi-registry.properties_ file in the _conf_ directory is the main configuration file for controlling how NiFi Registry runs. This section
 provides an overview of the properties in this file and includes some notes on how to configure it in a way that will make upgrading easier.
 *After making changes to this file, restart NiFi Registry in order for the changes to take effect.*
