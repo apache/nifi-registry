@@ -143,7 +143,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     ];
     this.dropletActions = [
         {
-            name: 'delete',
+            name: 'Delete',
             icon: 'fa fa-trash',
             tooltip: 'Delete'
         }
