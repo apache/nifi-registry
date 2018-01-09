@@ -71,7 +71,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<BucketEntity> getBucketsByName(final String name) {
-        final String sql = "SELECT * FROM bucket WHERE name = ?";
+        final String sql = "SELECT * FROM bucket WHERE name = ? ORDER BY name ASC";
         return jdbcTemplate.query(sql, new Object[] {name} , new BucketEntityRowMapper());
     }
 
@@ -114,14 +114,15 @@ public class DatabaseMetadataService implements MetadataService {
             }
             sqlBuilder.append("?");
         }
-        sqlBuilder.append(")");
+        sqlBuilder.append(") ");
+        sqlBuilder.append("ORDER BY name ASC");
 
         return jdbcTemplate.query(sqlBuilder.toString(), bucketIds.toArray(), new BucketEntityRowMapper());
     }
 
     @Override
     public List<BucketEntity> getAllBuckets() {
-        final String sql = "SELECT * FROM bucket";
+        final String sql = "SELECT * FROM bucket ORDER BY name ASC";
         return jdbcTemplate.query(sql, new BucketEntityRowMapper());
     }
 
