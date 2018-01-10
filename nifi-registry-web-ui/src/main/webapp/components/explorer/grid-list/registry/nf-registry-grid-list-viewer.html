@@ -57,7 +57,7 @@ limitations under the License.
             </ng-template>
             <div id="nifi-registry-explorer-grid-list-viewer-droplet-container-details" class="mat-padding">
                 <div fxLayout="column" fxLayoutAlign="space-between stretch">
-                    <div class="pad-bottom-sm" fxLayout="row" fxLayoutAlign="end center">
+                    <div fxLayout="row" fxLayoutAlign="end center">
                         <button color="fds-primary" [matMenuTriggerFor]="primaryButtonDropdownMenu" mat-raised-button>
                             Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
                         </button>
@@ -71,11 +71,14 @@ limitations under the License.
                         </mat-menu>
                     </div>
                     <div fxLayout="row">
-                        <div fxFlex="25" class="pad-left-sm">
+                        <div fxFlex="25" class="pad-left-sm pad-top-sm">
                             <span class="uppercase">Description</span>
                         </div>
                         <div fxFlex="75">
                             <span class="uppercase">Change Log</span>
+                            <button (click)="nfRegistryService.getDropletSnapshotMetadata(droplet)" matTooltip="Refresh" mat-icon-button>
+                                <i class="fa fa-refresh info" aria-hidden="true"></i>
+                            </button>
                         </div>
                     </div>
                     <div fxLayout="row" class="pad-left-sm">
