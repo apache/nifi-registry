@@ -261,14 +261,15 @@ This will sync users and groups from a directory server and will present them in
 * User Search Scope - Search scope for searching users (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching users.
 * User Search Filter - Filter for searching for users against the 'User Search Base' (i.e. (memberof=cn=team1,ou=groups,o=nifi) ). Optional.
 * User Identity Attribute - Attribute to use to extract user identity (i.e. cn). Optional. If not set, the entire DN is used.
-* User Group Name Attribute - Attribute to use to define group membership (i.e. memberof). Optional. If not set group membership will not be calculated through the users. Will rely on group membership being defined through Group Member Attribute if set.
+* User Group Name Attribute - Attribute to use to define group membership (i.e. memberof). Optional. If not set group membership will not be calculated through the users. Will rely on group membership being defined through 'Group Member Attribute' if set. The value of this property is the name of the attribute in the user LDAP entry that associates them with a group. The value of that user attribute could be a dn or group name for instance. What value is expected is configured in the 'User Group Name Attribute - Referenced Group Attribute'.
+* User Group Name Attribute - Referenced Group Attribute - If blank, the value of the attribute defined in 'User Group Name Attribute' is expected to be the full dn of the group. If not blank, this property will define the attribute of the group LDAP entry that the value of the attribute defined in 'User Group Name Attribute' is referencing (i.e. name). Use of this property requires that 'Group Search Base' is also configured.
 * Group Search Base - Base DN for searching for groups (i.e. ou=groups,o=nifi). Required to search groups.
 * Group Object Class - Object class for identifying groups (i.e. groupOfNames). Required if searching groups.
 * Group Search Scope - Search scope for searching groups (ONE_LEVEL, OBJECT, or SUBTREE). Required if searching groups.
 * Group Search Filter - Filter for searching for groups against the 'Group Search Base'. Optional.
 * Group Name Attribute - Attribute to use to extract group name (i.e. cn). Optional. If not set, the entire DN is used.
-* Group Member Attribute - Group Member Attribute - Attribute to use to define group membership (i.e. member). Optional. If not set group membership will not be calculated through the groups. Will rely on group member being defined through User Group Name Attribute if set.
-
+* Group Member Attribute - Attribute to use to define group membership (i.e. member). Optional. If not set group membership will not be calculated through the groups. Will rely on group membership being defined through 'User Group Name Attribute' if set. The value of this property is the name of the attribute in the group LDAP entry that associates them with a user. The value of that group attribute could be a dn or memberUid for instance. What value is expected is configured in the 'Group Member Attribute - Referenced User Attribute'. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)
+* Group Member Attribute - Referenced User Attribute - If blank, the value of the attribute defined in 'Group Member Attribute' is expected to be the full dn of the user. If not blank, this property will define the attribute of the user LDAP entry that the value of the attribute defined in 'Group Member Attribute' is referencing (i.e. uid). Use of this property requires that 'User Search Base' is also configured. (i.e. member: cn=User 1,ou=users,o=nifi vs. memberUid: user1)
 
 Another option for the UserGroupProvider are composite implementations. This means that multiple sources/implementations can be configured and composed. For instance, an admin can configure users/groups to be loaded from a file and a directory server. There are two composite implementations, one that supports multiple UserGroupProviders and one that supports multiple UserGroupProviders and a single configurable UserGroupProvider.
 
@@ -306,7 +307,7 @@ This initial admin user is granted access to the UI and given the ability to cre
 The value of this property could be a certificate DN , LDAP identity (DN or username), or a Kerberos principal.
 If you are the NiFi Registry administrator, add yourself as the “Initial Admin Identity”.
 
-Here is an example LDAP entry using the name John Smith:
+Here is an example certificate DN entry using the name John Smith:
 
 ----
 <authorizers>
@@ -440,6 +441,7 @@ An Authorizer using an LdapUserGroupProvider would be configured as:
         <property name="User Search Filter"></property>
         <property name="User Identity Attribute">cn</property>
         <property name="User Group Name Attribute"></property>
+        <property name="User Group Name Attribute - Referenced Group Attribute"></property>
 
         <property name="Group Search Base">ou=groups,o=nifi</property>
         <property name="Group Object Class">groupOfNames</property>
@@ -447,6 +449,7 @@ An Authorizer using an LdapUserGroupProvider would be configured as:
         <property name="Group Search Filter"></property>
         <property name="Group Name Attribute">cn</property>
         <property name="Group Member Attribute">member</property>
+        <property name="Group Member Attribute - Referenced User Attribute"></property>
     </userGroupProvider>
 
     <accessPolicyProvider>
@@ -514,6 +517,7 @@ the member attribute of each group. The users from LDAP will be read only while 
         <property name="User Search Filter"></property>
         <property name="User Identity Attribute">cn</property>
         <property name="User Group Name Attribute"></property>
+        <property name="User Group Name Attribute - Referenced Group Attribute"></property>
 
         <property name="Group Search Base">ou=groups,o=nifi</property>
         <property name="Group Object Class">groupOfNames</property>
@@ -521,6 +525,7 @@ the member attribute of each group. The users from LDAP will be read only while 
         <property name="Group Search Filter"></property>
         <property name="Group Name Attribute">cn</property>
         <property name="Group Member Attribute">member</property>
+        <property name="Group Member Attribute - Referenced User Attribute"></property>
     </userGroupProvider>
 
     <userGroupProvider>
@@ -571,7 +576,7 @@ assume you have downloaded the binary for the nifi-toolkit.
 The `encrypt-config` command line tool can be used to encrypt NiFi Registry configuration by invoking the tool with the following command:
 
 ----
-./bin/encrypt-config nifi-registry [options]
+./bin/encrypt-config --nifiRegistry [options]
 ----
 
  * `-h`,`--help`                                  Show usage information (this message)
@@ -655,7 +660,6 @@ Sensitive configuration values are encrypted by the tool by default, however you
 To encrypt additional properties, specify them as comma-separated values in the `nifi.registry.sensitive.props.additional.keys` property.
 
 
-
 If the 'nifi-registry.properties' file already has valid protected values and you wish to protect additional values using the
 same master key already present in your 'bootstrap.conf', then run the tool without specifying a new key:
 
@@ -663,7 +667,7 @@ same master key already present in your 'bootstrap.conf', then run the tool with
 # bootstrap.conf already contains master key property
 # nifi-registy.properties has been updated for nifi.registry.sensitive.props.additional.keys=...
 
-./bin/encrypt-config.sh nifi-registry -b bootstrap.conf -r nifi-registry.properties
+./bin/encrypt-config.sh --nifiRegistry -b bootstrap.conf -r nifi-registry.properties
 ----
 
 [sensistive_property_key_migration]
