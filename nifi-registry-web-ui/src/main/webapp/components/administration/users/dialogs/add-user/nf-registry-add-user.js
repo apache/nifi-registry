@@ -78,12 +78,22 @@ NfRegistryAddUser.prototype = {
      */
     cancel: function () {
         this.dialogRef.close();
+    },
+
+    /**
+     * Focus the new user input.
+     */
+    ngAfterViewChecked: function () {
+        this.newUserInput.nativeElement.focus();
     }
 };
 
 NfRegistryAddUser.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-add-user.html!text')
+        template: require('./nf-registry-add-user.html!text'),
+        queries: {
+            newUserInput: new ngCore.ViewChild('newUserInput')
+        }
     })
 ];
 

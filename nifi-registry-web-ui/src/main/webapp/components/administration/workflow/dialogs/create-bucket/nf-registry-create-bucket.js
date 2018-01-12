@@ -77,12 +77,22 @@ NfRegistryCreateBucket.prototype = {
      */
     cancel: function () {
         this.dialogRef.close();
+    },
+
+    /**
+     * Focus the new bucket input.
+     */
+    ngAfterViewChecked: function () {
+        this.newBucketInput.nativeElement.focus();
     }
 };
 
 NfRegistryCreateBucket.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-create-bucket.html!text')
+        template: require('./nf-registry-create-bucket.html!text'),
+        queries: {
+            newBucketInput: new ngCore.ViewChild('newBucketInput')
+        }
     })
 ];
 
