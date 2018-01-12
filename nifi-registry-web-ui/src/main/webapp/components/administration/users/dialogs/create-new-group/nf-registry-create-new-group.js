@@ -79,12 +79,22 @@ NfRegistryCreateNewGroup.prototype = {
      */
     cancel: function () {
         this.dialogRef.close();
+    },
+
+    /**
+     * Focus the new group input.
+     */
+    ngAfterViewChecked: function () {
+        this.createNewGroupInput.nativeElement.focus();
     }
 };
 
 NfRegistryCreateNewGroup.annotations = [
     new ngCore.Component({
-        template: require('./nf-registry-create-new-group.html!text')
+        template: require('./nf-registry-create-new-group.html!text'),
+        queries: {
+            createNewGroupInput: new ngCore.ViewChild('createNewGroupInput')
+        }
     })
 ];
 
