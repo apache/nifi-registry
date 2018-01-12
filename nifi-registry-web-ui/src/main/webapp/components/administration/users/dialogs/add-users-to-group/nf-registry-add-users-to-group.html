@@ -40,23 +40,23 @@ limitations under the License.
             </div>
         </div>
         <div id="nifi-registry-add-selected-users-to-group-list-container">
-            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUsers"
-                 (click)="row.checked = !row.checked;determineAllUsersSelectedState()">
-                <div *ngFor="let column of nfRegistryService.userGroupsColumns" fxLayout="row"
-                     fxLayoutAlign="space-between center" class="td-data-table-row">
-                    <div class="td-data-table-cell" fxFlex="{{column.width}}">
-                        <div>
-                            {{column.format ?
-                            column.format(row[column.name]) : row[column.name]}}
-                        </div>
+            <div fxLayout="row" fxLayoutAlign="space-between center"
+                 class="td-data-table-row"
+                 [ngClass]="{'selected' : user.checked}"
+                 *ngFor="let user of filteredUsers"
+                 (click)="user.checked = !user.checked;determineAllUsersSelectedState();">
+                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                     fxFlex="{{column.width}}">
+                    <div class="ellipsis" matTooltip="{{column.format ? column.format(user[column.name]) : user[column.name]}}">
+                        {{column.format ? column.format(user[column.name]) : user[column.name]}}
                     </div>
-                    <div class="td-data-table-cell">
-                        <mat-checkbox [(ngModel)]="row.checked"
-                                      [checked]="row.checked"
-                                      (change)="determineAllUsersSelectedState()"
-                                      (click)="row.checked = !row.checked;determineAllUsersSelectedState()">
-                        </mat-checkbox>
-                    </div>
+                </div>
+                <div class="td-data-table-cell">
+                    <mat-checkbox [(ngModel)]="user.checked"
+                                  [checked]="user.checked"
+                                  (change)="determineAllUsersSelectedState()"
+                                  (click)="user.checked = !user.checked;determineAllUsersSelectedState()">
+                    </mat-checkbox>
                 </div>
             </div>
         </div>
