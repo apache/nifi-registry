@@ -24,6 +24,8 @@ body[fds] .td-data-table-cell {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  height: 100%;
+  line-height: 30px;
 }
 
 body[fds] .td-data-table-column {
