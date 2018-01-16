@@ -22,8 +22,12 @@ import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.KeyEntity;
+import org.apache.nifi.registry.diff.ComponentDifference;
+import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
+import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.security.key.Key;
 
 import java.util.Date;
@@ -112,6 +116,35 @@ public class DataModelMapper {
         return metadata;
     }
 
+    public static ComponentDifference map(final FlowDifference flowDifference){
+        ComponentDifference diff = new ComponentDifference();
+        diff.setChangeDescription(flowDifference.getDescription());
+        diff.setDifferenceType(flowDifference.getDifferenceType().toString());
+        diff.setDifferenceTypeDescription(flowDifference.getDifferenceType().getDescription());
+        diff.setValueA(getValueDescription(flowDifference.getValueA()));
+        diff.setValueB(getValueDescription(flowDifference.getValueB()));
+        return diff;
+    }
+
+    public static ComponentDifferenceGroup map(VersionedComponent versionedComponent){
+        ComponentDifferenceGroup grouping = new ComponentDifferenceGroup();
+        grouping.setComponentId(versionedComponent.getIdentifier());
+        grouping.setComponentName(versionedComponent.getName());
+        grouping.setProcessGroupId(versionedComponent.getGroupIdentifier());
+        grouping.setComponentType(versionedComponent.getComponentType().getTypeName());
+        return grouping;
+    }
+
+    private static String getValueDescription(Object valueA){
+        if(valueA instanceof VersionedComponent){
+            return ((VersionedComponent) valueA).getIdentifier();
+        }
+        if(valueA!= null){
+            return valueA.toString();
+        }
+        return null;
+    }
+
     // --- Map keys
 
     public static Key map(final KeyEntity keyEntity) {
@@ -129,5 +162,7 @@ public class DataModelMapper {
         keyEntity.setKeyValue(key.getKey());
         return keyEntity;
     }
+
+    // map
 
 }
