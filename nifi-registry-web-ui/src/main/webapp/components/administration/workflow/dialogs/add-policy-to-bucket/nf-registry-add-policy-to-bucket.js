@@ -73,10 +73,12 @@ NfRegistryAddPolicyToBucket.prototype = {
             .subscribe(function (response) {
                 self.users = response[0];
                 self.users = self.users.filter(function (user) {
+                    user.checked = false;
                     return (self.data.users.indexOf(user.identity) < 0) ? true : false;
                 });
                 self.groups = response[1];
                 self.groups = self.groups.filter(function (group) {
+                    group.checked = false;
                     return (self.data.groups.indexOf(group.identity) < 0) ? true : false;
                 });
 
@@ -355,6 +357,35 @@ NfRegistryAddPolicyToBucket.prototype = {
      */
     cancel: function () {
         this.dialogRef.close();
+    },
+
+    /**
+     * Select a user or group.
+     *
+     * @param userOrGroup   The selected user or group.
+     * @param type
+     */
+    select: function(userOrGroup, type) {
+        //deselect all
+        this.filteredUsers = this.filteredUsers.filter(function (user) {
+            user.checked = false;
+            return true;
+        });
+        this.filteredUserGroups = this.filteredUserGroups.filter(function (group) {
+            group.checked = false;
+            return true;
+        });
+        userOrGroup.checked = true;
+        this.userOrGroup = userOrGroup;
+        this.userOrGroup.type = type;
+    },
+
+    /**
+     * Change event handler for user or group checkboxes
+     * @param $event
+     */
+    change: function($event){
+        $event.source.checked = true;
     }
 };
 

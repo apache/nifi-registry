@@ -36,37 +36,33 @@ limitations under the License.
             <div class="td-data-table-column"></div>
         </div>
         <div id="nifi-registry-add-selected-users-to-group-list-container">
-            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUserGroups"
-                 (click)="userOrGroup = row; userOrGroup.type = 'group';">
-                <div *ngFor="let column of nfRegistryService.userGroupsColumns" fxLayout="row"
-                     fxLayoutAlign="space-between center" class="td-data-table-row">
-                    <div class="td-data-table-cell" fxFlex="{{column.width}}">
-                        <div>
-                            <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ?
-                            column.format(row[column.name]) : row[column.name]}}
-                        </div>
-                    </div>
-                    <div class="td-data-table-cell">
-                        <mat-checkbox [checked]="row[column.name] === userOrGroup.identity"
-                                      (click)="userOrGroup = row; userOrGroup.type = 'group';">
-                        </mat-checkbox>
+            <div fxLayout="row" fxLayoutAlign="space-between center"  class="td-data-table-row" [ngClass]="{'selected' : (group.identity === userOrGroup.identity)}"
+                 *ngFor="let group of filteredUserGroups"
+                 (click)="select(group, 'group');">
+                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                     fxFlex="{{column.width}}">
+                    <div class="ellipsis" matTooltip="{{column.format ? column.format(group[column.name]) : group[column.name]}}">
+                        <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ?
+                        column.format(group[column.name]) : group[column.name]}}
                     </div>
                 </div>
+                <div class="td-data-table-cell">
+                    <mat-checkbox [(checked)]="group.checked" (change)="change($event)">
+                    </mat-checkbox>
+                </div>
             </div>
-            <div [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUsers"
-                 (click)="userOrGroup = row; userOrGroup.type = 'user';">
-                <div *ngFor="let column of nfRegistryService.userGroupsColumns" fxLayout="row"
-                     fxLayoutAlign="space-between center" class="td-data-table-row">
-                    <div class="td-data-table-cell" fxFlex="{{column.width}}">
-                        <div>
-                            {{column.format ? column.format(row[column.name]) : row[column.name]}}
-                        </div>
+            <div fxLayout="row" fxLayoutAlign="space-between center"  class="td-data-table-row" [ngClass]="{'selected' : (user.identity === userOrGroup.identity)}"
+                 *ngFor="let user of filteredUsers"
+                 (click)="select(user, 'user');">
+                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                     fxFlex="{{column.width}}">
+                    <div class="ellipsis" matTooltip="{{column.format ? column.format(user[column.name]) : user[column.name]}}">
+                        {{column.format ? column.format(user[column.name]) : user[column.name]}}
                     </div>
-                    <div class="td-data-table-cell">
-                        <mat-checkbox [checked]="row[column.name] === userOrGroup.identity"
-                                      (click)="userOrGroup = row; userOrGroup.type = 'user';">
-                        </mat-checkbox>
-                    </div>
+                </div>
+                <div class="td-data-table-cell">
+                    <mat-checkbox [(checked)]="user.checked" (change)="change($event)">
+                    </mat-checkbox>
                 </div>
             </div>
         </div>
