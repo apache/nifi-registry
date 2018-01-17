@@ -44,7 +44,7 @@ NiFi Registry has the following minimum system requirements:
 *** run: runs NiFi Registry in the foreground and waits for a Ctrl-C to initiate shutdown of NiFi Registry
 *** install: installs NiFi Registry as a service that can then be controlled via
 **** service nifi-registry start
-**** service nifi-regsitry stop
+**** service nifi-registry stop
 **** service nifi-registry status
 
 
