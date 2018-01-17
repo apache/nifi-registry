@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.client;
 
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
 
@@ -106,4 +107,16 @@ public interface FlowClient {
      */
     List<VersionedFlow> getByBucket(String bucketId) throws NiFiRegistryException, IOException;
 
+    /**
+     *
+     * @param bucketId a bucket id
+     * @param flowId the flow that is under inspection
+     * @param versionA the first version to use in the comparison
+     * @param versionB the second flow to use in the comparison
+     * @return the list of differences between the 2 flow versions grouped by component
+     * @throws NiFiRegistryException if an error is encountered other than IOException
+     * @throws IOException if an I/O error is encountered
+     */
+    VersionedFlowDifference diff(final String bucketId, final String flowId,
+                                 final Integer versionA, final Integer versionB) throws NiFiRegistryException, IOException;
 }
