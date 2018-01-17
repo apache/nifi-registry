@@ -57,6 +57,7 @@
                         <div class="header">General</div>
                         <div id="general-links" class="component-links">
                             <ul>
+                            	<li class="component-item"><a class="document-link admin-guide" href="html/getting-started.html" target="component-usage">Getting Started</a></li>
                                 <li class="component-item"><a class="document-link admin-guide" href="html/user-guide.html" target="component-usage">User Guide</a></li>
                                 <li class="component-item"><a class="document-link admin-guide" href="html/administration-guide.html" target="component-usage">Admin Guide</a></li>
                             </ul>
