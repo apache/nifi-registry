@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.security.authorization;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
@@ -23,7 +24,9 @@ import org.apache.nifi.registry.security.exception.SecurityProviderDestructionEx
 import org.apache.nifi.registry.util.PropertyValue;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupProvider implements ConfigurableUserGroupProvider {
 
@@ -59,6 +62,18 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
 
         if (!(userGroupProvider instanceof ConfigurableUserGroupProvider)) {
             throw new SecurityProviderCreationException(String.format("The Configurable User Group Provider is not configurable: %s", configurableUserGroupProviderKey));
+        }
+
+        // Ensure that the ConfigurableUserGroupProvider is not also listed as one of the providers for the CompositeUserGroupProvider
+        for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
+            Matcher matcher = USER_GROUP_PROVIDER_PATTERN.matcher(entry.getKey());
+            if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
+                final String userGroupProviderKey = entry.getValue();
+
+                if (userGroupProviderKey.equals(configurableUserGroupProviderKey.getValue())) {
+                    throw new SecurityProviderCreationException(String.format("Duplicate provider in Composite Configurable User Group Provider configuration: %s", userGroupProviderKey));
+                }
+            }
         }
 
         configurableUserGroupProvider = (ConfigurableUserGroupProvider) userGroupProvider;
@@ -204,9 +219,13 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
         }
 
         // Second, lookup groups containing the user identifier
-        // Don't have to check super.getGroups() because this step is done as part of super.getUserAndGroups(...)
         String userIdentifier = combinedResult.getUser().getIdentifier();
         for (final Group group : configurableUserGroupProvider.getGroups()) {
+            if (group.getUsers() != null && group.getUsers().contains(userIdentifier)) {
+                combinedResult.addGroup(group);
+            }
+        }
+        for (final Group group : super.getGroups()) {
             if (group.getUsers() != null && group.getUsers().contains(userIdentifier)) {
                 combinedResult.addGroup(group);
             }

@@ -44,6 +44,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -58,6 +59,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Creates and configures Authorizers and their providers based on the configuration (authorizers.xml).
+ *
  * This implementation of AuthorizerFactory in NiFi Registry is based on a combination of
  * NiFi's AuthorizerFactory and AuthorizerFactoryBean.
  */
@@ -145,7 +148,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
                 // ensure the authorizer class name was specified
                 if (StringUtils.isBlank(authorizerIdentifier)) {
-                    throw new AuthorizerFactoryException("When running securely, the authorizer identifier must be specified in the nifi properties file.");
+                    throw new AuthorizerFactoryException("When running securely, the authorizer identifier must be specified in the nifi-registry.properties file.");
                 } else {
 
                     try {
@@ -153,6 +156,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
                         // create each user group provider
                         for (final org.apache.nifi.registry.security.authorization.generated.UserGroupProvider userGroupProvider : authorizerConfiguration.getUserGroupProvider()) {
+                            if (userGroupProviders.containsKey(userGroupProvider.getIdentifier())) {
+                                throw new AuthorizerFactoryException("Duplicate User Group Provider identifier in Authorizers configuration: " + userGroupProvider.getIdentifier());
+                            }
                             userGroupProviders.put(userGroupProvider.getIdentifier(), createUserGroupProvider(userGroupProvider.getIdentifier(), userGroupProvider.getClazz()));
                         }
 
@@ -164,6 +170,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
                         // create each access policy provider
                         for (final org.apache.nifi.registry.security.authorization.generated.AccessPolicyProvider accessPolicyProvider : authorizerConfiguration.getAccessPolicyProvider()) {
+                            if (accessPolicyProviders.containsKey(accessPolicyProvider.getIdentifier())) {
+                                throw new AuthorizerFactoryException("Duplicate Access Policy Provider identifier in Authorizers configuration: " + accessPolicyProvider.getIdentifier());
+                            }
                             accessPolicyProviders.put(accessPolicyProvider.getIdentifier(), createAccessPolicyProvider(accessPolicyProvider.getIdentifier(), accessPolicyProvider.getClazz()));
                         }
 
@@ -175,6 +184,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
                         // create each authorizer
                         for (final org.apache.nifi.registry.security.authorization.generated.Authorizer authorizer : authorizerConfiguration.getAuthorizer()) {
+                            if (authorizers.containsKey(authorizer.getIdentifier())) {
+                                throw new AuthorizerFactoryException("Duplicate Authorizer identifier in Authorizers configuration: " + authorizer.getIdentifier());
+                            }
                             authorizers.put(authorizer.getIdentifier(), createAuthorizer(authorizer.getIdentifier(), authorizer.getClazz(), authorizer.getClasspath()));
                         }
 
@@ -191,6 +203,8 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         if (authorizer == null) {
                             throw new AuthorizerFactoryException(String.format("The specified authorizer '%s' could not be found.", authorizerIdentifier));
                         }
+                    } catch (AuthorizerFactoryException e) {
+                        throw e;
                     } catch (Exception e) {
                         throw new AuthorizerFactoryException("Failed to construct Authorizer.", e);
                     }
@@ -203,15 +217,15 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     @Override
     public void destroy() throws Exception {
         if (authorizers != null) {
-            authorizers.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+            authorizers.forEach((key, value) -> value.preDestruction());
         }
 
         if (accessPolicyProviders != null) {
-            accessPolicyProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+            accessPolicyProviders.forEach((key, value) -> value.preDestruction());
         }
 
         if (userGroupProviders != null) {
-            userGroupProviders.entrySet().stream().forEach(e -> e.getValue().preDestruction());
+            userGroupProviders.forEach((key, value) -> value.preDestruction());
         }
     }
 
@@ -230,7 +244,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                 unmarshaller.setSchema(schema);
                 final JAXBElement<Authorizers> element = unmarshaller.unmarshal(XmlUtils.createSafeReader(new StreamSource(authorizersConfigurationFile)), Authorizers.class);
                 return element.getValue();
-            } catch (SAXException | JAXBException e) {
+            } catch (XMLStreamException | SAXException | JAXBException e) {
                 throw new Exception("Unable to load the authorizer configuration file at: " + authorizersConfigurationFile.getAbsolutePath(), e);
             }
         } else {
