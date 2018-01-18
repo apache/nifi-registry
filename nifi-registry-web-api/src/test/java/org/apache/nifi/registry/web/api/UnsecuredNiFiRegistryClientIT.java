@@ -29,12 +29,14 @@ import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.client.UserClient;
 import org.apache.nifi.registry.client.impl.JerseyNiFiRegistryClient;
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
+import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -265,6 +267,19 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         allItems.stream().forEach(i -> Assert.assertNotNull(i.getBucketName()));
         bucketItems.stream().forEach(i -> LOGGER.info("Items in bucket, item " + i.getIdentifier()));
 
+        // ----------------------- TEST DIFF ---------------------------//
+
+        final VersionedFlowSnapshot snapshot3 = buildSnapshot(snapshotFlow, 3);
+        final VersionedProcessGroup newlyAddedPG = new VersionedProcessGroup();
+        newlyAddedPG.setIdentifier("new-pg");
+        newlyAddedPG.setName("NEW Process Group");
+        snapshot3.getFlowContents().getProcessGroups().add(newlyAddedPG);
+        snapshotClient.create(snapshot3);
+
+        VersionedFlowDifference diff = flowClient.diff(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier(), 3, 2);
+        Assert.assertNotNull(diff);
+        Assert.assertEquals(1, diff.getComponentDifferenceGroups().size());
+
         // ---------------------- DELETE DATA --------------------------//
 
         final VersionedFlow deletedFlow1 = flowClient.delete(flowsBucket.getIdentifier(), flow1.getIdentifier());
@@ -302,7 +317,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         return client.create(versionedFlow);
     }
 
-    private static VersionedFlowSnapshot createSnapshot(FlowSnapshotClient client, VersionedFlow flow, int num) throws IOException, NiFiRegistryException {
+    private static VersionedFlowSnapshot buildSnapshot(VersionedFlow flow, int num) {
         final VersionedFlowSnapshotMetadata snapshotMetadata = new VersionedFlowSnapshotMetadata();
         snapshotMetadata.setBucketIdentifier(flow.getBucketIdentifier());
         snapshotMetadata.setFlowIdentifier(flow.getIdentifier());
@@ -322,15 +337,19 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         processorProperties.put("Prop 1", "Val 1");
         processorProperties.put("Prop 2", "Val 2");
 
+        final Map<String, VersionedPropertyDescriptor> propertyDescriptors = new HashMap<>();
+
         final VersionedProcessor processor1 = new VersionedProcessor();
         processor1.setIdentifier("p1");
         processor1.setName("Processor 1");
         processor1.setProperties(processorProperties);
+        processor1.setPropertyDescriptors(propertyDescriptors);
 
         final VersionedProcessor processor2 = new VersionedProcessor();
         processor2.setIdentifier("p2");
         processor2.setName("Processor 2");
         processor2.setProperties(processorProperties);
+        processor2.setPropertyDescriptors(propertyDescriptors);
 
         subProcessGroup.getProcessors().add(processor1);
         subProcessGroup.getProcessors().add(processor2);
@@ -338,8 +357,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
         snapshot.setSnapshotMetadata(snapshotMetadata);
         snapshot.setFlowContents(rootProcessGroup);
+        return snapshot;
+    }
+
+    private static VersionedFlowSnapshot createSnapshot(FlowSnapshotClient client, VersionedFlow flow, int num) throws IOException, NiFiRegistryException {
+        final VersionedFlowSnapshot snapshot = buildSnapshot(flow, num);
 
         return client.create(snapshot);
     }
-
 }
