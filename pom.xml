@@ -47,7 +47,8 @@
 	    <module>nifi-registry-bootstrap</module>
         <module>nifi-registry-docs</module>
         <module>nifi-registry-assembly</module>
-	<module>nifi-registry-client</module>
+	    <module>nifi-registry-client</module>
+        <module>nifi-registry-docker</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
