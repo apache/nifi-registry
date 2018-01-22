@@ -17,10 +17,11 @@
 = Getting Started with Apache NiFi Registry
 Apache NiFi Team <dev@nifi.apache.org>
 :homepage: http://nifi.apache.org
+:linkattrs:
 
 
 == Who is This Guide For?
-This guide is written for users who have basic experience with NiFi but have little familiarity with the NiFi Registry. This guide is not intended to be an exhaustive instruction manual or a reference guide. The link:user-guide.html[NiFi Registry User Guide] and link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html[NiFi User Guide] provide a great deal more information about using the Registry and integrating it with NiFi. This guide, in comparison, is intended to provide users with just the information needed in order to understand how to configure NiFi Registry, connect with NiFi and start using versioned NiFi dataflows.
+This guide is written for users who have basic experience with NiFi but have little familiarity with the NiFi Registry. This guide is not intended to be an exhaustive instruction manual or a reference guide. The link:user-guide.html[NiFi Registry User Guide] and link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html[NiFi User Guide^] provide a great deal more information about using the Registry and integrating it with NiFi. This guide, in comparison, is intended to provide users with just the information needed in order to understand how to configure NiFi Registry, connect with NiFi and start using versioned NiFi dataflows.
 
 
 == Terminology Used in This Guide
@@ -32,7 +33,7 @@ In order to talk about NiFi Registry, there are a few key terms that readers sho
 
 
 == Downloading and Installing NiFi Registry
-NiFi Registry can be downloaded from the link:https://nifi.apache.org/registry.html[NiFi Registry Page]. There are two packaging options available: a tarball and a zip file.  Supported operating systems include Linux, Unix and Mac OS X.
+NiFi Registry can be downloaded from the link:https://nifi.apache.org/registry.html[NiFi Registry Page^]. There are two packaging options available: a tarball and a zip file.  Supported operating systems include Linux, Unix and Mac OS X.
 
 For users who are not running OS X, after downloading NiFi Registry simply extract the archive to the location that you wish to run the application from. The registry is unsecured by default.
 
@@ -57,7 +58,8 @@ Once installed, the service can be started and stopped using the appropriate com
 
 
 == I Started NiFi Registry. Now What?
-Now that NiFi Registry has been started, we can bring up the User Interface (UI).  To get started, open a web browser and navigate to `http://localhost:18080/nifi-registry`. The port can be changed by editing the `nifi-registry.properties` file in the NiFi Registry _conf_ directory, but the default port is 18080.
+Now that NiFi Registry has been started, we can bring up the User Interface (UI).  To get started, open a web browser and navigate to
+link:http://localhost:18080/nifi-registry[`http://localhost:18080/nifi-registry`^]. The port can be changed by editing the `nifi-registry.properties` file in the NiFi Registry _conf_ directory, but the default port is 18080.
 
 This will bring up the Registry UI, which at this point is empty as there are no flow resources available to share yet:
 
@@ -158,11 +160,11 @@ In addition to this Getting Started Guide, more information about NiFi Registry 
 
 - link:user-guide.html[Apache NiFi Registry User Guide] - This guide provides information on how to navigate the Registry UI and explains in detail how to manage flows/policies/special privileges and configure users/groups when the Registry is secured.
 - link:administration-guide.html[Apache NiFi Registry System Administrator's Guide] - A guide for setting up and administering Apache NiFi Registry. Topics covered include: system requirements, security configuration, user authentication, authorization, proxy configuration and details about the different system-level settings.
-- link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html[Apache NiFi User Guide] - A fairly extensive guide that is often used more as a Reference Guide, as it provides information on each of the different components available in NiFi and explains how to use the different features provided by the application. It includes the section "Versioning a Dataflow" which covers the integration of NiFi with NiFi Registry. Topics covered include: connecting to a registry, version states, importing a versioned flow and managing local changes.
-- link:https://cwiki.apache.org/confluence/display/NIFI/Contributor+Guide[Contributor's Guide] - A guide for explaining how to contribute work back to the Apache NiFi community so that others can make use of it.
+- link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html[Apache NiFi User Guide^] - A fairly extensive guide that is often used more as a Reference Guide, as it provides information on each of the different components available in NiFi and explains how to use the different features provided by the application. It includes the section "Versioning a Dataflow" which covers the integration of NiFi with NiFi Registry. Topics covered include: connecting to a registry, version states, importing a versioned flow and managing local changes.
+- link:https://cwiki.apache.org/confluence/display/NIFI/Contributor+Guide[Contributor's Guide^] - A guide for explaining how to contribute work back to the Apache NiFi community so that others can make use of it.
 
 In addition to the guides provided here, you can browse the different
-link:https://nifi.apache.org/mailing_lists.html[NiFi Mailing Lists] or send an e-mail to one of the mailing lists at
+link:https://nifi.apache.org/mailing_lists.html[NiFi Mailing Lists^] or send an e-mail to one of the mailing lists at
 link:mailto:users@nifi.apache.org[users@nifi.apache.org] or
 link:mailto:dev@nifi.apache.org[dev@nifi.apache.org].
 
