@@ -38,7 +38,19 @@
 
 #nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log {
     position: relative;
+    top: 10px;
     left: 0px;
     max-height: 500px;
     overflow: auto;
+}
+
+button.nf-registry-change-log-refresh.mat-icon-button {
+    position: absolute;
+    top: 36px;
+}
+
+.nf-registry-droplet-description {
+    max-height: 316px;
+    overflow: auto;
+    margin-bottom: 0px;
 }

@@ -71,40 +71,45 @@ limitations under the License.
                         </mat-menu>
                     </div>
                     <div fxLayout="row">
-                        <div fxFlex="25" class="pad-left-sm pad-top-sm">
-                            <span class="uppercase">Description</span>
+                        <div fxFlex="25" class="pad-left-sm">
+                            <div>
+                                <span class="uppercase">Bucket Identifier</span>
+                                <p class="ellipsis" title="{{droplet.bucketIdentifier}}" *ngIf="droplet.bucketIdentifier">{{droplet.bucketIdentifier}}</p>
+                            </div>
+                            <div class="pad-top-md">
+                                <span class="uppercase">{{droplet.type}} Identifier</span>
+                                <p class="ellipsis" title="{{droplet.identifier}} "*ngIf="droplet.identifier">{{droplet.identifier}}</p>
+                            </div>
+                            <div class="pad-top-md">
+                                <span class="uppercase">Description</span>
+                                <p class="nf-registry-droplet-description" title="{{droplet.description}}" *ngIf="droplet.description">{{droplet.description}}</p>
+                                <p *ngIf="!droplet.description">No description specified</p>
+                            </div>
                         </div>
                         <div fxFlex="75">
                             <span class="uppercase">Change Log</span>
-                            <button (click)="nfRegistryService.getDropletSnapshotMetadata(droplet)" matTooltip="Refresh" mat-icon-button>
+                            <button class="nf-registry-change-log-refresh" (click)="nfRegistryService.getDropletSnapshotMetadata(droplet)" matTooltip="Refresh" mat-icon-button>
                                 <i class="fa fa-refresh info" aria-hidden="true"></i>
                             </button>
-                        </div>
-                    </div>
-                    <div fxLayout="row" class="pad-left-sm">
-                        <div fxFlex="25">
-                            <p *ngIf="droplet.description">{{droplet.description}}</p>
-                            <p *ngIf="!droplet.description">No description specified</p>
-                        </div>
-                        <div id="nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log"
-                             fxFlex="75">
-                            <td-steps mode="vertical">
-                                <td-step label="Version {{snapshotMeta.version}} - {{snapshotMeta.timestamp | amTimeAgo}}" sublabel="by {{snapshotMeta.author}}"
-                                         *ngFor="let snapshotMeta of droplet.snapshotMetadata; let i = index"
-                                         [active]="i === 0 ? true : false">
-                                    <div fxLayout="column" fxLayoutAlign="space-between stretch">
-                                        <div *ngIf="snapshotMeta.comments" fxLayout="row" class="md-body-2">
-                                            {{snapshotMeta.comments}}
+                            <div id="nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log">
+                                <td-steps mode="vertical">
+                                    <td-step label="Version {{snapshotMeta.version}} - {{snapshotMeta.timestamp | amTimeAgo}}" sublabel="by {{snapshotMeta.author}}"
+                                             *ngFor="let snapshotMeta of droplet.snapshotMetadata; let i = index"
+                                             [active]="i === 0 ? true : false">
+                                        <div fxLayout="column" fxLayoutAlign="space-between stretch">
+                                            <div *ngIf="snapshotMeta.comments" fxLayout="row" class="md-body-2">
+                                                {{snapshotMeta.comments}}
+                                            </div>
+                                            <div *ngIf="!snapshotMeta.comments" fxLayout="row" class="md-body-2">
+                                                No comments specified
+                                            </div>
+                                            <div fxLayout="row" class="mat-caption">
+                                                {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'MMM-DD-YYYY'}} at {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'h:mm A'}}
+                                            </div>
                                         </div>
-                                        <div *ngIf="!snapshotMeta.comments" fxLayout="row" class="md-body-2">
-                                            No comments specified
-                                        </div>
-                                        <div fxLayout="row" class="mat-caption">
-                                            {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'MMM-DD-YYYY'}} at {{(snapshotMeta.timestamp/1000 | amFromUnix) | amDateFormat:'h:mm A'}}
-                                        </div>
-                                    </div>
-                                </td-step>
-                            </td-steps>
+                                    </td-step>
+                                </td-steps>
+                            </div>
                         </div>
                     </div>
                 </div>
