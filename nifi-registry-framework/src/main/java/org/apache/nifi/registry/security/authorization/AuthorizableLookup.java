@@ -21,6 +21,13 @@ import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 public interface AuthorizableLookup {
 
     /**
+     * Get the authorizable for /actuator.
+     *
+     * @return authorizable
+     */
+    Authorizable getActuatorAuthorizable();
+
+    /**
      * Get the authorizable for /proxy.
      *
      * @return authorizable
@@ -59,6 +66,8 @@ public interface AuthorizableLookup {
 
     /**
      * Get the authorizable of the specified resource.
+     * If the resource is authorized by its base/top-level
+     * resource type, the authorizable for the base type will be returned.
      *
      * @param resource resource
      * @return authorizable

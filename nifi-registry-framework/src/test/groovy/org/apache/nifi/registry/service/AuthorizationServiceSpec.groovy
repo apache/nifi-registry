@@ -536,14 +536,15 @@ class AuthorizationServiceSpec extends Specification {
 
         then:
         resources != null
-        resources.size() == 6
+        resources.size() == 7
         def sortedResources = resources.sort{it.identifier}
-        sortedResources[0].identifier == "/buckets"
-        sortedResources[1].identifier == "/buckets/b1"
-        sortedResources[2].identifier == "/buckets/b2"
-        sortedResources[3].identifier == "/policies"
-        sortedResources[4].identifier == "/proxy"
-        sortedResources[5].identifier == "/tenants"
+        sortedResources[0].identifier == "/actuator"
+        sortedResources[1].identifier == "/buckets"
+        sortedResources[2].identifier == "/buckets/b1"
+        sortedResources[3].identifier == "/buckets/b2"
+        sortedResources[4].identifier == "/policies"
+        sortedResources[5].identifier == "/proxy"
+        sortedResources[6].identifier == "/tenants"
 
     }
 
@@ -575,6 +576,7 @@ class AuthorizationServiceSpec extends Specification {
         def denied = Mock(Authorizable)
         denied.authorize(_, _, _) >> { throw new AccessDeniedException("") }
 
+        authorizableLookup.getAuthorizableByResource("/actuator")   >> denied
         authorizableLookup.getAuthorizableByResource("/buckets")    >> authorized
         authorizableLookup.getAuthorizableByResource("/buckets/b1") >> authorized
         authorizableLookup.getAuthorizableByResource("/buckets/b2") >> denied

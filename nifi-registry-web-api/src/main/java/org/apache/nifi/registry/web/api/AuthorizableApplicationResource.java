@@ -16,13 +16,12 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.authorization.Resource;
+import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
-import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,20 +35,17 @@ public class AuthorizableApplicationResource extends ApplicationResource {
     private static final Logger logger = LoggerFactory.getLogger(AuthorizableApplicationResource.class);
 
     protected final AuthorizationService authorizationService;
-    protected final Authorizer authorizer;
+    protected final AuthorizableLookup authorizableLookup;
 
     protected AuthorizableApplicationResource(
-            Authorizer authorizer,
             AuthorizationService authorizationService) {
-        this.authorizer = authorizer;
         this.authorizationService = authorizationService;
+        this.authorizableLookup = authorizationService.getAuthorizableLookup();
     }
 
     protected void authorizeBucketAccess(RequestAction actionType, String bucketIdentifier) {
-        authorizationService.authorizeAccess(lookup -> {
-            final Authorizable bucketAccessPolicy = lookup.getBucketAuthorizable(bucketIdentifier);
-            bucketAccessPolicy.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
-        });
+        final Authorizable bucketAuthorizable = authorizableLookup.getBucketAuthorizable(bucketIdentifier);
+        authorizationService.authorize(bucketAuthorizable, actionType);
     }
 
     protected void authorizeBucketItemAccess(RequestAction actionType, BucketItem bucketItem) {

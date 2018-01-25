@@ -14,8 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.security.authorization;
+package org.apache.nifi.registry.web.security.authorization;
 
-public interface AuthorizeAccess {
-    void authorize(AuthorizableLookup lookup);
+import org.springframework.http.HttpMethod;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+public class StandardHttpMethodAuthorizationRules implements HttpMethodAuthorizationRules {
+
+    final private Set<HttpMethod> methodsRequiringAuthorization;
+
+    public StandardHttpMethodAuthorizationRules() {
+        this(EnumSet.allOf(HttpMethod.class));
+    }
+
+    public StandardHttpMethodAuthorizationRules(Set<HttpMethod> methodsRequiringAuthorization) {
+        this.methodsRequiringAuthorization = methodsRequiringAuthorization;
+    }
+
+    @Override
+    public boolean requiresAuthorization(HttpMethod httpMethod) {
+        return methodsRequiringAuthorization.contains(httpMethod);
+    }
 }

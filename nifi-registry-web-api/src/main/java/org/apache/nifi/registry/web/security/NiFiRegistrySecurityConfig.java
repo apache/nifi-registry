@@ -17,7 +17,8 @@
 package org.apache.nifi.registry.web.security;
 
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.security.authorization.Authorizer;
+import org.apache.nifi.registry.security.authorization.resource.ResourceType;
+import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
 import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.IdentityFilter;
@@ -25,6 +26,7 @@ import org.apache.nifi.registry.web.security.authentication.exception.UntrustedP
 import org.apache.nifi.registry.web.security.authentication.jwt.JwtIdentityProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
+import org.apache.nifi.registry.web.security.authorization.ResourceAuthorizationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 
 import javax.servlet.ServletException;
@@ -59,7 +62,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     private NiFiRegistryProperties properties;
 
     @Autowired
-    private Authorizer authorizer;
+    private AuthorizationService authorizationService;
 
     private AnonymousIdentityFilter anonymousAuthenticationFilter = new AnonymousIdentityFilter();
 
@@ -72,6 +75,8 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     private JwtIdentityProvider jwtIdentityProvider;
     private IdentityFilter jwtAuthenticationFilter;
     private IdentityAuthenticationProvider jwtAuthenticationProvider;
+
+    private ResourceAuthorizationFilter resourceAuthorizationFilter;
 
     public NiFiRegistrySecurityConfig() {
         super(true); // disable defaults
@@ -112,6 +117,12 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
             // is detected earlier in the Spring filter chain.
             http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
         }
+
+        // After Spring Security filter chain is complete (so authentication is done),
+        // but before the Jersey application endpoints get the request,
+        // insert the ResourceAuthorizationFilter to do its authorization checks
+        http.addFilterAfter(resourceAuthorizationFilter(), FilterSecurityInterceptor.class);
+
     }
 
     @Override
@@ -130,7 +141,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider x509AuthenticationProvider() {
         if (x509AuthenticationProvider == null) {
-            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, x509IdentityProvider);
+            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizationService.getAuthorizer(), x509IdentityProvider);
         }
         return x509AuthenticationProvider;
     }
@@ -144,9 +155,19 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider jwtAuthenticationProvider() {
         if (jwtAuthenticationProvider == null) {
-            jwtAuthenticationProvider = new IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
+            jwtAuthenticationProvider = new IdentityAuthenticationProvider(properties, authorizationService.getAuthorizer(), jwtIdentityProvider);
         }
         return jwtAuthenticationProvider;
+    }
+
+    private ResourceAuthorizationFilter resourceAuthorizationFilter() {
+        if (resourceAuthorizationFilter == null) {
+            resourceAuthorizationFilter = ResourceAuthorizationFilter.builder()
+                    .setAuthorizationService(authorizationService)
+                    .addResourceType(ResourceType.Actuator)
+                    .build();
+        }
+        return resourceAuthorizationFilter;
     }
 
     private AuthenticationEntryPoint http401AuthenticationEntryPoint() {
