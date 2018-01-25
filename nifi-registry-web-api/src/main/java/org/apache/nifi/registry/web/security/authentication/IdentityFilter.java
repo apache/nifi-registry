@@ -64,8 +64,8 @@ public class IdentityFilter extends GenericFilterBean {
         }
 
         if (credentialsAlreadyPresent()) {
-            logger.debug("Credentials already extracted for {}, skipping credentials extraction filter for {}",
-                    SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+            logger.debug("Credentials already extracted for [{}], skipping credentials extraction filter using {}",
+                    SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString(),
                     identityProvider.getClass().getSimpleName());
             filterChain.doFilter(servletRequest, servletResponse);
             return;

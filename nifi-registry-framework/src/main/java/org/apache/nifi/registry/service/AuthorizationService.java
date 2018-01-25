@@ -29,7 +29,6 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
-import org.apache.nifi.registry.security.authorization.AuthorizeAccess;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
@@ -100,8 +99,16 @@ public class AuthorizationService {
 
     // ---------------------- Authorization methods -------------------------------------
 
-    public void authorizeAccess(final AuthorizeAccess authorizeAccess) {
-        authorizeAccess.authorize(authorizableLookup);
+    public AuthorizableLookup getAuthorizableLookup() {
+        return authorizableLookup;
+    }
+
+    public Authorizer getAuthorizer() {
+        return authorizer;
+    }
+
+    public void authorize(Authorizable authorizable, RequestAction action) throws AccessDeniedException {
+        authorizable.authorize(authorizer, action, NiFiUserUtils.getNiFiUser());
     }
 
     // ---------------------- Permissions methods ---------------------------------------
@@ -519,6 +526,9 @@ public class AuthorizationService {
         }
         if (includeFilter == null || includeFilter.equals(ResourceType.Proxy)) {
             resources.add(ResourceFactory.getProxyResource());
+        }
+        if (includeFilter == null || includeFilter.equals(ResourceType.Actuator)) {
+            resources.add(ResourceFactory.getActuatorResource());
         }
         if (includeFilter == null || includeFilter.equals(ResourceType.Bucket)) {
             resources.add(ResourceFactory.getBucketsResource());

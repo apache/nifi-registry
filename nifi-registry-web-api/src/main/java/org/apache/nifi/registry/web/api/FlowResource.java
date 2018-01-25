@@ -20,8 +20,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Authorization;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -41,16 +39,12 @@ import java.util.Set;
         description = "Gets metadata about flows.",
         authorizations = { @Authorization("Authorization") }
 )
-public class FlowResource extends AuthorizableApplicationResource {
+public class FlowResource extends ApplicationResource {
 
     private final RegistryService registryService;
 
     @Autowired
-    public FlowResource(
-            final RegistryService registryService,
-            final AuthorizationService authorizationService,
-            final Authorizer authorizer) {
-        super(authorizer, authorizationService);
+    public FlowResource(final RegistryService registryService) {
         this.registryService = registryService;
     }
 

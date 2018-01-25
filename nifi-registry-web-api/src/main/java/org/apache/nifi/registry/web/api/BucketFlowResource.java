@@ -31,7 +31,6 @@ import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
-import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -78,9 +77,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             final RegistryService registryService,
             final LinkService linkService,
             final PermissionsService permissionsService,
-            final AuthorizationService authorizationService,
-            final Authorizer authorizer) {
-        super(authorizer, authorizationService);
+            final AuthorizationService authorizationService) {
+        super(authorizationService);
         this.registryService = registryService;
         this.linkService = linkService;
         this.permissionsService =permissionsService;

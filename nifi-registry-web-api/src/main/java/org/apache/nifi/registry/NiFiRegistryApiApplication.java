@@ -18,8 +18,10 @@ package org.apache.nifi.registry;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+
+import java.util.Properties;
 
 /**
  * Main class for starting the NiFi Registry Web API as a Spring Boot application.
@@ -31,11 +33,26 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
  *
  * WebMvcAutoConfiguration is excluded because our web app is using Jersey in place of SpringMVC
  */
-@SpringBootApplication(exclude = WebMvcAutoConfiguration.class)
+@SpringBootApplication
 public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
 
     public static final String NIFI_REGISTRY_PROPERTIES_ATTRIBUTE = "nifi-registry.properties";
     public static final String NIFI_REGISTRY_MASTER_KEY_ATTRIBUTE = "nifi-registry.key";
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        final Properties defaultProperties = new Properties();
+
+        // Enable Actuator Endpoints
+        defaultProperties.setProperty("management.endpoints.web.expose", "*");
+
+        // Run Jersey as a filter instead of a servlet so that requests can be forwarded to other handlers (e.g., actuator)
+        defaultProperties.setProperty("spring.jersey.type", "filter");
+
+        return application
+                .sources(NiFiRegistryApiApplication.class)
+                .properties(defaultProperties);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(NiFiRegistryApiApplication.class, args);

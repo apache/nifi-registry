@@ -32,7 +32,6 @@ import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,11 +67,12 @@ public class TenantResource extends AuthorizableApplicationResource {
 
     private static final Logger logger = LoggerFactory.getLogger(TenantResource.class);
 
+    private Authorizer authorizer;
+
     @Autowired
-    public TenantResource(
-            Authorizer authorizer,
-            AuthorizationService authorizationService) {
-        super(authorizer, authorizationService);
+    public TenantResource(AuthorizationService authorizationService) {
+        super(authorizationService);
+        authorizer = authorizationService.getAuthorizer();
     }
 
 
@@ -563,10 +563,8 @@ public class TenantResource extends AuthorizableApplicationResource {
     }
 
     private void authorizeAccess(RequestAction actionType) {
-        authorizationService.authorizeAccess(lookup -> {
-            final Authorizable tenantsAuthorizable = lookup.getTenantsAuthorizable();
-            tenantsAuthorizable.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
-        });
+        final Authorizable tenantsAuthorizable = authorizableLookup.getTenantsAuthorizable();
+        authorizationService.authorize(tenantsAuthorizable, actionType);
     }
 
     private String generateUserUri(final User user) {
