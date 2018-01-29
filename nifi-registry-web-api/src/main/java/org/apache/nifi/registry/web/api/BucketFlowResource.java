@@ -99,7 +99,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     public Response createFlow(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-            final String bucketId, final VersionedFlow flow) {
+            final String bucketId,
+            @ApiParam("The details of the flow to create.")
+            final VersionedFlow flow) {
 
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
         verifyPathParamsMatchBody(bucketId, flow);
@@ -189,6 +191,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @PathParam("flowId")
             @ApiParam("The flow identifier")
                 final String flowId,
+            @ApiParam("The updated flow")
                 final VersionedFlow flow) {
 
         verifyPathParamsMatchBody(bucketId, flowId, flow);
@@ -251,6 +254,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @PathParam("flowId")
             @ApiParam("The flow identifier")
                 final String flowId,
+            @ApiParam("The new versioned flow snapshot.")
                 final VersionedFlowSnapshot snapshot) {
 
         verifyPathParamsMatchBody(bucketId, flowId, snapshot);
@@ -507,7 +511,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     }
 
     private static void setSnaphotMetadataIfMissing(
-            @NotNull  String bucketIdParam,
+            @NotNull String bucketIdParam,
             @NotNull String flowIdParam,
             @NotNull VersionedFlowSnapshot flowSnapshot) {
 
