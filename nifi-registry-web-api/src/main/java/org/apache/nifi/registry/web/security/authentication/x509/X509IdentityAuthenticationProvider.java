@@ -100,7 +100,7 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
                 try {
                     PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.WRITE, proxy);
                 } catch (final AccessDeniedException e) {
-                    throw new UntrustedProxyException(String.format("Untrusted proxy %s", identity));
+                    throw new UntrustedProxyException(String.format("Untrusted proxy [%s].", identity));
                 }
             }
         }
