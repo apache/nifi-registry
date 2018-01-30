@@ -100,7 +100,9 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
-    public Response createBucket(final Bucket bucket) {
+    public Response createBucket(
+            @ApiParam("The bucket to create")
+            final Bucket bucket) {
         authorizeAccess(RequestAction.WRITE);
         final Bucket createdBucket = registryService.createBucket(bucket);
         permissionsService.populateBucketPermissions(createdBucket);
@@ -158,7 +160,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     public Response getBucket(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-                    final String bucketId) {
+            final String bucketId) {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final Bucket bucket = registryService.getBucket(bucketId);
@@ -185,7 +187,9 @@ public class BucketResource extends AuthorizableApplicationResource {
     public Response updateBucket(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-            final String bucketId, final Bucket bucket) {
+            final String bucketId,
+            @ApiParam("The updated bucket")
+            final Bucket bucket) {
 
         if (StringUtils.isBlank(bucketId)) {
             throw new BadRequestException("Bucket id cannot be blank");
