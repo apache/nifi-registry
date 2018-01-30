@@ -21,6 +21,7 @@ import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
 import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.IdentityFilter;
+import org.apache.nifi.registry.web.security.authentication.exception.UntrustedProxyException;
 import org.apache.nifi.registry.web.security.authentication.jwt.JwtIdentityProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
@@ -143,7 +144,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider jwtAuthenticationProvider() {
         if (jwtAuthenticationProvider == null) {
-            jwtAuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
+            jwtAuthenticationProvider = new IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
         }
         return jwtAuthenticationProvider;
     }
@@ -156,9 +157,30 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
             @Override
             public void commence(HttpServletRequest request,
                                  HttpServletResponse response,
-                                 AuthenticationException e) throws IOException, ServletException {
-                logger.info("AuthenticationEntryPoint invoked as no user identity credentials were found in the request.");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                 AuthenticationException authenticationException)
+                    throws IOException, ServletException {
+
+                final int status;
+
+                // See X509IdentityAuthenticationProvider.buildAuthenticatedToken(...)
+                if (authenticationException instanceof UntrustedProxyException) {
+                    // return a 403 response
+                    status = HttpServletResponse.SC_FORBIDDEN;
+                    logger.info("Identity in proxy chain not trusted to act as a proxy: {} Returning 403 response.", authenticationException.toString());
+
+                } else {
+                    // return a 401 response
+                    status = HttpServletResponse.SC_UNAUTHORIZED;
+                    logger.info("Client could not be authenticated due to: {} Returning 401 response.", authenticationException.toString());
+                }
+
+                logger.debug("", authenticationException);
+
+                if (!response.isCommitted()) {
+                    response.setStatus(status);
+                    response.setContentType("text/plain");
+                    response.getWriter().println(String.format("%s Contact the system administrator.", authenticationException.getLocalizedMessage()));
+                }
             }
         };
     }
