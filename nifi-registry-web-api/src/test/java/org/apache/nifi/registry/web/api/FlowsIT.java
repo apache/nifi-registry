@@ -356,6 +356,7 @@ public class FlowsIT extends UnsecuredITBase {
         assertNotNull(createdFlowSnapshot.getSnapshotMetadata().getLink());
         assertNotNull(createdFlowSnapshot.getSnapshotMetadata().getLink().getUri());
         assertNotNull(createdFlowSnapshot.getFlow());
+        assertEquals(1, createdFlowSnapshot.getFlow().getVersionCount());
         assertNotNull(createdFlowSnapshot.getBucket());
 
         // And when .../flows/{id}/versions is queried, then the newly created flow snapshot is returned in the list
