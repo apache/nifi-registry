@@ -565,8 +565,8 @@ public class RegistryService {
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
-            // ensure the flow exists, we need to use "with counts" here so we can return this is a part of the response
-            final FlowEntity existingFlow = metadataService.getFlowByIdWithSnapshotCounts(snapshotMetadata.getFlowIdentifier());
+            // ensure the flow exists
+            final FlowEntity existingFlow = metadataService.getFlowById(snapshotMetadata.getFlowIdentifier());
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", snapshotMetadata.getFlowIdentifier());
 
@@ -617,8 +617,15 @@ public class RegistryService {
             // update the modified date on the flow
             metadataService.updateFlow(existingFlow);
 
+            // get the updated flow, we need to use "with counts" here so we can return this is a part of the response
+            final FlowEntity updatedFlow = metadataService.getFlowByIdWithSnapshotCounts(snapshotMetadata.getFlowIdentifier());
+            if (updatedFlow == null) {
+                throw new ResourceNotFoundException("Versioned flow does not exist for identifier " + snapshotMetadata.getFlowIdentifier());
+            }
+            final VersionedFlow updatedVersionedFlow = DataModelMapper.map(existingBucket, updatedFlow);
+
             flowSnapshot.setBucket(bucket);
-            flowSnapshot.setFlow(versionedFlow);
+            flowSnapshot.setFlow(updatedVersionedFlow);
             return flowSnapshot;
         } finally {
             writeLock.unlock();

@@ -670,7 +670,7 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucketId(existingBucket.getId());
 
-        when(metadataService.getFlowByIdWithSnapshotCounts(existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         // make a snapshot that has the same version as the one being created
         final FlowSnapshotEntity existingSnapshot = new FlowSnapshotEntity();
@@ -715,7 +715,7 @@ public class TestRegistryService {
         existingSnapshot.setCreated(new Date());
         existingSnapshot.setCreatedBy("test-user");
 
-        when(metadataService.getFlowByIdWithSnapshotCounts(existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         // set the version to something that is not the next one-up version
         snapshot.getSnapshotMetadata().setVersion(100);
@@ -743,6 +743,7 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucketId(existingBucket.getId());
 
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
         when(metadataService.getFlowByIdWithSnapshotCounts(existingFlow.getId())).thenReturn(existingFlow);
 
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
@@ -777,7 +778,7 @@ public class TestRegistryService {
         existingFlow.setModified(new Date());
         existingFlow.setBucketId(existingBucket.getId());
 
-        when(metadataService.getFlowByIdWithSnapshotCounts(existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
 
         // set the first version to something other than 1
         snapshot.getSnapshotMetadata().setVersion(100);
