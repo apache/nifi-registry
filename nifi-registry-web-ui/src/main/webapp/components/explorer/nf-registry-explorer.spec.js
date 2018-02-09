@@ -37,7 +37,6 @@ var fdsCore = require('@fluid-design-system/core');
 var ngMoment = require('angular2-moment');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
@@ -74,7 +73,6 @@ describe('NfRegistryExplorer Component', function () {
             ],
             providers: [
                 NfRegistryService,
-                NfRegistryAuthService,
                 NfRegistryApi,
                 NfStorage,
                 {

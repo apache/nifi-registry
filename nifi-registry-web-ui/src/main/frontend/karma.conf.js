@@ -28,8 +28,8 @@ module.exports = function (config) {
         frameworks: ['jasmine'],
         customLaunchers: {
             Chrome_travis_ci: {
-                base: 'Chrome',
-                flags: []
+                base: 'ChromeHeadless',
+                flags: ['--no-sandbox']
             }
         },
         plugins: [
@@ -142,7 +142,7 @@ module.exports = function (config) {
         preprocessors: {
             'webapp/**/!(*spec|*mock|*stub|*config|*extras|*fds-demo).js': 'coverage'
         },
-        reporters: ['kjhtml', 'coverage'],
+        reporters: ['kjhtml', 'spec', 'coverage'],
         coverageReporter: {
             type: 'html',
             dir: 'coverage/'
@@ -155,7 +155,7 @@ module.exports = function (config) {
         logLevel: config.LOG_INFO,
         autoWatch: true,
         browsers: ['Chrome'],
-        singleRun: true
+        singleRun: false
     });
 
     if (process.env.TRAVIS) {

@@ -63,17 +63,22 @@ NfRegistryManageGroup.prototype = {
      */
     ngOnInit: function () {
         var self = this;
-        this.nfRegistryService.sidenav.open();
-
         // subscribe to the route params
         this.$subscription = self.route.params
             .switchMap(function (params) {
                 return self.nfRegistryApi.getUserGroup(params['groupId']);
             })
             .subscribe(function (response) {
-                self.nfRegistryService.group = response;
-                self._groupname = response.identity;
-                self.filterUsers();
+                if (!response.status || response.status === 200) {
+                    self.nfRegistryService.sidenav.open();
+                    self.nfRegistryService.group = response;
+                    self._groupname = response.identity;
+                    self.filterUsers();
+                } else if (response.status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/administration/users');
+                } else if (response.status === 409) {
+                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                }
             });
     },
 
@@ -542,7 +547,7 @@ NfRegistryManageGroup.prototype = {
                     color: '#1EB475',
                     duration: 3000
                 });
-            } else if (response.status === 404) {
+            } else if (response.status === 409) {
                 self._groupname = self.nfRegistryService.group.identity;
                 self.dialogService.openConfirm({
                     title: 'Error',

@@ -333,7 +333,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
         if (latest == null) {
-            throw new ResourceNotFoundException("No flow versions found for flow with id " + flowId);
+            logger.warn("The specified flow id [{}] does not exist.", flowId);
+
+            throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
         }
 
         final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latest.getVersion());
@@ -367,7 +369,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
         if (latest == null) {
-            throw new ResourceNotFoundException("No flow versions found for flow with id " + flowId);
+            logger.warn("The specified flow id [{}] does not exist.", flowId);
+
+            throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
         }
 
         linkService.populateSnapshotLinks(latest);

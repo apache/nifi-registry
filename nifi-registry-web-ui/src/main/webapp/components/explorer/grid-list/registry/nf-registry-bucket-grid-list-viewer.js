@@ -29,10 +29,12 @@ var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
  * @param nfStorage             A wrapper for the browser's local storage.
  * @param nfRegistryService     The nf-registry.service module.
  * @param ActivatedRoute        The angular activated route module.
+ * @param router                The angular router module.
  * @constructor
  */
-function NfRegistryBucketGridListViewer(nfRegistryApi, nfStorage, nfRegistryService, ActivatedRoute) {
+function NfRegistryBucketGridListViewer(nfRegistryApi, nfStorage, nfRegistryService, ActivatedRoute, router) {
     this.route = ActivatedRoute;
+    this.router = router;
     this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
@@ -62,12 +64,29 @@ NfRegistryBucketGridListViewer.prototype = {
                 );
             })
             .subscribe(function (response) {
-                var buckets = response[0];
-                var droplets = response[1];
-                var bucket = response[2];
-                self.nfRegistryService.bucket = bucket;
-                self.nfRegistryService.buckets = buckets;
-                self.nfRegistryService.droplets = droplets;
+                if (!response[0].status || response[0].status === 200) {
+                    var buckets = response[0];
+                    self.nfRegistryService.buckets = buckets;
+                } else if (response[0].status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                }
+                if (!response[2].status || response[2].status === 200) {
+                    var bucket = response[2];
+                    self.nfRegistryService.bucket = bucket;
+                } else if (response[2].status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                }
+                if (!response[1].status || response[1].status === 200) {
+                    var droplets = response[1];
+                    self.nfRegistryService.droplets = droplets;
+                } else if (response[1].status === 404) {
+                    if (!response[2].status || response[2].status === 200) {
+                        var bucket = response[2];
+                        self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucket);
+                    } else {
+                        self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                    }
+                }
                 self.nfRegistryService.filterDroplets();
                 self.nfRegistryService.setBreadcrumbState('in');
                 self.nfRegistryService.inProgress = false;
@@ -97,7 +116,8 @@ NfRegistryBucketGridListViewer.parameters = [
     NfRegistryApi,
     NfStorage,
     NfRegistryService,
-    ngRouter.ActivatedRoute
+    ngRouter.ActivatedRoute,
+    ngRouter.Router
 ];
 
 module.exports = NfRegistryBucketGridListViewer;

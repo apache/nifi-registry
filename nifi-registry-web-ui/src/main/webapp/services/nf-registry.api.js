@@ -19,7 +19,6 @@ var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngCommonHttp = require('@angular/common/http');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
 var rxjs = require('rxjs/Observable');
-var ngRouter = require('@angular/router');
 var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
 
@@ -36,14 +35,12 @@ var config = {
  * @param nfStorage             A wrapper for the browser's local storage.
  * @param http                  The angular http module.
  * @param fdsDialogService      The FDS dialog service.
- * @param router                The angular router module.
  * @constructor
  */
-function NfRegistryApi(nfStorage, http, fdsDialogService, router) {
+function NfRegistryApi(nfStorage, http, fdsDialogService) {
     this.nfStorage = nfStorage;
     this.http = http;
     this.dialogService = fdsDialogService;
-    this.router = router;
 };
 
 NfRegistryApi.prototype = {
@@ -91,16 +88,11 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'Flow Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
-                }).afterClosed().subscribe(
-                    function (accept) {
-                        if (accept) {
-                            self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucketId);
-                        }
-                    });
+                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -125,12 +117,6 @@ NfRegistryApi.prototype = {
                 return response || [];
             })
             .catch(function (error) {
-                self.dialogService.openConfirm({
-                    title: 'Error',
-                    message: error.error,
-                    acceptButton: 'Ok',
-                    acceptButtonColor: 'fds-warn'
-                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -224,16 +210,11 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'Bucket Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
-                }).afterClosed().subscribe(
-                    function (accept) {
-                        if (accept) {
-                            self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
-                        }
-                    });
+                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -255,7 +236,7 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'Buckets Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
@@ -299,12 +280,12 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'User Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.throw(error.error);
+                return rxjs.Observable.of(error);
             });
     },
 
@@ -394,7 +375,7 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'Users Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
@@ -439,7 +420,7 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'Groups Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
@@ -462,7 +443,7 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 self.dialogService.openConfirm({
-                    title: 'Error',
+                    title: 'Group Not Found',
                     message: error.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
@@ -578,6 +559,12 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -596,6 +583,12 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -744,12 +737,8 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
-                if (error.status === 401) {
-                    self.nfStorage.removeItem('jwt');
-                    self.router.navigateByUrl('/nifi-registry/login');
-                }
                 return rxjs.Observable.of({
+                    error: error,
                     resourcePermissions: {
                         anyTopLevelResource: {
                             canRead: false,
@@ -785,8 +774,7 @@ NfRegistryApi.prototype = {
 NfRegistryApi.parameters = [
     NfStorage,
     ngCommonHttp.HttpClient,
-    fdsDialogsModule.FdsDialogService,
-    ngRouter.Router
+    fdsDialogsModule.FdsDialogService
 ];
 
 module.exports = NfRegistryApi;

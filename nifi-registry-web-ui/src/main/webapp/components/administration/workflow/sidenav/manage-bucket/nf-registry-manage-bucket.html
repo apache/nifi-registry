@@ -44,7 +44,7 @@ limitations under the License.
             <div flex fxLayout="row" fxLayoutAlign="space-between center">
                 <span class="md-card-title">Policies ({{userIdentitiesWithPolicies.length + groupIdentitiesWithPolicies.length}})</span>
                 <button color="fds-secondary"
-                        [disabled]="nfRegistryService.currentUser.anonymous || !nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                        [disabled]="nfRegistryService.currentUser.anonymous || !nfRegistryService.currentUser.resourcePermissions.policies.canWrite || !nfRegistryService.currentUser.resourcePermissions.tenants.canRead"
                         mat-raised-button
                         (click)="addPolicy()">
                     New Policy

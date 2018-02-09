@@ -39,13 +39,12 @@ var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
 var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
 
-xdescribe('NfRegistry API w/ Angular testing utils', function () {
+describe('NfRegistry API w/ Angular testing utils', function () {
     var nfRegistryApi;
     var nfRegistryService;
 
@@ -80,7 +79,6 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
                 nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
                 nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
                 nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard,
-                NfRegistryAuthService,
                 NfRegistryApi,
                 NfStorage,
                 {
@@ -179,28 +177,6 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET to load the current user.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        // Spy
-        spyOn(nfRegistryApi.router, 'navigateByUrl').and.callFake(function () {
-        });
-
-        // api call
-        nfRegistryApi.loadCurrentUser().subscribe(function (response) {
-            var navigateByUrlCall = nfRegistryApi.router.navigateByUrl.calls.first();
-            expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/login');
-        });
-
-        // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/access');
-        expect(req.request.method).toEqual('GET');
-
-        // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'GET current user mock error'});
-
-        // Finally, assert that there are no outstanding requests.
-        httpMock.verify();
-    }));
-
     it('should GET droplet snapshot metadata.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDropletSnapshotMetadata('flow/test').subscribe(function (response) {
@@ -292,7 +268,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].title).toBe('Flow Not Found');
             expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
@@ -360,18 +336,9 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
     }));
 
     it('should fail to GET all droplets across all buckets.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        // Spy
-        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
-        });
-
         // api call
         nfRegistryApi.getDroplets().subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/items: 401 GET droplet mock error');
-            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/items: 401 GET droplet mock error');
-            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
@@ -419,18 +386,9 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
     }));
 
     it('should fail to GET all droplets across a single bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        // Spy
-        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
-        });
-
         // api call
         nfRegistryApi.getDroplets('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error');
-            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error');
-            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
@@ -571,15 +529,6 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
     }));
 
     it('should GET bucket by ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        // Spy
-        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
-            return {
-                afterClosed: function () {
-                    return rxjs.Observable.of(true);
-                }
-            }
-        });
-
         // api call
         nfRegistryApi.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response.identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
@@ -613,7 +562,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].title).toBe('Bucket Not Found');
             expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
@@ -659,7 +608,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getBuckets().subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].title).toBe('Buckets Not Found');
             expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
@@ -671,6 +620,89 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
 
         // Next, fulfill the request by transmitting a response.
         req.flush('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error', {status: 401, statusText: 'GET metadata mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should PUT to update a bucket name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.updateBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'Bucket #1').subscribe(function (response) {
+            expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+            expect(response[0].name).toEqual('Bucket #1');
+        });
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        expect(req.request.method).toEqual('PUT');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name': 'Bucket #1'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to PUT to update a bucket name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.updateBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'Bucket #1').subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        expect(req.request.method).toEqual('PUT');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error', {status: 401, statusText: 'PUT to update a bucket name mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should GET user by id.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.getUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
+            expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+            expect(response[0].name).toEqual('User #1');
+        });
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name': 'User #1'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to GET user by id.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
+        });
+
+        // api call
+        nfRegistryApi.getUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error');
+            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
+            expect(dialogServiceCall.args[0].title).toBe('User Not Found');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error');
+            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error', {status: 401, statusText: 'GET user by id mock error', error: 'test'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -721,6 +753,43 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
+    it('should PUT to update a user name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.updateUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'user #1').subscribe(function (response) {
+            expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+            expect(response[0].name).toEqual('user #1');
+        });
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        expect(req.request.method).toEqual('PUT');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name': 'user #1'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to PUT to update a user name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.updateUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'user #1').subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        expect(req.request.method).toEqual('PUT');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error', {status: 401, statusText: 'PUT to update a user name mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
     it('should GET users.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getUsers().subscribe(function (response) {
@@ -750,7 +819,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getUsers().subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users: 401 GET users mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].title).toBe('Users Not Found');
             expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/users: 401 GET users mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
@@ -842,7 +911,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getUserGroups().subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].title).toBe('Groups Not Found');
             expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
@@ -854,6 +923,267 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
 
         // Next, fulfill the request by transmitting a response.
         req.flush('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should GET resource policies by resource identifier.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.getResourcePoliciesById('read', '/buckets', '123').subscribe(function (response) {
+            expect(response[0].identifier).toEqual('123');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets/123');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '123'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to GET resource policies by resource identifier.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
+        });
+
+        // api call
+        nfRegistryApi.getResourcePoliciesById('read', '/buckets', '123').subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error');
+            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
+            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error');
+            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets/123');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error', {status: 401, statusText: 'GET get resource policies by id mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should GET policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.getPolicyActionResource('read', '/buckets').subscribe(function (response) {
+            expect(response[0].identifier).toEqual('123');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '123'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to GET policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
+        });
+
+        // api call
+        nfRegistryApi.getPolicyActionResource('read', '/buckets').subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error');
+            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
+            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error');
+            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error', {status: 401, statusText: 'GET policy action resource mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should PUT policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.putPolicyActionResource('123', 'read', '/buckets', [], []).subscribe(function (response) {
+            expect(response[0].identifier).toEqual('123');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies/123');
+        expect(req.request.method).toEqual('PUT');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '123'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to PUT policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
+        });
+
+        // api call
+        nfRegistryApi.putPolicyActionResource('123', 'read', '/buckets', [], []).subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/123: 401 PUT policy action resource mock error');
+            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
+            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies/123: 401 PUT policy action resource mock error');
+            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies/123');
+        expect(req.request.method).toEqual('PUT');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/policies/123: 401 PUT policy action resource mock error', {status: 401, statusText: 'PUT policy action resource mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should POST policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.postPolicyActionResource('read', '/buckets', [], []).subscribe(function (response) {
+            expect(response[0].identifier).toEqual('123');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies');
+        expect(req.request.method).toEqual('POST');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([{
+            'identifier': '123'
+        }]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to POST policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
+        });
+
+        // api call
+        nfRegistryApi.postPolicyActionResource('read', '/buckets', [], []).subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies: 401 POST policy action resource mock error');
+            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
+            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies: 401 POST policy action resource mock error');
+            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies');
+        expect(req.request.method).toEqual('POST');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/policies: 401 POST policy action resource mock error', {status: 401, statusText: 'POST policy action resource mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should POST to login.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.postToLogin('username', 'password').subscribe(function (response) {
+            expect(response).toEqual('abc');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/access/token/login');
+        expect(req.request.method).toEqual('POST');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('abc');
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to POST to login.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
+        });
+
+        // api call
+        nfRegistryApi.postToLogin('username', 'password').subscribe(function (response) {
+            expect(response).toEqual('');
+            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
+            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].message).toBe('Please contact your System Administrator.');
+            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/access/token/login');
+        expect(req.request.method).toEqual('POST');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/access/token/login: 401 POST to login mock error', {status: 401, statusText: 'POST to login mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should GET all access policies.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.getPolicies().subscribe(function (response) {
+            expect(response[0].identifier).toEqual('123');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush([
+            {
+                "identifier": "123",
+            }
+        ]);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('should fail to GET all access policies.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+        // api call
+        nfRegistryApi.getPolicies().subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies: 401 GET policies mock error');
+        });
+
+        // the request it made
+        req = httpMock.expectOne('/nifi-registry-api/policies');
+        expect(req.request.method).toEqual('GET');
+
+        // Next, fulfill the request by transmitting a response.
+        req.flush('Http failure response for /nifi-registry-api/policies: 401 GET policies mock error', {status: 401, statusText: 'GET policies mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -888,7 +1218,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getUserGroup(123).subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
+            expect(dialogServiceCall.args[0].title).toBe('Group Not Found');
             expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
@@ -1033,15 +1363,12 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
     }));
 
     it('should fail to PUT to update a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
-        // Spy
-        spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
-        });
-
         // api call
         nfRegistryApi.updateUserGroup('123', 'Group #1', [{
             identity: 'User #1',
             identifier: '9999'
         }]).subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 PUT to update a user group name mock error');
         });
 
         // the request it made
@@ -1049,7 +1376,7 @@ xdescribe('NfRegistry API w/ Angular testing utils', function () {
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush(null, {status: 401, statusText: 'PUT user groups mock error'});
+        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 PUT to update a user group name mock error', {status: 401, statusText: 'PUT to update a user group name mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();

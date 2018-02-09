@@ -44,7 +44,6 @@ var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer
 var fdsCore = require('@fluid-design-system/core');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
@@ -98,7 +97,6 @@ NfRegistryModule.annotations = [
         ],
         providers: [
             NfRegistryService,
-            NfRegistryAuthService,
             nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
             nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
             nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
