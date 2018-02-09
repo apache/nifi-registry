@@ -182,7 +182,9 @@ public class TenantResource extends AuthorizableApplicationResource {
 
         final User user = authorizationService.getUser(identifier);
         if (user == null) {
-            throw new ResourceNotFoundException("No user found with identifier " + identifier);
+            logger.warn("The specified user id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
         return generateOkResponse(user).build();
     }
@@ -230,7 +232,9 @@ public class TenantResource extends AuthorizableApplicationResource {
 
         final User updatedUser = authorizationService.updateUser(requestUser);
         if (updatedUser == null) {
-            throw new ResourceNotFoundException("No user found with identifier " + identifier);
+            logger.warn("The specified user id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
 
         return generateOkResponse(updatedUser).build();
@@ -268,7 +272,9 @@ public class TenantResource extends AuthorizableApplicationResource {
 
         final User user = authorizationService.deleteUser(identifier);
         if (user == null) {
-            throw new ResourceNotFoundException("No user found with identifier " + identifier);
+            logger.warn("The specified user id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
         return generateOkResponse(user).build();
     }
@@ -382,7 +388,9 @@ public class TenantResource extends AuthorizableApplicationResource {
 
         final UserGroup userGroup = authorizationService.getUserGroup(identifier);
         if (userGroup == null) {
-            throw new ResourceNotFoundException("No group found with identifier " + identifier);
+            logger.warn("The specified user group id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
 
         return generateOkResponse(userGroup).build();
@@ -432,7 +440,9 @@ public class TenantResource extends AuthorizableApplicationResource {
 
         UserGroup updatedUserGroup = authorizationService.updateUserGroup(requestUserGroup);
         if (updatedUserGroup == null) {
-            throw new ResourceNotFoundException("No group found with identifier " + identifier);
+            logger.warn("The specified user group id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
 
         return generateOkResponse(updatedUserGroup).build();
@@ -470,7 +480,9 @@ public class TenantResource extends AuthorizableApplicationResource {
 
         final UserGroup userGroup = authorizationService.deleteUserGroup(identifier);
         if (userGroup == null) {
-            throw new ResourceNotFoundException("No group found with identifier " + identifier);
+            logger.warn("The specified user group id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
 
         return generateOkResponse(userGroup).build();

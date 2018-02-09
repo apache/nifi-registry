@@ -20,7 +20,6 @@ var ngCoreTesting = require('@angular/core/testing');
 var ngCommon = require('@angular/common');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngPlatformBrowser = require('@angular/platform-browser');
 var NfRegistry = require('nifi-registry/nf-registry.js');
@@ -79,7 +78,6 @@ describe('NfRegistryAdministration Component', function () {
             ],
             providers: [
                 NfRegistryService,
-                NfRegistryAuthService,
                 NfRegistryApi,
                 NfStorage,
                 {

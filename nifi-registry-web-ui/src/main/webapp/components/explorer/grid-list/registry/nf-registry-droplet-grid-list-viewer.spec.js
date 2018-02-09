@@ -39,7 +39,6 @@ var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
@@ -77,7 +76,6 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             ],
             providers: [
                 NfRegistryService,
-                NfRegistryAuthService,
                 NfRegistryApi,
                 NfStorage,
                 {
@@ -116,8 +114,11 @@ describe('NfRegistryDropletGridListViewer Component', function () {
 
         //Spy
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        // spyOn(ngHttpService, 'get').and.callThrough();
+        spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryService, 'filterDroplets');
+    });
+
+    it('should have a defined component', ngCoreTesting.fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of({
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
@@ -145,10 +146,6 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }));
-        spyOn(nfRegistryService, 'filterDroplets');
-    });
-
-    it('should have a defined component', ngCoreTesting.fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
@@ -199,7 +196,66 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         expect(getBucketCall.args[0]).toBe('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
     }));
 
+    it('should FAIL to get buckets, get bucket, get droplets, and get droplet and then redirect to view all buckets', ngCoreTesting.fakeAsync(function () {
+        spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            status: 404
+        }));
+        spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            status: 404
+        }));
+        spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            status: 404
+        }));
+        spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            status: 404
+        }));
+        spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
+        });
+        // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, and getDroplets calls
+        fixture.detectChanges();
+        // wait for async getBuckets, getBucket, and getDroplets calls
+        ngCoreTesting.tick();
+        // 2nd change detection completes after the getBuckets, getBucket, and getDroplets calls
+        fixture.detectChanges();
+
+        //assertions
+        var routerCall = comp.router.navigateByUrl.calls.first();
+        expect(routerCall.args[0]).toBe('/nifi-registry/explorer/grid-list');
+        expect(comp.router.navigateByUrl.calls.count()).toBe(2);
+    }));
+
     it('should destroy the component', ngCoreTesting.fakeAsync(function () {
+        spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
+            "name": "Flow #1",
+            "description": "This is flow #1",
+            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
+            "createdTimestamp": 1505931890999,
+            "modifiedTimestamp": 1505931890999,
+            "type": "FLOW",
+            "snapshotMetadata": null,
+            "link": {
+                "params": {
+                    "rel": "self"
+                },
+                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+            }
+        }));
+        spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([{
+            identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            name: 'Bucket #1'
+        }]));
+        spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            name: 'Bucket #1'
+        }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",

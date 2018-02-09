@@ -810,31 +810,6 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Loads the current user and updates the current user locally.
-     *
-     * @returns xhr
-     */
-    loadCurrentUser: function () {
-        var self = this;
-        // get the current user
-        return rxjs.Observable.of(this.api.loadCurrentUser().subscribe(function (currentUser) {
-            // if the user is logged, we want to determine if they were logged in using a certificate
-            if (currentUser.anonymous === false) {
-                // render the users name
-                self.currentUser = currentUser;
-
-                // render the logout button if there is a token locally
-                if (self.nfStorage.getItem('jwt') !== null) {
-                    self.currentUser.canLogout = true;
-                }
-            } else {
-                // set the anonymous user label
-                self.nfRegistryService.currentUser.identity = 'Anonymous';
-            }
-        }));
-    },
-
-    /**
      * Adds a `searchTerm` to the `usersSearchTerms` and filters the `users` amd `groups`.
      *
      * @param {string} searchTerm   The search term to add.

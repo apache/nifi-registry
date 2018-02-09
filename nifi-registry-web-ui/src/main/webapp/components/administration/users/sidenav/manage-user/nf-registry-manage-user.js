@@ -64,17 +64,22 @@ NfRegistryManageUser.prototype = {
      */
     ngOnInit: function () {
         var self = this;
-        this.nfRegistryService.sidenav.open();
-
         // subscribe to the route params
         this.$subscription = self.route.params
             .switchMap(function (params) {
                 return self.nfRegistryApi.getUser(params['userId']);
             })
             .subscribe(function (response) {
-                self.nfRegistryService.user = response;
-                self._username = response.identity;
-                self.filterGroups();
+                if (!response.status || response.status === 200) {
+                    self.nfRegistryService.sidenav.open();
+                    self.nfRegistryService.user = response;
+                    self._username = response.identity;
+                    self.filterGroups();
+                } else if (response.status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/administration/users');
+                } else if (response.status === 409) {
+                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                }
             });
     },
 
@@ -107,7 +112,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.BUCKETS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist, let's create it
                                     self.nfRegistryApi.postPolicyActionResource(action, resource, [self.nfRegistryService.user], []).subscribe(
                                         function (response) {
@@ -148,7 +153,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.BUCKETS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist
                                 } else {
                                     // resource exists, let's filter out the current user and update it
@@ -187,7 +192,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.TENANTS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist, let's create it
                                     self.nfRegistryApi.postPolicyActionResource(action, resource, [self.nfRegistryService.user], []).subscribe(
                                         function (response) {
@@ -228,7 +233,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.TENANTS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist
                                 } else {
                                     // resource exists, let's filter out the current user and update it
@@ -267,7 +272,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.POLICIES_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist, let's create it
                                     self.nfRegistryApi.postPolicyActionResource(action, resource, [self.nfRegistryService.user], []).subscribe(
                                         function (response) {
@@ -308,7 +313,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.POLICIES_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist
                                 } else {
                                     // resource exists, let's filter out the current user and update it
@@ -347,7 +352,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.PROXY_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist, let's create it
                                     self.nfRegistryApi.postPolicyActionResource(action, resource, [self.nfRegistryService.user], []).subscribe(
                                         function (response) {
@@ -388,7 +393,7 @@ NfRegistryManageUser.prototype = {
                     this.nfRegistryService.PROXY_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
                             self.nfRegistryApi.getPolicyActionResource(action, resource).subscribe(function (policy) {
-                                if (policy.status && policy.status === 409) {
+                                if (policy.status && policy.status === 404) {
                                     // resource does NOT exist
                                 } else {
                                     // resource exists, let's filter out the current user and update it

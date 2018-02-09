@@ -38,6 +38,7 @@ body[fds] .regular-button-menu .mat-menu-item:hover {
 body[fds] .mat-menu-item[disabled] {
   color: rgba(0, 0, 0, 0.38);
   background-color: #ffffff;
+  cursor: not-allowed;
 }
 
 body[fds] .mat-menu-item .mat-icon {

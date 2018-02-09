@@ -79,3 +79,7 @@ body[fds] .mat-pseudo-checkbox-checked, body[fds] .mat-pseudo-checkbox-indetermi
   height: 10px;
   width: 10px;
 }
+
+body[fds] .mat-checkbox-disabled {
+  cursor: not-allowed;
+}

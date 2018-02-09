@@ -70,7 +70,6 @@ NfRegistryManageBucket.prototype = {
      */
     ngOnInit: function () {
         var self = this;
-        this.nfRegistryService.sidenav.open();
         this.$subscription = this.route.params
             .switchMap(function (params) {
                 return new rxjs.Observable.forkJoin(
@@ -79,30 +78,36 @@ NfRegistryManageBucket.prototype = {
                 );
             })
             .subscribe(function (response) {
-                self.nfRegistryService.bucket = response[0];
-                self._bucketname = response[0].name;
-                if (!self.nfRegistryService.currentUser.anonymous) {
-                    if (!response[1].error) {
-                        var policies = response[1];
-                        policies.forEach(function (policy) {
-                            if (policy.resource.indexOf("/buckets/" + self.nfRegistryService.bucket.identifier) >= 0) {
-                                self.bucketPolicies.push(policy);
-                                policy.users.forEach(function (user) {
-                                    var userActionsForBucket = self.userPerms[user.identity] || [];
-                                    userActionsForBucket.push(policy.action);
-                                    self.userPerms[user.identity] = userActionsForBucket;
+                if (!response[0].status || response[0].status === 200) {
+                    self.nfRegistryService.sidenav.open();
+                    var bucket = response[0];
+                    self.nfRegistryService.bucket = bucket;
+                    self._bucketname = response[0].name;
+                    if (!self.nfRegistryService.currentUser.anonymous) {
+                        if (!response[1].status || response[1].status === 200) {
+                            var policies = response[1];
+                            policies.forEach(function (policy) {
+                                if (policy.resource.indexOf("/buckets/" + self.nfRegistryService.bucket.identifier) >= 0) {
+                                    self.bucketPolicies.push(policy);
+                                    policy.users.forEach(function (user) {
+                                        var userActionsForBucket = self.userPerms[user.identity] || [];
+                                        userActionsForBucket.push(policy.action);
+                                        self.userPerms[user.identity] = userActionsForBucket;
 
-                                });
-                                policy.userGroups.forEach(function (group) {
-                                    var groupActionsForBucket = self.groupPerms[group.identity] || [];
-                                    groupActionsForBucket.push(policy.action);
-                                    self.groupPerms[group.identity] = groupActionsForBucket;
+                                    });
+                                    policy.userGroups.forEach(function (group) {
+                                        var groupActionsForBucket = self.groupPerms[group.identity] || [];
+                                        groupActionsForBucket.push(policy.action);
+                                        self.groupPerms[group.identity] = groupActionsForBucket;
 
-                                });
-                            }
-                        });
-                        self.filterPolicies();
+                                    });
+                                }
+                            });
+                            self.filterPolicies();
+                        }
                     }
+                } else if (response[0].status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
                 }
             });
     },
@@ -112,7 +117,6 @@ NfRegistryManageBucket.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.sidenav.close();
-        this.nfRegistryService.bucket = {};
         this.$subscription.unsubscribe();
     },
 
@@ -281,9 +285,9 @@ NfRegistryManageBucket.prototype = {
     },
 
     /**
-     * Remove user from group.
+     * Remove policy from bucket.
      *
-     * @param group
+     * @param userOrGroup       The user or group object
      */
     removePolicyFromBucket: function (userOrGroup) {
         var self = this;
