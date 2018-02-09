@@ -98,7 +98,6 @@
             'nifi-registry/services/nf-registry.api.js': 'services/nf-registry.api.js',
             'nifi-registry/services/nf-registry.service.js': 'services/nf-registry.service.js',
             'nifi-registry/services/nf-storage.service.js': 'services/nf-storage.service.js',
-            'nifi-registry/services/nf-registry.auth.service.js': 'services/nf-registry.auth.service.js',
             'nifi-registry/services/nf-registry.auth-guard.service.js': 'services/nf-registry.auth-guard.service.js',
             'nifi-registry/services/nf-registry.token.interceptor.js': 'services/nf-registry.token.interceptor.js',
             'nifi-registry/components/page-not-found/nf-registry-page-not-found.js': 'components/page-not-found/nf-registry-page-not-found.js',

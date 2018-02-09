@@ -174,7 +174,9 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
 
         final AccessPolicy accessPolicy = authorizationService.getAccessPolicy(identifier);
         if (accessPolicy == null) {
-            throw new ResourceNotFoundException("No access policy found with ID + " + identifier);
+            logger.warn("The specified access policy id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
 
         return generateOkResponse(accessPolicy).build();
@@ -309,7 +311,9 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.DELETE);
         AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
         if (deletedPolicy == null) {
-            throw new ResourceNotFoundException("No access policy found with ID + " + identifier);
+            logger.warn("The specified access policy id [{}] does not exist.", identifier);
+
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
         return generateOkResponse(deletedPolicy).build();
     }

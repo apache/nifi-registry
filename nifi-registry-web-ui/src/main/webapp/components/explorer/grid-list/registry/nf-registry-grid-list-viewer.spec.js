@@ -39,7 +39,6 @@ var ngMoment = require('angular2-moment');
 var rxjs = require('rxjs/Rx');
 var ngCommonHttp = require('@angular/common/http');
 var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
 var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
@@ -77,7 +76,6 @@ describe('NfRegistryGridListViewer Component', function () {
             ],
             providers: [
                 NfRegistryService,
-                NfRegistryAuthService,
                 NfRegistryApi,
                 NfStorage,
                 {
@@ -111,7 +109,7 @@ describe('NfRegistryGridListViewer Component', function () {
 
         // Spy
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryService, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
+        spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
         }).and.returnValue(rxjs.Observable.of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',

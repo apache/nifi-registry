@@ -15,14 +15,16 @@
  * limitations under the License.
  */
 
-var NfRegistryAuthService = require('nifi-registry/services/nf-registry.auth.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 
 /**
  * NfRegistryTokenInterceptor constructor.
+ *
+ * @param nfStorage             The NfStorage module.
  * @constructor
  */
-function NfRegistryTokenInterceptor(nfRegistryAuthService) {
-    this.auth = nfRegistryAuthService;
+function NfRegistryTokenInterceptor(nfStorage) {
+    this.nfStorage = nfStorage;
 };
 
 NfRegistryTokenInterceptor.prototype = {
@@ -36,7 +38,7 @@ NfRegistryTokenInterceptor.prototype = {
      * @returns {Observable HTTPEvent}
      */
     intercept: function(request, next) {
-        var token = this.auth.getToken();
+        var token = this.nfStorage.getItem('jwt');
         if(token) {
             request = request.clone({headers: request.headers.set('Authorization', 'Bearer ' + token)});
         }
@@ -44,6 +46,8 @@ NfRegistryTokenInterceptor.prototype = {
     }
 };
 
-NfRegistryTokenInterceptor.parameters = [NfRegistryAuthService];
+NfRegistryTokenInterceptor.parameters = [
+    NfStorage
+];
 
 module.exports = NfRegistryTokenInterceptor;

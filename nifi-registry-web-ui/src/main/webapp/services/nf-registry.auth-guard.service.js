@@ -16,15 +16,27 @@
  */
 
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
+var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+var ngRouter = require('@angular/router');
+var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 
 /**
  * NfRegistryUsersAdministrationAuthGuard constructor.
  *
- * @param nfRegistryService                 The nfRegistryService module.
+ * @param nfRegistryService         The nfRegistryService module.
+ * @param nfRegistryApi             The nfRegistryApi module.
+ * @param nfStorage                 The NfStorage module.
+ * @param router                    The angular router module.
+ * @param fdsDialogService          The FDS dialog service.
  * @constructor
  */
-function NfRegistryUsersAdministrationAuthGuard(nfRegistryService) {
+function NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, fdsDialogService) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
+    this.nfStorage = nfStorage;
+    this.router = router;
+    this.dialogService = fdsDialogService;
 };
 
 NfRegistryUsersAdministrationAuthGuard.prototype = {
@@ -48,24 +60,54 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
         this.nfRegistryService.redirectUrl = url;
 
         // attempt kerberos authentication
-        this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
-                self.nfRegistryService.currentUser = currentUser;
-                if (currentUser.anonymous === false) {
-                    // render the logout button if there is a token locally
-                    if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
-                        self.nfRegistryService.currentUser.canLogout = true;
-                    }
-
-                    // redirect to explorer perspective if not admin
-                    if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
-                        self.nfRegistryService.router.navigateByUrl('/nifi-registry/explorer');
-                    } else {
-                        self.nfRegistryService.router.navigateByUrl(url);
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                if (currentUser.error) {
+                    if (currentUser.error.status === 401) {
+                        self.nfStorage.removeItem('jwt');
+                        self.router.navigateByUrl('/nifi-registry/login');
                     }
                 } else {
-                    // navigate to the login page
-                    self.nfRegistryService.router.navigateByUrl('/nifi-registry/login');
+                    self.nfRegistryService.currentUser = currentUser;
+                    if (currentUser.anonymous === false) {
+                        // render the logout button if there is a token locally
+                        if (self.nfStorage.getItem('jwt') !== null) {
+                            self.nfRegistryService.currentUser.canLogout = true;
+                        }
+
+                        // redirect to explorer perspective if not admin
+                        if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
+                            self.dialogService.openConfirm({
+                                title: 'Access denied',
+                                message: 'Please contact your system administrator.',
+                                acceptButton: 'Ok',
+                                acceptButtonColor: 'fds-warn'
+                            });
+                            self.router.navigateByUrl('/nifi-registry/explorer');
+                        } else {
+                            if (currentUser.resourcePermissions.tenants.canRead) {
+                                self.router.navigateByUrl(url);
+                            } else {
+                                self.dialogService.openConfirm({
+                                    title: 'Access denied',
+                                    message: 'Please contact your system administrator.',
+                                    acceptButton: 'Ok',
+                                    acceptButtonColor: 'fds-warn'
+                                });
+                                self.router.navigateByUrl('/nifi-registry/explorer');
+                            }
+                        }
+                    } else {
+                        // registry security not configured, redirect to workflow perspective
+                        self.dialogService.openConfirm({
+                            title: 'Not Applicable',
+                            message: 'User administration is not configured for this registry.',
+                            acceptButton: 'Ok',
+                            acceptButtonColor: 'fds-warn'
+                        });
+                        self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                    }
                 }
             });
         });
@@ -75,17 +117,29 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
 };
 
 NfRegistryUsersAdministrationAuthGuard.parameters = [
-    NfRegistryService
+    NfRegistryService,
+    NfRegistryApi,
+    NfStorage,
+    ngRouter.Router,
+    fdsDialogsModule.FdsDialogService
 ];
 
 /**
  * NfRegistryWorkflowsAdministrationAuthGuard constructor.
  *
- * @param nfRegistryService                 The nfRegistryService module.
+ * @param nfRegistryService         The nfRegistryService module.
+ * @param nfRegistryApi             The nfRegistryApi module.
+ * @param nfStorage                 The NfStorage module.
+ * @param router                    The angular router module.
+ * @param fdsDialogService          The FDS dialog service.
  * @constructor
  */
-function NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService) {
+function NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, fdsDialogService) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
+    this.nfStorage = nfStorage;
+    this.router = router;
+    this.dialogService = fdsDialogService;
 };
 
 NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
@@ -109,28 +163,48 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
         this.nfRegistryService.redirectUrl = url;
 
         // attempt kerberos authentication
-        this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
-                self.nfRegistryService.currentUser = currentUser;
-                if (currentUser.anonymous === false) {
-                    // render the logout button if there is a token locally
-                    if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
-                        self.nfRegistryService.currentUser.canLogout = true;
-                    }
-
-                    // redirect to explorer perspective if not admin
-                    if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
-                        self.nfRegistryService.router.navigateByUrl('/nifi-registry/explorer');
-                    } else {
-                        if (currentUser.resourcePermissions.buckets) {
-                            self.nfRegistryService.router.navigateByUrl(url);
-                        } else {
-                            self.nfRegistryService.router.navigateByUrl('/nifi-registry/administration/users');
-                        }
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                if (currentUser.error) {
+                    if (currentUser.error.status === 401) {
+                        self.nfStorage.removeItem('jwt');
+                        self.router.navigateByUrl('/nifi-registry/login');
                     }
                 } else {
-                    // Navigate to the login page
-                    self.nfRegistryService.router.navigateByUrl(url);
+                    self.nfRegistryService.currentUser = currentUser;
+                    if (currentUser.anonymous === false) {
+                        // render the logout button if there is a token locally
+                        if (self.nfStorage.getItem('jwt') !== null) {
+                            self.nfRegistryService.currentUser.canLogout = true;
+                        }
+
+                        // redirect to explorer perspective if not admin
+                        if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
+                            self.dialogService.openConfirm({
+                                title: 'Access denied',
+                                message: 'Please contact your system administrator.',
+                                acceptButton: 'Ok',
+                                acceptButtonColor: 'fds-warn'
+                            });
+                            self.router.navigateByUrl('/nifi-registry/explorer');
+                        } else {
+                            if (currentUser.resourcePermissions.buckets.canRead) {
+                                self.router.navigateByUrl(url);
+                            } else {
+                                self.dialogService.openConfirm({
+                                    title: 'Access denied',
+                                    message: 'Please contact your system administrator.',
+                                    acceptButton: 'Ok',
+                                    acceptButtonColor: 'fds-warn'
+                                });
+                                self.router.navigateByUrl('/nifi-registry/administration/users');
+                            }
+                        }
+                    } else {
+                        // registry security not configured, allow access to workflow perspective
+                        self.router.navigateByUrl(url);
+                    }
                 }
             });
         });
@@ -140,17 +214,27 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
 };
 
 NfRegistryWorkflowsAdministrationAuthGuard.parameters = [
-    NfRegistryService
+    NfRegistryService,
+    NfRegistryApi,
+    NfStorage,
+    ngRouter.Router,
+    fdsDialogsModule.FdsDialogService
 ];
 
 /**
  * NfRegistryLoginAuthGuard constructor.
  *
- * @param nfRegistryService                 The nfRegistryService module.
+ * @param nfRegistryService         The nfRegistryService module.
+ * @param nfRegistryApi             The nfRegistryApi module.
+ * @param nfStorage                 The NfStorage module.
+ * @param router                    The angular router module.
  * @constructor
  */
-function NfRegistryLoginAuthGuard(nfRegistryService) {
+function NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
+    this.nfStorage = nfStorage;
+    this.router = router;
 };
 
 NfRegistryLoginAuthGuard.prototype = {
@@ -170,19 +254,22 @@ NfRegistryLoginAuthGuard.prototype = {
         var self = this;
         if (this.nfRegistryService.currentUser.anonymous) { return true; }
         // attempt kerberos authentication
-        this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
                 self.nfRegistryService.currentUser = currentUser;
                 if (currentUser.anonymous === false) {
                     // render the logout button if there is a token locally
-                    if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
+                    if (self.nfStorage.getItem('jwt') !== null) {
                         self.nfRegistryService.currentUser.canLogout = true;
                     }
                     self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
-                    self.nfRegistryService.router.navigateByUrl(self.nfRegistryService.redirectUrl);
+                    self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
                 } else {
-                    self.nfRegistryService.currentUser.anonymous = true;
-                    self.nfRegistryService.router.navigateByUrl('/nifi-registry/login');
+                    if(self.nfRegistryService.currentUser.anonymous){
+                        self.router.navigateByUrl('/nifi-registry');
+                    } else {
+                        self.router.navigateByUrl(url);
+                    }
                 }
             });
         });
@@ -192,17 +279,26 @@ NfRegistryLoginAuthGuard.prototype = {
 };
 
 NfRegistryLoginAuthGuard.parameters = [
-    NfRegistryService
+    NfRegistryService,
+    NfRegistryApi,
+    NfStorage,
+    ngRouter.Router
 ];
 
 /**
  * NfRegistryResourcesAuthGuard constructor.
  *
- * @param nfRegistryService                 The nfRegistryService module.
+ * @param nfRegistryService         The nfRegistryService module.
+ * @param nfRegistryApi             The nfRegistryApi module.
+ * @param nfStorage                 The NfStorage module.
+ * @param router                    The angular router module.
  * @constructor
  */
-function NfRegistryResourcesAuthGuard(nfRegistryService) {
+function NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router) {
     this.nfRegistryService = nfRegistryService;
+    this.nfRegistryApi = nfRegistryApi;
+    this.nfStorage = nfStorage;
+    this.router = router;
 };
 
 NfRegistryResourcesAuthGuard.prototype = {
@@ -226,24 +322,32 @@ NfRegistryResourcesAuthGuard.prototype = {
         this.nfRegistryService.redirectUrl = url;
 
         // attempt kerberos authentication
-        this.nfRegistryService.api.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryService.api.loadCurrentUser().subscribe(function (currentUser) {
-                self.nfRegistryService.currentUser = currentUser;
-                if (!currentUser || currentUser.anonymous === false) {
-                    if(self.nfRegistryService.nfStorage.hasItem('jwt')){
-                        self.nfRegistryService.currentUser.canLogout = true;
+        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                if (currentUser.error) {
+                    if (currentUser.error.status === 401) {
+                        self.nfStorage.removeItem('jwt');
+                        self.router.navigateByUrl('/nifi-registry/login');
+                    }
+                } else {
+                    self.nfRegistryService.currentUser = currentUser;
+                    if (!currentUser || currentUser.anonymous === false) {
+                        if(self.nfStorage.hasItem('jwt')){
+                            self.nfRegistryService.currentUser.canLogout = true;
+                            self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
+                            self.router.navigateByUrl(url);
+                        } else {
+                            self.router.navigateByUrl('/nifi-registry/login');
+                        }
+                    } else if (currentUser.anonymous === true) {
+                        // render the logout button if there is a token locally
+                        if (self.nfStorage.getItem('jwt') !== null) {
+                            self.nfRegistryService.currentUser.canLogout = true;
+                        }
                         self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
-                        self.nfRegistryService.router.navigateByUrl(url);
-                    } else {
-                        self.nfRegistryService.router.navigateByUrl('/nifi-registry/login');
+                        self.router.navigateByUrl(url);
                     }
-                } else if (currentUser.anonymous === true) {
-                    // render the logout button if there is a token locally
-                    if (self.nfRegistryService.nfStorage.getItem('jwt') !== null) {
-                        self.nfRegistryService.currentUser.canLogout = true;
-                    }
-                    self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
-                    self.nfRegistryService.router.navigateByUrl(url);
                 }
             });
         });
@@ -253,7 +357,10 @@ NfRegistryResourcesAuthGuard.prototype = {
 };
 
 NfRegistryResourcesAuthGuard.parameters = [
-    NfRegistryService
+    NfRegistryService,
+    NfRegistryApi,
+    NfStorage,
+    ngRouter.Router
 ];
 
 module.exports = {

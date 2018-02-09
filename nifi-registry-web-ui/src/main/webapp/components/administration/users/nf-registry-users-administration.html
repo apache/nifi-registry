@@ -23,9 +23,11 @@ limitations under the License.
                       [items]="nfRegistryService.autoCompleteUsersAndGroups"
                       (add)="nfRegistryService.usersSearchAdd($event)"
                       (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
-            <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()">
-                Add User
-            </button>
+            <div matTooltip="{{(!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite) ? 'You do not have permission. Please contact your system administrator.': ''}}">
+                <button class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()" [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite">
+                    Add User
+                </button>
+            </div>
             <button class="push-top-sm" color="fds-primary"
                     mat-raised-button [matMenuTriggerFor]="userActionMenu">
                 Actions<i class="fa fa-caret-down" aria-hidden="true"></i>
@@ -39,8 +41,8 @@ limitations under the License.
                     <span>Delete</span>
                 </button>
             </div>
-            <div matTooltip="{{(nfRegistryService.getSelectedGroups().length > 0) ? 'Only users can be added when creating a new group. Please deselect any groups to enable.': ''}}">
-                <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0)"
+            <div matTooltip="{{(nfRegistryService.getSelectedGroups().length > 0) ? 'Only users can be added when creating a new group. Please deselect any groups to enable.': (!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite) ? 'You do not have permission. Please contact your system administrator.': ''}}">
+                <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0) || !nfRegistryService.currentUser.resourcePermissions.tenants.canWrite"
                     (click)="createNewGroup()">
                     <span>Create new group</span>
                 </button>

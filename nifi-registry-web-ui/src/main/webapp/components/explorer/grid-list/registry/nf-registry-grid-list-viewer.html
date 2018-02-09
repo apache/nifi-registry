@@ -74,15 +74,15 @@ limitations under the License.
                         <div fxFlex="25" class="pad-left-sm">
                             <div>
                                 <span class="uppercase">Bucket Identifier</span>
-                                <p class="ellipsis" title="{{droplet.bucketIdentifier}}" *ngIf="droplet.bucketIdentifier">{{droplet.bucketIdentifier}}</p>
+                                <p class="ellipsis" matTooltip="{{droplet.bucketIdentifier}}" *ngIf="droplet.bucketIdentifier">{{droplet.bucketIdentifier}}</p>
                             </div>
                             <div class="pad-top-md">
                                 <span class="uppercase">{{droplet.type}} Identifier</span>
-                                <p class="ellipsis" title="{{droplet.identifier}} "*ngIf="droplet.identifier">{{droplet.identifier}}</p>
+                                <p class="ellipsis" matTooltip="{{droplet.identifier}} "*ngIf="droplet.identifier">{{droplet.identifier}}</p>
                             </div>
                             <div class="pad-top-md">
                                 <span class="uppercase">Description</span>
-                                <p class="nf-registry-droplet-description" title="{{droplet.description}}" *ngIf="droplet.description">{{droplet.description}}</p>
+                                <p class="nf-registry-droplet-description" matTooltip="{{droplet.description}}" *ngIf="droplet.description">{{droplet.description}}</p>
                                 <p *ngIf="!droplet.description">No description specified</p>
                             </div>
                         </div>

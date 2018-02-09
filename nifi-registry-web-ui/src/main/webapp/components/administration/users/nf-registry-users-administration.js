@@ -65,10 +65,22 @@ NfRegistryUsersAdministration.prototype = {
                 );
             })
             .subscribe(function (response) {
-                var users = response[0];
-                var groups = response[1];
-                self.nfRegistryService.users = users;
-                self.nfRegistryService.groups = groups;
+                if (!response[0].status || response[0].status === 200) {
+                    var users = response[0];
+                    self.nfRegistryService.users = users;
+                } else if (response[0].status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/administration/users');
+                } else if (response[0].status === 409) {
+                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                }
+                if (!response[1].status || response[1].status === 200) {
+                    var groups = response[1];
+                    self.nfRegistryService.groups = groups;
+                } else if (response[1].status === 404) {
+                    self.router.navigateByUrl('/nifi-registry/administration/users');
+                } else if (response[1].status === 409) {
+                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                }
                 self.nfRegistryService.filterUsersAndGroups();
                 self.nfRegistryService.inProgress = false;
             });

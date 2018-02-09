@@ -35,6 +35,11 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     component: NfRegistryExplorer,
     children: [
         {
+            path: '',
+            redirectTo: 'grid-list',
+            pathMatch: 'full'
+        },
+        {
             path: 'grid-list',
             component: NfRegistryGridListViewer,
             canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]

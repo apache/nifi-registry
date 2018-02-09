@@ -75,6 +75,11 @@ body[fds] .mat-raised-button.cdk-focused:focus {
 
 body[fds] .mat-raised-button[disabled] {
   opacity: .6;
+  cursor: not-allowed;
+}
+
+body[fds] .mat-button-toggle-disabled .mat-button-toggle-label-content {
+  cursor: not-allowed;
 }
 
 body[fds] .mat-button-focus-overlay {
