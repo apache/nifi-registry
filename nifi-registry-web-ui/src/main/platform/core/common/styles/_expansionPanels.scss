@@ -17,39 +17,46 @@
 
 /* Expansion Panels */
 
-body[fds] td-expansion-panel:not(:last-of-type) .td-expanded {
-  margin-bottom: 0px;
-}
+@mixin fds-expansion-panels-theme($theme) {
+  $primaryColor: map-get(map-get($theme, primary), 500);
+  $primaryColorHover: map-get(map-get($theme, primary), 100);
+  $accentColor: map-get(map-get($theme, accent), 500);
+  $accentColorHover: map-get(map-get($theme, accent), 100);
 
-body[fds] .td-expansion-panel-header-content {
-  height: 80px !important;
-  padding: 0px 30px !important;
-  border-bottom: 1px solid $grey7;
-}
+  body[fds] td-expansion-panel:not(:last-of-type) .td-expanded {
+    margin-bottom: 0px;
+  }
 
-body[fds] .td-expansion-content form {
-  padding: 15px 10px 20px 20px;
-}
+  body[fds] .td-expansion-panel-header-content {
+    height: 80px !important;
+    padding: 0px 30px !important;
+    border-bottom: 1px solid $grey7;
+  }
 
-body[fds] .md-subhead {
-  font-size: 18px;
-  color: $grey3;
-}
+  body[fds] .td-expansion-content form {
+    padding: 15px 10px 20px 20px;
+  }
 
-body[fds] td-expansion-panel .td-expansion-panel-header .td-expansion-panel-header-content mat-icon.td-expand-icon {
-  font-size: 28px;
-  color: $blue-grey1;
-  font-weight: bold;
-}
+  body[fds] .md-subhead {
+    font-size: 18px;
+    color: $grey3;
+  }
 
-body[fds] td-expansion-panel .td-expansion-panel-header:hover:not(.mat-disabled) {
-  background: $blue4;
-}
+  body[fds] td-expansion-panel .td-expansion-panel-header .td-expansion-panel-header-content mat-icon.td-expand-icon {
+    font-size: 28px;
+    color: $blue-grey1;
+    font-weight: bold;
+  }
 
-body[fds] td-expansion-panel .td-expansion-panel-header:focus {
-  background: #FFFFFF;
-}
+  body[fds] td-expansion-panel .td-expansion-panel-header:hover:not(.mat-disabled) {
+    background: $blue4;
+  }
 
-body[fds] td-expansion-panel .td-expansion-panel-header:focus .td-expansion-panel-header-content {
-  border-bottom: 1px solid $primaryColor;
+  body[fds] td-expansion-panel .td-expansion-panel-header:focus {
+    background: #FFFFFF;
+  }
+
+  body[fds] td-expansion-panel .td-expansion-panel-header:focus .td-expansion-panel-header-content {
+    border-bottom: 1px solid $primaryColor;
+  }
 }
