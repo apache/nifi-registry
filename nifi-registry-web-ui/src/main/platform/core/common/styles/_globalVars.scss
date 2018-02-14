@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-/* Begin Global Variables */
-
 /* Text */
 
 $fontPrimary: "Roboto",
@@ -35,7 +33,7 @@ $grey2: #666666;
 $grey3: #999999;
 $grey4: #CCCCCC;
 $grey5: #EEEEEE;
-$grey6: #F8F9F9; // or #FAFAFA
+$grey6: #F8F9F9;
 $grey7: #DDDDDD;
 $grey8: #CFD3D7;
 $grey9: #b2b8c1;
@@ -62,22 +60,10 @@ $rose1: #9E737D;
 $rose2: #915D69;
 $blue-grey1: #6B8791;
 $blue-grey2: #B2C1C6;
-
-/* Set FDS theme */
-
-$primaryColor: $rose1; //$green2
-$primaryColorHover: $rose2; //$green3
-$secondaryColor: $rose1; //$green1
-$accentColor: $blue7; //$orange1
-$accentColorHover: $grey4; //$orange2
-$warnColor: $red1;
-$errorColor: $warnColor;
-$warningColor: $accentColor;
 $bodyTextColor: $grey1;
 $pageHeaderTextColor: $grey1;
 $subHeaderTextColor: $grey2;
 $descriptionTextColor: $grey2;
 $linkColor: $blue-grey1;
 $linkColorDisabled: $grey1;
-
-/*End Global Variables */
+$warnColor: $red1;

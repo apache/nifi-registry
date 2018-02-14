@@ -17,100 +17,102 @@
 
 /* Menus */
 
-body[fds] .mat-menu-panel {
-  border-radius: 2px;
-}
+@mixin fds-menus-theme($theme) {
+  $primaryColor: map-get(map-get($theme, primary), 500);
+  $primaryColorHover: map-get(map-get($theme, primary), 100);
+  $accentColor: map-get(map-get($theme, accent), 500);
+  $accentColorHover: map-get(map-get($theme, accent), 100);
 
-body[fds] .mat-menu-item {
-  font-size: 14px;
-  color: $bodyTextColor;
-  min-width: 200px;
-  text-transform: none;
-  height: 24px;
-  line-height: 24px;
-}
+  body[fds] .mat-menu-panel {
+    border-radius: 2px;
+  }
 
-body[fds] .regular-button-menu .mat-menu-item:hover {
-  color: #ffffff;
-  background-color: #808793;
-}
+  body[fds] .mat-menu-item {
+    font-size: 14px;
+    color: $bodyTextColor;
+    min-width: 200px;
+    text-transform: none;
+    height: 24px;
+    line-height: 24px;
+  }
 
-body[fds] .mat-menu-item[disabled] {
-  color: rgba(0, 0, 0, 0.38);
-  background-color: #ffffff;
-  cursor: not-allowed;
-}
+  body[fds] .regular-button-menu .mat-menu-item:hover {
+    color: #ffffff;
+    background-color: #808793;
+  }
 
-body[fds] .mat-menu-item .mat-icon {
-  font-size: 14px;
-}
+  body[fds] .mat-menu-item[disabled] {
+    color: rgba(0, 0, 0, 0.38);
+    background-color: #ffffff;
+    cursor: not-allowed;
+  }
 
-body[fds] .mat-menu-item .fa {
-  font-size: 14px;
-  width: 1em;
-  height: 1em;
-}
+  body[fds] .mat-menu-item .mat-icon {
+    font-size: 14px;
+  }
 
-body[fds] .mat-menu-item[disabled] .mat-icon {
-  color: rgba(0, 0, 0, 0.38);
-}
+  body[fds] .mat-menu-item .fa {
+    font-size: 14px;
+    width: 1em;
+    height: 1em;
+  }
 
-body[fds] .mat-menu-item[disabled] .fa {
-  color: rgba(0, 0, 0, 0.38);
-}
+  body[fds] .mat-menu-item[disabled] .mat-icon {
+    color: rgba(0, 0, 0, 0.38);
+  }
 
-body[fds] .mat-menu-item:hover:not([disabled]) .mat-icon {
-  color: #ffffff;
-}
+  body[fds] .mat-menu-item[disabled] .fa {
+    color: rgba(0, 0, 0, 0.38);
+  }
 
-body[fds] .mat-menu-item:hover:not([disabled]) .fa {
-  color: #ffffff;
-}
+  body[fds] .mat-menu-item:hover:not([disabled]) .mat-icon {
+    color: #ffffff;
+  }
 
-body[fds] .mat-menu-item:hover:not([disabled]),
-body[fds] .mat-menu-item:focus:not([disabled]) {
-  color: #ffffff;
-  background-color: #808793;
-}
+  body[fds] .mat-menu-item:hover:not([disabled]) .fa {
+    color: #ffffff;
+  }
 
-body[fds] .fds-primary-dropdown-button-menu .mat-menu-item:hover:not([disabled]),
-body[fds] .fds-primary-dropdown-button-menu .mat-menu-item:focus:not([disabled]) {
-  color: #FFFFFF;
-  background-color: $primaryColorHover;
-}
+  body[fds] .mat-menu-item:hover:not([disabled]),
+  body[fds] .mat-menu-item:focus:not([disabled]) {
+    color: #ffffff;
+    background-color: #808793;
+  }
 
-.fds-primary-dropdown-button-menu .cdk-focused {
-  color: $buttonFontPrimaryColorSelected;
-  background-color: $buttonBgColorPrimarySelected;
-}
+  body[fds] .fds-primary-dropdown-button-menu .mat-menu-item:hover:not([disabled]),
+  body[fds] .fds-primary-dropdown-button-menu .mat-menu-item:focus:not([disabled]) {
+    color: #FFFFFF;
+    background-color: $primaryColorHover;
+  }
 
-.mat-raised-button .mat-button-wrapper i {
-  padding-left: 10px;
-}
+  .mat-raised-button .mat-button-wrapper i {
+    padding-left: 10px;
+  }
 
-body[fds] .mat-option {
-  font-size: 14px;
-  color: $bodyTextColor;
-  text-transform: none;
-  height: 24px;
-  line-height: 24px;
-}
+  body[fds] .mat-option {
+    font-size: 14px;
+    color: $bodyTextColor;
+    text-transform: none;
+    height: 24px;
+    line-height: 24px;
+  }
 
-body[fds] .mat-autocomplete-panel.mat-autocomplete-panel-below {
-  top: 0;
-}
+  body[fds] .mat-autocomplete-panel.mat-autocomplete-panel-below {
+    top: 0;
+  }
 
-body[fds] .regular-button-menu .mat-option:hover {
-  color: #ffffff;
-  background-color: #808793;
-}
+  body[fds] .regular-button-menu .mat-option:hover {
+    color: #ffffff;
+    background-color: #808793;
+  }
 
-body[fds] .mat-option:hover:not([disabled]),
-body[fds] .mat-option:focus:not([disabled]) {
-  color: #ffffff;
-  background-color: #808793;
-}
+  body[fds] .mat-option:hover:not([disabled]),
+  body[fds] .mat-option:focus:not([disabled]) {
+    color: #ffffff;
+    background-color: #808793;
+  }
 
-body[fds] .mat-select-underline {
-  display: none;
+  body[fds] .mat-select-underline {
+    display: none;
+  }
 }
