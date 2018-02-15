@@ -85,7 +85,7 @@ detectOS() {
     # adopted /etc/os-release to detect linux variants
     if [ -f /etc/os-release ]
     then
-        source /etc/os-release
+        . /etc/os-release
     fi
 }
 
