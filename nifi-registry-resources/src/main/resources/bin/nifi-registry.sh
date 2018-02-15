@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 #    Licensed to the Apache Software Foundation (ASF) under one or more
 #    contributor license agreements.  See the NOTICE file distributed with
@@ -85,7 +85,7 @@ detectOS() {
     # adopted /etc/os-release to detect linux variants
     if [ -f /etc/os-release ]
     then
-        source /etc/os-release
+        . /etc/os-release
     fi
 }
 
