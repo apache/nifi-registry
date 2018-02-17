@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Access policy summary of which actions ("read', "write") are allowable for a specified web resource.
+ * Access policy summary of which actions ("read', "write", "delete") are allowable for a specified web resource.
  */
 @ApiModel("accessPolicySummary")
 public class AccessPolicySummary {
@@ -31,7 +31,7 @@ public class AccessPolicySummary {
     private String action;
     private Boolean configurable;
 
-    @ApiModelProperty("The id of the policy. Set by server at creation time.")
+    @ApiModelProperty(value = "The id of the policy. Set by server at creation time.", readOnly = true)
     public String getIdentifier() {
         return identifier;
     }
@@ -40,7 +40,8 @@ public class AccessPolicySummary {
         this.identifier = identifier;
     }
 
-    @ApiModelProperty("The resource for this access policy.")
+    @ApiModelProperty(value = "The resource for this access policy.", required = true
+    )
     public String getResource() {
         return resource;
     }
@@ -51,7 +52,8 @@ public class AccessPolicySummary {
 
     @ApiModelProperty(
             value = "The action associated with this access policy.",
-            allowableValues = "READ, WRITE"
+            allowableValues = "read, write, delete",
+            required = true
     )
     public String getAction() {
         return action;

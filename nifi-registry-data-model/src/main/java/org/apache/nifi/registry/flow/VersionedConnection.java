@@ -71,7 +71,9 @@ public class VersionedConnection extends VersionedComponent {
         this.labelIndex = labelIndex;
     }
 
-    @ApiModelProperty("The z index of the connection.")
+    @ApiModelProperty(
+            value = "The z index of the connection.",
+            name = "zIndex")  // Jackson maps this method name to JSON key "zIndex", but Swagger does not by default
     public Long getzIndex() {
         return zIndex;
     }

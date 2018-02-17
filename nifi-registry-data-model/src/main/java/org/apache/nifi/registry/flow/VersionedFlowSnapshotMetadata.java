@@ -49,7 +49,7 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
     private String comments;
 
 
-    @ApiModelProperty("The identifier of the bucket this snapshot belongs to.")
+    @ApiModelProperty(value = "The identifier of the bucket this snapshot belongs to.", required = true)
     public String getBucketIdentifier() {
         return bucketIdentifier;
     }
@@ -58,7 +58,7 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.bucketIdentifier = bucketIdentifier;
     }
 
-    @ApiModelProperty("The identifier of the flow this snapshot belongs to.")
+    @ApiModelProperty(value = "The identifier of the flow this snapshot belongs to.", required = true)
     public String getFlowIdentifier() {
         return flowIdentifier;
     }
@@ -67,7 +67,7 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.flowIdentifier = flowIdentifier;
     }
 
-    @ApiModelProperty("The version of this snapshot of the flow.")
+    @ApiModelProperty(value = "The version of this snapshot of the flow.", required = true)
     public int getVersion() {
         return version;
     }
@@ -76,7 +76,7 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.version = version;
     }
 
-    @ApiModelProperty("The timestamp when the flow was saved.")
+    @ApiModelProperty(value = "The timestamp when the flow was saved, as milliseconds since epoch.", readOnly = true)
     public long getTimestamp() {
         return timestamp;
     }
@@ -85,7 +85,7 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
         this.timestamp = timestamp;
     }
 
-    @ApiModelProperty("The user that created this snapshot of the flow.")
+    @ApiModelProperty(value = "The user that created this snapshot of the flow.", readOnly = true)
     public String getAuthor() {
         return author;
     }

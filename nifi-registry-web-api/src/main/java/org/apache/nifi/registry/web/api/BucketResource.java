@@ -21,6 +21,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
@@ -59,9 +62,10 @@ import java.util.Set;
 @Component
 @Path("/buckets")
 @Api(
-        value = "/buckets",
-        description = "Create named buckets in the registry to store NiFI objects such flows and extensions. " +
-                "Search for and retrieve existing buckets."
+        value = "buckets",
+        description = "Create named buckets in the registry to store NiFi objects such flows and extensions. " +
+                "Search for and retrieve existing buckets.",
+        authorizations = { @Authorization("Authorization") }
 )
 public class BucketResource extends AuthorizableApplicationResource {
 
@@ -94,14 +98,19 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Creates a bucket",
-            response = Bucket.class
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
     public Response createBucket(
-            @ApiParam("The bucket to create")
+            @ApiParam(value = "The bucket to create", required = true)
             final Bucket bucket) {
         authorizeAccess(RequestAction.WRITE);
         final Bucket createdBucket = registryService.createBucket(bucket);
@@ -151,7 +160,12 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets a bucket",
-            response = Bucket.class
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -176,7 +190,12 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Updates a bucket",
-            response = Bucket.class
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -188,7 +207,7 @@ public class BucketResource extends AuthorizableApplicationResource {
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
             final String bucketId,
-            @ApiParam("The updated bucket")
+            @ApiParam(value = "The updated bucket", required = true)
             final Bucket bucket) {
 
         if (StringUtils.isBlank(bucketId)) {
@@ -219,7 +238,12 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Deletes a bucket along with all objects stored in the bucket",
-            response = Bucket.class
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "delete"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),

@@ -30,7 +30,7 @@ public class Resource {
      *
      * @return The name of the resource
      */
-    @ApiModelProperty("The name of the resource.")
+    @ApiModelProperty(value = "The name of the resource.", readOnly = true)
     public String getName() {
         return name;
     }
@@ -44,7 +44,7 @@ public class Resource {
      *
      * @return The identifier of the resource
      */
-    @ApiModelProperty("The identifier of the resource.")
+    @ApiModelProperty(value = "The identifier of the resource.", readOnly = true)
     public String getIdentifier() {
         return identifier;
     }

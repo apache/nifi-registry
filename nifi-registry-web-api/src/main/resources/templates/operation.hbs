@@ -83,7 +83,15 @@
                 <td>{{@key}}</td>
                 <td>
                     {{#if schema}}
-                        {{#schema.$ref}}<a class="type-link" href="javascript:void(0);">{{basename schema.$ref}}</a>{{/schema.$ref}}
+                        {{#ifeq schema.type "array"}}
+                            {{#if schema.items.$ref}}
+                                array[<a class="type-link" href="javascript:void(0);">{{basename schema.items.$ref}}</a>]
+                            {{else}}
+                                array[{{schema.items.type}}]
+                            {{/if}}
+                        {{else}}
+                            {{#schema.$ref}}<a class="type-link" href="javascript:void(0);">{{basename schema.$ref}}</a>{{/schema.$ref}}
+                        {{/ifeq}}
                     {{else}}
                         string
                     {{/if}}
@@ -93,12 +101,10 @@
             {{/each}}
         </tbody>
     </table>
-    <div class="title">Authorization</div>
-    <div class="authorization details">
-        {{#security}}
-            {{#each this}}
-            <div>{{@key}}</div>
-            {{/each}}
-        {{/security}}
-    </div>
+    {{#if vendorExtensions.x-access-policy}}
+        <div class="title">Authorization</div>
+        <div class="authorization details">
+            Requires access policy: {{vendorExtensions.x-access-policy.action}}:{{vendorExtensions.x-access-policy.resource}}
+        </div>
+    {{/if}}
 </div>

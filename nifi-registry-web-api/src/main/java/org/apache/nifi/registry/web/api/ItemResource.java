@@ -21,6 +21,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -51,8 +54,9 @@ import java.util.Set;
 @Component
 @Path("/items")
 @Api(
-        value = "/items",
-        description = "Retrieve items across all buckets for which the user is authorized."
+        value = "items",
+        description = "Retrieve items across all buckets for which the user is authorized.",
+        authorizations = { @Authorization("Authorization") }
 )
 public class ItemResource extends AuthorizableApplicationResource {
 
@@ -124,7 +128,12 @@ public class ItemResource extends AuthorizableApplicationResource {
             value = "Gets items of the given bucket",
             response = BucketItem.class,
             responseContainer = "List",
-            nickname = "getItemsInBucket"
+            nickname = "getItemsInBucket",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
