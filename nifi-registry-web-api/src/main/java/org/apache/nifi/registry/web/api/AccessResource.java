@@ -21,6 +21,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.exception.AdministrationException;
@@ -64,7 +65,7 @@ import java.util.stream.Collectors;
 @Component
 @Path("/access")
 @Api(
-        value = "/access",
+        value = "access",
         description = "Endpoints for obtaining an access token or checking access status."
 )
 public class AccessResource extends ApplicationResource {
@@ -105,7 +106,8 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Returns the current client's authenticated identity and permissions to top-level resources",
-            response = CurrentUser.class
+            response = CurrentUser.class,
+            authorizations = {@Authorization(value = "Authorization")}
     )
     @ApiResponses({
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might be running unsecured.") })
@@ -205,14 +207,15 @@ public class AccessResource extends ApplicationResource {
                     "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
                     "the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header " +
                     "in the format 'Authorization: Bearer <token>'.",
-            response = String.class
+            response = String.class,
+            authorizations = { @Authorization("BasicAuth") }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry may not be configured to support login with username/password."),
             @ApiResponse(code = 500, message = HttpStatusMessages.MESSAGE_500) })
-    public Response createAccessTokenUsingFormLogin(@Context HttpServletRequest httpServletRequest) {
+    public Response createAccessTokenUsingBasicAuthCredentials(@Context HttpServletRequest httpServletRequest) {
 
         // only support access tokens when communicating over HTTPS
         if (!httpServletRequest.isSecure()) {

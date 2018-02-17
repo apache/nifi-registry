@@ -18,8 +18,9 @@ package org.apache.nifi.registry.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.nifi.registry.security.authorization.Authorizer;
+import io.swagger.annotations.Authorization;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,9 @@ import java.util.Set;
 @Component
 @Path("/flows")
 @Api(
-        value = "/flows",
-        description = "Gets metadata about flows."
+        value = "flows",
+        description = "Gets metadata about flows.",
+        authorizations = { @Authorization("Authorization") }
 )
 public class FlowResource extends AuthorizableApplicationResource {
 

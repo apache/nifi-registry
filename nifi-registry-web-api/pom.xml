@@ -46,7 +46,7 @@
             <plugin>
                 <groupId>com.github.kongchen</groupId>
                 <artifactId>swagger-maven-plugin</artifactId>
-                <version>3.1.5</version>
+                <version>3.1.6</version>
                 <executions>
                     <execution>
                         <phase>compile</phase>
@@ -68,9 +68,7 @@
                                         <title>NiFi Registry REST API</title>
                                         <version>${project.version}</version>
                                         <description>
-                                            The Rest Api provides an interface to a registry with operations for saving,
-                                            versioning, reading NiFi flows
-                                            and components.
+                                            The REST API provides an interface to a registry with operations for saving, versioning, reading NiFi flows and components.
                                         </description>
                                         <contact>
                                             <name>Apache NiFi Registry</name>
@@ -82,6 +80,11 @@
                                             <name>Apache 2.0 License</name>
                                         </license>
                                     </info>
+                                    <securityDefinitions>
+                                        <securityDefinition>
+                                            <jsonPath>${project.basedir}/src/main/resources/swagger/security-definitions.json</jsonPath>
+                                        </securityDefinition>
+                                    </securityDefinitions>
                                     <templatePath>classpath:/templates/index.html.hbs</templatePath>
                                     <outputPath>
                                         ${project.build.directory}/${project.artifactId}-${project.version}/docs/rest-api/index.html

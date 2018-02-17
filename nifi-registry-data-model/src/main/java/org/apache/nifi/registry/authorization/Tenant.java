@@ -45,7 +45,9 @@ public class Tenant {
     /**
      * @return tenant's unique identifier
      */
-    @ApiModelProperty(value = "The computer-generated identifier of the tenant.", readOnly = true)
+    @ApiModelProperty(
+            value = "The computer-generated identifier of the tenant.",
+            readOnly = true)
     public String getIdentifier() {
         return identifier;
     }
@@ -57,7 +59,9 @@ public class Tenant {
     /**
      * @return tenant's identity
      */
-    @ApiModelProperty(value = "The human-facing identity of the tenant. This can only be changed if the tenant is configurable.")
+    @ApiModelProperty(
+            value = "The human-facing identity of the tenant. This can only be changed if the tenant is configurable.",
+            required = true)
     public String getIdentity() {
         return identity;
     }
@@ -66,7 +70,9 @@ public class Tenant {
         this.identity = identity;
     }
 
-    @ApiModelProperty(value = "Indicates if this tenant is configurable, based on which UserGroupProvider has been configured to manage it.", readOnly = true)
+    @ApiModelProperty(
+            value = "Indicates if this tenant is configurable, based on which UserGroupProvider has been configured to manage it.",
+            readOnly = true)
     public Boolean getConfigurable() {
         return configurable;
     }

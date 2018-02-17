@@ -30,7 +30,6 @@ import java.util.Set;
 public class UserGroup extends Tenant {
 
     private Set<Tenant> users;
-    private Set<AccessPolicySummary> accessPolicies;
 
     public UserGroup() {}
 

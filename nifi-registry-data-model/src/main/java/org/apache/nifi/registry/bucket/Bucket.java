@@ -18,8 +18,8 @@ package org.apache.nifi.registry.bucket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.nifi.registry.link.LinkableEntity;
 import org.apache.nifi.registry.authorization.Permissions;
+import org.apache.nifi.registry.link.LinkableEntity;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -43,7 +43,7 @@ public class Bucket extends LinkableEntity {
 
     private Permissions permissions;
 
-    @ApiModelProperty("An ID to uniquely identify this object.")
+    @ApiModelProperty(value = "An ID to uniquely identify this object.", readOnly = true)
     public String getIdentifier() {
         return identifier;
     }
@@ -52,7 +52,7 @@ public class Bucket extends LinkableEntity {
         this.identifier = identifier;
     }
 
-    @ApiModelProperty("The name of the bucket.")
+    @ApiModelProperty(value = "The name of the bucket.", required = true)
     public String getName() {
         return name;
     }
@@ -61,7 +61,7 @@ public class Bucket extends LinkableEntity {
         this.name = name;
     }
 
-    @ApiModelProperty("The timestamp of when the bucket was first created. This is set by the server at creation time.")
+    @ApiModelProperty(value = "The timestamp of when the bucket was first created. This is set by the server at creation time.", readOnly = true)
     public long getCreatedTimestamp() {
         return createdTimestamp;
     }

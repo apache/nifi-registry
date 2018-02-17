@@ -37,6 +37,7 @@ The steps for generating replacements are:
 
 
 You should now have a directory with the following contents:
+
     keys/
      +-- client-ks.jks      # client keystore: keystorePass=clientKeystorePassword, keyPass=u1Pass
      +-- localhost-ks.jks   # server keystore: keystorePass=localhostKeystorePassword, keyPass=localhostKeystorePassword

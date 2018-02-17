@@ -18,8 +18,8 @@ package org.apache.nifi.registry.bucket;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.nifi.registry.link.LinkableEntity;
 import org.apache.nifi.registry.authorization.Permissions;
+import org.apache.nifi.registry.link.LinkableEntity;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -58,7 +58,7 @@ public abstract class BucketItem extends LinkableEntity {
         this.type = type;
     }
 
-    @ApiModelProperty("An ID to uniquely identify this object.")
+    @ApiModelProperty(value = "An ID to uniquely identify this object.", readOnly = true)
     public String getIdentifier() {
         return identifier;
     }
@@ -67,7 +67,7 @@ public abstract class BucketItem extends LinkableEntity {
         this.identifier = identifier;
     }
 
-    @ApiModelProperty("The name of the item.")
+    @ApiModelProperty(value = "The name of the item.", required = true)
     public String getName() {
         return name;
     }
@@ -85,7 +85,7 @@ public abstract class BucketItem extends LinkableEntity {
         this.description = description;
     }
 
-    @ApiModelProperty("The identifier of the bucket this items belongs to.")
+    @ApiModelProperty(value = "The identifier of the bucket this items belongs to. This cannot be changed after the item is created.", required = true)
     public String getBucketIdentifier() {
         return bucketIdentifier;
     }
@@ -103,7 +103,7 @@ public abstract class BucketItem extends LinkableEntity {
         this.bucketName = bucketName;
     }
 
-    @ApiModelProperty("The timestamp of when the item was created.")
+    @ApiModelProperty(value = "The timestamp of when the item was created, as milliseconds since epoch.", readOnly = true)
     public long getCreatedTimestamp() {
         return createdTimestamp;
     }
@@ -112,7 +112,7 @@ public abstract class BucketItem extends LinkableEntity {
         this.createdTimestamp = createdTimestamp;
     }
 
-    @ApiModelProperty("The timestamp of when the item was last modified.")
+    @ApiModelProperty(value = "The timestamp of when the item was last modified, as milliseconds since epoch.", readOnly = true)
     public long getModifiedTimestamp() {
         return modifiedTimestamp;
     }
@@ -121,7 +121,7 @@ public abstract class BucketItem extends LinkableEntity {
         this.modifiedTimestamp = modifiedTimestamp;
     }
 
-    @ApiModelProperty("The type of item.")
+    @ApiModelProperty(value = "The type of item.", required = true)
     public BucketItemType getType() {
         return type;
     }
