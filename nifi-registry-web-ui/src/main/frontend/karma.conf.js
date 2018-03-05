@@ -140,7 +140,7 @@ module.exports = function (config) {
 
         exclude: [],
         preprocessors: {
-            'webapp/**/!(*spec|*mock|*stub|*config|*extras|*fds-demo).js': 'coverage'
+            'webapp/**/!(*spec|*mock|*stub|*config|*extras).js': 'coverage'
         },
         reporters: ['kjhtml', 'spec', 'coverage'],
         coverageReporter: {
