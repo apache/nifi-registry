@@ -268,6 +268,7 @@ NfRegistryLoginAuthGuard.prototype = {
                     if(self.nfRegistryService.currentUser.anonymous){
                         self.router.navigateByUrl('/nifi-registry');
                     } else {
+                        self.nfRegistryService.currentUser.anonymous = true;
                         self.router.navigateByUrl(url);
                     }
                 }

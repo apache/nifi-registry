@@ -53,12 +53,6 @@
         <note priority="1" from="description">View the policies grated this user.</note>
         <note priority="1" from="meaning">User policy tab, user management sidenav</note>
        </trans-unit>
-      <trans-unit id="nf-admin-workflow-create-bucket-button" datatype="html">
-         <source>Create</source>
-         <target state="new">Crear</target>
-        <note priority="1" from="description">A button for creating a new bucket in the registry.</note>
-        <note priority="1" from="meaning">Create new bucket button</note>
-       </trans-unit>
       <trans-unit id="nf-admin-workflow-add-user-button" datatype="html">
          <source>Add</source>
          <target state="new">añadir</target>
