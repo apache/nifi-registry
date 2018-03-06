@@ -484,6 +484,50 @@ describe('NfRegistryManageBucket Component', function () {
         expect(comp.filterPolicies).toHaveBeenCalled();
     }));
 
+    it('should sort `buckets` by `column`', ngCoreTesting.fakeAsync(function () {
+        spyOn(comp, 'filterPolicies').and.callFake(function () {
+        });
+        spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            identifier: '123',
+            name: 'Bucket #1'
+        }));
+        spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of([
+            {
+                identifier: 'string',
+                resource: '/buckets/123',
+                action: 'READ',
+                configurable: true,
+                users: [{
+                    identity: 'User #1'
+                }],
+                userGroups: [{
+                    identity: 'Group #1'
+                }]
+            }
+        ]));
+
+        // 1st change detection triggers ngOnInit
+        fixture.detectChanges();
+        // wait for async calls
+        ngCoreTesting.tick();
+        // 2nd change detection completes after the async calls
+        fixture.detectChanges();
+
+        // object to be updated by the test
+        var column = {name: 'name', label: 'Display Name', sortable: true};
+
+        // The function to test
+        comp.sortBuckets(column);
+
+        //assertions
+        expect(column.active).toBe(true);
+        var filterPoliciesCall = comp.filterPolicies.calls.first();
+        expect(filterPoliciesCall.args[0]).toBeUndefined();
+        expect(filterPoliciesCall.args[1]).toBeUndefined();
+    }));
+
     it('should remove policy from bucket', ngCoreTesting.fakeAsync(function () {
         // Spy
         spyOn(comp, 'filterPolicies').and.callFake(function () {

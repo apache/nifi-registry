@@ -39,10 +39,22 @@ var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration
  * @constructor
  */
 function NfRegistryManageGroup(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
+    // local state
+    this.sortBy;
+    this.sortOrder;
     this.filteredUsers = [];
     this.usersSearchTerms = [];
     this._groupname = '';
     this.manageGroupPerspective = 'membership';
+    this.usersColumns = [
+        {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true,
+            tooltip: 'Group name.',
+            width: 100
+        }
+    ];
 
     // Services
     this.nfRegistryService = nfRegistryService;
@@ -436,29 +448,37 @@ NfRegistryManageGroup.prototype = {
     /**
      * Filter users.
      *
-     * @param {string} [sortBy]       The column name to sort `userGroupsColumns` by.
+     * @param {string} [sortBy]       The column name to sort `usersColumns` by.
      * @param {string} [sortOrder]    The order. Either 'ASC' or 'DES'
      */
     filterUsers: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            if (this.sortOrder === undefined) {
+                sortOrder = 'ASC'
+            } else {
+                sortOrder = this.sortOrder
+            }
         }
-        // if `sortBy` is `undefined` then find the first sortable column in `userGroupsColumns`
+        // if `sortBy` is `undefined` then find the first sortable column in `usersColumns`
         if (sortBy === undefined) {
-            var arrayLength = this.nfRegistryService.userGroupsColumns.length;
-            for (var i = 0; i < arrayLength; i++) {
-                if (this.nfRegistryService.userGroupsColumns[i].sortable === true) {
-                    sortBy = this.nfRegistryService.userGroupsColumns[i].name;
-                    //only one column can be actively sorted so we reset all to inactive
-                    this.nfRegistryService.userGroupsColumns.forEach(function (c) {
-                        c.active = false;
-                    });
-                    //and set this column as the actively sorted column
-                    this.nfRegistryService.userGroupsColumns[i].active = true;
-                    this.nfRegistryService.userGroupsColumns[i].sortOrder = sortOrder;
-                    break;
+            if (this.sortBy === undefined) {
+                var arrayLength = this.usersColumns.length;
+                for (var i = 0; i < arrayLength; i++) {
+                    if (this.usersColumns[i].sortable === true) {
+                        sortBy = this.usersColumns[i].name;
+                        //only one column can be actively sorted so we reset all to inactive
+                        this.usersColumns.forEach(function (c) {
+                            c.active = false;
+                        });
+                        //and set this column as the actively sorted column
+                        this.usersColumns[i].active = true;
+                        this.usersColumns[i].sortOrder = sortOrder;
+                        break;
+                    }
                 }
+            } else {
+                sortBy = this.sortBy
             }
         }
 
@@ -479,12 +499,12 @@ NfRegistryManageGroup.prototype = {
      */
     sortUsers: function (column) {
         if (column.sortable) {
-            var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
-            this.filterUsers(sortBy, sortOrder);
+            this.sortBy = column.name;
+            this.sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            this.filterUsers(this.sortBy, this.sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
-            this.nfRegistryService.userGroupsColumns.forEach(function (c) {
+            this.usersColumns.forEach(function (c) {
                 c.active = false;
             });
             //and set this column as the actively sorted column

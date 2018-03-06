@@ -31,7 +31,7 @@ NfRegistryTokenInterceptor.prototype = {
     constructor: NfRegistryTokenInterceptor,
 
     /**
-     * Generates the droplet grid-list explorer component's sorting menu options.
+     * Injects the authorization token into the request headers.
      *
      * @param request       angular HttpRequest.
      * @param next          angular HttpHandler.
