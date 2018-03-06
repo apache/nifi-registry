@@ -21,11 +21,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -58,8 +61,9 @@ import java.util.SortedSet;
 @Component
 @Path("/buckets/{bucketId}/flows")
 @Api(
-        value = "bucket >> flows",
-        description = "Create flows scoped to an existing bucket in the registry."
+        value = "bucket_flows",
+        description = "Create flows scoped to an existing bucket in the registry.",
+        authorizations = { @Authorization("Authorization") }
 )
 public class BucketFlowResource extends AuthorizableApplicationResource {
 
@@ -88,7 +92,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Creates a flow",
             notes = "The flow id is created by the server and populated in the returned entity.",
-            response = VersionedFlow.class
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -100,7 +109,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
             final String bucketId,
-            @ApiParam("The details of the flow to create.")
+            @ApiParam(value = "The details of the flow to create.", required = true)
             final VersionedFlow flow) {
 
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
@@ -117,7 +126,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets all flows in the given bucket",
             response = VersionedFlow.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -145,7 +159,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets a flow",
-            response = VersionedFlow.class
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -176,7 +195,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Updates a flow",
-            response = VersionedFlow.class
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -191,13 +215,14 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @PathParam("flowId")
             @ApiParam("The flow identifier")
                 final String flowId,
-            @ApiParam("The updated flow")
+            @ApiParam(value = "The updated flow", required = true)
                 final VersionedFlow flow) {
 
         verifyPathParamsMatchBody(bucketId, flowId, flow);
-        setBucketItemMetadataIfMissing(bucketId, flowId, flow);
-
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
+
+        // bucketId and flowId fields are optional in the body parameter, but required before calling the service layer
+        setBucketItemMetadataIfMissing(bucketId, flowId, flow);
 
         final VersionedFlow updatedFlow = registryService.updateFlow(flow);
         permissionsService.populateItemPermissions(updatedFlow);
@@ -211,8 +236,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Deletes a flow.",
-            response = VersionedFlow.class
+            value = "Deletes a flow, including all saved versions of that flow.",
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "delete"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -238,8 +268,14 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Creates the next version of a flow",
-            notes = "The version number is created by the server and populated in the returned entity.",
-            response = VersionedFlowSnapshot.class
+            notes = "The version number of the object being created must be the next available version integer. " +
+                    "Flow versions are immutable after they are created.",
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -252,14 +288,15 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The bucket identifier")
                 final String bucketId,
             @PathParam("flowId")
-            @ApiParam("The flow identifier")
+            @ApiParam(value = "The flow identifier")
                 final String flowId,
-            @ApiParam("The new versioned flow snapshot.")
+            @ApiParam(value = "The new versioned flow snapshot.", required = true)
                 final VersionedFlowSnapshot snapshot) {
 
         verifyPathParamsMatchBody(bucketId, flowId, snapshot);
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
+        // bucketId and flowId fields are optional in the body parameter, but required before calling the service layer
         setSnaphotMetadataIfMissing(bucketId, flowId, snapshot);
 
         final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
@@ -283,7 +320,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
             response = VersionedFlowSnapshotMetadata.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -314,7 +356,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Get the latest version of a flow",
-            response = VersionedFlowSnapshot.class
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -350,7 +397,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Get the metadata for the latest version of a flow",
-            response = VersionedFlowSnapshotMetadata.class
+            response = VersionedFlowSnapshotMetadata.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -385,7 +437,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets the given version of a flow",
-            response = VersionedFlowSnapshot.class
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -417,7 +474,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Returns a list of differences between 2 versions of a flow",
-            response = VersionedFlowDifference.class
+            response = VersionedFlowDifference.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -425,14 +487,20 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409)})
-    public Response getFlowDiff(@PathParam("bucketId")
-                                @ApiParam("The bucket identifier") final String bucketId,
-                                @PathParam("flowId")
-                                @ApiParam("The flow identifier") final String flowId,
-                                @PathParam("versionA")
-                                @ApiParam("The first version number") final Integer versionNumberA,
-                                @PathParam("versionB")
-                                @ApiParam("The second version number") final Integer versionNumberB) {
+    public Response getFlowDiff(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+            final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId,
+            @PathParam("versionA")
+            @ApiParam("The first version number")
+            final Integer versionNumberA,
+            @PathParam("versionB")
+            @ApiParam("The second version number")
+            final Integer versionNumberB) {
+        authorizeBucketAccess(RequestAction.READ, bucketId);
         VersionedFlowDifference result = registryService.getFlowDiff(bucketId, flowId, versionNumberA, versionNumberB);
         return Response.status(Response.Status.OK).entity(result).build();
     }

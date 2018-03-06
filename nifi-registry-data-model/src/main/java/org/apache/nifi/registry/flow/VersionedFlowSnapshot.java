@@ -54,7 +54,7 @@ public class VersionedFlowSnapshot {
     private Bucket bucket;
 
 
-    @ApiModelProperty("The metadata for this snapshot")
+    @ApiModelProperty(value = "The metadata for this snapshot", required = true)
     public VersionedFlowSnapshotMetadata getSnapshotMetadata() {
         return snapshotMetadata;
     }
@@ -63,7 +63,7 @@ public class VersionedFlowSnapshot {
         this.snapshotMetadata = snapshotMetadata;
     }
 
-    @ApiModelProperty("The contents of the versioned flow")
+    @ApiModelProperty(value = "The contents of the versioned flow", required = true)
     public VersionedProcessGroup getFlowContents() {
         return flowContents;
     }

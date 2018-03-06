@@ -21,6 +21,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
+import org.apache.nifi.registry.authorization.AccessPolicy;
+import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -28,8 +33,6 @@ import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetec
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.authorization.AccessPolicy;
-import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +61,9 @@ import java.util.List;
 @Component
 @Path("/policies")
 @Api(
-        value = "/policies",
-        description = "Endpoint for managing access policies."
+        value = "policies",
+        description = "Endpoint for managing access policies.",
+        authorizations = { @Authorization("Authorization") }
 )
 public class AccessPolicyResource extends AuthorizableApplicationResource {
 
@@ -84,7 +88,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Creates an access policy",
-            response = AccessPolicy.class
+            response = AccessPolicy.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -127,7 +136,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets all access policies",
             response = AccessPolicy.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -158,7 +172,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Path("{id}")
     @ApiOperation(
             value = "Gets an access policy",
-            response = AccessPolicy.class
+            response = AccessPolicy.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -196,12 +215,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Path("{action}/{resource: .+}")
     @ApiOperation(
             value = "Gets an access policy for the specified action and resource",
-            notes = "Will return the effective policy if no specific policy exists for the specified action and resource. "
-                    + "Must have Read permissions to the policy with the desired action and resource. Permissions for the policy that is "
-                    + "returned will be indicated in the response. If the client does not have permissions to that policy, the response "
-                    + "will not include the policy and the permissions in the response will be marked accordingly. If the client does "
-                    + "not have permissions to the policy of the desired action and resource a 403 response will be returned.",
-            response = AccessPolicy.class
+            response = AccessPolicy.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -246,7 +265,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Path("{id}")
     @ApiOperation(
             value = "Updates a access policy",
-            response = AccessPolicy.class
+            response = AccessPolicy.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -294,7 +318,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Path("{id}")
     @ApiOperation(
             value = "Deletes an access policy",
-            response = AccessPolicy.class
+            response = AccessPolicy.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "delete"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
@@ -330,7 +359,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets the available resources that support access/authorization policies",
             response = Resource.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/policies") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),

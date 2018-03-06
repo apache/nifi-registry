@@ -695,7 +695,9 @@
                         <exclude>.github/PULL_REQUEST_TEMPLATE.md
                         </exclude> <!-- PR Template for GitHub that does not have a mechanism of including comments -->
                         <exclude>**/resources/banner.txt
-                        </exclude><!-- Console banner text that does not have a mechanism of including comments -->
+                        </exclude> <!-- Console banner text that does not have a mechanism of including comments -->
+                        <exclude>src/main/resources/swagger/security-definitions.json
+                        </exclude> <!-- A maven-swagger-plugin input file that does not have a mechanism of including comments -->
                     </excludes>
                 </configuration>
                 <dependencies>

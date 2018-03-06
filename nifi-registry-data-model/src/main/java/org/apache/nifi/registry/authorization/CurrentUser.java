@@ -26,7 +26,7 @@ public class CurrentUser {
     private boolean anonymous;
     private ResourcePermissions resourcePermissions;
 
-    @ApiModelProperty("The identity of the current user")
+    @ApiModelProperty(value = "The identity of the current user", readOnly = true)
     public String getIdentity() {
         return identity;
     }
@@ -35,7 +35,7 @@ public class CurrentUser {
         this.identity = identity;
     }
 
-    @ApiModelProperty("Indicates if the current user is anonymous")
+    @ApiModelProperty(value = "Indicates if the current user is anonymous", readOnly = true)
     public boolean isAnonymous() {
         return anonymous;
     }
@@ -44,7 +44,7 @@ public class CurrentUser {
         this.anonymous = anonymous;
     }
 
-    @ApiModelProperty("The access that the current user has to top level resources")
+    @ApiModelProperty(value = "The access that the current user has to top level resources", readOnly = true)
     public ResourcePermissions getResourcePermissions() {
         return resourcePermissions;
     }

@@ -21,15 +21,18 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.authorization.User;
+import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.authorization.User;
-import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +61,8 @@ import java.util.List;
 @Path("tenants")
 @Api(
         value = "tenants",
-        description = "Endpoint for managing users and user groups."
+        description = "Endpoint for managing users and user groups.",
+        authorizations = { @Authorization("Authorization") }
 )
 public class TenantResource extends AuthorizableApplicationResource {
 
@@ -88,7 +92,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Creates a user",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = User.class
+            response = User.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -97,7 +106,8 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createUser(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+            final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user configuration details.", required = true)
             final User requestUser) {
 
@@ -134,7 +144,12 @@ public class TenantResource extends AuthorizableApplicationResource {
             value = "Gets all users",
             notes = NON_GUARANTEED_ENDPOINT,
             response = User.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -166,7 +181,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets a user",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = User.class
+            response = User.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -204,7 +224,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Updates a user",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = User.class
+            response = User.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -213,9 +238,11 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response updateUser(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+            final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user id.", required = true)
-            @PathParam("id") final String identifier,
+            @PathParam("id")
+            final String identifier,
             @ApiParam(value = "The user configuration details.", required = true)
             final User requestUser) {
 
@@ -254,7 +281,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Deletes a user",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = User.class
+            response = User.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "delete"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -263,9 +295,11 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response removeUser(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+            final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user id.", required = true)
-            @PathParam("id") final String identifier) {
+            @PathParam("id")
+            final String identifier) {
 
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeAccess(RequestAction.DELETE);
@@ -296,7 +330,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Creates a user group",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = UserGroup.class
+            response = UserGroup.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -305,11 +344,10 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createUserGroup(
-            @Context final HttpServletRequest httpServletRequest,
-            @ApiParam(
-                    value = "The user group configuration details.",
-                    required = true
-            ) final UserGroup requestUserGroup) {
+            @Context
+            final HttpServletRequest httpServletRequest,
+            @ApiParam(value = "The user group configuration details.", required = true)
+            final UserGroup requestUserGroup) {
 
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeAccess(RequestAction.WRITE);
@@ -343,7 +381,12 @@ public class TenantResource extends AuthorizableApplicationResource {
             value = "Gets all user groups",
             notes = NON_GUARANTEED_ENDPOINT,
             response = UserGroup.class,
-            responseContainer = "List"
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -372,7 +415,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets a user group",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = UserGroup.class
+            response = UserGroup.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -411,7 +459,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Updates a user group",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = UserGroup.class
+            response = UserGroup.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -420,9 +473,11 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response updateUserGroup(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+            final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user group id.", required = true)
-            @PathParam("id") final String identifier,
+            @PathParam("id")
+            final String identifier,
             @ApiParam(value = "The user group configuration details.", required = true)
             final UserGroup requestUserGroup) {
 
@@ -462,7 +517,12 @@ public class TenantResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Deletes a user group",
             notes = NON_GUARANTEED_ENDPOINT,
-            response = UserGroup.class
+            response = UserGroup.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "delete"),
+                            @ExtensionProperty(name = "resource", value = "/tenants") })
+            }
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -471,7 +531,8 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response removeUserGroup(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+            final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user group id.", required = true)
             @PathParam("id")
             final String identifier) {
