@@ -22,10 +22,14 @@ import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.resource.InheritingAuthorizable;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StandardAuthorizableLookup implements AuthorizableLookup {
+
+    private static final Logger logger = LoggerFactory.getLogger(StandardAuthorizableLookup.class);
 
     private static final Authorizable TENANTS_AUTHORIZABLE = new Authorizable() {
         @Override
@@ -75,6 +79,23 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
         }
     };
 
+    private static final Authorizable ACTUATOR_AUTHORIZABLE = new Authorizable() {
+        @Override
+        public Authorizable getParentAuthorizable() {
+            return null;
+        }
+
+        @Override
+        public Resource getResource() {
+            return ResourceFactory.getActuatorResource();
+        }
+    };
+
+    @Override
+    public Authorizable getActuatorAuthorizable() {
+        return ACTUATOR_AUTHORIZABLE;
+    }
+
     @Override
     public Authorizable getProxyAuthorizable() {
         return PROXY_AUTHORIZABLE;
@@ -114,12 +135,7 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
 
     @Override
     public Authorizable getAuthorizableByResource(String resource) {
-        ResourceType resourceType = null;
-        for (ResourceType type : ResourceType.values()) {
-            if (resource.equals(type.getValue()) || resource.startsWith(type.getValue() + "/")) {
-                resourceType = type;
-            }
-        }
+        ResourceType resourceType = ResourceType.mapFullResourcePathToResourceType(resource);
 
         if (resourceType == null) {
             throw new ResourceNotFoundException("Unrecognized resource: " + resource);
@@ -129,21 +145,10 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
     }
 
     private Authorizable getAuthorizableByResource(final ResourceType resourceType, final String resource) {
-        final String childResourceId = StringUtils.substringAfter(resource, resourceType.getValue());
-        if (childResourceId.startsWith("/")) {
-            return getAuthorizableByChildResource(resourceType, childResourceId.substring(1));
-        } else {
-            return getAuthorizableByResource(resourceType);
-        }
-    }
-
-    private Authorizable getAuthorizableByResource(final ResourceType resourceType) {
         Authorizable authorizable = null;
         switch (resourceType) {
 
-            case Bucket:
-                authorizable = getBucketsAuthorizable();
-                break;
+            /* Access to these resources are always authorized by the top-level resource */
             case Policy:
                 authorizable = getPoliciesAuthorizable();
                 break;
@@ -152,10 +157,24 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
                 break;
             case Proxy:
                 authorizable = getProxyAuthorizable();
+                break;
+            case Actuator:
+                authorizable = getActuatorAuthorizable();
+                break;
+
+            /* Access to buckets can be authorized by the top-level /buckets resource or an individual /buckets/{id} resource */
+            case Bucket:
+                final String childResourceId = StringUtils.substringAfter(resource, resourceType.getValue());
+                if (childResourceId.startsWith("/")) {
+                    authorizable = getAuthorizableByChildResource(resourceType, childResourceId);
+                } else {
+                    authorizable = getBucketsAuthorizable();
+                }
         }
 
         if (authorizable == null) {
-            throw new IllegalArgumentException("An unexpected type of resource in this policy " + resourceType.getValue());
+            logger.debug("Could not determine the Authorizable for resource type='{}', path='{}', ", resourceType.getValue(), resource);
+            throw new IllegalArgumentException("This an unexpected type of authorizable resource: " + resourceType.getValue());
         }
 
         return authorizable;
@@ -165,8 +184,12 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
         Authorizable authorizable;
         switch (baseResourceType) {
             case Bucket:
-                authorizable = getBucketAuthorizable(childResourceId);
-                break;
+                String[] childResourcePathParts = childResourceId.split("/");
+                if (childResourcePathParts.length >= 1) {
+                    final String bucketId = childResourcePathParts[1];
+                    authorizable = getBucketAuthorizable(bucketId);
+                    break;
+                }
             default:
                 throw new IllegalArgumentException("Unexpected lookup for child resource authorizable for base resource type " + baseResourceType.getValue());
         }

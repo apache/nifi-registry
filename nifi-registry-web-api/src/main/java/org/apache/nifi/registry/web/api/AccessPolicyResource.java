@@ -21,15 +21,14 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.nifi.registry.authorization.AccessPolicy;
+import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.authorization.AccessPolicy;
-import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,11 +64,14 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessPolicyResource.class);
 
+    private Authorizer authorizer;
+
     @Autowired
     public AccessPolicyResource(
             Authorizer authorizer,
             AuthorizationService authorizationService) {
-        super(authorizer, authorizationService);
+        super(authorizationService);
+        this.authorizer = authorizer;
     }
 
     /**
@@ -358,10 +360,8 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     }
 
     private void authorizeAccess(RequestAction actionType) {
-        authorizationService.authorizeAccess(lookup -> {
-            final Authorizable policiesAuthorizable = lookup.getPoliciesAuthorizable();
-            policiesAuthorizable.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
-        });
+        final Authorizable policiesAuthorizable = authorizableLookup.getPoliciesAuthorizable();
+        authorizationService.authorize(policiesAuthorizable, actionType);
     }
 
     private String generateAccessPolicyUri(final AccessPolicySummary accessPolicy) {

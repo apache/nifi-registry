@@ -26,6 +26,7 @@ import org.apache.nifi.registry.web.api.TenantResource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
+import org.glassfish.jersey.servlet.ServletProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -67,6 +68,9 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         // if this value needs to be changed, kerberos authentication needs to move to filter chain
         // so it can directly set the HttpServletResponse instead of indirectly through a JAX-RS Response
         property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
+
+        // configure jersey to ignore resource paths for actuator
+        property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/actuator.*");
     }
 
 }

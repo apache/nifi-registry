@@ -125,6 +125,9 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             new ResourceActionPair("/buckets", READ_CODE),
             new ResourceActionPair("/buckets", WRITE_CODE),
             new ResourceActionPair("/buckets", DELETE_CODE),
+            new ResourceActionPair("/actuator", READ_CODE),
+            new ResourceActionPair("/actuator", WRITE_CODE),
+            new ResourceActionPair("/actuator", DELETE_CODE),
             new ResourceActionPair("/proxy", WRITE_CODE)
     };
 

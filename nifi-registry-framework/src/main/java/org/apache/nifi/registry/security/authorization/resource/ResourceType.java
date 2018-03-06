@@ -20,7 +20,8 @@ public enum ResourceType {
     Bucket("/buckets"),
     Policy("/policies"),
     Proxy("/proxy"),
-    Tenant("/tenants");
+    Tenant("/tenants"),
+    Actuator("/actuator");
 
     final String value;
 
@@ -44,6 +45,40 @@ public enum ResourceType {
 
         if (type == null) {
             throw new IllegalArgumentException("Unknown resource type value " + rawValue);
+        }
+
+        return type;
+    }
+
+    /**
+     * Map an arbitrary resource path to its base resource type. The base resource type is
+     * what the resource path starts with.
+     *
+     * The resourcePath arg is expected to be a string of the format:
+     *
+     * {ResourceTypeValue}/arbitrary/sub-resource/path
+     *
+     * For example:
+     *   /buckets -> ResourceType.Bucket
+     *   /buckets/bucketId -> ResourceType.Bucket
+     *   /policies/read/buckets -> ResourceType.Policy
+     *
+     * @param resourcePath the path component of a URI (not including the context path)
+     * @return the base resource type
+     */
+    public static ResourceType mapFullResourcePathToResourceType(final String resourcePath) {
+        if (resourcePath == null) {
+            throw new IllegalArgumentException("Resource path must not be null");
+        }
+
+        ResourceType type = null;
+
+        for (final ResourceType rt : values()) {
+            final String rtValue = rt.getValue();
+            if(resourcePath.equals(rtValue) || resourcePath.startsWith(rtValue + "/"))  {
+                type = rt;
+                break;
+            }
         }
 
         return type;

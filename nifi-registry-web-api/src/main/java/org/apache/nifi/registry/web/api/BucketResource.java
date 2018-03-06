@@ -25,11 +25,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.web.link.LinkService;
@@ -81,9 +79,8 @@ public class BucketResource extends AuthorizableApplicationResource {
             final RegistryService registryService,
             final LinkService linkService,
             final PermissionsService permissionsService,
-            final AuthorizationService authorizationService,
-            final Authorizer authorizer) {
-        super(authorizer, authorizationService);
+            final AuthorizationService authorizationService) {
+        super(authorizationService);
         this.registryService = registryService;
         this.linkService = linkService;
         this.permissionsService = permissionsService;
@@ -254,10 +251,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     }
 
     private void authorizeAccess(RequestAction actionType) throws AccessDeniedException {
-        authorizationService.authorizeAccess(lookup -> {
-            final Authorizable bucketsAuthorizable = lookup.getBucketsAuthorizable();
-            bucketsAuthorizable.authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
-        });
+        final Authorizable bucketsAuthorizable = authorizableLookup.getBucketsAuthorizable();
+        authorizationService.authorize(bucketsAuthorizable, actionType);
     }
 
 }

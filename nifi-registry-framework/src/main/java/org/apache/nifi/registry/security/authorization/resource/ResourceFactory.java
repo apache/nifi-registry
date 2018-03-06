@@ -39,24 +39,6 @@ public final class ResourceFactory {
         }
     };
 
-
-    private final static Resource POLICY_RESOURCE = new Resource() {
-        @Override
-        public String getIdentifier() {
-            return ResourceType.Policy.getValue();
-        }
-
-        @Override
-        public String getName() {
-            return "Policies for ";
-        }
-
-        @Override
-        public String getSafeDescription() {
-            return "the policies for ";
-        }
-    };
-
     private final static Resource PROXY_RESOURCE = new Resource() {
         @Override
         public String getIdentifier() {
@@ -95,7 +77,7 @@ public final class ResourceFactory {
 
         @Override
         public String getIdentifier() {
-            return "/policies";
+            return ResourceType.Policy.getValue();
         }
 
         @Override
@@ -108,6 +90,32 @@ public final class ResourceFactory {
             return "policies";
         }
     };
+
+    private final static Resource ACTUATOR_RESOURCE = new Resource() {
+        @Override
+        public String getIdentifier() {
+            return ResourceType.Actuator.getValue();
+        }
+
+        @Override
+        public String getName() {
+            return "Actuator";
+        }
+
+        @Override
+        public String getSafeDescription() {
+            return "actuator";
+        }
+    };
+
+    /**
+     * Gets the Resource for actuator system management endpoints.
+     *
+     * @return  The resource for actuator system management endpoints.
+     */
+    public static Resource getActuatorResource() {
+        return ACTUATOR_RESOURCE;
+    }
 
     /**
      * Gets the Resource for proxying a user request.
@@ -149,33 +157,6 @@ public final class ResourceFactory {
      */
     public static Resource getBucketResource(String bucketIdentifier, String bucketName) {
         return getChildResource(ResourceType.Bucket, bucketIdentifier, bucketName);
-    }
-
-    /**
-     * Gets a Resource for accessing a resources's policies.
-     *
-     * @param resource      The resource being accessed
-     * @return              The resource
-     */
-    public static Resource getPolicyResource(final Resource resource) {
-        Objects.requireNonNull(resource, "The resource type must be specified.");
-
-        return new Resource() {
-            @Override
-            public String getIdentifier() {
-                return String.format("%s%s", POLICY_RESOURCE.getIdentifier(), resource.getIdentifier());
-            }
-
-            @Override
-            public String getName() {
-                return POLICY_RESOURCE.getName() + resource.getName();
-            }
-
-            @Override
-            public String getSafeDescription() {
-                return POLICY_RESOURCE.getSafeDescription() + resource.getSafeDescription();
-            }
-        };
     }
 
     /**
