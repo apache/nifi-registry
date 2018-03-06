@@ -154,7 +154,7 @@ limitations under the License.
                 <div flex fxLayout="row" fxLayoutAlign="space-between center">
                     <span class="md-card-title">Membership ({{nfRegistryService.user.userGroups.length}})</span>
                     <button color="fds-secondary"
-                            [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite"
+                            [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || !nfRegistryService.user.configurable"
                             mat-raised-button
                             (click)="addUserToGroups()">
                         Add To Group
@@ -163,7 +163,7 @@ limitations under the License.
                 <div id="nifi-registry-user-membership-list-container-column-header" fxLayout="row"
                      fxLayoutAlign="space-between center" class="td-data-table">
                     <div class="td-data-table-column" (click)="sortGroups(column)"
-                         *ngFor="let column of nfRegistryService.userGroupsColumns"
+                         *ngFor="let column of userGroupsColumns"
                          fxFlex="{{column.width}}">
                         {{column.label}}
                         <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
@@ -177,7 +177,7 @@ limitations under the License.
                     <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
                          [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUserGroups"
                          (click)="row.checked = !row.checked">
-                        <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                        <div class="td-data-table-cell" *ngFor="let column of userGroupsColumns"
                              fxFlex="{{column.width}}">
                             <div class="ellipsis"
                                  matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">

@@ -138,7 +138,34 @@ describe('NfRegistryManageGroup Component', function () {
             identity: 'Group #1',
             users: [{
                 identifier: '123',
-                identity: 'Group #1'
+                identity: 'Group #1',
+                resourcePermissions: {
+                    anyTopLevelResource: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    buckets: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    tenants: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    policies: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    proxy: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    }
+                }
             }],
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -2019,6 +2046,93 @@ describe('NfRegistryManageGroup Component', function () {
         //assertions
         expect(nfRegistryApi.getUserGroup.calls.count()).toBe(2);
         expect(comp.filterUsers).toHaveBeenCalled();
+    }));
+
+    it('should sort `users` by `column`', ngCoreTesting.fakeAsync(function () {
+        spyOn(comp, 'filterUsers').and.callFake(function () {
+        });
+        spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            identifier: '123',
+            identity: 'Group #1',
+            resourcePermissions: {
+                anyTopLevelResource: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                buckets: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                tenants: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                policies: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                proxy: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                }
+            },
+            users: [{
+                identifier: '123',
+                identity: 'User #1',
+                resourcePermissions: {
+                    anyTopLevelResource: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    buckets: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    tenants: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    policies: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    },
+                    proxy: {
+                        canRead: false,
+                        canWrite: false,
+                        canDelete: false
+                    }
+                }
+            }]
+        }));
+
+        // 1st change detection triggers ngOnInit
+        fixture.detectChanges();
+        // wait for async calls
+        ngCoreTesting.tick();
+        // 2nd change detection completes after the async calls
+        fixture.detectChanges();
+
+        // object to be updated by the test
+        var column = {name: 'name', label: 'Display Name', sortable: true};
+
+        // The function to test
+        comp.sortUsers(column);
+
+        //assertions
+        expect(column.active).toBe(true);
+        var filterUsersCall = comp.filterUsers.calls.first();
+        expect(filterUsersCall.args[0]).toBeUndefined();
+        expect(filterUsersCall.args[1]).toBeUndefined();
     }));
 
     it('should remove user from group', ngCoreTesting.fakeAsync(function () {

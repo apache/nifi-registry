@@ -25,7 +25,7 @@ limitations under the License.
     <div *ngIf="filteredUserGroups.length > 0" class="pad-bottom-md">
         <div id="nifi-registry-users-administration-list-container-column-header" class="td-data-table">
             <div class="td-data-table-column" (click)="sortUserGroups(column)"
-                 *ngFor="let column of nfRegistryService.userGroupsColumns"
+                 *ngFor="let column of userGroupsColumns"
                  fxFlex="{{column.width}}">
                 {{column.label}}
                 <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
@@ -45,7 +45,7 @@ limitations under the License.
                  [ngClass]="{'selected' : group.checked}"
                  *ngFor="let group of filteredUserGroups"
                  (click)="group.checked = !group.checked;determineAllUserGroupsSelectedState();">
-                <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                <div class="td-data-table-cell" *ngFor="let column of userGroupsColumns"
                      fxFlex="{{column.width}}">
                     <div class="ellipsis" matTooltip="{{column.format ? column.format(group[column.name]) : group[column.name]}}">
                         <i class="fa fa-users push-right-sm" aria-hidden="true"></i>{{column.format ?

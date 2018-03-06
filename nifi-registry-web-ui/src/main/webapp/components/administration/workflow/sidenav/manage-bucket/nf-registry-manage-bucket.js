@@ -41,6 +41,25 @@ var NfRegistryAddPolicyToBucket = require('nifi-registry/components/administrati
  * @constructor
  */
 function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
+    // local state
+    this.sortBy;
+    this.sortOrder;
+    this.bucketPoliciesColumns = [
+        {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true,
+            tooltip: 'User/Group name.',
+            width: 40
+        },
+        {
+            name: 'permissions',
+            label: 'Permissions',
+            sortable: false,
+            tooltip: 'User/Group permissions for this bucket.',
+            width: 40
+        }
+    ];
     this.userPermsSearchTerms = [];
     this._bucketname = '';
     this.bucketPolicies = [];
@@ -103,7 +122,7 @@ NfRegistryManageBucket.prototype = {
                                     });
                                 }
                             });
-                            self.filterPolicies();
+                            self.filterPolicies(this.sortBy, this.sortOrder);
                         }
                     }
                 } else if (response[0].status === 404) {
@@ -160,7 +179,7 @@ NfRegistryManageBucket.prototype = {
                             duration: 3000
                         });
                     }
-                    self.filterPolicies();
+                    self.filterPolicies(this.sortBy, this.sortOrder);
                 });
         });
     },
@@ -197,7 +216,7 @@ NfRegistryManageBucket.prototype = {
                             duration: 3000
                         });
                     }
-                    self.filterPolicies();
+                    self.filterPolicies(this.sortBy, this.sortOrder);
                 });
         });
     },
@@ -211,23 +230,31 @@ NfRegistryManageBucket.prototype = {
     filterPolicies: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            if (this.sortOrder === undefined) {
+                sortOrder = 'ASC'
+            } else {
+                sortOrder = this.sortOrder
+            }
         }
         // if `sortBy` is `undefined` then find the first sortable column in `bucketPoliciesColumns`
         if (sortBy === undefined) {
-            var arrayLength = this.nfRegistryService.bucketPoliciesColumns.length;
-            for (var i = 0; i < arrayLength; i++) {
-                if (this.nfRegistryService.bucketPoliciesColumns[i].sortable === true) {
-                    sortBy = this.nfRegistryService.bucketPoliciesColumns[i].name;
-                    //only one column can be actively sorted so we reset all to inactive
-                    this.nfRegistryService.bucketPoliciesColumns.forEach(function (c) {
-                        c.active = false;
-                    });
-                    //and set this column as the actively sorted column
-                    this.nfRegistryService.bucketPoliciesColumns[i].active = true;
-                    this.nfRegistryService.bucketPoliciesColumns[i].sortOrder = sortOrder;
-                    break;
+            if (this.sortBy === undefined) {
+                var arrayLength = this.bucketPoliciesColumns.length;
+                for (var i = 0; i < arrayLength; i++) {
+                    if (this.bucketPoliciesColumns[i].sortable === true) {
+                        sortBy = this.bucketPoliciesColumns[i].name;
+                        //only one column can be actively sorted so we reset all to inactive
+                        this.bucketPoliciesColumns.forEach(function (c) {
+                            c.active = false;
+                        });
+                        //and set this column as the actively sorted column
+                        this.bucketPoliciesColumns[i].active = true;
+                        this.bucketPoliciesColumns[i].sortOrder = sortOrder;
+                        break;
+                    }
                 }
+            } else {
+                sortBy = this.sortBy
             }
         }
 
@@ -269,14 +296,14 @@ NfRegistryManageBucket.prototype = {
      *
      * @param column    The column to sort by.
      */
-    sortUsers: function (column) {
+    sortBuckets: function (column) {
         if (column.sortable) {
-            var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
-            this.filterPolicies(sortBy, sortOrder);
+            this.sortBy = column.name;
+            this.sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            this.filterPolicies(this.sortBy, this.sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
-            this.nfRegistryService.bucketPoliciesColumns.forEach(function (c) {
+            this.bucketPoliciesColumns.forEach(function (c) {
                 c.active = false;
             });
             //and set this column as the actively sorted column
@@ -341,7 +368,7 @@ NfRegistryManageBucket.prototype = {
                                                     });
                                                 }
                                             });
-                                            self.filterPolicies();
+                                            self.filterPolicies(this.sortBy, this.sortOrder);
                                             var snackBarRef = self.snackBarService.openCoaster({
                                                 title: 'Success',
                                                 message: 'All permissions granted by this policy have be removed for this user/group.',
