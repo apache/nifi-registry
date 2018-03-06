@@ -40,10 +40,21 @@ var NfRegistryAddUserToGroups = require('nifi-registry/components/administration
  */
 function NfRegistryManageUser(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
     // local state
+    this.sortBy;
+    this.sortOrder;
     this.filteredUserGroups = [];
     this.userGroupsSearchTerms = [];
     this._username = '';
     this.manageUserPerspective = 'membership';
+    this.userGroupsColumns = [
+        {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true,
+            tooltip: 'Group name.',
+            width: 100
+        }
+    ];
 
     // Services
     this.nfRegistryService = nfRegistryService;
@@ -74,7 +85,7 @@ NfRegistryManageUser.prototype = {
                     self.nfRegistryService.sidenav.open();
                     self.nfRegistryService.user = response;
                     self._username = response.identity;
-                    self.filterGroups();
+                    self.filterGroups(this.sortBy, this.sortOrder);
                 } else if (response.status === 404) {
                     self.router.navigateByUrl('/nifi-registry/administration/users');
                 } else if (response.status === 409) {
@@ -433,7 +444,7 @@ NfRegistryManageUser.prototype = {
                 .subscribe(function (response) {
                     self.nfRegistryService.user = response;
                     self._username = response.identity;
-                    self.filterGroups();
+                    self.filterGroups(this.sortBy, this.sortOrder);
                 });
         });
     },
@@ -447,23 +458,31 @@ NfRegistryManageUser.prototype = {
     filterGroups: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            if (this.sortOrder === undefined) {
+                sortOrder = 'ASC'
+            } else {
+                sortOrder = this.sortOrder
+            }
         }
         // if `sortBy` is `undefined` then find the first sortable column in `userGroupsColumns`
         if (sortBy === undefined) {
-            var arrayLength = this.nfRegistryService.userGroupsColumns.length;
-            for (var i = 0; i < arrayLength; i++) {
-                if (this.nfRegistryService.userGroupsColumns[i].sortable === true) {
-                    sortBy = this.nfRegistryService.userGroupsColumns[i].name;
-                    //only one column can be actively sorted so we reset all to inactive
-                    this.nfRegistryService.userGroupsColumns.forEach(function (c) {
-                        c.active = false;
-                    });
-                    //and set this column as the actively sorted column
-                    this.nfRegistryService.userGroupsColumns[i].active = true;
-                    this.nfRegistryService.userGroupsColumns[i].sortOrder = sortOrder;
-                    break;
+            if (this.sortBy === undefined) {
+                var arrayLength = this.userGroupsColumns.length;
+                for (var i = 0; i < arrayLength; i++) {
+                    if (this.userGroupsColumns[i].sortable === true) {
+                        sortBy = this.userGroupsColumns[i].name;
+                        //only one column can be actively sorted so we reset all to inactive
+                        this.userGroupsColumns.forEach(function (c) {
+                            c.active = false;
+                        });
+                        //and set this column as the actively sorted column
+                        this.userGroupsColumns[i].active = true;
+                        this.userGroupsColumns[i].sortOrder = sortOrder;
+                        break;
+                    }
                 }
+            } else {
+                sortBy = this.sortBy
             }
         }
 
@@ -484,12 +503,12 @@ NfRegistryManageUser.prototype = {
      */
     sortGroups: function (column) {
         if (column.sortable) {
-            var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
-            this.filterGroups(sortBy, sortOrder);
+            this.sortBy = column.name;
+            this.sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            this.filterGroups(this.sortBy, this.sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
-            this.nfRegistryService.userGroupsColumns.forEach(function (c) {
+            this.userGroupsColumns.forEach(function (c) {
                 c.active = false;
             });
             //and set this column as the actively sorted column
@@ -516,7 +535,7 @@ NfRegistryManageUser.prototype = {
                     self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                         .subscribe(function (response) {
                             self.nfRegistryService.user = response;
-                            self.filterGroups();
+                            self.filterGroups(this.sortBy, this.sortOrder);
                         });
                     var snackBarRef = self.snackBarService.openCoaster({
                         title: 'Success',

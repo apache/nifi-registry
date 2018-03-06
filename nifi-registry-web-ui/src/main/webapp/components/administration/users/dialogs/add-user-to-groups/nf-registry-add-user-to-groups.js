@@ -42,6 +42,7 @@ function NfRegistryAddUserToGroups(nfRegistryApi, tdDataTableService, nfRegistry
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.data = data;
+
     // local state
     //make an independent copy of the groups for sorting and selecting within the scope of this component
     this.groups = $.extend(true, [], this.nfRegistryService.groups);
@@ -49,6 +50,15 @@ function NfRegistryAddUserToGroups(nfRegistryApi, tdDataTableService, nfRegistry
     this.isAddToSelectedGroupsDisabled = true;
     this.userGroupsSearchTerms = [];
     this.allGroupsSelected = false;
+    this.userGroupsColumns = [
+        {
+            name: 'identity',
+            label: 'Display Name',
+            sortable: true,
+            tooltip: 'Group name.',
+            width: 100
+        }
+    ];
 };
 
 NfRegistryAddUserToGroups.prototype = {
@@ -90,17 +100,17 @@ NfRegistryAddUserToGroups.prototype = {
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
-            var arrayLength = this.nfRegistryService.userGroupsColumns.length;
+            var arrayLength = this.userGroupsColumns.length;
             for (var i = 0; i < arrayLength; i++) {
-                if (this.nfRegistryService.userGroupsColumns[i].sortable === true) {
-                    sortBy = this.nfRegistryService.userGroupsColumns[i].name;
+                if (this.userGroupsColumns[i].sortable === true) {
+                    sortBy = this.userGroupsColumns[i].name;
                     //only one column can be actively sorted so we reset all to inactive
-                    this.nfRegistryService.userGroupsColumns.forEach(function (c) {
+                    this.userGroupsColumns.forEach(function (c) {
                         c.active = false;
                     });
                     //and set this column as the actively sorted column
-                    this.nfRegistryService.userGroupsColumns[i].active = true;
-                    this.nfRegistryService.userGroupsColumns[i].sortOrder = sortOrder;
+                    this.userGroupsColumns[i].active = true;
+                    this.userGroupsColumns[i].sortOrder = sortOrder;
                     break;
                 }
             }

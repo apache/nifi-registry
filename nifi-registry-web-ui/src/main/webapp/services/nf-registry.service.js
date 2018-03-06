@@ -71,22 +71,6 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             width: 100
         }
     ];
-    this.bucketPoliciesColumns = [
-        {
-            name: 'identity',
-            label: 'Display Name',
-            sortable: true,
-            tooltip: 'User/Group name.',
-            width: 40
-        },
-        {
-            name: 'permissions',
-            label: 'Permissions',
-            sortable: false,
-            tooltip: 'User/Group permissions for this bucket.',
-            width: 40
-        }
-    ];
     this.dropletColumns = [
         {
             name: 'name',

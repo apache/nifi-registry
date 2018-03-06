@@ -1548,6 +1548,67 @@ describe('NfRegistryManageUser Component', function () {
         expect(comp.filterGroups).toHaveBeenCalled();
     }));
 
+    it('should sort `groups` by `column`', ngCoreTesting.fakeAsync(function () {
+        spyOn(comp, 'filterGroups').and.callFake(function () {
+        });
+        spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
+        }).and.returnValue(rxjs.Observable.of({
+            identifier: '123',
+            identity: 'User #1',
+            resourcePermissions: {
+                anyTopLevelResource: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                buckets: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                tenants: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                policies: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                },
+                proxy: {
+                    canRead: false,
+                    canWrite: false,
+                    canDelete: false
+                }
+            }
+        }));
+
+        // 1st change detection triggers ngOnInit
+        fixture.detectChanges();
+        // wait for async calls
+        ngCoreTesting.tick();
+        // 2nd change detection completes after the async calls
+        fixture.detectChanges();
+
+        //assertions
+        var getUserCall = nfRegistryApi.getUser.calls.first();
+        expect(getUserCall.args[0]).toBe('123');
+        expect(nfRegistryApi.getUser.calls.count()).toBe(1);
+
+        // object to be updated by the test
+        var column = {name: 'name', label: 'Display Name', sortable: true};
+
+        // The function to test
+        comp.sortGroups(column);
+
+        //assertions
+        expect(column.active).toBe(true);
+        var filterGroupsCall = comp.filterGroups.calls.first();
+        expect(filterGroupsCall.args[0]).toBeUndefined();
+        expect(filterGroupsCall.args[1]).toBeUndefined();
+    }));
+
     it('should remove user from group', ngCoreTesting.fakeAsync(function () {
         // Spy
         spyOn(comp, 'filterGroups').and.callFake(function () {

@@ -158,7 +158,7 @@ limitations under the License.
                 <div id="nifi-registry-group-membership-list-container-column-header" fxLayout="row"
                      fxLayoutAlign="space-between center" class="td-data-table">
                     <div class="td-data-table-column" (click)="sortUsers(column)"
-                         *ngFor="let column of nfRegistryService.userGroupsColumns"
+                         *ngFor="let column of usersColumns"
                          fxFlex="{{column.width}}">
                         {{column.label}}
                         <i *ngIf="column.active && column.sortable && column.sortOrder === 'ASC'" class="fa fa-caret-up"
@@ -172,7 +172,7 @@ limitations under the License.
                     <div fxLayout="row" fxLayoutAlign="space-between center" class="td-data-table-row"
                          [ngClass]="{'selected' : row.checked}" *ngFor="let row of filteredUsers"
                          (click)="row.checked = !row.checked">
-                        <div class="td-data-table-cell" *ngFor="let column of nfRegistryService.userGroupsColumns"
+                        <div class="td-data-table-cell" *ngFor="let column of usersColumns"
                              fxFlex="{{column.width}}">
                             <div class="ellipsis"
                                  matTooltip="{{column.format ? column.format(row[column.name]) : row[column.name]}}">
