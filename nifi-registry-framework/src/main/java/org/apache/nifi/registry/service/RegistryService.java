@@ -150,7 +150,6 @@ public class RegistryService {
             final BucketEntity bucket = metadataService.getBucketById(bucketIdentifier);
             if (bucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -199,7 +198,6 @@ public class RegistryService {
             final BucketEntity existingBucketById = metadataService.getBucketById(bucket.getIdentifier());
             if (existingBucketById == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucket.getIdentifier());
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -244,7 +242,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -274,7 +271,6 @@ public class RegistryService {
             final BucketEntity bucket = metadataService.getBucketById(bucketIdentifier);
             if (bucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -345,7 +341,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -382,14 +377,12 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
             final FlowEntity existingFlow = metadataService.getFlowByIdWithSnapshotCounts(flowIdentifier);
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -413,7 +406,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketId);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketId);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -448,14 +440,12 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(versionedFlow.getBucketIdentifier());
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", versionedFlow.getBucketIdentifier());
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
             final FlowEntity existingFlow = metadataService.getFlowByIdWithSnapshotCounts(versionedFlow.getIdentifier());
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", versionedFlow.getIdentifier());
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -507,7 +497,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -515,7 +504,6 @@ public class RegistryService {
             final FlowEntity existingFlow = metadataService.getFlowById(flowIdentifier);
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -561,7 +549,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(snapshotMetadata.getBucketIdentifier());
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", snapshotMetadata.getBucketIdentifier());
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -569,7 +556,6 @@ public class RegistryService {
             final FlowEntity existingFlow = metadataService.getFlowById(snapshotMetadata.getFlowIdentifier());
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", snapshotMetadata.getFlowIdentifier());
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -650,7 +636,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -658,7 +643,6 @@ public class RegistryService {
             final FlowEntity flowEntityWithCount = metadataService.getFlowByIdWithSnapshotCounts(flowIdentifier);
             if (flowEntityWithCount == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -670,7 +654,6 @@ public class RegistryService {
             final FlowSnapshotEntity snapshotEntity = metadataService.getFlowSnapshot(flowIdentifier, version);
             if (snapshotEntity == null) {
                 LOGGER.warn("The specified flow snapshot id [{}] does not exist for version [{}].", flowIdentifier, version);
-
                 throw new ResourceNotFoundException("The specified versioned flow snapshot does not exist for this flow.");
             }
 
@@ -725,7 +708,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -733,7 +715,6 @@ public class RegistryService {
             final FlowEntity existingFlow = metadataService.getFlowById(flowIdentifier);
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -770,7 +751,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -778,7 +758,6 @@ public class RegistryService {
             final FlowEntity existingFlow = metadataService.getFlowById(flowIdentifier);
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 
@@ -788,6 +767,10 @@ public class RegistryService {
 
             // get latest snapshot for the flow
             final FlowSnapshotEntity latestSnapshot = metadataService.getLatestSnapshot(existingFlow.getId());
+            if (latestSnapshot == null) {
+                throw new ResourceNotFoundException("The specified flow ID has no versions");
+            }
+
             return DataModelMapper.map(existingBucket, latestSnapshot);
         } finally {
             readLock.unlock();
@@ -813,7 +796,6 @@ public class RegistryService {
             final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
             if (existingBucket == null) {
                 LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
@@ -821,7 +803,6 @@ public class RegistryService {
             final FlowEntity existingFlow = metadataService.getFlowById(flowIdentifier);
             if (existingFlow == null) {
                 LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
-
                 throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
             }
 

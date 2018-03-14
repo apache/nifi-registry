@@ -32,6 +32,7 @@ import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -860,6 +861,79 @@ public class TestRegistryService {
         final SortedSet<VersionedFlowSnapshotMetadata> retrievedSnapshots = registryService.getFlowSnapshots(existingBucket.getId(), existingFlow.getId());
         assertNotNull(retrievedSnapshots);
         assertEquals(0, retrievedSnapshots.size());
+    }
+
+    @Test
+    public void testGetLatestSnapshotMetadataWhenVersionsExist() {
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucketId(existingBucket.getId());
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
+
+        final FlowSnapshotEntity existingSnapshot1 = new FlowSnapshotEntity();
+        existingSnapshot1.setVersion(1);
+        existingSnapshot1.setFlowId(existingFlow.getId());
+        existingSnapshot1.setCreatedBy("user1");
+        existingSnapshot1.setCreated(new Date());
+        existingSnapshot1.setComments("This is snapshot 1");
+
+        when(metadataService.getLatestSnapshot(existingFlow.getId())).thenReturn(existingSnapshot1);
+
+        VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(existingBucket.getId(), existingFlow.getId());
+        assertNotNull(latestMetadata);
+        assertEquals(1, latestMetadata.getVersion());
+    }
+
+    @Test
+    public void testGetLatestSnapshotMetadataWhenNoVersionsExist() {
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucketId(existingBucket.getId());
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
+
+        final FlowSnapshotEntity existingSnapshot1 = new FlowSnapshotEntity();
+        existingSnapshot1.setVersion(1);
+        existingSnapshot1.setFlowId(existingFlow.getId());
+        existingSnapshot1.setCreatedBy("user1");
+        existingSnapshot1.setCreated(new Date());
+        existingSnapshot1.setComments("This is snapshot 1");
+
+        when(metadataService.getLatestSnapshot(existingFlow.getId())).thenReturn(null);
+
+        try {
+            registryService.getLatestFlowSnapshotMetadata(existingBucket.getId(), existingFlow.getId());
+            Assert.fail("Should have thrown exception");
+        } catch (ResourceNotFoundException e) {
+            assertEquals("The specified flow ID has no versions", e.getMessage());
+        }
     }
 
     @Test(expected = ResourceNotFoundException.class)
