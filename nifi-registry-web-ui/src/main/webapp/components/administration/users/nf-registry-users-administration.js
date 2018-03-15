@@ -35,9 +35,10 @@ var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/
  * @param activatedRoute        The angular activated route module.
  * @param fdsDialogService      The FDS dialog service.
  * @param matDialog             The angular material dialog module.
+ * @param router                The angular router module.
  * @constructor
  */
-function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute, fdsDialogService, matDialog) {
+function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryService, activatedRoute, fdsDialogService, matDialog, router) {
     // Services
     this.route = activatedRoute;
     this.nfStorage = nfStorage;
@@ -45,6 +46,7 @@ function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryServi
     this.nfRegistryApi = nfRegistryApi;
     this.dialogService = fdsDialogService;
     this.dialog = matDialog;
+    this.router = router;
 };
 
 NfRegistryUsersAdministration.prototype = {
@@ -131,6 +133,7 @@ NfRegistryUsersAdministration.parameters = [
     NfStorage,
     NfRegistryService,
     ngRouter.ActivatedRoute,
+    ngRouter.Router,
     fdsDialogsModule.FdsDialogService,
     ngMaterial.MatDialog
 ];
