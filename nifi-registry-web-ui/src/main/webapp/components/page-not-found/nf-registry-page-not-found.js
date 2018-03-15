@@ -18,17 +18,20 @@ var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var ngRouter = require('@angular/router');
 
 /**
  * NfLoginComponent constructor.
  *
  * @param nfRegistryService     The nf-registry.service module.
  * @param fdsDialogService      The FDS dialog service.
+ * @param router                The angular router module.
  */
-function NfPageNotFoundComponent(nfRegistryService, fdsDialogService) {
+function NfPageNotFoundComponent(nfRegistryService, fdsDialogService, router) {
     // Services
     this.nfRegistryService = nfRegistryService;
     this.dialogService = fdsDialogService;
+    this.router = router;
 };
 
 NfPageNotFoundComponent.prototype = {
@@ -47,7 +50,7 @@ NfPageNotFoundComponent.prototype = {
         }).afterClosed().subscribe(
             function (accept) {
                 if (accept) {
-                    self.nfRegistryService.router.navigateByUrl(self.nfRegistryService.redirectUrl);
+                    self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
                 }
             });
     }
@@ -66,6 +69,7 @@ NfPageNotFoundComponent.annotations = [
 NfPageNotFoundComponent.parameters = [
     NfRegistryService,
     fdsDialogsModule.FdsDialogService,
+    ngRouter.Router
 ];
 
 module.exports = NfPageNotFoundComponent;
