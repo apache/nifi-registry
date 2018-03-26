@@ -23,6 +23,7 @@ public class VersionedPropertyDescriptor {
     private String name;
     private String displayName;
     private boolean identifiesControllerService;
+    private boolean sensitive;
 
     @ApiModelProperty("The name of the property")
     public String getName() {
@@ -49,5 +50,14 @@ public class VersionedPropertyDescriptor {
 
     public void setIdentifiesControllerService(boolean identifiesControllerService) {
         this.identifiesControllerService = identifiesControllerService;
+    }
+
+    @ApiModelProperty("Whether or not the property is considered sensitive")
+    public boolean isSensitive() {
+        return sensitive;
+    }
+
+    public void setSensitive(boolean sensitive) {
+        this.sensitive = sensitive;
     }
 }
