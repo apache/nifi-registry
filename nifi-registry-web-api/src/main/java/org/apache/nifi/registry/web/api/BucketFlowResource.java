@@ -27,7 +27,6 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
-import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -376,14 +375,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
-        final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
-        if (latest == null) {
-            logger.warn("The specified flow id [{}] does not exist.", flowId);
-
-            throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
-        }
-
-        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latest.getVersion());
+        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
+        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latestMetadata.getVersion());
         populateLinksAndPermissions(lastSnapshot);
 
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
@@ -418,12 +411,6 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
         final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
-        if (latest == null) {
-            logger.warn("The specified flow id [{}] does not exist.", flowId);
-
-            throw new ResourceNotFoundException("The specified flow ID does not exist in this bucket.");
-        }
-
         linkService.populateSnapshotLinks(latest);
 
         return Response.status(Response.Status.OK).entity(latest).build();
