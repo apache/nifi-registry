@@ -14,23 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.mapper;
 
-import org.apache.nifi.registry.serialization.jackson.ObjectMapperProvider;
-import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.springframework.stereotype.Component;
+package org.apache.nifi.registry.util;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import org.junit.Test;
 
-@Component
-@Provider
-@Produces(MediaType.APPLICATION_JSON)
-public class NiFiRegistryJsonProvider extends JacksonJaxbJsonProvider {
+import static org.junit.Assert.assertEquals;
 
-    public NiFiRegistryJsonProvider() {
-        super();
-        setMapper(ObjectMapperProvider.getMapper());
+public class TestFileUtils {
+    @Test
+    public void testSanitizeFilename() {
+        String filename = "This / is / a test";
+        final String sanitizedFilename = FileUtils.sanitizeFilename(filename);
+        assertEquals("This___is___a_test", sanitizedFilename);
     }
 }
