@@ -47,6 +47,7 @@
         <class>org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider</class>
         <property name="Users File">./target/test-classes/conf/secure-file/users.xml</property>
         <property name="Initial User Identity 1">CN=user1, OU=nifi</property>
+        <property name="Initial User Identity 2">CN=no-access, OU=nifi</property>
     </userGroupProvider>
 
     <!--

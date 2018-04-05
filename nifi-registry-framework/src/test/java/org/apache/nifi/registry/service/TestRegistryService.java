@@ -368,6 +368,12 @@ public class TestRegistryService {
         registryService.getFlow("bucket1","flow1");
     }
 
+    @Test(expected = ResourceNotFoundException.class)
+    public void testGetFlowDirectDoesNotExist() {
+        when(metadataService.getFlowById(any(String.class))).thenReturn(null);
+        registryService.getFlow("flow1");
+    }
+
     @Test
     public void testGetFlowExists() {
         final BucketEntity existingBucket = new BucketEntity();
@@ -389,6 +395,36 @@ public class TestRegistryService {
         when(metadataService.getFlowByIdWithSnapshotCounts(flowEntity.getId())).thenReturn(flowEntity);
 
         final VersionedFlow versionedFlow = registryService.getFlow(existingBucket.getId(), flowEntity.getId());
+        assertNotNull(versionedFlow);
+        assertEquals(flowEntity.getId(), versionedFlow.getIdentifier());
+        assertEquals(flowEntity.getName(), versionedFlow.getName());
+        assertEquals(flowEntity.getDescription(), versionedFlow.getDescription());
+        assertEquals(flowEntity.getBucketId(), versionedFlow.getBucketIdentifier());
+        assertEquals(existingBucket.getName(), versionedFlow.getBucketName());
+        assertEquals(flowEntity.getCreated().getTime(), versionedFlow.getCreatedTimestamp());
+        assertEquals(flowEntity.getModified().getTime(), versionedFlow.getModifiedTimestamp());
+    }
+
+    @Test
+    public void testGetFlowDirectExists() {
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        final FlowEntity flowEntity = new FlowEntity();
+        flowEntity.setId("flow1");
+        flowEntity.setName("My Flow");
+        flowEntity.setDescription("This is my flow.");
+        flowEntity.setCreated(new Date());
+        flowEntity.setModified(new Date());
+        flowEntity.setBucketId(existingBucket.getId());
+
+        when(metadataService.getFlowByIdWithSnapshotCounts(flowEntity.getId())).thenReturn(flowEntity);
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        final VersionedFlow versionedFlow = registryService.getFlow(flowEntity.getId());
         assertNotNull(versionedFlow);
         assertEquals(flowEntity.getId(), versionedFlow.getIdentifier());
         assertEquals(flowEntity.getName(), versionedFlow.getName());
