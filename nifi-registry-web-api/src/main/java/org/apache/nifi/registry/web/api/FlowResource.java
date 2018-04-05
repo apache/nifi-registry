@@ -18,19 +18,34 @@ package org.apache.nifi.registry.web.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.flow.VersionedFlow;
+import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
+import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.security.PermissionsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Set;
+import java.util.SortedSet;
 
 @Component
 @Path("/flows")
@@ -39,13 +54,21 @@ import java.util.Set;
         description = "Gets metadata about flows.",
         authorizations = { @Authorization("Authorization") }
 )
-public class FlowResource extends ApplicationResource {
+public class FlowResource extends AuthorizableApplicationResource {
 
     private final RegistryService registryService;
+    private final LinkService linkService;
+    private final PermissionsService permissionsService;
 
     @Autowired
-    public FlowResource(final RegistryService registryService) {
+    public FlowResource(final RegistryService registryService,
+                        final LinkService linkService,
+                        final PermissionsService permissionsService,
+                        final AuthorizationService authorizationService) {
+        super(authorizationService);
         this.registryService = registryService;
+        this.linkService = linkService;
+        this.permissionsService = permissionsService;
     }
 
     @GET
@@ -62,4 +85,214 @@ public class FlowResource extends ApplicationResource {
         return Response.status(Response.Status.OK).entity(fields).build();
     }
 
+    @GET
+    @Path("{flowId}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Gets a flow",
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getFlow(
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId) {
+
+        final VersionedFlow flow = registryService.getFlow(flowId);
+
+        // this should never happen, but if somehow the back-end didn't populate the bucket id let's make sure the flow isn't returned
+        if (StringUtils.isBlank(flow.getBucketIdentifier())) {
+            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
+        }
+
+        authorizeBucketAccess(RequestAction.READ, flow.getBucketIdentifier());
+
+        permissionsService.populateItemPermissions(flow);
+        linkService.populateFlowLinks(flow);
+
+        return Response.status(Response.Status.OK).entity(flow).build();
+    }
+
+    @GET
+    @Path("{flowId}/versions")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
+            response = VersionedFlowSnapshotMetadata.class,
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getFlowVersions(
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId) {
+
+        final VersionedFlow flow = registryService.getFlow(flowId);
+
+        final String bucketId = flow.getBucketIdentifier();
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
+        }
+
+        authorizeBucketAccess(RequestAction.READ, bucketId);
+
+        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
+        if (snapshots != null ) {
+            linkService.populateSnapshotLinks(snapshots);
+        }
+
+        return Response.status(Response.Status.OK).entity(snapshots).build();
+    }
+
+    @GET
+    @Path("{flowId}/versions/{versionNumber: \\d+}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Gets the given version of a flow",
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getFlowVersion(
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId,
+            @PathParam("versionNumber")
+            @ApiParam("The version number")
+            final Integer versionNumber) {
+
+        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(flowId);
+
+        final String bucketId = latestMetadata.getBucketIdentifier();
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
+        }
+
+        authorizeBucketAccess(RequestAction.READ, bucketId);
+
+        final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
+        populateLinksAndPermissions(snapshot);
+        return Response.status(Response.Status.OK).entity(snapshot).build();
+    }
+
+    @GET
+    @Path("{flowId}/versions/latest")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Get the latest version of a flow",
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getLatestFlowVersion(
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId) {
+
+        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(flowId);
+
+        final String bucketId = latestMetadata.getBucketIdentifier();
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
+        }
+
+        authorizeBucketAccess(RequestAction.READ, bucketId);
+
+        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latestMetadata.getVersion());
+        populateLinksAndPermissions(lastSnapshot);
+
+        return Response.status(Response.Status.OK).entity(lastSnapshot).build();
+    }
+
+    @GET
+    @Path("{flowId}/versions/latest/metadata")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Get the metadata for the latest version of a flow",
+            response = VersionedFlowSnapshotMetadata.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getLatestFlowVersionMetadata(
+            @PathParam("flowId")
+            @ApiParam("The flow identifier")
+            final String flowId) {
+
+        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(flowId);
+
+        final String bucketId = latestMetadata.getBucketIdentifier();
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
+        }
+
+        authorizeBucketAccess(RequestAction.READ, bucketId);
+
+        linkService.populateSnapshotLinks(latestMetadata);
+        return Response.status(Response.Status.OK).entity(latestMetadata).build();
+    }
+
+    private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
+        if (snapshot.getSnapshotMetadata() != null) {
+            linkService.populateSnapshotLinks(snapshot.getSnapshotMetadata());
+        }
+
+        if (snapshot.getFlow() != null) {
+            linkService.populateFlowLinks(snapshot.getFlow());
+        }
+
+        if (snapshot.getBucket() != null) {
+            permissionsService.populateBucketPermissions(snapshot.getBucket());
+            linkService.populateBucketLinks(snapshot.getBucket());
+        }
+
+    }
 }

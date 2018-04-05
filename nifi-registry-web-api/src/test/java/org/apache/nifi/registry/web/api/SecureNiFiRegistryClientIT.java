@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.ws.rs.ForbiddenException;
 import java.io.IOException;
 import java.util.List;
 
@@ -53,7 +54,7 @@ import java.util.List;
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "spring.profiles.include=ITSecureFile")
 @Import(SecureITClientConfiguration.class)
-@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:db/clearDB.sql")
+@Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:db/clearDB.sql", "classpath:db/FlowsIT.sql"})
 public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
 
     static final Logger LOGGER = LoggerFactory.getLogger(SecureNiFiRegistryClientIT.class);
@@ -102,7 +103,7 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     @Test
     public void testCrudOperations() throws IOException, NiFiRegistryException {
         final Bucket bucket = new Bucket();
-        bucket.setName("Bucket 1");
+        bucket.setName("Bucket 1 " + System.currentTimeMillis());
         bucket.setDescription("This is bucket 1");
 
         final BucketClient bucketClient = client.getBucketClient();
@@ -111,11 +112,11 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         Assert.assertNotNull(createdBucket.getIdentifier());
 
         final List<Bucket> buckets = bucketClient.getAll();
-        Assert.assertEquals(1, buckets.size());
+        Assert.assertEquals(4, buckets.size());
 
         final VersionedFlow flow = new VersionedFlow();
         flow.setBucketIdentifier(createdBucket.getIdentifier());
-        flow.setName("Flow 1");
+        flow.setName("Flow 1 - " + System.currentTimeMillis());
 
         final FlowClient flowClient = client.getFlowClient();
         final VersionedFlow createdFlow = flowClient.create(flow);
@@ -166,6 +167,51 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         } catch (Exception e) {
 
         }
+    }
+
+    @Test
+    public void testDirectFlowAccess() throws IOException {
+        // this user shouldn't have access to anything
+        final String proxiedEntity = "CN=no-access, OU=nifi";
+
+        final FlowClient proxiedFlowClient = client.getFlowClient(proxiedEntity);
+        final FlowSnapshotClient proxiedFlowSnapshotClient = client.getFlowSnapshotClient(proxiedEntity);
+
+        try {
+            proxiedFlowClient.get("1");
+            Assert.fail("Shouldn't have been able to retrieve flow");
+        } catch (NiFiRegistryException e) {
+            Assert.assertTrue(e.getCause()  instanceof ForbiddenException);
+        }
+
+        try {
+            proxiedFlowSnapshotClient.getLatest("1");
+            Assert.fail("Shouldn't have been able to retrieve flow");
+        } catch (NiFiRegistryException e) {
+            Assert.assertTrue(e.getCause()  instanceof ForbiddenException);
+        }
+
+        try {
+            proxiedFlowSnapshotClient.getLatestMetadata("1");
+            Assert.fail("Shouldn't have been able to retrieve flow");
+        } catch (NiFiRegistryException e) {
+            Assert.assertTrue(e.getCause()  instanceof ForbiddenException);
+        }
+
+        try {
+            proxiedFlowSnapshotClient.get("1", 1);
+            Assert.fail("Shouldn't have been able to retrieve flow");
+        } catch (NiFiRegistryException e) {
+            Assert.assertTrue(e.getCause()  instanceof ForbiddenException);
+        }
+
+        try {
+            proxiedFlowSnapshotClient.getSnapshotMetadata("1");
+            Assert.fail("Shouldn't have been able to retrieve flow");
+        } catch (NiFiRegistryException e) {
+            Assert.assertTrue(e.getCause()  instanceof ForbiddenException);
+        }
+
     }
 
 }

@@ -36,7 +36,8 @@ import java.util.Map;
  */
 public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements FlowSnapshotClient {
 
-    final WebTarget flowSnapshotTarget;
+    final WebTarget bucketFlowSnapshotTarget;
+    final WebTarget flowsFlowSnapshotTarget;
 
     public JerseyFlowSnapshotClient(final WebTarget baseTarget) {
         this(baseTarget, Collections.emptyMap());
@@ -44,9 +45,9 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
 
     public JerseyFlowSnapshotClient(final WebTarget baseTarget, final Map<String,String> headers) {
         super(headers);
-        this.flowSnapshotTarget = baseTarget.path("/buckets/{bucketId}/flows/{flowId}/versions");
+        this.bucketFlowSnapshotTarget = baseTarget.path("/buckets/{bucketId}/flows/{flowId}/versions");
+        this.flowsFlowSnapshotTarget = baseTarget.path("/flows/{flowId}/versions");
     }
-
 
     @Override
     public VersionedFlowSnapshot create(final VersionedFlowSnapshot snapshot)
@@ -66,7 +67,7 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error creating snapshot", () -> {
-            final WebTarget target = flowSnapshotTarget
+            final WebTarget target = bucketFlowSnapshotTarget
                     .resolveTemplate("bucketId", bucketId)
                     .resolveTemplate("flowId", flowId);
 
@@ -94,9 +95,31 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving flow snapshot", () -> {
-            final WebTarget target = flowSnapshotTarget
+            final WebTarget target = bucketFlowSnapshotTarget
                     .path("/{version}")
                     .resolveTemplate("bucketId", bucketId)
+                    .resolveTemplate("flowId", flowId)
+                    .resolveTemplate("version", version);
+
+            return getRequestBuilder(target).get(VersionedFlowSnapshot.class);
+        });
+    }
+
+    @Override
+    public VersionedFlowSnapshot get(final String flowId, final int version)
+            throws NiFiRegistryException, IOException {
+
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Identifier cannot be blank");
+        }
+
+        if (version < 1) {
+            throw new IllegalArgumentException("Version must be greater than 1");
+        }
+
+        return executeAction("Error retrieving flow snapshot", () -> {
+            final WebTarget target = flowsFlowSnapshotTarget
+                    .path("/{version}")
                     .resolveTemplate("flowId", flowId)
                     .resolveTemplate("version", version);
 
@@ -116,7 +139,7 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving latest snapshot", () -> {
-            final WebTarget target = flowSnapshotTarget
+            final WebTarget target = bucketFlowSnapshotTarget
                     .path("/latest")
                     .resolveTemplate("bucketId", bucketId)
                     .resolveTemplate("flowId", flowId);
@@ -126,7 +149,23 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
     }
 
     @Override
-    public VersionedFlowSnapshotMetadata getLatestMetadata(String bucketId, String flowId) throws NiFiRegistryException, IOException {
+    public VersionedFlowSnapshot getLatest(final String flowId)
+            throws NiFiRegistryException, IOException {
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Identifier cannot be blank");
+        }
+
+        return executeAction("Error retrieving latest snapshot", () -> {
+            final WebTarget target = flowsFlowSnapshotTarget
+                    .path("/latest")
+                    .resolveTemplate("flowId", flowId);
+
+            return getRequestBuilder(target).get(VersionedFlowSnapshot.class);
+        });
+    }
+
+    @Override
+    public VersionedFlowSnapshotMetadata getLatestMetadata(final String bucketId, final String flowId) throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
@@ -136,9 +175,24 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving latest snapshot metadata", () -> {
-            final WebTarget target = flowSnapshotTarget
+            final WebTarget target = bucketFlowSnapshotTarget
                     .path("/latest/metadata")
                     .resolveTemplate("bucketId", bucketId)
+                    .resolveTemplate("flowId", flowId);
+
+            return getRequestBuilder(target).get(VersionedFlowSnapshotMetadata.class);
+        });
+    }
+
+    @Override
+    public VersionedFlowSnapshotMetadata getLatestMetadata(final String flowId) throws NiFiRegistryException, IOException {
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Identifier cannot be blank");
+        }
+
+        return executeAction("Error retrieving latest snapshot metadata", () -> {
+            final WebTarget target = flowsFlowSnapshotTarget
+                    .path("/latest/metadata")
                     .resolveTemplate("flowId", flowId);
 
             return getRequestBuilder(target).get(VersionedFlowSnapshotMetadata.class);
@@ -158,8 +212,28 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
         }
 
         return executeAction("Error retrieving snapshot metadata", () -> {
-            final WebTarget target = flowSnapshotTarget
+            final WebTarget target = bucketFlowSnapshotTarget
                     .resolveTemplate("bucketId", bucketId)
+                    .resolveTemplate("flowId", flowId);
+
+            final VersionedFlowSnapshotMetadata[] snapshots = getRequestBuilder(target)
+                    .get(VersionedFlowSnapshotMetadata[].class);
+
+            return snapshots == null ? Collections.emptyList() : Arrays.asList(snapshots);
+        });
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<VersionedFlowSnapshotMetadata> getSnapshotMetadata(final String flowId)
+            throws NiFiRegistryException, IOException {
+
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("Flow Identifier cannot be blank");
+        }
+
+        return executeAction("Error retrieving snapshot metadata", () -> {
+            final WebTarget target = flowsFlowSnapshotTarget
                     .resolveTemplate("flowId", flowId);
 
             final VersionedFlowSnapshotMetadata[] snapshots = getRequestBuilder(target)

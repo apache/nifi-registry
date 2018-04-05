@@ -52,17 +52,14 @@ public interface FlowClient {
     VersionedFlow get(String bucketId, String flowId) throws NiFiRegistryException, IOException;
 
     /**
-     * Gets the flow with the given id in the given bucket.
+     * Gets the flow with the given id.
      *
-     * The list of snapshot metadata will be populated.
-     *
-     * @param bucketId a bucket id
      * @param flowId a flow id
-     * @return the flow with the given id in the given bucket
+     * @return the flow with the given id
      * @throws NiFiRegistryException if an error is encountered other than IOException
      * @throws IOException if an I/O error is encountered
      */
-    VersionedFlow getWithSnapshots(String bucketId, String flowId) throws NiFiRegistryException, IOException;
+    VersionedFlow get(String flowId) throws NiFiRegistryException, IOException;
 
     /**
      * Updates the given flow with in the given bucket.

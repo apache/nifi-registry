@@ -173,6 +173,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertNotNull(retrievedFlow2);
         LOGGER.info("Retrieved flow # 2 with id " + retrievedFlow2.getIdentifier());
 
+        // get flow without bucket
+        final VersionedFlow retrievedFlow1WithoutBucket = flowClient.get(flow1.getIdentifier());
+        Assert.assertNotNull(retrievedFlow1WithoutBucket);
+        Assert.assertEquals(flow1.getIdentifier(), retrievedFlow1WithoutBucket.getIdentifier());
+        LOGGER.info("Retrieved flow # 1 without bucket id, with id " + retrievedFlow1WithoutBucket.getIdentifier());
+
         // update flows
         final VersionedFlow flow1Update = new VersionedFlow();
         flow1Update.setIdentifier(flow1.getIdentifier());
@@ -218,12 +224,27 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertTrue(retrievedSnapshot2.isLatest());
         LOGGER.info("Retrieved snapshot # 2 with version " + retrievedSnapshot2.getSnapshotMetadata().getVersion());
 
+        // get snapshot without bucket
+        final VersionedFlowSnapshot retrievedSnapshot1WithoutBucket = snapshotClient.get(snapshotFlow.getIdentifier(), 1);
+        Assert.assertNotNull(retrievedSnapshot1WithoutBucket);
+        Assert.assertFalse(retrievedSnapshot1WithoutBucket.isLatest());
+        Assert.assertEquals(snapshotFlow.getIdentifier(), retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getFlowIdentifier());
+        Assert.assertEquals(1, retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getVersion());
+        LOGGER.info("Retrieved snapshot # 1 without using bucket id, with version " + retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getVersion());
+
         // get latest
         final VersionedFlowSnapshot retrievedSnapshotLatest = snapshotClient.getLatest(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
         Assert.assertNotNull(retrievedSnapshotLatest);
         Assert.assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
         Assert.assertTrue(retrievedSnapshotLatest.isLatest());
         LOGGER.info("Retrieved latest snapshot with version " + retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
+
+        // get latest without bucket
+        final VersionedFlowSnapshot retrievedSnapshotLatestWithoutBucket = snapshotClient.getLatest(snapshotFlow.getIdentifier());
+        Assert.assertNotNull(retrievedSnapshotLatestWithoutBucket);
+        Assert.assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatestWithoutBucket.getSnapshotMetadata().getVersion());
+        Assert.assertTrue(retrievedSnapshotLatestWithoutBucket.isLatest());
+        LOGGER.info("Retrieved latest snapshot without bucket, with version " + retrievedSnapshotLatestWithoutBucket.getSnapshotMetadata().getVersion());
 
         // get metadata
         final List<VersionedFlowSnapshotMetadata> retrievedMetadata = snapshotClient.getSnapshotMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
@@ -232,6 +253,14 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(2, retrievedMetadata.get(0).getVersion());
         Assert.assertEquals(1, retrievedMetadata.get(1).getVersion());
         retrievedMetadata.stream().forEach(s -> LOGGER.info("Retrieved snapshot metadata " + s.getVersion()));
+
+        // get metadata without bucket
+        final List<VersionedFlowSnapshotMetadata> retrievedMetadataWithoutBucket = snapshotClient.getSnapshotMetadata(snapshotFlow.getIdentifier());
+        Assert.assertNotNull(retrievedMetadataWithoutBucket);
+        Assert.assertEquals(2, retrievedMetadataWithoutBucket.size());
+        Assert.assertEquals(2, retrievedMetadataWithoutBucket.get(0).getVersion());
+        Assert.assertEquals(1, retrievedMetadataWithoutBucket.get(1).getVersion());
+        retrievedMetadataWithoutBucket.stream().forEach(s -> LOGGER.info("Retrieved snapshot metadata " + s.getVersion()));
 
         // get latest metadata
         final VersionedFlowSnapshotMetadata latestMetadata = snapshotClient.getLatestMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
@@ -245,6 +274,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         } catch (NiFiRegistryException nfe) {
             Assert.assertEquals("Error retrieving latest snapshot metadata: The specified flow ID does not exist in this bucket.", nfe.getMessage());
         }
+
+        // get latest metadata without bucket
+        final VersionedFlowSnapshotMetadata latestMetadataWithoutBucket = snapshotClient.getLatestMetadata(snapshotFlow.getIdentifier());
+        Assert.assertNotNull(latestMetadataWithoutBucket);
+        Assert.assertEquals(snapshotFlow.getIdentifier(), latestMetadataWithoutBucket.getFlowIdentifier());
+        Assert.assertEquals(2, latestMetadataWithoutBucket.getVersion());
 
         // ---------------------- TEST ITEMS --------------------------//
 

@@ -94,23 +94,18 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
     }
 
     @Override
-    public VersionedFlow getWithSnapshots(final String bucketId, final String flowId) throws NiFiRegistryException, IOException {
-        if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalArgumentException("Bucket Identifier cannot be blank");
-        }
-
+    public VersionedFlow get(final String flowId) throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(flowId)) {
             throw new IllegalArgumentException("Flow Identifier cannot be blank");
         }
 
+        // this uses the flowsTarget because its calling /flows/{flowId} without knowing a bucketId
         return executeAction("Error retrieving flow", () -> {
-            final WebTarget target = bucketFlowsTarget
+            final WebTarget target = flowsTarget
                     .path("/{flowId}")
-                    .resolveTemplate("bucketId", bucketId)
-                    .resolveTemplate("flowId", flowId)
-                    .queryParam("verbose", "true");
+                    .resolveTemplate("flowId", flowId);
 
-            return getRequestBuilder(target).get(VersionedFlow.class);
+            return  getRequestBuilder(target).get(VersionedFlow.class);
         });
     }
 
