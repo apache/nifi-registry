@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
-
-import java.util.List;
-
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.hook.FlowHookProvider;
+package org.apache.nifi.registry.hook;
 
 /**
- * A factory for obtaining the configured providers.
+ * An Exception for errors encountered when a FlowHookProvider executes an action before/after a commit.
  */
-public interface ProviderFactory {
+public class FlowHookException extends RuntimeException {
 
-    /**
-     * Initialize the factory.
-     *
-     * @throws ProviderFactoryException if an error occurs during initialization
-     */
-    void initialize() throws ProviderFactoryException;
+    public FlowHookException(String message) {
+        super(message);
+    }
 
-    /**
-     * @return the configured FlowPersistenceProvider
-     */
-    FlowPersistenceProvider getFlowPersistenceProvider();
-
-    /**
-     * @return the configured FlowHookProviders
-     */
-    List<FlowHookProvider> getFlowHookProviders();
-
+    public FlowHookException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

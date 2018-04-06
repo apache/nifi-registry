@@ -33,6 +33,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     private final String flowName;
     private final int version;
     private final String comments;
+    private final String author;
     private final long snapshotTimestamp;
     private final String author;
 
@@ -43,6 +44,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         this.flowName = builder.flowName;
         this.version = builder.version;
         this.comments = builder.comments;
+        this.author = builder.author;
         this.snapshotTimestamp = builder.snapshotTimestamp;
         this.author = builder.author;
 
@@ -105,6 +107,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         private String flowName;
         private int version;
         private String comments;
+        private String author;
         private long snapshotTimestamp;
         private String author;
 
@@ -119,6 +122,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
             flowName(versionedFlow.getName());
             version(snapshotMetadata.getVersion());
             comments(snapshotMetadata.getComments());
+            author(snapshotMetadata.getAuthor());
             snapshotTimestamp(snapshotMetadata.getTimestamp());
             author(snapshotMetadata.getAuthor());
         }
@@ -150,6 +154,11 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
 
         public Builder comments(final String comments) {
             this.comments = comments;
+            return this;
+        }
+
+        public Builder author(final String author) {
+            this.author = author;
             return this;
         }
 
