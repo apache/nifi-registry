@@ -17,7 +17,6 @@
 package org.apache.nifi.registry.provider.flow;
 
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
-import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,6 +30,7 @@ public class TestStandardFlowSnapshotContext {
         final String flowName = "Some Flow";
         final int version = 2;
         final String comments = "Some Comments";
+        final String author = "anonymous";
         final long timestamp = System.currentTimeMillis();
 
         final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder()
@@ -40,6 +40,7 @@ public class TestStandardFlowSnapshotContext {
                 .flowName(flowName)
                 .version(version)
                 .comments(comments)
+                .author(author)
                 .snapshotTimestamp(timestamp)
                 .build();
 
@@ -49,6 +50,7 @@ public class TestStandardFlowSnapshotContext {
         Assert.assertEquals(flowName, context.getFlowName());
         Assert.assertEquals(version, context.getVersion());
         Assert.assertEquals(comments, context.getComments());
+        Assert.assertEquals(author, context.getAuthor());
         Assert.assertEquals(timestamp, context.getSnapshotTimestamp());
     }
 
