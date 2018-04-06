@@ -36,6 +36,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: block !important;
+    user-select: text !important;
 }
 
 .info {
