@@ -30,6 +30,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.web.link.LinkService;
@@ -278,6 +279,15 @@ public class FlowResource extends AuthorizableApplicationResource {
 
         linkService.populateSnapshotLinks(latestMetadata);
         return Response.status(Response.Status.OK).entity(latestMetadata).build();
+    }
+
+    // override the base implementation so we can provide a different error message that doesn't include the bucket id
+    protected void authorizeBucketAccess(RequestAction action, String bucketId) {
+        try {
+            super.authorizeBucketAccess(RequestAction.READ, bucketId);
+        } catch (AccessDeniedException e) {
+            throw new AccessDeniedException("User not authorized to view the specified flow", e);
+        }
     }
 
     private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
