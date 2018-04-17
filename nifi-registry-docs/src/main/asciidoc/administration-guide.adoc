@@ -23,7 +23,12 @@ Apache NiFi Team <dev@nifi.apache.org>
 
 NiFi Registry has the following minimum system requirements:
 
-* Requires Java 8, newer than 1.8.0_45
+* Requires Java Development Kit (JDK) 8, newer than 1.8.0_45
+
+WARNING: When running Registry with only a JRE you may encounter the following error as Flyway (database migration tool) attempts to utilize a resource from the JDK: +
+ +
+ java.lang.RuntimeException: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flywayInitializer' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Invocation of init method failed; nested exception is org.flywaydb.core.api.FlywayException: Validate failed: Detected failed migration to version 1.3 (DropBucketItemNameUniqueness)
+
 * Supported Operating Systems:
 ** Linux
 ** Unix
@@ -32,6 +37,8 @@ NiFi Registry has the following minimum system requirements:
 ** Google Chrome:  Current & (Current - 1)
 ** Mozilla FireFox: Current & (Current - 1)
 ** Safari:  Current & (Current - 1)
+
+
 
 == How to install and start NiFi Registry
 
@@ -842,7 +849,7 @@ Security Configuration section of this Administrator's Guide.
 |nifi.registry.security.needClientAuth| This specifies that connecting clients must authenticate with a client cert. Setting this to `false` will specify that connecting clients may optionally authenticate with a client cert, but may also login with a username and password against a configured identity provider. The default value is true.
 |nifi.registry.security.authorizers.configuration.file|This is the location of the file that specifies how authorizers are defined. The default value is `./conf/authorizers.xml`.
 |nifi.registry.security.authorizer|Specifies which of the configured Authorizers in the authorizers.xml file to use. By default, it is set to `managed-authorizer`.
-|nifi.registry.security.identity.providers.configuration.file|This is the location of the file that specifies how username/password authentication is performed. This file is only considered if `nifi.registry.security.identity.provider` is configured with a provider identifier. The default value is ./conf/identity-providers.xml.
+|nifi.registry.security.identity.providers.configuration.file|This is the location of the file that specifies how username/password authentication is performed. This file is only considered if `nifi.registry.security.identity.provider` is configured with a provider identifier. The default value is `./conf/identity-providers.xml`.
 |nifi.registry.security.identity.provider|This indicates what type of identity provider to use. The default value is blank, can be set to the identifier from a provider in the file specified in `nifi.registry.security.identity.providers.configuration.file`. Setting this property will trigger NiFi Registry to support username/password authentication.
 |====
 
