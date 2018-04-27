@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 class Bucket {
     private final String bucketId;
-    private String bucketName;
+    private String bucketDirName;
 
     /**
      * Flow ID to Flow.
@@ -38,12 +38,20 @@ class Bucket {
         return bucketId;
     }
 
-    public String getBucketName() {
-        return bucketName;
+    /**
+     * Returns the directory name of this bucket.
+     * @return can be different from original bucket name if it contained sanitized character.
+     */
+    public String getBucketDirName() {
+        return bucketDirName;
     }
 
-    public void setBucketName(String bucketName) {
-        this.bucketName = bucketName;
+    /**
+     * Set the name of bucket directory.
+     * @param bucketDirName The directory name must be sanitized, use {@link org.apache.nifi.registry.util.FileUtils#sanitizeFilename(String)} to do so.
+     */
+    public void setBucketDirName(String bucketDirName) {
+        this.bucketDirName = bucketDirName;
     }
 
     public Flow getFlowOrCreate(String flowId) {

@@ -35,6 +35,7 @@ import java.util.Optional;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.nifi.registry.util.FileUtils.sanitizeFilename;
 
 public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
 
@@ -102,13 +103,13 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
 
         final String bucketId = context.getBucketId();
         final Bucket bucket = flowMetaData.getBucketOrCreate(bucketId);
-        final String currentBucketName = bucket.getBucketName();
-        final String bucketName = context.getBucketName();
-        final boolean isBucketNameChanged = !bucketName.equals(currentBucketName);
-        bucket.setBucketName(bucketName);
+        final String currentBucketDirName = bucket.getBucketDirName();
+        final String bucketDirName = sanitizeFilename(context.getBucketName());
+        final boolean isBucketNameChanged = !bucketDirName.equals(currentBucketDirName);
+        bucket.setBucketDirName(bucketDirName);
 
         final Flow flow = bucket.getFlowOrCreate(context.getFlowId());
-        final String flowSnapshotFilename = context.getFlowName() + SNAPSHOT_EXTENSION;
+        final String flowSnapshotFilename = sanitizeFilename(context.getFlowName()) + SNAPSHOT_EXTENSION;
 
         final Optional<String> currentFlowSnapshotFilename = flow
                 .getLatestVersion().map(flow::getFlowVersion).map(Flow.FlowPointer::getFileName);
@@ -117,13 +118,13 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
         final Flow.FlowPointer flowPointer = new Flow.FlowPointer(flowSnapshotFilename);
         flow.putVersion(context.getVersion(), flowPointer);
 
-        final File bucketDir = new File(flowStorageDir, bucket.getBucketName());
+        final File bucketDir = new File(flowStorageDir, bucketDirName);
         final File flowSnippetFile = new File(bucketDir, flowSnapshotFilename);
 
-        final File currentBucketDir = isEmpty(currentBucketName) ? null : new File(flowStorageDir, currentBucketName);
+        final File currentBucketDir = isEmpty(currentBucketDirName) ? null : new File(flowStorageDir, currentBucketDirName);
         if (currentBucketDir != null && currentBucketDir.isDirectory()) {
             if (isBucketNameChanged) {
-                logger.debug("Detected bucket name change from {} to {}, moving it.", currentBucketName, bucketName);
+                logger.debug("Detected bucket name change from {} to {}, moving it.", currentBucketDirName, bucketDirName);
                 if (!currentBucketDir.renameTo(bucketDir)) {
                     throw new FlowPersistenceException(format("Failed to move existing bucket %s to %s.", currentBucketDir, bucketDir));
                 }
@@ -170,7 +171,7 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
         final Flow flow = getFlowOrFail(bucket, flowId);
         if (!flow.hasVersion(version)) {
             throw new FlowPersistenceException(format("Flow ID %s version %d was not found in bucket %s:%s.",
-                    flowId, version, bucket.getBucketName(), bucketId));
+                    flowId, version, bucket.getBucketDirName(), bucketId));
         }
 
         final Flow.FlowPointer flowPointer = flow.getFlowVersion(version);
@@ -178,7 +179,7 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
             return flowMetaData.getContent(flowPointer.getObjectId());
         } catch (IOException e) {
             throw new FlowPersistenceException(format("Failed to get content of Flow ID %s version %d in bucket %s:%s due to %s.",
-                    flowId, version, bucket.getBucketName(), bucketId, e), e);
+                    flowId, version, bucket.getBucketDirName(), bucketId, e), e);
         }
     }
 
@@ -196,12 +197,12 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
         final Flow.FlowPointer flowPointer = flow.getFlowVersion(latestVersion);
 
         // Delete the flow snapshot.
-        final File bucketDir = new File(flowStorageDir, bucket.getBucketName());
+        final File bucketDir = new File(flowStorageDir, bucket.getBucketDirName());
         final File flowSnapshotFile = new File(bucketDir, flowPointer.getFileName());
         if (flowSnapshotFile.exists()) {
             if (!flowSnapshotFile.delete()) {
                 throw new FlowPersistenceException(format("Failed to delete flow content for %s:%s in bucket %s:%s",
-                        flowPointer.getFileName(), flowId, bucket.getBucketName(), bucketId));
+                        flowPointer.getFileName(), flowId, bucket.getBucketDirName(), bucketId));
             }
         }
 
@@ -219,12 +220,12 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
 
             // Create a Git Commit.
             final String commitMessage = format("Deleted flow %s:%s in bucket %s:%s.",
-                    flowPointer.getFileName(), flowId, bucket.getBucketName(), bucketId);
+                    flowPointer.getFileName(), flowId, bucket.getBucketDirName(), bucketId);
             flowMetaData.commit(null, commitMessage, bucket, null);
 
         } catch (IOException|GitAPIException e) {
             throw new FlowPersistenceException(format("Failed to delete flow %s:%s in bucket %s:%s due to %s",
-                    flowPointer.getFileName(), flowId, bucket.getBucketName(), bucketId, e), e);
+                    flowPointer.getFileName(), flowId, bucket.getBucketDirName(), bucketId, e), e);
         }
 
     }
@@ -242,7 +243,7 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
         final Optional<Flow> flowOpt = bucket.getFlow(flowId);
         if (!flowOpt.isPresent()) {
             throw new FlowPersistenceException(format("Flow ID %s was not found in bucket %s:%s.",
-                    flowId, bucket.getBucketName(), bucket.getBucketId()));
+                    flowId, bucket.getBucketDirName(), bucket.getBucketId()));
         }
 
         return flowOpt.get();

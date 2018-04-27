@@ -135,9 +135,9 @@ public class TestGitFlowPersistenceProvider {
             // Create some Flows and keep the directory.
             final StandardFlowSnapshotContext.Builder contextBuilder = new StandardFlowSnapshotContext.Builder()
                     .bucketId("bucket-id-A")
-                    .bucketName("BucketA")
+                    .bucketName("C'est/Bucket A/です。")
                     .flowId("flow-id-1")
-                    .flowName("Flow1")
+                    .flowName("テスト_用/フロー#1\\[contains invalid chars]")
                     .author("unit-test-user")
                     .comments("Initial commit.")
                     .snapshotTimestamp(new Date().getTime())

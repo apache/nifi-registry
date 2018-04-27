@@ -216,13 +216,12 @@ class GitFlowMetaData {
                 }
             }
 
-            // E.g. DirA/DirB/DirC/bucket.yml -> DirC will be the bucket name.
-            final String[] pathNames = bucketFilePath.split("/");
-            final String bucketName = pathNames[pathNames.length - 2];
+            // Since the bucketName is restored from pathname, it can be different from the original bucket name when it sanitized.
+            final String bucketDirName = bucketFilePath.substring(0, bucketFilePath.lastIndexOf("/"));
 
             // Since commits are read in LIFO order, avoid old commits overriding the latest bucket name.
-            if (isEmpty(bucket.getBucketName())) {
-                bucket.setBucketName(bucketName);
+            if (isEmpty(bucket.getBucketDirName())) {
+                bucket.setBucketDirName(bucketDirName);
             }
 
             final Map<String, Object> flows = (Map<String, Object>) bucketMeta.get(FLOWS);
@@ -249,7 +248,7 @@ class GitFlowMetaData {
                 if (flowOpt.isPresent()) {
                     flow = flowOpt.get();
                 } else {
-                    logger.debug("Flow {} does not exist in bucket {}:{} any longer. It may have been deleted.", flowId, bucket.getBucketName(), bucket.getBucketId());
+                    logger.debug("Flow {} does not exist in bucket {}:{} any longer. It may have been deleted.", flowId, bucket.getBucketDirName(), bucket.getBucketId());
                     continue;
                 }
             }
@@ -264,7 +263,7 @@ class GitFlowMetaData {
                 final ObjectId objectId = flowSnapshotObjectIds.get(flowSnapshotFile.getPath());
                 if (objectId == null) {
                     logger.warn("Git object id for Flow {} version {} with path {} in bucket {}:{} was not found. Ignoring this entry.",
-                            flowId, version, flowSnapshotFile.getPath(), bucket.getBucketName(), bucket.getBucketId());
+                            flowId, version, flowSnapshotFile.getPath(), bucket.getBucketDirName(), bucket.getBucketId());
                     continue;
                 }
                 pointer.setGitRev(commit.getName());
@@ -337,7 +336,8 @@ class GitFlowMetaData {
 
             if (flowPointer != null) {
                 final RevTree tree = commit.getTree();
-                final String flowSnapshotPath = new File(bucket.getBucketName(), flowPointer.getFileName()).getPath();
+                final String bucketDirName = bucket.getBucketDirName();
+                final String flowSnapshotPath = new File(bucketDirName, flowPointer.getFileName()).getPath();
                 try (final TreeWalk treeWalk = new TreeWalk(gitRepo)) {
                     treeWalk.addTree(tree);
 
