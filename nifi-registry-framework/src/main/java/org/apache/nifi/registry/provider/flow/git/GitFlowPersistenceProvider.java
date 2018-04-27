@@ -79,6 +79,7 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
         try {
             flowStorageDir = new File(flowStorageDirValue);
             flowMetaData.loadGitRepository(flowStorageDir);
+            flowMetaData.startPushThread();
             logger.info("Configured GitFlowPersistenceProvider with Flow Storage Directory {}",
                     new Object[] {flowStorageDir.getAbsolutePath()});
         } catch (IOException|GitAPIException e) {

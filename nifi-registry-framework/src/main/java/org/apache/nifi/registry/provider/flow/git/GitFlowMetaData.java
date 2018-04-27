@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
@@ -47,6 +48,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -68,6 +75,8 @@ class GitFlowMetaData {
     private Repository gitRepo;
     private String remoteToPush;
     private CredentialsProvider credentialsProvider;
+
+    private final BlockingQueue<Long> pushQueue = new ArrayBlockingQueue<>(1);
 
     /**
      * Bucket ID to Bucket.
@@ -175,7 +184,49 @@ class GitFlowMetaData {
             } catch (NoHeadException e) {
                 logger.debug("'{}' does not have any commit yet. Starting with empty buckets.", gitProjectRootDir);
             }
+
         }
+    }
+
+    void startPushThread() {
+        // If successfully loaded, start pushing thread if necessary.
+        if (isEmpty(remoteToPush)) {
+            return;
+        }
+
+        final ThreadFactory threadFactory = new BasicThreadFactory.Builder()
+                .daemon(true).namingPattern(getClass().getSimpleName() + " Push thread").build();
+
+        // Use scheduled fixed delay to control the minimum interval between push activities.
+        // The necessity of executing push is controlled by offering messages to the pushQueue.
+        // If multiple commits are made within this time window, those are pushed by a single push execution.
+        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        executorService.scheduleWithFixedDelay(() -> {
+
+            final Long offeredTimestamp;
+            try {
+                offeredTimestamp = pushQueue.take();
+            } catch (InterruptedException e) {
+                logger.warn("Waiting for push request has been interrupted due to {}", e.getMessage(), e);
+                return;
+            }
+
+            logger.debug("Took a push request sent at {} to {}...", offeredTimestamp, remoteToPush);
+            final PushCommand pushCommand = new Git(gitRepo).push().setRemote(remoteToPush);
+            if (credentialsProvider != null) {
+                pushCommand.setCredentialsProvider(credentialsProvider);
+            }
+
+            try {
+                final Iterable<PushResult> pushResults = pushCommand.call();
+                for (PushResult pushResult : pushResults) {
+                    logger.debug(pushResult.getMessages());
+                }
+            } catch (GitAPIException e) {
+                logger.error(format("Failed to push commits to %s due to %s", remoteToPush, e), e);
+            }
+
+        }, 10, 10, TimeUnit.SECONDS);
     }
 
     @SuppressWarnings("unchecked")
@@ -361,15 +412,10 @@ class GitFlowMetaData {
 
             // Push if necessary.
             if (!isEmpty(remoteToPush)) {
-                logger.debug("Pushing to {}...", remoteToPush);
-                final PushCommand pushCommand = new Git(gitRepo).push().setRemote(remoteToPush);
-                if (credentialsProvider != null) {
-                    pushCommand.setCredentialsProvider(credentialsProvider);
-                }
-
-                final Iterable<PushResult> pushResults = pushCommand.call();
-                for (PushResult pushResult : pushResults) {
-                    logger.debug(pushResult.getMessages());
+                // Use different thread since it takes longer.
+                final long offeredTimestamp = System.currentTimeMillis();
+                if (pushQueue.offer(offeredTimestamp)) {
+                    logger.debug("New push request is offered at {}.", offeredTimestamp);
                 }
             }
 
