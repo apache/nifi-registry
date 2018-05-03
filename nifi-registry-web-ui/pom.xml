@@ -282,8 +282,7 @@
                         </goals>
                         <phase>initialize</phase>
                         <configuration>
-                            <nodeVersion>v6.11.1</nodeVersion>
-                            <npmVersion>3.10.10</npmVersion>
+                            <nodeVersion>v8.10.0</nodeVersion>
                         </configuration>
                     </execution>
                     <!--
