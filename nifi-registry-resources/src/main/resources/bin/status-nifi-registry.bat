@@ -33,13 +33,15 @@ goto startNiFiRegistry
 :startNiFiRegistry
 set NIFI_REGISTRY_ROOT=%~dp0..\
 pushd "%NIFI_REGISTRY_ROOT%"
-set LIB_DIR=lib\bootstrap
+set LIB_DIR=%NIFI_REGISTRY_ROOT%\lib
+set SHARED_DIR=%NIFI_REGISTRY_ROOT%\lib\shared
+set BOOTSTRAP_DIR=%NIFI_REGISTRY_ROOT%\lib\bootstrap
 set CONF_DIR=conf
 
 set BOOTSTRAP_CONF_FILE=%CONF_DIR%\bootstrap.conf
 set JAVA_ARGS=-Dorg.apache.nifi.registry.bootstrap.config.file=%BOOTSTRAP_CONF_FILE%
 
-set JAVA_PARAMS=-cp %LIB_DIR%\* -Xms12m -Xmx24m %JAVA_ARGS% org.apache.nifi.registry.NiFiRegistry
+set JAVA_PARAMS=-cp %LIB_DIR%\*;%SHARED_DIR%\*;%BOOTSTRAP_DIR%\* -Xms12m -Xmx24m %JAVA_ARGS% org.apache.nifi.registry.NiFiRegistry
 set BOOTSTRAP_ACTION=status
 
 cmd.exe /C "%JAVA_EXE%" %JAVA_PARAMS% %BOOTSTRAP_ACTION%
