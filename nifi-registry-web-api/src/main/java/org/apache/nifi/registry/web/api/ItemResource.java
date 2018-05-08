@@ -25,6 +25,7 @@ import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -73,8 +74,9 @@ public class ItemResource extends AuthorizableApplicationResource {
             final RegistryService registryService,
             final LinkService linkService,
             final PermissionsService permissionsService,
-            final AuthorizationService authorizationService) {
-        super(authorizationService);
+            final AuthorizationService authorizationService,
+            final EventService eventService) {
+        super(authorizationService, eventService);
         this.registryService = registryService;
         this.linkService = linkService;
         this.permissionsService = permissionsService;

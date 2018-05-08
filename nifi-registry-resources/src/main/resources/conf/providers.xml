@@ -31,11 +31,18 @@
     -->
 
     <!--
-    <flowHookProvider>
-    	<class>org.apache.nifi.registry.provider.hook.ScriptFlowHookProvider</class>
+    <eventHookProvider>
+    	<class>org.apache.nifi.registry.provider.hook.ScriptEventHookProvider</class>
     	<property name="Script Path"></property>
     	<property name="Working Directory"></property>
-    </flowHookProvider>
+    </eventHookProvider>
+    -->
+
+    <!-- This will log all events to a separate file specified by the EVENT_APPENDER in logback.xml -->
+    <!--
+    <eventHookProvider>
+        <class>org.apache.nifi.registry.provider.hook.LoggingEventHookProvider</class>
+    </eventHookProvider>
     -->
 
 </providers>

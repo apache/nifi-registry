@@ -21,10 +21,10 @@
         <property name="Flow Property 2">flow bar</property>
     </flowPersistenceProvider>
 
-    <flowHookProvider>
-    	<class>org.apache.nifi.registry.provider.hook.ScriptFlowHookProvider</class>
+    <eventHookProvider>
+    	<class>org.apache.nifi.registry.provider.hook.ScriptEventHookProvider</class>
     	<property name="Script Path"></property>
     	<property name="Working Directory"></property>
-    </flowHookProvider>
+    </eventHookProvider>
 
 </providers>

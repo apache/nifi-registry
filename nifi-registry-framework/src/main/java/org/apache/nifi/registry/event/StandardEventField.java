@@ -14,33 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
+package org.apache.nifi.registry.event;
 
-import java.util.List;
-
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.hook.EventHookProvider;
+import org.apache.commons.lang3.Validate;
+import org.apache.nifi.registry.hook.EventField;
+import org.apache.nifi.registry.hook.EventFieldName;
 
 /**
- * A factory for obtaining the configured providers.
+ * Standard implementation of EventField.
  */
-public interface ProviderFactory {
+public class StandardEventField implements EventField {
 
-    /**
-     * Initialize the factory.
-     *
-     * @throws ProviderFactoryException if an error occurs during initialization
-     */
-    void initialize() throws ProviderFactoryException;
+    private final EventFieldName name;
 
-    /**
-     * @return the configured FlowPersistenceProvider
-     */
-    FlowPersistenceProvider getFlowPersistenceProvider();
+    private final String value;
 
-    /**
-     * @return the configured FlowHookProviders
-     */
-    List<EventHookProvider> getEventHookProviders();
+    public StandardEventField(final EventFieldName name, final String value) {
+        this.name = name;
+        this.value = value;
+        Validate.notNull(this.name);
+        Validate.notBlank(this.value);
+    }
+
+    @Override
+    public EventFieldName getName() {
+        return name;
+    }
+
+    @Override
+    public String getValue() {
+        return value;
+    }
 
 }

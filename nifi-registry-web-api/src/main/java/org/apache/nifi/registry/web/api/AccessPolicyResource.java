@@ -27,6 +27,7 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.nifi.registry.authorization.AccessPolicy;
 import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.Resource;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
@@ -73,8 +74,9 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Autowired
     public AccessPolicyResource(
             Authorizer authorizer,
-            AuthorizationService authorizationService) {
-        super(authorizationService);
+            AuthorizationService authorizationService,
+            EventService eventService) {
+        super(authorizationService, eventService);
         this.authorizer = authorizer;
     }
 

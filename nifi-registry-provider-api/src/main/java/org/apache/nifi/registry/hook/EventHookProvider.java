@@ -14,33 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
+package org.apache.nifi.registry.hook;
 
-import java.util.List;
-
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.hook.EventHookProvider;
+import org.apache.nifi.registry.provider.Provider;
 
 /**
- * A factory for obtaining the configured providers.
+ * An extension point that will be passed events produced by actions take in the registry.
+ *
+ * The list of event types can be found in {@link org.apache.nifi.registry.hook.EventType}.
+ *
+ * NOTE: Although this interface is intended to be an extension point, it is not yet considered stable and thus may
+ * change across releases until the registry matures.
  */
-public interface ProviderFactory {
+public interface EventHookProvider extends Provider {
 
     /**
-     * Initialize the factory.
+     * Handles the given event.
      *
-     * @throws ProviderFactoryException if an error occurs during initialization
+     * @param event the event to handle
+     * @throws EventHookException if an error occurs handling the event
      */
-    void initialize() throws ProviderFactoryException;
-
-    /**
-     * @return the configured FlowPersistenceProvider
-     */
-    FlowPersistenceProvider getFlowPersistenceProvider();
-
-    /**
-     * @return the configured FlowHookProviders
-     */
-    List<EventHookProvider> getEventHookProviders();
+    void handle(Event event) throws EventHookException;
 
 }

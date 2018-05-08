@@ -14,33 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
+package org.apache.nifi.registry.hook;
 
 import java.util.List;
 
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.hook.EventHookProvider;
-
 /**
- * A factory for obtaining the configured providers.
+ * An event that will be passed to EventHookProviders.
  */
-public interface ProviderFactory {
+public interface Event {
 
     /**
-     * Initialize the factory.
+     * @return the type of the event
+     */
+    EventType getEventType();
+
+    /**
+     * @return the fields of the event in the order they were added to the event
+     */
+    List<EventField> getFields();
+
+    /**
+     * @param fieldName the name of the field to return
+     * @return the EventField with the given name, or null if it does not exist
+     */
+    EventField getField(EventFieldName fieldName);
+
+    /**
+     * Will be called before publishing the event to ensure the event contains the required
+     * fields for the given event type in the order specified by the type.
      *
-     * @throws ProviderFactoryException if an error occurs during initialization
+     * @throws IllegalStateException if the event does not contain the required fields
      */
-    void initialize() throws ProviderFactoryException;
-
-    /**
-     * @return the configured FlowPersistenceProvider
-     */
-    FlowPersistenceProvider getFlowPersistenceProvider();
-
-    /**
-     * @return the configured FlowHookProviders
-     */
-    List<EventHookProvider> getEventHookProviders();
+    void validate() throws IllegalStateException;
 
 }

@@ -42,7 +42,6 @@ import org.apache.nifi.registry.flow.diff.FlowComparison;
 import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
-import org.apache.nifi.registry.hook.FlowHookProvider;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.slf4j.Logger;
@@ -85,7 +84,6 @@ public class RegistryService {
 
     private final MetadataService metadataService;
     private final FlowPersistenceProvider flowPersistenceProvider;
-    private final List<FlowHookProvider> flowHookProviders;
     private final Serializer<VersionedProcessGroup> processGroupSerializer;
     private final Validator validator;
 
@@ -96,12 +94,10 @@ public class RegistryService {
     @Autowired
     public RegistryService(final MetadataService metadataService,
                            final FlowPersistenceProvider flowPersistenceProvider,
-                           final List<FlowHookProvider> flowHookProviders,
                            final Serializer<VersionedProcessGroup> processGroupSerializer,
                            final Validator validator) {
         this.metadataService = metadataService;
         this.flowPersistenceProvider = flowPersistenceProvider;
-        this.flowHookProviders = flowHookProviders;
         this.processGroupSerializer = processGroupSerializer;
         this.validator = validator;
         Validate.notNull(this.metadataService);
@@ -138,17 +134,6 @@ public class RegistryService {
             }
 
             final BucketEntity createdBucket = metadataService.createBucket(DataModelMapper.map(bucket));
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postCreateBucket(createdBucket.getId());
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
-
             return DataModelMapper.map(createdBucket);
         } finally {
             writeLock.unlock();
@@ -240,17 +225,6 @@ public class RegistryService {
 
             // perform the actual update
             final BucketEntity updatedBucket = metadataService.updateBucket(existingBucketById);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postUpdateBucket(existingBucketById.getId());
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
-
             return DataModelMapper.map(updatedBucket);
         } finally {
             writeLock.unlock();
@@ -278,16 +252,6 @@ public class RegistryService {
 
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
             metadataService.deleteBucket(existingBucket);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postDeleteBucket(existingBucket.getId());
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
 
             return DataModelMapper.map(existingBucket);
         } finally {
@@ -392,17 +356,6 @@ public class RegistryService {
 
             // persist the flow and return the created entity
             final FlowEntity createdFlow = metadataService.createFlow(flowEntity);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postCreateFlow(existingBucket.getId(), createdFlow.getId());
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
-
             return DataModelMapper.map(existingBucket, createdFlow);
         } finally {
             writeLock.unlock();
@@ -544,17 +497,6 @@ public class RegistryService {
 
             // perform the actual update
             final FlowEntity updatedFlow = metadataService.updateFlow(existingFlow);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postUpdateFlow(existingFlow.getBucketId(), existingFlow.getId());
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
-
             return DataModelMapper.map(existingBucket, updatedFlow);
         } finally {
             writeLock.unlock();
@@ -594,16 +536,6 @@ public class RegistryService {
 
             // now delete the flow from the metadata provider
             metadataService.deleteFlow(existingFlow);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postDeleteFlow(existingFlow.getBucketId(), existingFlow.getId());
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
 
             return DataModelMapper.map(existingBucket, existingFlow);
         } finally {
@@ -697,16 +629,6 @@ public class RegistryService {
                 throw new ResourceNotFoundException("Versioned flow does not exist for identifier " + snapshotMetadata.getFlowIdentifier());
             }
             final VersionedFlow updatedVersionedFlow = DataModelMapper.map(existingBucket, updatedFlow);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postCreateFlowVersion(context);
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
 
             flowSnapshot.setBucket(bucket);
             flowSnapshot.setFlow(updatedVersionedFlow);
@@ -957,17 +879,6 @@ public class RegistryService {
 
             // delete the snapshot itself
             metadataService.deleteFlowSnapshot(snapshotEntity);
-
-            // call the post-event hook
-            for(FlowHookProvider flowHookProvider : flowHookProviders) {
-                try {
-                    flowHookProvider.postDeleteFlowVersion(bucketIdentifier, flowIdentifier, version);
-                } catch (Exception e) {
-                    // we don't want to throw anything here, hook are provided on best effort
-                    LOGGER.error("Error while calling post-event hook", e);
-                }
-            }
-
             return DataModelMapper.map(existingBucket, snapshotEntity);
         } finally {
             writeLock.unlock();

@@ -27,6 +27,7 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
@@ -70,8 +71,8 @@ public class TenantResource extends AuthorizableApplicationResource {
     private Authorizer authorizer;
 
     @Autowired
-    public TenantResource(AuthorizationService authorizationService) {
-        super(authorizationService);
+    public TenantResource(AuthorizationService authorizationService, EventService eventService) {
+        super(authorizationService, eventService);
         authorizer = authorizationService.getAuthorizer();
     }
 
