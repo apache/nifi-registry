@@ -35,7 +35,6 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     private final String comments;
     private final String author;
     private final long snapshotTimestamp;
-    private final String author;
 
     private StandardFlowSnapshotContext(final Builder builder) {
         this.bucketId = builder.bucketId;
@@ -46,7 +45,6 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         this.comments = builder.comments;
         this.author = builder.author;
         this.snapshotTimestamp = builder.snapshotTimestamp;
-        this.author = builder.author;
 
         Validate.notBlank(bucketId);
         Validate.notBlank(bucketName);
@@ -109,7 +107,6 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         private String comments;
         private String author;
         private long snapshotTimestamp;
-        private String author;
 
         public Builder() {
 
@@ -124,7 +121,6 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
             comments(snapshotMetadata.getComments());
             author(snapshotMetadata.getAuthor());
             snapshotTimestamp(snapshotMetadata.getTimestamp());
-            author(snapshotMetadata.getAuthor());
         }
 
         public Builder bucketId(final String bucketId) {
@@ -164,11 +160,6 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
 
         public Builder snapshotTimestamp(final long snapshotTimestamp) {
             this.snapshotTimestamp = snapshotTimestamp;
-            return this;
-        }
-
-        public Builder author(final String author) {
-            this.author = author;
             return this;
         }
 

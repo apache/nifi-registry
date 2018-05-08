@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.flow.FlowSnapshotContext;
-import org.apache.nifi.registry.hook.FlowHookEvent;
-import org.apache.nifi.registry.hook.FlowHookException;
-import org.apache.nifi.registry.hook.FlowHookProvider;
+import org.apache.nifi.registry.hook.Event;
+import org.apache.nifi.registry.hook.EventField;
+import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
@@ -34,77 +33,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A FlowHookProvider that is used to execute a script before a flow snapshot version is committed.
+ * A EventHookProvider that is used to execute a script to handle the event.
  */
-public class ScriptFlowHookProvider implements FlowHookProvider {
+public class ScriptEventHookProvider implements EventHookProvider {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(ScriptFlowHookProvider.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(ScriptEventHookProvider.class);
     static final String SCRIPT_PATH_PROP = "Script Path";
     static final String SCRIPT_WORKDIR_PROP = "Working Directory";
     private File scriptFile;
     private File workDirFile;
 
     @Override
-    public void postCreateBucket(String bucketId) throws FlowHookException {
-        this.executeScript(FlowHookEvent.CREATE_BUCKET, bucketId, null, null, null, null);
-    }
-
-    @Override
-    public void postCreateFlow(String bucketId, String flowId) throws FlowHookException {
-        this.executeScript(FlowHookEvent.CREATE_FLOW, bucketId, flowId, null, null, null);
-    }
-
-    @Override
-    public void postDeleteBucket(String bucketId) throws FlowHookException {
-        this.executeScript(FlowHookEvent.DELETE_BUCKET, bucketId, null, null, null, null);
-    }
-
-    @Override
-    public void postDeleteFlow(String bucketId, String flowId) throws FlowHookException {
-        this.executeScript(FlowHookEvent.DELETE_FLOW, bucketId, flowId, null, null, null);
-    }
-
-    @Override
-    public void postDeleteFlowVersion(String bucketId, String flowId, int version) throws FlowHookException {
-        this.executeScript(FlowHookEvent.DELETE_FLOW, bucketId, flowId, Integer.toString(version), null, null);
-    }
-
-    @Override
-    public void postUpdateBucket(String bucketId) throws FlowHookException {
-        this.executeScript(FlowHookEvent.UPDATE_BUCKET, bucketId, null, null, null, null);
-    }
-
-    @Override
-    public void postUpdateFlow(String bucketId, String flowId) throws FlowHookException {
-        this.executeScript(FlowHookEvent.UPDATE_FLOW, bucketId, flowId, null, null, null);
-    }
-
-    @Override
-    public void postCreateFlowVersion(final FlowSnapshotContext flowSnapshotContext) throws FlowHookException {
-        this.executeScript(FlowHookEvent.CREATE_VERSION, flowSnapshotContext.getBucketId(), flowSnapshotContext.getFlowId(),
-                Integer.toString(flowSnapshotContext.getVersion()), flowSnapshotContext.getComments(), flowSnapshotContext.getAuthor());
-    }
-
-    private void executeScript(final FlowHookEvent eventType, String bucketId, String flowId, String version, String comment, String author) {
+    public void handle(final Event event) {
         List<String> command = new ArrayList<String>();
         command.add(scriptFile.getAbsolutePath());
-        command.add(eventType.name());
-        command.add(bucketId);
+        command.add(event.getEventType().name());
 
-        if(flowId != null) {
-            command.add(flowId);
-        }
-
-        if(version != null) {
-            command.add(version);
-        }
-
-        if(comment != null) {
-            command.add(comment);
-        }
-
-        if(author != null) {
-            command.add(author);
+        for (EventField arg : event.getFields()) {
+            command.add(arg.getValue());
         }
 
         final String commandString = StringUtils.join(command, " ");
@@ -143,7 +89,7 @@ public class ScriptFlowHookProvider implements FlowHookProvider {
 
         scriptFile = new File(scripPath);
         if(scriptFile.isFile() && scriptFile.canExecute()) {
-            LOGGER.info("Configured ScriptFlowHookProvider with script {}", new Object[] {scriptFile.getAbsolutePath()});
+            LOGGER.info("Configured ScriptEventHookProvider with script {}", new Object[] {scriptFile.getAbsolutePath()});
         } else {
             throw new ProviderCreationException("The script file " + scriptFile.getAbsolutePath() + " cannot be executed.");
         }

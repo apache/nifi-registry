@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.nifi.registry.hook;
 
-public enum FlowHookEvent {
-    CREATE_BUCKET,
-    CREATE_FLOW,
-    CREATE_VERSION,
+/**
+ * Enumeration of possible field names for an EventField.
+ */
+public enum EventFieldName {
 
-    UPDATE_BUCKET,
-    UPDATE_FLOW,
+    BUCKET_ID,
+    FLOW_ID,
+    VERSION,
+    USER,
+    COMMENT;
 
-    DELETE_BUCKET,
-    DELETE_FLOW,
-    DELETE_VERSION;
 }

@@ -17,6 +17,9 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.apache.nifi.registry.event.EventService;
+import org.apache.nifi.registry.hook.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +54,17 @@ public class ApplicationResource {
 
     @Context
     private UriInfo uriInfo;
+
+    private final EventService eventService;
+
+    public ApplicationResource(final EventService eventService) {
+        this.eventService = eventService;
+        Validate.notNull(this.eventService);
+    }
+
+    protected void publish(final Event event) {
+        eventService.publish(event);
+    }
 
     protected String generateResourceUri(final String... path) {
         final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();

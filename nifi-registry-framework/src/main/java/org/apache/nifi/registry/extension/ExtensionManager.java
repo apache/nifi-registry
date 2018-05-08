@@ -17,12 +17,12 @@
 package org.apache.nifi.registry.extension;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.security.authentication.IdentityProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.hook.FlowHookProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class ExtensionManager {
         classes.add(AccessPolicyProvider.class);
         classes.add(Authorizer.class);
         classes.add(IdentityProvider.class);
-        classes.add(FlowHookProvider.class);
+        classes.add(EventHookProvider.class);
         EXTENSION_CLASSES = Collections.unmodifiableList(classes);
     }
 

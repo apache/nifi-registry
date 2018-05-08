@@ -18,7 +18,7 @@ package org.apache.nifi.registry.provider;
 
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.hook.FlowHookProvider;
+import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.generated.Property;
 import org.apache.nifi.registry.provider.generated.Providers;
@@ -74,7 +74,7 @@ public class StandardProviderFactory implements ProviderFactory {
     private final AtomicReference<Providers> providersHolder = new AtomicReference<>(null);
 
     private FlowPersistenceProvider flowPersistenceProvider;
-    private List<FlowHookProvider> flowHookProviders;
+    private List<EventHookProvider> eventHookProviders;
 
     @Autowired
     public StandardProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
@@ -156,52 +156,52 @@ public class StandardProviderFactory implements ProviderFactory {
 
     @Bean
     @Override
-    public List<FlowHookProvider> getFlowHookProviders() {
-        if (flowHookProviders == null) {
-            flowHookProviders = new ArrayList<FlowHookProvider>();
+    public List<EventHookProvider> getEventHookProviders() {
+        if (eventHookProviders == null) {
+            eventHookProviders = new ArrayList<>();
 
             if (providersHolder.get() == null) {
                 throw new ProviderFactoryException("ProviderFactory must be initialized before obtaining a Provider");
             }
 
             final Providers providers = providersHolder.get();
-            final List<org.apache.nifi.registry.provider.generated.Provider> jaxbFlowHookProvider = providers.getFlowHookProvider();
+            final List<org.apache.nifi.registry.provider.generated.Provider> jaxbHookProvider = providers.getEventHookProvider();
 
-            if(jaxbFlowHookProvider == null || jaxbFlowHookProvider.isEmpty()) {
+            if(jaxbHookProvider == null || jaxbHookProvider.isEmpty()) {
                 // no hook provided
-                return flowHookProviders;
+                return eventHookProviders;
             }
 
-            for (org.apache.nifi.registry.provider.generated.Provider flowHookProvider : jaxbFlowHookProvider) {
+            for (org.apache.nifi.registry.provider.generated.Provider hookProvider : jaxbHookProvider) {
 
-                final String flowHookProviderClassName = flowHookProvider.getClazz();
-                FlowHookProvider hook;
+                final String hookProviderClassName = hookProvider.getClazz();
+                EventHookProvider hook;
 
                 try {
-                    final ClassLoader classLoader = extensionManager.getExtensionClassLoader(flowHookProviderClassName);
+                    final ClassLoader classLoader = extensionManager.getExtensionClassLoader(hookProviderClassName);
                     if (classLoader == null) {
-                        throw new IllegalStateException("Extension not found in any of the configured class loaders: " + flowHookProviderClassName);
+                        throw new IllegalStateException("Extension not found in any of the configured class loaders: " + hookProviderClassName);
                     }
 
-                    final Class<?> rawFlowHookProviderClass = Class.forName(flowHookProviderClassName, true, classLoader);
-                    final Class<? extends FlowHookProvider> flowHookProviderClass = rawFlowHookProviderClass.asSubclass(FlowHookProvider.class);
+                    final Class<?> rawHookProviderClass = Class.forName(hookProviderClassName, true, classLoader);
+                    final Class<? extends EventHookProvider> hookProviderClass = rawHookProviderClass.asSubclass(EventHookProvider.class);
 
-                    final Constructor constructor = flowHookProviderClass.getConstructor();
-                    hook = (FlowHookProvider) constructor.newInstance();
+                    final Constructor constructor = hookProviderClass.getConstructor();
+                    hook = (EventHookProvider) constructor.newInstance();
 
-                    LOGGER.info("Instantiated FlowHookProvider with class name {}", new Object[] {flowHookProviderClassName});
+                    LOGGER.info("Instantiated EventHookProvider with class name {}", new Object[] {hookProviderClassName});
                 } catch (Exception e) {
-                    throw new ProviderFactoryException("Error creating FlowHookProvider with class name: " + flowHookProviderClassName, e);
+                    throw new ProviderFactoryException("Error creating EventHookProvider with class name: " + hookProviderClassName, e);
                 }
 
-                final ProviderConfigurationContext configurationContext = createConfigurationContext(flowHookProvider.getProperty());
+                final ProviderConfigurationContext configurationContext = createConfigurationContext(hookProvider.getProperty());
                 hook.onConfigured(configurationContext);
-                flowHookProviders.add(hook);
-                LOGGER.info("Configured FlowHookProvider with class name {}", new Object[] {flowHookProviderClassName});
+                eventHookProviders.add(hook);
+                LOGGER.info("Configured EventHookProvider with class name {}", new Object[] {hookProviderClassName});
             }
         }
 
-        return flowHookProviders;
+        return eventHookProviders;
     }
 
     private ProviderConfigurationContext createConfigurationContext(final List<Property> configProperties) {

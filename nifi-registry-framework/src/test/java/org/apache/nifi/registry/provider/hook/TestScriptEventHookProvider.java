@@ -27,7 +27,7 @@ import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class TestScriptFlowHookProvider {
+public class TestScriptEventHookProvider {
 
     @Test(expected = ProviderCreationException.class)
     public void testBadScriptProvider() {
@@ -39,7 +39,7 @@ public class TestScriptFlowHookProvider {
 
         final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
         providerFactory.initialize();
-        providerFactory.getFlowHookProviders();
+        providerFactory.getEventHookProviders();
     }
 
 }

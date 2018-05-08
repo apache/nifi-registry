@@ -110,8 +110,8 @@
         <jax.rs.api.version>2.1</jax.rs.api.version>
         <jersey.version>2.26</jersey.version>
         <jackson.version>2.9.2</jackson.version>
-        <spring.boot.version>2.0.0.M7</spring.boot.version>
-        <spring.security.version>5.0.0.RELEASE</spring.security.version>
+        <spring.boot.version>2.0.2.RELEASE</spring.boot.version>
+        <spring.security.version>5.0.5.RELEASE</spring.security.version>
         <flyway.version>4.2.0</flyway.version>
     </properties>
 

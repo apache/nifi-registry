@@ -27,6 +27,8 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.event.EventFactory;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
@@ -83,8 +85,9 @@ public class BucketResource extends AuthorizableApplicationResource {
             final RegistryService registryService,
             final LinkService linkService,
             final PermissionsService permissionsService,
-            final AuthorizationService authorizationService) {
-        super(authorizationService);
+            final AuthorizationService authorizationService,
+            final EventService eventService) {
+        super(authorizationService, eventService);
         this.registryService = registryService;
         this.linkService = linkService;
         this.permissionsService = permissionsService;
@@ -110,7 +113,10 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiParam(value = "The bucket to create", required = true)
             final Bucket bucket) {
         authorizeAccess(RequestAction.WRITE);
+
         final Bucket createdBucket = registryService.createBucket(bucket);
+        publish(EventFactory.bucketCreated(createdBucket));
+
         permissionsService.populateBucketPermissions(createdBucket);
         linkService.populateBucketLinks(createdBucket);
         return Response.status(Response.Status.OK).entity(createdBucket).build();
@@ -224,6 +230,8 @@ public class BucketResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         final Bucket updatedBucket = registryService.updateBucket(bucket);
+        publish(EventFactory.bucketUpdated(updatedBucket));
+
         permissionsService.populateBucketPermissions(updatedBucket);
         linkService.populateBucketLinks(updatedBucket);
         return Response.status(Response.Status.OK).entity(updatedBucket).build();
@@ -256,7 +264,10 @@ public class BucketResource extends AuthorizableApplicationResource {
             throw new BadRequestException("Bucket id cannot be blank");
         }
         authorizeBucketAccess(RequestAction.DELETE, bucketId);
+
         final Bucket deletedBucket = registryService.deleteBucket(bucketId);
+        publish(EventFactory.bucketDeleted(deletedBucket));
+
         return Response.status(Response.Status.OK).entity(deletedBucket).build();
     }
 

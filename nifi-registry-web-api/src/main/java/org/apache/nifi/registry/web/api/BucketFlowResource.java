@@ -27,6 +27,8 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
+import org.apache.nifi.registry.event.EventFactory;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -76,8 +78,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             final RegistryService registryService,
             final LinkService linkService,
             final PermissionsService permissionsService,
-            final AuthorizationService authorizationService) {
-        super(authorizationService);
+            final AuthorizationService authorizationService,
+            final EventService eventService) {
+        super(authorizationService, eventService);
         this.registryService = registryService;
         this.linkService = linkService;
         this.permissionsService =permissionsService;
@@ -111,7 +114,10 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
         verifyPathParamsMatchBody(bucketId, flow);
+
         final VersionedFlow createdFlow = registryService.createFlow(bucketId, flow);
+        publish(EventFactory.flowCreated(createdFlow));
+
         permissionsService.populateItemPermissions(createdFlow);
         linkService.populateFlowLinks(createdFlow);
         return Response.status(Response.Status.OK).entity(createdFlow).build();
@@ -222,6 +228,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         setBucketItemMetadataIfMissing(bucketId, flowId, flow);
 
         final VersionedFlow updatedFlow = registryService.updateFlow(flow);
+        publish(EventFactory.flowUpdated(updatedFlow));
         permissionsService.populateItemPermissions(updatedFlow);
         linkService.populateFlowLinks(updatedFlow);
 
@@ -256,6 +263,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.DELETE, bucketId);
         final VersionedFlow deletedFlow = registryService.deleteFlow(bucketId, flowId);
+        publish(EventFactory.flowDeleted(deletedFlow));
         return Response.status(Response.Status.OK).entity(deletedFlow).build();
     }
 
@@ -300,6 +308,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         snapshot.getSnapshotMetadata().setAuthor(userIdentity);
 
         final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
+        publish(EventFactory.flowVersionCreated(createdSnapshot));
+
         if (createdSnapshot.getSnapshotMetadata() != null) {
             linkService.populateSnapshotLinks(createdSnapshot.getSnapshotMetadata());
         }

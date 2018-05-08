@@ -17,15 +17,15 @@
 package org.apache.nifi.registry.hook;
 
 /**
- * An Exception for errors encountered when a FlowHookProvider executes an action before/after a commit.
+ * An Exception for errors encountered when a EventHookProvider executes an action before/after a commit.
  */
-public class FlowHookException extends RuntimeException {
+public class EventHookException extends RuntimeException {
 
-    public FlowHookException(String message) {
+    public EventHookException(String message) {
         super(message);
     }
 
-    public FlowHookException(String message, Throwable cause) {
+    public EventHookException(String message, Throwable cause) {
         super(message, cause);
     }
 }
