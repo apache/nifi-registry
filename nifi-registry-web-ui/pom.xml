@@ -409,7 +409,7 @@
                     <excludes combine.children="append">
                         <exclude>nbactions.xml</exclude>
                         <exclude>src/main/frontend/package.json</exclude>
-                        <exclude>src/main/platform/core/package.json</exclude>
+                        <exclude>src/main/frontend/package-lock.json</exclude>
                         <exclude>src/main/platform/core/README.md</exclude>
                     </excludes>
                 </configuration>
