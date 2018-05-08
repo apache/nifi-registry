@@ -24,7 +24,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.lib.UserConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -361,8 +360,7 @@ class GitFlowMetaData {
 
     /**
      * Create a Git commit.
-     * @param author The name of a user who created the snapshot, it will be used as the author name.
-     *               If not specified, the one in Git config is used.
+     * @param author The name of a NiFi Registry user who created the snapshot. It will be added to the commit message.
      * @param message Commit message.
      * @param bucket A bucket to commit.
      * @param flowPointer A flow pointer for the flow snapshot which is updated.
@@ -377,12 +375,10 @@ class GitFlowMetaData {
             // Execute add command again for deleted files (if any).
             git.add().addFilepattern(".").setUpdate(true).call();
 
-            final UserConfig userConfig = gitRepo.getConfig().get(UserConfig.KEY);
-            final String authorName = isEmpty(author) ? userConfig.getAuthorName() : author;
-            final String authorEmail = userConfig.getAuthorEmail();
+            final String commitMessage = isEmpty(author) ? message
+                    : format("%s\n\nBy NiFi Registry user: %s", message, author);
             final RevCommit commit = git.commit()
-                    .setAuthor(authorName, authorEmail)
-                    .setMessage(message)
+                    .setMessage(commitMessage)
                     .call();
 
             if (flowPointer != null) {

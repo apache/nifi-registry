@@ -24,6 +24,7 @@ import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -96,6 +97,10 @@ public class TestGitFlowPersistenceProvider {
 
             try (final Git git = Git.init().setDirectory(gitDir).call()) {
                 logger.debug("Initiated a git repository {}", git);
+                final StoredConfig config = git.getRepository().getConfig();
+                config.setString("user", null, "name", "git-user");
+                config.setString("user", null, "email", "git-user@example.com");
+                config.save();
                 gitConsumer.accept(git);
             }
 
@@ -172,16 +177,16 @@ public class TestGitFlowPersistenceProvider {
             // Assert commit.
             final AtomicInteger commitCount = new AtomicInteger(0);
             final String[] commitMessages = {
-                    "5th commit.",
-                    "4th commit.",
-                    "3rd commit.",
-                    "2nd commit.",
-                    "Initial commit."
+                    "5th commit.\n\nBy NiFi Registry user: unit-test-user",
+                    "4th commit.\n\nBy NiFi Registry user: unit-test-user",
+                    "3rd commit.\n\nBy NiFi Registry user: unit-test-user",
+                    "2nd commit.\n\nBy NiFi Registry user: unit-test-user",
+                    "Initial commit.\n\nBy NiFi Registry user: unit-test-user"
             };
             for (RevCommit commit : g.log().call()) {
-                assertEquals("unit-test-user", commit.getAuthorIdent().getName());
+                assertEquals("git-user", commit.getAuthorIdent().getName());
                 final int commitIndex = commitCount.getAndIncrement();
-                assertEquals(commitMessages[commitIndex], commit.getShortMessage());
+                assertEquals(commitMessages[commitIndex], commit.getFullMessage());
             }
             assertEquals(commitMessages.length, commitCount.get());
         }, p -> {
@@ -220,8 +225,7 @@ public class TestGitFlowPersistenceProvider {
                     "Initial commit."
             };
             for (RevCommit commit : g.log().call()) {
-                // TODO: We don't support author for delete operations yet. The author is a global configured author here.
-                // assertEquals("unit-test-user", commit.getAuthorIdent().getName());
+                assertEquals("git-user", commit.getAuthorIdent().getName());
                 final int commitIndex = commitCount.getAndIncrement();
                 assertEquals(commitMessages[commitIndex], commit.getShortMessage());
             }
@@ -269,8 +273,7 @@ public class TestGitFlowPersistenceProvider {
                     "Initial commit."
             };
             for (RevCommit commit : g.log().call()) {
-                // TODO: We don't support author for delete operations yet. The author is a global configured author here.
-                // assertEquals("unit-test-user", commit.getAuthorIdent().getName());
+                assertEquals("git-user", commit.getAuthorIdent().getName());
                 final int commitIndex = commitCount.getAndIncrement();
                 assertEquals(commitMessages[commitIndex], commit.getShortMessage());
             }
