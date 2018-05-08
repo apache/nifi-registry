@@ -212,7 +212,7 @@ public class TestGitFlowPersistenceProvider {
             // Assert commit.
             final AtomicInteger commitCount = new AtomicInteger(0);
             final String[] commitMessages = {
-                    "Deleted flow FlowTwo.snapshot:flow-id-2 in bucket New name for Bucket A:bucket-id-A.",
+                    "Deleted flow FlowTwo.snapshot:flow-id-2 in bucket New_name_for_Bucket_A:bucket-id-A.",
                     "5th commit.",
                     "4th commit.",
                     "3rd commit.",
@@ -242,13 +242,13 @@ public class TestGitFlowPersistenceProvider {
             try {
                 p.getFlowContent("bucket-id-A", "flow-id-2", 1);
             } catch (FlowPersistenceException e) {
-                assertEquals("Flow ID flow-id-2 was not found in bucket New name for Bucket A:bucket-id-A.", e.getMessage());
+                assertEquals("Flow ID flow-id-2 was not found in bucket New_name_for_Bucket_A:bucket-id-A.", e.getMessage());
             }
 
             try {
                 p.getFlowContent("bucket-id-A", "flow-id-2", 2);
             } catch (FlowPersistenceException e) {
-                assertEquals("Flow ID flow-id-2 was not found in bucket New name for Bucket A:bucket-id-A.", e.getMessage());
+                assertEquals("Flow ID flow-id-2 was not found in bucket New_name_for_Bucket_A:bucket-id-A.", e.getMessage());
             }
 
             // Delete the 1st flow, too.
@@ -260,8 +260,8 @@ public class TestGitFlowPersistenceProvider {
             // Assert commit.
             final AtomicInteger commitCount = new AtomicInteger(0);
             final String[] commitMessages = {
-                    "Deleted flow FlowOne.snapshot:flow-id-1 in bucket New name for Bucket A:bucket-id-A.",
-                    "Deleted flow FlowTwo.snapshot:flow-id-2 in bucket New name for Bucket A:bucket-id-A.",
+                    "Deleted flow FlowOne.snapshot:flow-id-1 in bucket New_name_for_Bucket_A:bucket-id-A.",
+                    "Deleted flow FlowTwo.snapshot:flow-id-2 in bucket New_name_for_Bucket_A:bucket-id-A.",
                     "5th commit.",
                     "4th commit.",
                     "3rd commit.",
