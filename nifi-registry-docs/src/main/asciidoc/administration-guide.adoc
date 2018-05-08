@@ -902,7 +902,7 @@ NiFi Registry uses a pluggable flow persistence provider to store the content of
 
 Each persistence provider has its own configuration parameters, those can be configured in a XML file specified in <<Providers Properties,nifi-registry.properties>>.
 
-The XML configuration file looks like below. It has a `flowPersistenceProvider` element in which qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each providers.
+The XML configuration file looks like below. It has a `flowPersistenceProvider` element in which qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each provider.
 
 .Example providers.xml
 [source,xml]
@@ -957,13 +957,13 @@ Buckets are represented as directories and Flow contents are stored as files in 
 ....
 Flow Storage Directory/
 ├── .git/
-├── Bucket A/
+├── Bucket_A/
 │   ├── bucket.yml
-│   ├── Flow 1.snapshot
-│   └── Flow 2.snapshot
-└── Bucket B/
+│   ├── Flow_1.snapshot
+│   └── Flow_2.snapshot
+└── Bucket_B/
     ├── bucket.yml
-    └── Flow 4.snapshot
+    └── Flow_4.snapshot
 ....
 
 Each Bucket directory contains a YAML file named `bucket.yml`. The file manages links from NiFi Registry Bucket and Flow IDs to actual directory and file names. When NiFi Registry starts, this provider reads through Git commit histories and lookup these `bucket.yml` files to restore Buckets and Flows for each snapshot version.
@@ -974,8 +974,8 @@ Each Bucket directory contains a YAML file named `bucket.yml`. The file manages 
 layoutVer: 1
 bucketId: d1beba88-32e9-45d1-bfe9-057cc41f7ce8
 flows:
-  219cf539-427f-43be-9294-0644fb07ca63: {ver: 7, file: Flow 1.snapshot}
-  22cccb6c-3011-4493-a996-611f8f112969: {ver: 3, file: Flow 2.snapshot}
+  219cf539-427f-43be-9294-0644fb07ca63: {ver: 7, file: Flow_1.snapshot}
+  22cccb6c-3011-4493-a996-611f8f112969: {ver: 3, file: Flow_2.snapshot}
 ....
 
 Qualified class name: `org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider`
@@ -1000,7 +1000,19 @@ https://git-scm.com/docs/git-clone
 
 ==== Git user configuration
 
-Git distinguishes a user by its username and email address. This persistence provider uses NiFi Registry username when it creates Git commits. However since NiFi Registry users do not provide email address, preconfigured Git user email address is used.
+This persistence provider uses preconfigured Git user name and user email address when it creates Git commits. NiFi Registry user name is added to commit messages.
+
+.Example commit
+....
+commit 774d4bd125f2b1200f0a5ee1f1e9fedc6a415e83
+Author: git-user <git-user@example.com>
+Date:   Tue May 8 14:30:31 2018 +0900
+
+    Commit message.
+
+    By NiFi Registry user: nifi-registry-user-1
+....
+
 
 You can configure Git user name and email address by `git config` command.
 
@@ -1031,6 +1043,19 @@ Host bitbucket.org
   IdentityFile ~/.ssh/key-for-bitbucket
 ....
 
+=== Switching from other Persistence Provider
+
+In order to switch Persistence Provider to use, it is necessary to reset NiFi Registry.
+For example, to switch from FileSystemFlowPersistenceProvider to GitFlowPersistenceProvider, follow these steps:
+
+. Stop version control on all ProcessGroups in NiFi
+. Stop NiFi Registry
+. Move the H2 DB (specified as `nifi.registry.db.directory` in nifi-registry.properties) and 'Flow Storage Directory' for FileSystemFlowPersistenceProvider directories somewhere for back up
+. Configure GitFlowPersistenceProvider provider in providers.xml
+. Start NiFi Registry
+. Recreate any buckets
+. Start version control on all ProcessGroups again
+
 === Data model version of serialized Flow snapshots
 
 Serialized Flow snapshots saved by these persistence providers have versions, so that the data format and schema can evolve over time. Data model version update is done automatically by NiFi Registry when it reads and stores each Flow content.
@@ -1042,20 +1067,3 @@ Here is the data model version histories:
 |2|0.2|JSON formatted text file. The root object contains header and Flow content object.
 |1|0.1|Binary format having header bytes at the beginning followed by Flow content represented as XML.
 |====
-
-=== Migrating stored files between different Persistence Provider
-
-If you need to migrate existing Flow snapshot files, for example, switching from `FileSystemFlowPersistenceProvider` to `GitFlowPersistenceProvider`, then follow the steps described below.
-
-NOTE: The `export-flow-snapshots` tool for NiFi Registry is implemented as an additional mode to the existing tool in the `nifi-toolkit`. The following sections
-assume you have downloaded the binary for the nifi-toolkit.
-
-. Ensure NiFi Registry is running with the current Persistence Provider to migrate (e.g. FileSystemFlowPersistenceProvider)
-. Create a new `providers.xml` with the new Persistence Provider configuration (e.g. GitFlowPersistenceProvider)
-. Execute `registry export-flow-snapshots` from `cli.sh` or `cli.bat` provided by NiFi Toolkit. Specify the URL of currently running NiFi Registry and the providers.xml file:
-
- registry export-flow-snapshots --baseUrl http://localhost:18080 --input /some-directory/providers.xml --verbose
-
-. Then, existing Flow snapshot files are created in the directory managed by the new Persistence Provider specified by the providers.xml.
-. Stop running NiFi Registry, update the provers.xml that the NiFi Registry is using to switch to the new Persistence Provider.
-. Start NiFi Registry. Now the new Persistence Provider can provide existing Flow snapshots as well as support storing new snapshots.
