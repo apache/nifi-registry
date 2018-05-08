@@ -16,16 +16,15 @@
 <providers>
 
     <flowPersistenceProvider>
-        <class>org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider</class>
-        <property name="Flow Storage Directory">./flow_storage</property>
+        <class>org.apache.nifi.registry.provider.MockFlowPersistenceProvider</class>
+        <property name="Flow Property 1">flow foo</property>
+        <property name="Flow Property 2">flow bar</property>
     </flowPersistenceProvider>
 
-    <!--
     <flowHookProvider>
     	<class>org.apache.nifi.registry.provider.hook.ScriptFlowHookProvider</class>
     	<property name="Script Path"></property>
     	<property name="Working Directory"></property>
     </flowHookProvider>
-    -->
 
 </providers>
