@@ -17,87 +17,121 @@
 package org.apache.nifi.registry.serialization;
 
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.serialization.jackson.JacksonVersionedProcessGroupSerializer;
 import org.apache.nifi.registry.serialization.jaxb.JAXBVersionedProcessGroupSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * A serializer for VersionedFlowSnapshots that maps a "version" of the data model to a serializer. The version
- * will be written to a header at the beginning of the OutputStream, and then the object and the OutputStream will
- * be passed on to the real serializer for the given version. Similarly, when deserializing, the header will first be
- * read from the InputStream to determine the version, and then the InputStream will be passed to the deserializer
- * for the given version.
+ * <p>
+ * A serializer for VersionedProcessGroup that maps a "version" of the data model to a serializer.
+ * </p>
+ *
+ * <p>
+ * When serializing, the serializer associated with the {@link #CURRENT_DATA_MODEL_VERSION} is used.
+ * The version will be written as a header at the beginning of the OutputStream then followed by the content.
+ * </p>
+ *
+ * <p>
+ * When deserializing, each registered serializer will be asked to read a data model version number from the input stream
+ * in descending version order until a version number is read successfully.
+ * Then the associated serializer to the read data model version is used to deserialize content back to the target object.
+ * If no serializer can read the version, or no serializer is registered for the read version, then SerializationException is thrown.
+ * </p>
+ *
+ * <p>
+ * Current data model version is 2.
+ * Data Model Version Histories:
+ * <ul>
+ *     <li>version 2: Serialized by {@link JacksonVersionedProcessGroupSerializer}</li>
+ *     <li>version 1: Serialized by {@link JAXBVersionedProcessGroupSerializer}</li>
+ * </ul>
+ * </p>
  */
 @Service
 public class VersionedProcessGroupSerializer implements Serializer<VersionedProcessGroup> {
 
-    static final String MAGIC_HEADER = "Flows";
-    static final byte[] MAGIC_HEADER_BYTES = MAGIC_HEADER.getBytes(StandardCharsets.UTF_8);
+    private static final Logger logger = LoggerFactory.getLogger(VersionedProcessGroupSerializer.class);
 
-    static final Integer CURRENT_VERSION = 1;
+    static final Integer CURRENT_DATA_MODEL_VERSION = 2;
 
-    private final Map<Integer, Serializer<VersionedProcessGroup>> serializersByVersion;
+    private final Map<Integer, VersionedSerializer<VersionedProcessGroup>> serializersByVersion;
+    private final VersionedSerializer<VersionedProcessGroup> defaultSerializer;
+    private final List<Integer> descendingVersions;
+    public static final int MAX_HEADER_BYTES = 1024;
 
     public VersionedProcessGroupSerializer() {
-        final Map<Integer, Serializer<VersionedProcessGroup>> tempSerializers = new HashMap<>();
-        tempSerializers.put(CURRENT_VERSION, new JAXBVersionedProcessGroupSerializer());
+
+        final Map<Integer, VersionedSerializer<VersionedProcessGroup>> tempSerializers = new HashMap<>();
+        tempSerializers.put(2, new JacksonVersionedProcessGroupSerializer());
+        tempSerializers.put(1, new JAXBVersionedProcessGroupSerializer());
+
         this.serializersByVersion = Collections.unmodifiableMap(tempSerializers);
+        this.defaultSerializer = tempSerializers.get(CURRENT_DATA_MODEL_VERSION);
+
+        final List<Integer> sortedVersions = new ArrayList<>(serializersByVersion.keySet());
+        sortedVersions.sort(Collections.reverseOrder(Integer::compareTo));
+        this.descendingVersions = sortedVersions;
     }
 
     @Override
     public void serialize(final VersionedProcessGroup versionedProcessGroup, final OutputStream out) throws SerializationException {
-        final ByteBuffer byteBuffer = ByteBuffer.allocate(9);
-        byteBuffer.put(MAGIC_HEADER_BYTES);
-        byteBuffer.putInt(CURRENT_VERSION);
 
-        try {
-            out.write(byteBuffer.array());
-        } catch (final IOException e) {
-            throw new SerializationException("Unable to write header while serializing process group", e);
-        }
-
-        final Serializer<VersionedProcessGroup> serializer = serializersByVersion.get(CURRENT_VERSION);
-        if (serializer == null) {
-            throw new SerializationException("No process group serializer for version " + CURRENT_VERSION);
-        }
-
-        serializer.serialize(versionedProcessGroup, out);
+        defaultSerializer.serialize(CURRENT_DATA_MODEL_VERSION, versionedProcessGroup, out);
     }
 
     @Override
     public VersionedProcessGroup deserialize(final InputStream input) throws SerializationException {
-        final int headerLength = 9;
-        final byte[] buffer = new byte[headerLength];
 
-        int bytesRead = -1;
-        try {
-            bytesRead = input.read(buffer, 0, headerLength);
-        } catch (final IOException e) {
-            throw new SerializationException("Unable to read header while deserializing process group", e);
+        final InputStream markSupportedInput = input.markSupported() ? input : new BufferedInputStream(input);
+
+        // Mark the beginning of the stream.
+        markSupportedInput.mark(MAX_HEADER_BYTES);
+
+        // Applying each serializer
+        for (int serializerVersion : descendingVersions) {
+            final VersionedSerializer<VersionedProcessGroup> serializer = serializersByVersion.get(serializerVersion);
+
+            // Serializer version will not be the data model version always.
+            // E.g. higher version of serializer can read the old data model version number if it has the same header structure,
+            // but it does not mean the serializer is compatible with the old format.
+            final int version;
+            try {
+                version = serializer.readDataModelVersion(markSupportedInput);
+                if (!serializersByVersion.containsKey(version)) {
+                    throw new SerializationException(String.format(
+                            "Version %d was returned by %s, but no serializer is registered for that version.", version, serializer));
+                }
+            } catch (SerializationException e) {
+                logger.debug("Deserialization failed with {}", serializer, e);
+                continue;
+            } finally {
+                // Either when continue with the next serializer, or proceed deserialization with the corresponding serializer,
+                // reset the stream position.
+                try {
+                    markSupportedInput.reset();
+                } catch (IOException resetException) {
+                    // Should not happen.
+                    logger.error("Unable to reset the input stream.", resetException);
+                }
+            }
+
+            return serializersByVersion.get(version).deserialize(markSupportedInput);
         }
 
-        if (bytesRead < headerLength) {
-            throw new SerializationException("Unable to read header while deserializing process group, expected"
-                    + headerLength + " bytes, but found " + bytesRead);
-        }
+        throw new SerializationException("Unable to find a process group serializer compatible with the input.");
 
-        final ByteBuffer bb = ByteBuffer.wrap(buffer);
-        final int version = bb.getInt(MAGIC_HEADER_BYTES.length);
-
-        final Serializer<VersionedProcessGroup> serializer = serializersByVersion.get(Integer.valueOf(version));
-        if (serializer == null) {
-            throw new SerializationException("No process group serializer for version " + version);
-        }
-
-        return serializer.deserialize(input);
     }
 
 }

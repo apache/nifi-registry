@@ -14,23 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.mapper;
 
-import org.apache.nifi.registry.serialization.jackson.ObjectMapperProvider;
-import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.springframework.stereotype.Component;
+package org.apache.nifi.registry.serialization.jackson;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+import io.swagger.annotations.ApiModelProperty;
 
-@Component
-@Provider
-@Produces(MediaType.APPLICATION_JSON)
-public class NiFiRegistryJsonProvider extends JacksonJaxbJsonProvider {
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+import java.util.Map;
 
-    public NiFiRegistryJsonProvider() {
-        super();
-        setMapper(ObjectMapperProvider.getMapper());
+@XmlRootElement
+@XmlType(propOrder = {"header", "content"})
+public class SerializationContainer<T> {
+
+    private Map<String, String> header;
+    private T content;
+
+    @ApiModelProperty("The serialization headers")
+    public Map<String, String> getHeader() {
+        return header;
+    }
+
+    public void setHeader(Map<String, String> header) {
+        this.header = header;
+    }
+
+    @ApiModelProperty("The serialized content")
+    public T getContent() {
+        return content;
+    }
+
+    public void setContent(T content) {
+        this.content = content;
     }
 }

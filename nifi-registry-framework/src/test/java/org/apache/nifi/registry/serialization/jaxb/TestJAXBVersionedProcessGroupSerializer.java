@@ -19,7 +19,7 @@ package org.apache.nifi.registry.serialization.jaxb;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.serialization.SerializationException;
-import org.apache.nifi.registry.serialization.Serializer;
+import org.apache.nifi.registry.serialization.VersionedSerializer;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ public class TestJAXBVersionedProcessGroupSerializer {
 
     @Test
     public void testSerializeDeserializeFlowSnapshot() throws SerializationException {
-        final Serializer<VersionedProcessGroup> serializer = new JAXBVersionedProcessGroupSerializer();
+        final VersionedSerializer<VersionedProcessGroup> serializer = new JAXBVersionedProcessGroupSerializer();
 
         final VersionedProcessGroup processGroup1 = new VersionedProcessGroup();
         processGroup1.setIdentifier("pg1");
@@ -45,12 +45,18 @@ public class TestJAXBVersionedProcessGroupSerializer {
         processGroup1.getProcessors().add(processor1);
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        serializer.serialize(processGroup1, out);
+        serializer.serialize(1, processGroup1, out);
 
         final String snapshotStr = new String(out.toByteArray(), StandardCharsets.UTF_8);
         //System.out.println(snapshotStr);
 
         final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        in.mark(1024);
+        final int version = serializer.readDataModelVersion(in);
+
+        Assert.assertEquals(1, version);
+
+        in.reset();
         final VersionedProcessGroup deserializedProcessGroup1 = serializer.deserialize(in);
 
         Assert.assertEquals(processGroup1.getIdentifier(), deserializedProcessGroup1.getIdentifier());

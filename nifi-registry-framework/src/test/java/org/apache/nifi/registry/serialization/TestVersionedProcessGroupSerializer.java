@@ -23,6 +23,11 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class TestVersionedProcessGroupSerializer {
 
@@ -57,4 +62,69 @@ public class TestVersionedProcessGroupSerializer {
         Assert.assertEquals(processor1.getName(), deserializedProcessor1.getName());
 
     }
+
+    @Test
+    public void testDeserializeJsonNonIntegerVersion() throws IOException {
+        final String file = "/serialization/json/non-integer-version.snapshot";
+        final VersionedProcessGroupSerializer serializer = new VersionedProcessGroupSerializer();
+        try (final InputStream is = this.getClass().getResourceAsStream(file)) {
+            try {
+                serializer.deserialize(is);
+                fail("Should fail");
+            } catch (SerializationException e) {
+                assertEquals("Unable to find a process group serializer compatible with the input.", e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testDeserializeJsonNoVersion() throws IOException {
+        final String file = "/serialization/json/no-version.snapshot";
+        final VersionedProcessGroupSerializer serializer = new VersionedProcessGroupSerializer();
+        try (final InputStream is = this.getClass().getResourceAsStream(file)) {
+            try {
+                serializer.deserialize(is);
+                fail("Should fail");
+            } catch (SerializationException e) {
+                assertEquals("Unable to find a process group serializer compatible with the input.", e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    public void testDeserializeVer1() throws IOException {
+        final String file = "/serialization/ver1.snapshot";
+        final VersionedProcessGroupSerializer serializer = new VersionedProcessGroupSerializer();
+        final VersionedProcessGroup processGroup;
+        try (final InputStream is = this.getClass().getResourceAsStream(file)) {
+            processGroup = serializer.deserialize(is);
+        }
+        System.out.printf("processGroup=" + processGroup);
+    }
+
+    @Test
+    public void testDeserializeVer2() throws IOException {
+        final String file = "/serialization/ver2.snapshot";
+        final VersionedProcessGroupSerializer serializer = new VersionedProcessGroupSerializer();
+        final VersionedProcessGroup processGroup;
+        try (final InputStream is = this.getClass().getResourceAsStream(file)) {
+            processGroup = serializer.deserialize(is);
+        }
+        System.out.printf("processGroup=" + processGroup);
+    }
+
+    @Test
+    public void testDeserializeVer3() throws IOException {
+        final String file = "/serialization/ver3.snapshot";
+        final VersionedProcessGroupSerializer serializer = new VersionedProcessGroupSerializer();
+        try (final InputStream is = this.getClass().getResourceAsStream(file)) {
+            try {
+                serializer.deserialize(is);
+                fail("Should fail");
+            } catch (SerializationException e) {
+                assertEquals("Unable to find a process group serializer compatible with the input.", e.getMessage());
+            }
+        }
+    }
+
 }

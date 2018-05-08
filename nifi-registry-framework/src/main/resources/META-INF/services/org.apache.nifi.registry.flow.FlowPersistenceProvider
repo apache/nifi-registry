@@ -13,3 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider
+org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider

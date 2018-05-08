@@ -856,7 +856,7 @@ Security Configuration section of this Administrator's Guide.
 === Providers Properties
 
 These properties pertain to flow persistence providers. NiFi Registry uses a pluggable flow persistence provider to store the
-content of the flows saved to the registry. NiFi Registry provides the `FileSystemFlowPersistenceProvider`.
+content of the flows saved to the registry. For further details on persistence providers, refer <<Persistence Providers>>.
 
 |====
 |*Property*|*Description*
@@ -901,4 +901,176 @@ Providing 2 total locations, including `nifi.registry.extension.dir.1`.
 |nifi.registry.kerberos.spnego.keytab.location|The file path of the NiFi Registry Kerberos SPNEGO keytab, if used. It is blank by default. Note that this property is used to authenticate NiFi Registry users.
   Example: `/etc/http-nifi-registry.keytab`
 |nifi.registry.kerberos.spengo.authentication.expiration|The expiration duration of a successful Kerberos user authentication, if used. The default value is `12 hours`.
+|====
+
+== Persistence Providers
+
+NiFi Registry uses a pluggable flow persistence provider to store the content of the flows saved to the registry. NiFi Registry provides `<<FileSystemFlowPersistenceProvider>>` and `<<GitFlowPersistenceProvider>>`.
+
+Each persistence provider has its own configuration parameters, those can be configured in a XML file specified in <<Providers Properties,nifi-registry.properties>>.
+
+The XML configuration file looks like below. It has a `flowPersistenceProvider` element in which qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each provider.
+
+.Example providers.xml
+[source,xml]
+....
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<providers>
+
+    <flowPersistenceProvider>
+        <class>persistence-provider-qualified-class-name</class>
+        <property name="property-1">property-value-1</property>
+        <property name="property-2">property-value-2</property>
+        <property name="property-n">property-value-n</property>
+    </flowPersistenceProvider>
+
+</providers>
+....
+
+
+=== FileSystemFlowPersistenceProvider
+
+FileSystemFlowPersistenceProvider simply stores serialized Flow contents into `{bucket-id}/{flow-id}/{version}` directories.
+
+Example of persisted files:
+....
+Flow Storage Directory/
+├── {bucket-id}/
+│   └── {flow-id}/
+│       ├── {version}/{version}.snapshot
+└── d1beba88-32e9-45d1-bfe9-057cc41f7ce8/
+    └── 219cf539-427f-43be-9294-0644fb07ca63/
+        ├── 1/1.snapshot
+        └── 2/2.snapshot
+....
+
+Qualified class name: `org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider`
+
+|====
+|*Property*|*Description*
+|Flow Storage Directory|REQUIRED: File system path for a directory where flow contents files are persisted to. If the directory does not exist when NiFi Registry starts, it will be created. If the directory exists, it must be readable and writable from NiFi Registry.
+|====
+
+
+=== GitFlowPersistenceProvider
+
+GitFlowPersistenceProvider stores flow contents under a Git directory.
+
+In contrast to FileSystemFlowPersistenceProvider, this provider uses human friendly Bucket and Flow names so that those files can be accessed by external tools. However, it is NOT supported to modify stored files outside of NiFi Registry. Persisted files are only read when NiFi Registry starts up.
+
+Buckets are represented as directories and Flow contents are stored as files in a Bucket directory they belong to. Flow snapshot histories are managed as Git commits, meaning only the latest version of Buckets and Flows exist in the Git directory. Old versions are retrieved from Git commit histories.
+
+.Example persisted files
+....
+Flow Storage Directory/
+├── .git/
+├── Bucket_A/
+│   ├── bucket.yml
+│   ├── Flow_1.snapshot
+│   └── Flow_2.snapshot
+└── Bucket_B/
+    ├── bucket.yml
+    └── Flow_4.snapshot
+....
+
+Each Bucket directory contains a YAML file named `bucket.yml`. The file manages links from NiFi Registry Bucket and Flow IDs to actual directory and file names. When NiFi Registry starts, this provider reads through Git commit histories and lookup these `bucket.yml` files to restore Buckets and Flows for each snapshot version.
+
+.Example bucket.yml
+[source,yml]
+....
+layoutVer: 1
+bucketId: d1beba88-32e9-45d1-bfe9-057cc41f7ce8
+flows:
+  219cf539-427f-43be-9294-0644fb07ca63: {ver: 7, file: Flow_1.snapshot}
+  22cccb6c-3011-4493-a996-611f8f112969: {ver: 3, file: Flow_2.snapshot}
+....
+
+Qualified class name: `org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider`
+
+|====
+|*Property*|*Description*
+|Flow Storage Directory|REQUIRED: File system path for a directory where flow contents files are persisted to. The directory must exist when NiFi registry starts. Also must be initialized as a Git directory. See <<Initialize Git directory>> for detail.
+|Remote To Push|When a new flow snapshot is created, this persistence provider updated files in the specified Git directory, then create a commit to the local repository. If `Remote To Push` is defined, it also pushes to the specified remote repository. E.g. 'origin'. To define more detailed remote spec such as branch names, use `Refspec`. See https://git-scm.com/book/en/v2/Git-Internals-The-Refspec
+|Remote Access User|This user name is used to make push requests to the remote repository when `Remote To Push` is enabled, and the remote repository is accessed by HTTP protocol. If SSH is used, user authentication is done with SSH keys.
+|Remote Access Password|Used with `Remote Access User`.
+|====
+
+==== Initialize Git directory
+
+In order to use GitFlowPersistenceRepository, you need to prepare a Git directory on the local file system. You can do so by initializing a directory with `git init` command, or clone an existing Git project from a remote Git repository by `git clone` command.
+
+- Git init command
+https://git-scm.com/docs/git-init
+- Git clone command
+https://git-scm.com/docs/git-clone
+
+
+==== Git user configuration
+
+This persistence provider uses preconfigured Git user name and user email address when it creates Git commits. NiFi Registry user name is added to commit messages.
+
+.Example commit
+....
+commit 774d4bd125f2b1200f0a5ee1f1e9fedc6a415e83
+Author: git-user <git-user@example.com>
+Date:   Tue May 8 14:30:31 2018 +0900
+
+    Commit message.
+
+    By NiFi Registry user: nifi-registry-user-1
+....
+
+
+You can configure Git user name and email address by `git config` command.
+
+- Git config command
+https://git-scm.com/docs/git-config
+
+
+==== Git user authentication
+
+By default, this persistence repository only create commits to local repository. No user authentication is needed to do so. However, if 'Commit To Push' is enabled, user authentication to the remote Git repository is required.
+
+If the remote repository is accessed by HTTP, then username and password for authentication can be configured in the providers XML configuration file.
+
+When SSH is used, SSH keys are used to identify a Git user. In order to pick the right key to a remote server, the SSH configuration file `${USER_HOME}/.ssh/config` is used. The SSH configuration file can contain multiple `Host` entries to specify a key file to login to a remote Git server. The `Host` must much with the target remote Git server hostname.
+
+.example SSH config file
+....
+Host git.example.com
+  HostName git.example.com
+  IdentityFile ~/.ssh/id_rsa
+
+Host github.com
+  HostName github.com
+  IdentityFile ~/.ssh/key-for-github
+
+Host bitbucket.org
+  HostName bitbucket.org
+  IdentityFile ~/.ssh/key-for-bitbucket
+....
+
+=== Switching from other Persistence Provider
+
+In order to switch Persistence Provider to use, it is necessary to reset NiFi Registry.
+For example, to switch from FileSystemFlowPersistenceProvider to GitFlowPersistenceProvider, follow these steps:
+
+. Stop version control on all ProcessGroups in NiFi
+. Stop NiFi Registry
+. Move the H2 DB (specified as `nifi.registry.db.directory` in nifi-registry.properties) and 'Flow Storage Directory' for FileSystemFlowPersistenceProvider directories somewhere for back up
+. Configure GitFlowPersistenceProvider provider in providers.xml
+. Start NiFi Registry
+. Recreate any buckets
+. Start version control on all ProcessGroups again
+
+=== Data model version of serialized Flow snapshots
+
+Serialized Flow snapshots saved by these persistence providers have versions, so that the data format and schema can evolve over time. Data model version update is done automatically by NiFi Registry when it reads and stores each Flow content.
+
+Here is the data model version histories:
+
+|====
+|*Data model version*|*Since NiFi Registry*|*Description*
+|2|0.2|JSON formatted text file. The root object contains header and Flow content object.
+|1|0.1|Binary format having header bytes at the beginning followed by Flow content represented as XML.
 |====

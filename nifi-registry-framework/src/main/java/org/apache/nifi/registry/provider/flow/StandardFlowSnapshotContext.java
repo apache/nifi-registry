@@ -34,6 +34,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     private final int version;
     private final String comments;
     private final long snapshotTimestamp;
+    private final String author;
 
     private StandardFlowSnapshotContext(final Builder builder) {
         this.bucketId = builder.bucketId;
@@ -43,6 +44,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         this.version = builder.version;
         this.comments = builder.comments;
         this.snapshotTimestamp = builder.snapshotTimestamp;
+        this.author = builder.author;
 
         Validate.notBlank(bucketId);
         Validate.notBlank(bucketName);
@@ -87,6 +89,11 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         return snapshotTimestamp;
     }
 
+    @Override
+    public String getAuthor() {
+        return author;
+    }
+
     /**
      * Builder for creating instances of StandardFlowSnapshotContext.
      */
@@ -99,6 +106,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         private int version;
         private String comments;
         private long snapshotTimestamp;
+        private String author;
 
         public Builder() {
 
@@ -112,6 +120,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
             version(snapshotMetadata.getVersion());
             comments(snapshotMetadata.getComments());
             snapshotTimestamp(snapshotMetadata.getTimestamp());
+            author(snapshotMetadata.getAuthor());
         }
 
         public Builder bucketId(final String bucketId) {
@@ -146,6 +155,11 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
 
         public Builder snapshotTimestamp(final long snapshotTimestamp) {
             this.snapshotTimestamp = snapshotTimestamp;
+            return this;
+        }
+
+        public Builder author(final String author) {
+            this.author = author;
             return this;
         }
 

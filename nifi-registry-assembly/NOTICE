@@ -242,6 +242,10 @@ The following binary components are provided under the Apache Software License v
         may be obtained from:
         http://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/index.html
 
+   (ASLv2) SnakeYAML
+      The following NOTICE information applies:
+        Copyright (c) 2008, http://www.snakeyaml.org
+
 ************************
 Common Development and Distribution License 1.1
 ************************

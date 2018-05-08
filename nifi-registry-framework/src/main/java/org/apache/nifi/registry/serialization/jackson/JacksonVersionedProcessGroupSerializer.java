@@ -14,23 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.mapper;
+package org.apache.nifi.registry.serialization.jackson;
 
-import org.apache.nifi.registry.serialization.jackson.ObjectMapperProvider;
-import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import org.springframework.stereotype.Component;
+import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.serialization.SerializationException;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.ext.Provider;
+/**
+ * A Jackson serializer for VersionedFlowSnapshots.
+ */
+public class JacksonVersionedProcessGroupSerializer extends JacksonSerializer<VersionedProcessGroup> {
 
-@Component
-@Provider
-@Produces(MediaType.APPLICATION_JSON)
-public class NiFiRegistryJsonProvider extends JacksonJaxbJsonProvider {
 
-    public NiFiRegistryJsonProvider() {
-        super();
-        setMapper(ObjectMapperProvider.getMapper());
+    @Override
+    TypeReference<SerializationContainer<VersionedProcessGroup>> getDeserializeTypeRef() throws SerializationException {
+        return new TypeReference<SerializationContainer<VersionedProcessGroup>>() {};
     }
 }
