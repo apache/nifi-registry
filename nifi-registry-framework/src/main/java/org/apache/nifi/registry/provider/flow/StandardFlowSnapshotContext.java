@@ -33,8 +33,8 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     private final String flowName;
     private final int version;
     private final String comments;
-    private final long snapshotTimestamp;
     private final String author;
+    private final long snapshotTimestamp;
 
     private StandardFlowSnapshotContext(final Builder builder) {
         this.bucketId = builder.bucketId;
@@ -43,8 +43,8 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         this.flowName = builder.flowName;
         this.version = builder.version;
         this.comments = builder.comments;
-        this.snapshotTimestamp = builder.snapshotTimestamp;
         this.author = builder.author;
+        this.snapshotTimestamp = builder.snapshotTimestamp;
 
         Validate.notBlank(bucketId);
         Validate.notBlank(bucketName);
@@ -105,8 +105,8 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         private String flowName;
         private int version;
         private String comments;
-        private long snapshotTimestamp;
         private String author;
+        private long snapshotTimestamp;
 
         public Builder() {
 
@@ -119,8 +119,8 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
             flowName(versionedFlow.getName());
             version(snapshotMetadata.getVersion());
             comments(snapshotMetadata.getComments());
-            snapshotTimestamp(snapshotMetadata.getTimestamp());
             author(snapshotMetadata.getAuthor());
+            snapshotTimestamp(snapshotMetadata.getTimestamp());
         }
 
         public Builder bucketId(final String bucketId) {
@@ -153,13 +153,13 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
             return this;
         }
 
-        public Builder snapshotTimestamp(final long snapshotTimestamp) {
-            this.snapshotTimestamp = snapshotTimestamp;
+        public Builder author(final String author) {
+            this.author = author;
             return this;
         }
 
-        public Builder author(final String author) {
-            this.author = author;
+        public Builder snapshotTimestamp(final long snapshotTimestamp) {
+            this.snapshotTimestamp = snapshotTimestamp;
             return this;
         }
 

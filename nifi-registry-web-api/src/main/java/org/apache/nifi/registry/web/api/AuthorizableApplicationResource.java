@@ -18,6 +18,7 @@ package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
@@ -38,7 +39,9 @@ public class AuthorizableApplicationResource extends ApplicationResource {
     protected final AuthorizableLookup authorizableLookup;
 
     protected AuthorizableApplicationResource(
-            AuthorizationService authorizationService) {
+            AuthorizationService authorizationService,
+            EventService eventService) {
+        super(eventService);
         this.authorizationService = authorizationService;
         this.authorizableLookup = authorizationService.getAuthorizableLookup();
     }

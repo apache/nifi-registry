@@ -25,6 +25,7 @@ import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
@@ -65,8 +66,9 @@ public class FlowResource extends AuthorizableApplicationResource {
     public FlowResource(final RegistryService registryService,
                         final LinkService linkService,
                         final PermissionsService permissionsService,
-                        final AuthorizationService authorizationService) {
-        super(authorizationService);
+                        final AuthorizationService authorizationService,
+                        final EventService eventService) {
+        super(authorizationService, eventService);
         this.registryService = registryService;
         this.linkService = linkService;
         this.permissionsService = permissionsService;

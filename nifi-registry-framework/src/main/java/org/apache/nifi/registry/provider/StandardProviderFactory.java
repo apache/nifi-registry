@@ -18,6 +18,7 @@ package org.apache.nifi.registry.provider;
 
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
+import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.generated.Property;
 import org.apache.nifi.registry.provider.generated.Providers;
@@ -39,6 +40,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +74,7 @@ public class StandardProviderFactory implements ProviderFactory {
     private final AtomicReference<Providers> providersHolder = new AtomicReference<>(null);
 
     private FlowPersistenceProvider flowPersistenceProvider;
+    private List<EventHookProvider> eventHookProviders;
 
     @Autowired
     public StandardProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
@@ -149,6 +152,56 @@ public class StandardProviderFactory implements ProviderFactory {
         }
 
         return flowPersistenceProvider;
+    }
+
+    @Bean
+    @Override
+    public List<EventHookProvider> getEventHookProviders() {
+        if (eventHookProviders == null) {
+            eventHookProviders = new ArrayList<>();
+
+            if (providersHolder.get() == null) {
+                throw new ProviderFactoryException("ProviderFactory must be initialized before obtaining a Provider");
+            }
+
+            final Providers providers = providersHolder.get();
+            final List<org.apache.nifi.registry.provider.generated.Provider> jaxbHookProvider = providers.getEventHookProvider();
+
+            if(jaxbHookProvider == null || jaxbHookProvider.isEmpty()) {
+                // no hook provided
+                return eventHookProviders;
+            }
+
+            for (org.apache.nifi.registry.provider.generated.Provider hookProvider : jaxbHookProvider) {
+
+                final String hookProviderClassName = hookProvider.getClazz();
+                EventHookProvider hook;
+
+                try {
+                    final ClassLoader classLoader = extensionManager.getExtensionClassLoader(hookProviderClassName);
+                    if (classLoader == null) {
+                        throw new IllegalStateException("Extension not found in any of the configured class loaders: " + hookProviderClassName);
+                    }
+
+                    final Class<?> rawHookProviderClass = Class.forName(hookProviderClassName, true, classLoader);
+                    final Class<? extends EventHookProvider> hookProviderClass = rawHookProviderClass.asSubclass(EventHookProvider.class);
+
+                    final Constructor constructor = hookProviderClass.getConstructor();
+                    hook = (EventHookProvider) constructor.newInstance();
+
+                    LOGGER.info("Instantiated EventHookProvider with class name {}", new Object[] {hookProviderClassName});
+                } catch (Exception e) {
+                    throw new ProviderFactoryException("Error creating EventHookProvider with class name: " + hookProviderClassName, e);
+                }
+
+                final ProviderConfigurationContext configurationContext = createConfigurationContext(hookProvider.getProperty());
+                hook.onConfigured(configurationContext);
+                eventHookProviders.add(hook);
+                LOGGER.info("Configured EventHookProvider with class name {}", new Object[] {hookProviderClassName});
+            }
+        }
+
+        return eventHookProviders;
     }
 
     private ProviderConfigurationContext createConfigurationContext(final List<Property> configProperties) {

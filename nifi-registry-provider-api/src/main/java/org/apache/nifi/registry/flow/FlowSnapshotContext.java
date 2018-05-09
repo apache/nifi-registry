@@ -57,7 +57,7 @@ public interface FlowSnapshotContext {
     long getSnapshotTimestamp();
 
     /**
-     * @return the name of the user who created the snapshot
+     * @return the author of the snapshot
      */
     String getAuthor();
 

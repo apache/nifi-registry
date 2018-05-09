@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.CurrentUser;
+import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.exception.AdministrationException;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
@@ -86,7 +87,9 @@ public class AccessResource extends ApplicationResource {
             JwtService jwtService,
             X509IdentityProvider x509IdentityProvider,
             @Nullable KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider,
-            @Nullable IdentityProvider identityProvider) {
+            @Nullable IdentityProvider identityProvider,
+            EventService eventService) {
+        super(eventService);
         this.properties = properties;
         this.jwtService = jwtService;
         this.x509IdentityProvider = x509IdentityProvider;

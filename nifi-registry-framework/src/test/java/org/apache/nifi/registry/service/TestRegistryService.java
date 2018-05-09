@@ -81,6 +81,7 @@ public class TestRegistryService {
     public void setup() {
         metadataService = mock(MetadataService.class);
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
+        // eventHookProvider = mock(EventHookProvider.class);
         snapshotSerializer = mock(VersionedProcessGroupSerializer.class);
 
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();

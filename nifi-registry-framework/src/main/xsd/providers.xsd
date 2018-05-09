@@ -43,6 +43,7 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="flowPersistenceProvider" type="Provider" minOccurs="1" maxOccurs="1" />
+                <xs:element name="eventHookProvider" type="Provider" minOccurs="0" maxOccurs="unbounded" />
             </xs:sequence>
         </xs:complexType>
     </xs:element>
