@@ -62,8 +62,13 @@ public class ApplicationResource {
         Validate.notNull(this.eventService);
     }
 
+    // We don't want an error creating/publishing an event to cause the overall request to fail, so catch all throwables here
     protected void publish(final Event event) {
-        eventService.publish(event);
+        try {
+            eventService.publish(event);
+        } catch (Throwable t) {
+            logger.error("Unable to publish event: " + t.getMessage(), t);
+        }
     }
 
     protected String generateResourceUri(final String... path) {

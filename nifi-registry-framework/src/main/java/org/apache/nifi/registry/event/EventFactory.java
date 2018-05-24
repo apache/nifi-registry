@@ -81,13 +81,16 @@ public class EventFactory {
     }
 
     public static Event flowVersionCreated(final VersionedFlowSnapshot versionedFlowSnapshot) {
+        final String versionComments = versionedFlowSnapshot.getSnapshotMetadata().getComments() == null
+                ? "" : versionedFlowSnapshot.getSnapshotMetadata().getComments();
+
         return new StandardEvent.Builder()
                 .eventType(EventType.CREATE_FLOW_VERSION)
                 .addField(EventFieldName.BUCKET_ID, versionedFlowSnapshot.getSnapshotMetadata().getBucketIdentifier())
                 .addField(EventFieldName.FLOW_ID, versionedFlowSnapshot.getSnapshotMetadata().getFlowIdentifier())
                 .addField(EventFieldName.VERSION, String.valueOf(versionedFlowSnapshot.getSnapshotMetadata().getVersion()))
                 .addField(EventFieldName.USER, versionedFlowSnapshot.getSnapshotMetadata().getAuthor())
-                .addField(EventFieldName.COMMENT, versionedFlowSnapshot.getSnapshotMetadata().getComments())
+                .addField(EventFieldName.COMMENT, versionComments)
                 .build();
     }
 
