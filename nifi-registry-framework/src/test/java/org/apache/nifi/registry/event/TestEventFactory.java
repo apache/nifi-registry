@@ -158,4 +158,12 @@ public class TestEventFactory {
                 event.getField(EventFieldName.COMMENT).getValue());
     }
 
+    @Test
+    public void testFlowVersionedCreatedWhenCommentsMissing() {
+        versionedFlowSnapshot.getSnapshotMetadata().setComments(null);
+        final Event event = EventFactory.flowVersionCreated(versionedFlowSnapshot);
+        event.validate();
+        assertEquals("", event.getField(EventFieldName.COMMENT).getValue());
+    }
+
 }

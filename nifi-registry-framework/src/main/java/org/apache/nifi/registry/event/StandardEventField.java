@@ -33,7 +33,7 @@ public class StandardEventField implements EventField {
         this.name = name;
         this.value = value;
         Validate.notNull(this.name);
-        Validate.notBlank(this.value);
+        Validate.notNull(this.value);
     }
 
     @Override
