@@ -21,7 +21,8 @@ public enum ResourceType {
     Policy("/policies"),
     Proxy("/proxy"),
     Tenant("/tenants"),
-    Actuator("/actuator");
+    Actuator("/actuator"),
+    Swagger("/swagger");
 
     final String value;
 

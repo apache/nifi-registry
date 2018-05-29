@@ -163,29 +163,29 @@ The following binary components are provided under the Apache Software License v
       Apache log4j
       Copyright 2010 The Apache Software Foundation
 
-   (ASLv2) Spring Framework
-     The following NOTICE information applies:
-       Spring Framework 5.0.2.RELEASE
-       Copyright (c) 2002-2017 Pivotal, Inc.
+  (ASLv2) Spring Framework
+    The following NOTICE information applies:
+      Spring Framework 5.0.2.RELEASE
+      Copyright (c) 2002-2017 Pivotal, Inc.
 
-   (ASLv2) Spring Security
-     The following NOTICE information applies:
-       Spring Framework 5.0.5.RELEASE
-       Copyright (c) 2002-2017 Pivotal, Inc.
+  (ASLv2) Spring Security
+    The following NOTICE information applies:
+      Spring Framework 5.0.5.RELEASE
+      Copyright (c) 2002-2017 Pivotal, Inc.
 
-       This product includes software developed by Spring Security
-       Project (http://www.springframework.org/security).
+      This product includes software developed by Spring Security
+      Project (http://www.springframework.org/security).
 
-   (ASLv2) Spring LDAP
-      The following NOTICE information applies:
-        Spring LDAP 2.3.2.RELEASE
-        Copyright (c) 2002-2017 Pivotal, Inc.
+  (ASLv2) Spring LDAP
+    The following NOTICE information applies:
+      Spring LDAP 2.3.2.RELEASE
+      Copyright (c) 2002-2017 Pivotal, Inc.
 
-        This product includes software developed by the Spring LDAP
-        Project (http://www.springframework.org/ldap).
+      This product includes software developed by the Spring LDAP
+      Project (http://www.springframework.org/ldap).
 
-   (ASLv2) Apache Tomcat Embed EL
-      The following NOTICE information applies:
+  (ASLv2) Apache Tomcat Embed EL
+    The following NOTICE information applies:
         Apache Tomcat
         Copyright 1999-2017 The Apache Software Foundation
 
@@ -242,9 +242,14 @@ The following binary components are provided under the Apache Software License v
         may be obtained from:
         http://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/index.html
 
-   (ASLv2) SnakeYAML
-      The following NOTICE information applies:
-        Copyright (c) 2008, http://www.snakeyaml.org
+  (ASLv2) SnakeYAML
+    The following NOTICE information applies:
+      Copyright (c) 2008, http://www.snakeyaml.org
+
+  (ASLv2) Swagger UI
+    The following NOTICE information applies:
+      Copyright 2017 SmartBear Software
+
 
 ************************
 Common Development and Distribution License 1.1

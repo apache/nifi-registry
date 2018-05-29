@@ -165,6 +165,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
             resourceAuthorizationFilter = ResourceAuthorizationFilter.builder()
                     .setAuthorizationService(authorizationService)
                     .addResourceType(ResourceType.Actuator)
+                    .addResourceType(ResourceType.Swagger)
                     .build();
         }
         return resourceAuthorizationFilter;

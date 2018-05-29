@@ -94,6 +94,7 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets a flow",
+            nickname = "globalGetFlow",
             response = VersionedFlow.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -133,6 +134,7 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
+            nickname = "globalGetFlowVersions",
             response = VersionedFlowSnapshotMetadata.class,
             responseContainer = "List",
             extensions = {
@@ -174,6 +176,7 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets the given version of a flow",
+            nickname = "globalGetFlowVersion",
             response = VersionedFlowSnapshot.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -215,6 +218,7 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Get the latest version of a flow",
+            nickname = "globalGetLatestFlowVersion",
             response = VersionedFlowSnapshot.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -253,6 +257,7 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Get the metadata for the latest version of a flow",
+            nickname = "globalGetLatestFlowVersionMetadata",
             response = VersionedFlowSnapshotMetadata.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {

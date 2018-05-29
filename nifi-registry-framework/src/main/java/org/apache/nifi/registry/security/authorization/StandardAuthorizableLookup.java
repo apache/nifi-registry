@@ -91,9 +91,26 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
         }
     };
 
+    private static final Authorizable SWAGGER_AUTHORIZABLE = new Authorizable() {
+        @Override
+        public Authorizable getParentAuthorizable() {
+            return null;
+        }
+
+        @Override
+        public Resource getResource() {
+            return ResourceFactory.getSwaggerResource();
+        }
+    };
+
     @Override
     public Authorizable getActuatorAuthorizable() {
         return ACTUATOR_AUTHORIZABLE;
+    }
+
+    @Override
+    public Authorizable getSwaggerAuthorizable() {
+        return SWAGGER_AUTHORIZABLE;
     }
 
     @Override
@@ -160,6 +177,9 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
                 break;
             case Actuator:
                 authorizable = getActuatorAuthorizable();
+                break;
+            case Swagger:
+                authorizable = getSwaggerAuthorizable();
                 break;
 
             /* Access to buckets can be authorized by the top-level /buckets resource or an individual /buckets/{id} resource */
