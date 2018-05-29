@@ -108,6 +108,23 @@ public final class ResourceFactory {
         }
     };
 
+    private final static Resource SWAGGER_RESOURCE = new Resource() {
+        @Override
+        public String getIdentifier() {
+            return ResourceType.Swagger.getValue();
+        }
+
+        @Override
+        public String getName() {
+            return "Swagger";
+        }
+
+        @Override
+        public String getSafeDescription() {
+            return "swagger";
+        }
+    };
+
     /**
      * Gets the Resource for actuator system management endpoints.
      *
@@ -115,6 +132,15 @@ public final class ResourceFactory {
      */
     public static Resource getActuatorResource() {
         return ACTUATOR_RESOURCE;
+    }
+
+    /**
+     * Gets the Resource for swagger UI static resources.
+     *
+     * @return  The resource for swagger UI static resources.
+     */
+    public static Resource getSwaggerResource() {
+        return SWAGGER_RESOURCE;
     }
 
     /**

@@ -23,7 +23,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("The position of a component on the graph")
+@ApiModel(description = "The position of a component on the graph")
 public class Position {
     private double x;
     private double y;
