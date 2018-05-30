@@ -16,8 +16,11 @@
  */
 package org.apache.nifi.registry.db;
 
+import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.mockito.Mockito;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
@@ -42,4 +45,8 @@ public class DatabaseTestApplication {
         SpringApplication.run(DatabaseTestApplication.class, args);
     }
 
+    @Bean
+    public NiFiRegistryProperties createNiFiRegistryProperties() {
+        return Mockito.mock(NiFiRegistryProperties.class);
+    }
 }
