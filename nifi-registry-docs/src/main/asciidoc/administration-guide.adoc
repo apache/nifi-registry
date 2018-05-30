@@ -867,11 +867,31 @@ content of the flows saved to the registry. For further details on persistence p
 
 These properties define the settings for the Registry database, which keeps track of metadata about buckets and all items stored in buckets.
 
+The 0.1.0 release leveraged an embedded H2 database that was configured via the following properties:
+
 |====
 |*Property*|*Description*
 |nifi.registry.db.directory|The location of the Registry database directory. The default value is `./database`.
 |nifi.registry.db.url.append|This property specifies additional arguments to add to the connection string for the Registry database. The default value should be used and should not be changed. It is: `;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE`.
 |====
+
+The 0.2.0 release introduced a more flexible approach which allows leveraging an external database. This new approach
+is configured via the following properties:
+
+|====
+|*Property*|*Description*
+|nifi.registry.db.url| The full JDBC connection string. The default value will specify a new H2 database in the same location as the previous one. For example, 'jdbc:h2:./database/nifi-registry-primary;'.
+|nifi.registry.db.driver.class| The class name of the JDBC driver. The default value is 'org.h2.Driver'.
+|nifi.registry.db.driver.directory| An optional directory containing one or more JARs to add to the classpath. If not specified, it is assumed that the driver JAR is already on the classpath by copying it to the lib directory. The H2 driver is bundled with Registry so it is not necessary to do anything for the default case.
+|nifi.registry.db.driver.username| The username for the database. The default value is 'nifireg'.
+|nifi.registry.db.driver.password| The password for the database. The default value is 'nifireg'.
+|nifi.registry.db.driver.maxConnections| The max number of connections for the connection pool. The default value is '5'.
+|nifi.registry.db.sql.debug| Whether or not enable debug logging for SQL statements. The default value is 'false'.
+|====
+
+NOTE: When upgrading from 0.1.0 to a future version, if 'nifi.registry.db.directory' remains populated, the application will
+attempt to migrate the data from the original database to the new database specified with the new properties. This will only
+happen the first time the application starts with the new database properties.
 
 === Extension Directories
 

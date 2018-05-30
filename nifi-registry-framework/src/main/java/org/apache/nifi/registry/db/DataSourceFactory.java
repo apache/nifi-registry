@@ -16,16 +16,18 @@
  */
 package org.apache.nifi.registry.db;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.h2.jdbcx.JdbcConnectionPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
-import java.io.File;
 
 /**
  * Overriding Spring Boot's normal automatic creation of a DataSource in order to use the properties
@@ -34,15 +36,11 @@ import java.io.File;
 @Configuration
 public class DataSourceFactory {
 
-    private static final String DB_USERNAME_PASSWORD = "nifireg";
-    private static final int MAX_CONNECTIONS = 5;
-
-    // database file name
-    private static final String DATABASE_FILE_NAME = "nifi-registry";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFactory.class);
 
     private final NiFiRegistryProperties properties;
 
-    private JdbcConnectionPool connectionPool;
+    private DataSource dataSource;
 
     @Autowired
     public DataSourceFactory(final NiFiRegistryProperties properties) {
@@ -52,34 +50,48 @@ public class DataSourceFactory {
     @Bean
     @Primary
     public DataSource getDataSource() {
-        if (connectionPool == null) {
-            // locate the repository directory
-            final String repositoryDirectoryPath = properties.getDatabaseDirectory();
-
-            // ensure the repository directory is specified
-            if (repositoryDirectoryPath == null) {
-                throw new NullPointerException("Database directory must be specified.");
-            }
-
-            // create a handle to the repository directory
-            final File repositoryDirectory = new File(repositoryDirectoryPath);
-
-            // get a handle to the database file
-            final File databaseFile = new File(repositoryDirectory, DATABASE_FILE_NAME);
-
-            // format the database url
-            String databaseUrl = "jdbc:h2:" + databaseFile + ";AUTOCOMMIT=OFF;DB_CLOSE_ON_EXIT=FALSE;LOCK_MODE=3";
-            String databaseUrlAppend = properties.getDatabaseUrlAppend();
-            if (StringUtils.isNotBlank(databaseUrlAppend)) {
-                databaseUrl += databaseUrlAppend;
-            }
-
-            // create the pool
-            connectionPool = JdbcConnectionPool.create(databaseUrl, DB_USERNAME_PASSWORD, DB_USERNAME_PASSWORD);
-            connectionPool.setMaxConnections(MAX_CONNECTIONS);
+        if (dataSource == null) {
+            dataSource = createDataSource();
         }
 
-        return connectionPool;
+        return dataSource;
+    }
+
+    private DataSource createDataSource() {
+        final String databaseUrl = properties.getDatabaseUrl();
+        if (StringUtils.isBlank(databaseUrl)) {
+            throw new IllegalStateException(NiFiRegistryProperties.DATABASE_URL + " is required");
+        }
+
+        final String databaseDriver = properties.getDatabaseDriverClassName();
+        if (StringUtils.isBlank(databaseDriver)) {
+            throw new IllegalStateException(NiFiRegistryProperties.DATABASE_DRIVER_CLASS_NAME + " is required");
+        }
+
+        final String databaseUsername = properties.getDatabaseUsername();
+        if (StringUtils.isBlank(databaseUsername)) {
+            throw new IllegalStateException(NiFiRegistryProperties.DATABASE_USERNAME + " is required");
+        }
+
+        String databasePassword = properties.getDatabasePassword();
+        if (StringUtils.isBlank(databasePassword)) {
+            throw new IllegalStateException(NiFiRegistryProperties.DATABASE_PASSWORD + " is required");
+        }
+
+        final DataSource dataSource = DataSourceBuilder
+                .create()
+                .url(databaseUrl)
+                .driverClassName(databaseDriver)
+                .username(databaseUsername)
+                .password(databasePassword)
+                .build();
+
+        if (dataSource instanceof HikariDataSource) {
+            LOGGER.info("Setting maximum pool size on HikariDataSource to {}", new Object[]{properties.getDatabaseMaxConnections()});
+            ((HikariDataSource)dataSource).setMaximumPoolSize(properties.getDatabaseMaxConnections());
+        }
+
+        return dataSource;
     }
 
 }

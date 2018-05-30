@@ -160,9 +160,18 @@
         <!-- nifi-registry.properties: provider properties -->
         <nifi.registry.providers.configuration.file>./conf/providers.xml</nifi.registry.providers.configuration.file>
 
+        <!-- nifi-registry.properties: legacy database properties, used to migrate data from old DB to the new DB below -->
+        <nifi.registry.db.directory></nifi.registry.db.directory>
+        <nifi.registry.db.url.append></nifi.registry.db.url.append>
+
         <!-- nifi-registry.properties: database properties -->
-        <nifi.registry.db.directory>./database</nifi.registry.db.directory>
-        <nifi.registry.db.url.append>;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE</nifi.registry.db.url.append>
+        <nifi.registry.db.url>jdbc:h2:./database/nifi-registry-primary;AUTOCOMMIT=OFF;DB_CLOSE_ON_EXIT=FALSE;LOCK_MODE=3;LOCK_TIMEOUT=25000;WRITE_DELAY=0;AUTO_SERVER=FALSE</nifi.registry.db.url>
+        <nifi.registry.db.driver.class>org.h2.Driver</nifi.registry.db.driver.class>
+        <nifi.registry.db.driver.directory></nifi.registry.db.driver.directory>
+        <nifi.registry.db.username>nifireg</nifi.registry.db.username>
+        <nifi.registry.db.password>nifireg</nifi.registry.db.password>
+        <nifi.registry.db.maxConnections>5</nifi.registry.db.maxConnections>
+        <nifi.registry.db.sql.debug>false</nifi.registry.db.sql.debug>
 
         <!-- nifi-registry.properties: kerberos properties -->
         <nifi.registry.kerberos.krb5.file />
