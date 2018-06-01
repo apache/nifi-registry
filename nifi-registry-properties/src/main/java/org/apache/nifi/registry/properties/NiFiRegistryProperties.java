@@ -65,6 +65,7 @@ public class NiFiRegistryProperties extends Properties {
     // New style DB properties
     public static final String DATABASE_URL = "nifi.registry.db.url";
     public static final String DATABASE_DRIVER_CLASS_NAME = "nifi.registry.db.driver.class";
+    public static final String DATABASE_DRIVER_DIR = "nifi.registry.db.driver.directory";
     public static final String DATABASE_USERNAME = "nifi.registry.db.username";
     public static final String DATABASE_PASSWORD = "nifi.registry.db.password";
     public static final String DATABASE_MAX_CONNECTIONS = "nifi.registry.db.maxConnections";
@@ -173,6 +174,10 @@ public class NiFiRegistryProperties extends Properties {
 
     public String getDatabaseDriverClassName() {
         return getProperty(DATABASE_DRIVER_CLASS_NAME);
+    }
+
+    public String getDatabaseDriverDirectory() {
+        return getProperty(DATABASE_DRIVER_DIR);
     }
 
     public String getDatabaseUsername() {

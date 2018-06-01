@@ -87,15 +87,16 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
 
     /**
      * Determines if the database represented by this data source is being initialized for the first time based on
-     * whether or not the table named 'BUCKET' already exists.
+     * whether or not the table named 'BUCKET' or 'bucket' already exists.
      *
      * @param dataSource the data source
      * @return true if the database has never been initialized before, false otherwise
      */
     private boolean isNewDatabase(final DataSource dataSource) {
         try (final Connection connection = dataSource.getConnection();
-             final ResultSet rs = connection.getMetaData().getTables(null, null, "BUCKET", null)) {
-            return !rs.next();
+             final ResultSet rsUpper = connection.getMetaData().getTables(null, null, "BUCKET", null);
+             final ResultSet rsLower = connection.getMetaData().getTables(null, null, "bucket", null)) {
+            return !rsUpper.next() && !rsLower.next();
         } catch (SQLException e) {
             LOGGER.error(e.getMessage(), e);
             throw new FlywayException("Unable to obtain connection from Flyway DataSource", e);

@@ -17,8 +17,8 @@
 package org.apache.nifi.registry.jetty;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -46,14 +46,18 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -237,7 +241,7 @@ public class JettyServer {
 
         webUiContext = loadWar(webUiWar, "/nifi-registry");
 
-        webApiContext = loadWar(webApiWar, "/nifi-registry-api");
+        webApiContext = loadWar(webApiWar, "/nifi-registry-api", getWebApiAdditionalClasspath());
         logger.info("Adding {} object to ServletContext with key 'nifi-registry.properties'", properties.getClass().getSimpleName());
         webApiContext.setAttribute("nifi-registry.properties", properties);
         logger.info("Adding {} object to ServletContext with key 'nifi-registry.key'", masterKeyProvider.getClass().getSimpleName());
@@ -257,7 +261,13 @@ public class JettyServer {
         server.setHandler(handlers);
     }
 
-    private WebAppContext loadWar(final File warFile, final String contextPath) throws IOException {
+    private WebAppContext loadWar(final File warFile, final String contextPath)
+            throws IOException {
+        return loadWar(warFile, contextPath, new URL[0]);
+    }
+
+    private WebAppContext loadWar(final File warFile, final String contextPath, final URL[] additionalResources)
+            throws IOException {
         final WebAppContext webappContext = new WebAppContext(warFile.getPath(), contextPath);
         webappContext.setContextPath(contextPath);
         webappContext.setDisplayName(contextPath);
@@ -289,10 +299,73 @@ public class JettyServer {
         // configure the max form size (3x the default)
         webappContext.setMaxFormContentSize(600000);
 
-        webappContext.setClassLoader(new WebAppClassLoader(ClassLoader.getSystemClassLoader(), webappContext));
+        // start out assuming the system ClassLoader will be the parent, but if additional resources were specified then
+        // inject a new ClassLoader in between the system and webapp ClassLoaders that contains the additional resources
+        ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
+        if (additionalResources != null && additionalResources.length > 0) {
+            URLClassLoader additionalClassLoader = new URLClassLoader(additionalResources, ClassLoader.getSystemClassLoader());
+            parentClassLoader = additionalClassLoader;
+        }
+
+        webappContext.setClassLoader(new WebAppClassLoader(parentClassLoader, webappContext));
 
         logger.info("Loading WAR: " + warFile.getAbsolutePath() + " with context path set to " + contextPath);
         return webappContext;
+    }
+
+    private URL[] getWebApiAdditionalClasspath() {
+        final String dbDriverDir = properties.getDatabaseDriverDirectory();
+
+        if (StringUtils.isBlank(dbDriverDir)) {
+            logger.info("No database driver directory was specified");
+            return new URL[0];
+        }
+
+        final File dirFile = new File(dbDriverDir);
+
+        if (!dirFile.exists()) {
+            logger.warn("Skipping database driver directory that does not exist: " + dbDriverDir);
+            return new URL[0];
+        }
+
+        if (!dirFile.canRead()) {
+            logger.warn("Skipping database driver directory that can not be read: " + dbDriverDir);
+            return new URL[0];
+        }
+
+        final List<URL> resources = new LinkedList<>();
+        try {
+            resources.add(dirFile.toURI().toURL());
+        } catch (final MalformedURLException mfe) {
+            logger.warn("Unable to add {} to classpath due to {}", new Object[]{ dirFile.getAbsolutePath(), mfe.getMessage()}, mfe);
+        }
+
+        if (dirFile.isDirectory()) {
+            final File[] files = dirFile.listFiles();
+            if (files != null) {
+                for (final File resource : files) {
+                    if (resource.isDirectory()) {
+                        logger.warn("Recursive directories are not supported, skipping " + resource.getAbsolutePath());
+                    } else {
+                        try {
+                            resources.add(resource.toURI().toURL());
+                        } catch (final MalformedURLException mfe) {
+                            logger.warn("Unable to add {} to classpath due to {}", new Object[]{ resource.getAbsolutePath(), mfe.getMessage()}, mfe);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!resources.isEmpty()) {
+            logger.info("Added additional resources to nifi-registry-api classpath: [");
+            for (URL resource : resources) {
+                logger.info(" " + resource.toString());
+            }
+            logger.info("]");
+        }
+
+        return resources.toArray(new URL[resources.size()]);
     }
 
     private ContextHandler createDocsWebApp(final String contextPath) throws IOException {
