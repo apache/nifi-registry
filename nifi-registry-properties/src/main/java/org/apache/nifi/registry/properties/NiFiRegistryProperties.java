@@ -58,8 +58,18 @@ public class NiFiRegistryProperties extends Properties {
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
 
+    // Original DB properties
     public static final String DATABASE_DIRECTORY = "nifi.registry.db.directory";
     public static final String DATABASE_URL_APPEND = "nifi.registry.db.url.append";
+
+    // New style DB properties
+    public static final String DATABASE_URL = "nifi.registry.db.url";
+    public static final String DATABASE_DRIVER_CLASS_NAME = "nifi.registry.db.driver.class";
+    public static final String DATABASE_DRIVER_DIR = "nifi.registry.db.driver.directory";
+    public static final String DATABASE_USERNAME = "nifi.registry.db.username";
+    public static final String DATABASE_PASSWORD = "nifi.registry.db.password";
+    public static final String DATABASE_MAX_CONNECTIONS = "nifi.registry.db.maxConnections";
+    public static final String DATABASE_SQL_DEBUG = "nifi.registry.db.sql.debug";
 
     // Kerberos properties
     public static final String KERBEROS_KRB5_FILE = "nifi.registry.kerberos.krb5.file";
@@ -150,12 +160,46 @@ public class NiFiRegistryProperties extends Properties {
         return getPropertyAsFile(PROVIDERS_CONFIGURATION_FILE, DEFAULT_PROVIDERS_CONFIGURATION_FILE);
     }
 
-    public String getDatabaseDirectory() {
+    public String getLegacyDatabaseDirectory() {
         return getProperty(DATABASE_DIRECTORY);
     }
 
-    public String getDatabaseUrlAppend() {
+    public String getLegacyDatabaseUrlAppend() {
         return getProperty(DATABASE_URL_APPEND);
+    }
+
+    public String getDatabaseUrl() {
+        return getProperty(DATABASE_URL);
+    }
+
+    public String getDatabaseDriverClassName() {
+        return getProperty(DATABASE_DRIVER_CLASS_NAME);
+    }
+
+    public String getDatabaseDriverDirectory() {
+        return getProperty(DATABASE_DRIVER_DIR);
+    }
+
+    public String getDatabaseUsername() {
+        return getProperty(DATABASE_USERNAME);
+    }
+
+    public String getDatabasePassword() {
+        return getProperty(DATABASE_PASSWORD);
+    }
+
+    public Integer getDatabaseMaxConnections() {
+        return getPropertyAsInteger(DATABASE_MAX_CONNECTIONS);
+    }
+
+    public boolean getDatabaseSqlDebug() {
+        final String value = getProperty(DATABASE_SQL_DEBUG);
+
+        if (StringUtils.isBlank(value)) {
+            return false;
+        }
+
+        return "true".equalsIgnoreCase(value.trim());
     }
 
     public File getAuthorizersConfigurationFile() {
