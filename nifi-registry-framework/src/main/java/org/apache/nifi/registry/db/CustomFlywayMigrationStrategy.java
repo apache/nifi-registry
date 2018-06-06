@@ -35,6 +35,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -67,9 +68,18 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
             LOGGER.info("Found existing database...");
         }
 
-        final boolean existingLegacyDatabase = !StringUtils.isBlank(properties.getLegacyDatabaseDirectory());
-        if (existingLegacyDatabase) {
+        boolean existingLegacyDatabase = false;
+        if (!StringUtils.isBlank(properties.getLegacyDatabaseDirectory())) {
             LOGGER.info("Found legacy database properties...");
+
+            final File legacyDatabaseFile = new File(properties.getLegacyDatabaseDirectory(), "nifi-registry.mv.db");
+            if (legacyDatabaseFile.exists()) {
+                LOGGER.info("Found legacy database file...");
+                existingLegacyDatabase = true;
+            } else {
+                LOGGER.info("Did not find legacy database file...");
+                existingLegacyDatabase = false;
+            }
         }
 
         // If newDatabase is true, then we need to run the Flyway migration first to create all the tables, then the data migration
