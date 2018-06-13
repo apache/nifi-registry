@@ -942,6 +942,7 @@ public class RunNiFiRegistry {
         cmd.add(classPath);
         cmd.addAll(javaAdditionalArgs);
         cmd.add("-Dnifi.registry.properties.file.path=" + nifiRegistryPropsFilename);
+        cmd.add("-Dnifi.registry.bootstrap.config.file.path=" + bootstrapConfigFile.getAbsolutePath());
         cmd.add("-Dnifi.registry.bootstrap.listen.port=" + listenPort);
         cmd.add("-Dapp=NiFiRegistry");
         cmd.add("-Dorg.apache.nifi.registry.bootstrap.config.log.dir=" + nifiRegistryLogDir);

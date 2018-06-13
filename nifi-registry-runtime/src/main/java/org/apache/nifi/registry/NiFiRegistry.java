@@ -42,8 +42,11 @@ public class NiFiRegistry {
 
     public static final String BOOTSTRAP_PORT_PROPERTY = "nifi.registry.bootstrap.listen.port";
 
-    public static final String REGISTRY_BOOTSTRAP_FILE_LOCATION = "conf/bootstrap.conf";
-    public static final String REGISTRY_PROPERTIES_FILE_LOCATION = "conf/nifi-registry.properties";
+    public static final String NIFI_REGISTRY_PROPERTIES_FILE_PATH_PROPERTY = "nifi.registry.properties.file.path";
+    public static final String NIFI_REGISTRY_BOOTSTRAP_FILE_PATH_PROPERTY = "nifi.registry.bootstrap.config.file.path";
+
+    public static final String RELATIVE_BOOTSTRAP_FILE_LOCATION = "conf/bootstrap.conf";
+    public static final String RELATIVE_PROPERTIES_FILE_LOCATION = "conf/nifi-registry.properties";
 
     private final JettyServer server;
     private final BootstrapListener bootstrapListener;
@@ -147,8 +150,9 @@ public class NiFiRegistry {
         final CryptoKeyProvider masterKeyProvider;
         final NiFiRegistryProperties properties;
         try {
-            masterKeyProvider = new BootstrapFileCryptoKeyProvider(REGISTRY_BOOTSTRAP_FILE_LOCATION);
-            LOGGER.info("Read property protection key from {}", REGISTRY_BOOTSTRAP_FILE_LOCATION);
+            final String bootstrapConfigFilePath = System.getProperty(NIFI_REGISTRY_BOOTSTRAP_FILE_PATH_PROPERTY, RELATIVE_BOOTSTRAP_FILE_LOCATION);
+            masterKeyProvider = new BootstrapFileCryptoKeyProvider(bootstrapConfigFilePath);
+            LOGGER.info("Read property protection key from {}", bootstrapConfigFilePath);
             properties = initializeProperties(masterKeyProvider);
         } catch (final IllegalArgumentException iae) {
             throw new RuntimeException("Unable to load properties: " + iae, iae);
@@ -174,7 +178,8 @@ public class NiFiRegistry {
         try {
             try {
                 // Load properties using key. If properties are protected and key missing, throw RuntimeException
-                NiFiRegistryProperties properties = NiFiRegistryPropertiesLoader.withKey(key).load(REGISTRY_PROPERTIES_FILE_LOCATION);
+                final String nifiRegistryPropertiesFilePath = System.getProperty(NIFI_REGISTRY_PROPERTIES_FILE_PATH_PROPERTY, RELATIVE_PROPERTIES_FILE_LOCATION);
+                final NiFiRegistryProperties properties = NiFiRegistryPropertiesLoader.withKey(key).load(nifiRegistryPropertiesFilePath);
                 LOGGER.info("Loaded {} properties", properties.size());
                 return properties;
             } catch (SensitivePropertyProtectionException e) {
