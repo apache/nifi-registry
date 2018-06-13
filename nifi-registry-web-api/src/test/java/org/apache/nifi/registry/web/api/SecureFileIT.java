@@ -86,6 +86,7 @@ public class SecureFileIT extends IntegrationTestBase {
         // Given: an empty registry returns these resources
         String expected = "[" +
                 "{\"identifier\":\"/actuator\",\"name\":\"Actuator\"}," +
+                "{\"identifier\":\"/swagger\",\"name\":\"Swagger\"}," +
                 "{\"identifier\":\"/policies\",\"name\":\"Access Policies\"}," +
                 "{\"identifier\":\"/tenants\",\"name\":\"Tenants\"}," +
                 "{\"identifier\":\"/proxy\",\"name\":\"Proxy User Requests\"}," +

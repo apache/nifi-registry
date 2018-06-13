@@ -536,7 +536,7 @@ class AuthorizationServiceSpec extends Specification {
 
         then:
         resources != null
-        resources.size() == 7
+        resources.size() == 8
         def sortedResources = resources.sort{it.identifier}
         sortedResources[0].identifier == "/actuator"
         sortedResources[1].identifier == "/buckets"
@@ -544,7 +544,8 @@ class AuthorizationServiceSpec extends Specification {
         sortedResources[3].identifier == "/buckets/b2"
         sortedResources[4].identifier == "/policies"
         sortedResources[5].identifier == "/proxy"
-        sortedResources[6].identifier == "/tenants"
+        sortedResources[6].identifier == "/swagger"
+        sortedResources[7].identifier == "/tenants"
 
     }
 
@@ -582,6 +583,7 @@ class AuthorizationServiceSpec extends Specification {
         authorizableLookup.getAuthorizableByResource("/buckets/b2") >> denied
         authorizableLookup.getAuthorizableByResource("/policies")   >> authorized
         authorizableLookup.getAuthorizableByResource("/proxy")      >> denied
+        authorizableLookup.getAuthorizableByResource("/swagger")    >> denied
         authorizableLookup.getAuthorizableByResource("/tenants")    >> authorized
 
 

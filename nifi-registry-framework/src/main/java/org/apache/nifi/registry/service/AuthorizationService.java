@@ -530,6 +530,9 @@ public class AuthorizationService {
         if (includeFilter == null || includeFilter.equals(ResourceType.Actuator)) {
             resources.add(ResourceFactory.getActuatorResource());
         }
+        if (includeFilter == null || includeFilter.equals(ResourceType.Swagger)) {
+            resources.add(ResourceFactory.getSwaggerResource());
+        }
         if (includeFilter == null || includeFilter.equals(ResourceType.Bucket)) {
             resources.add(ResourceFactory.getBucketsResource());
             // add all buckets

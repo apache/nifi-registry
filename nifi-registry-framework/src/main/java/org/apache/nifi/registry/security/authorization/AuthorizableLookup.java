@@ -28,6 +28,13 @@ public interface AuthorizableLookup {
     Authorizable getActuatorAuthorizable();
 
     /**
+     * Get the authorizable for /swagger.
+     *
+     * @return authorizable
+     */
+    Authorizable getSwaggerAuthorizable();
+
+    /**
      * Get the authorizable for /proxy.
      *
      * @return authorizable

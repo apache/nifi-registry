@@ -69,8 +69,8 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         // so it can directly set the HttpServletResponse instead of indirectly through a JAX-RS Response
         property(ServerProperties.RESPONSE_SET_STATUS_OVER_SEND_ERROR, true);
 
-        // configure jersey to ignore resource paths for actuator
-        property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/actuator.*");
+        // configure jersey to ignore resource paths for actuator and swagger-ui
+        property(ServletProperties.FILTER_STATIC_CONTENT_REGEX, "/(actuator|swagger/).*");
     }
 
 }
