@@ -411,6 +411,8 @@
                         <exclude>src/main/frontend/package.json</exclude>
                         <exclude>src/main/frontend/package-lock.json</exclude>
                         <exclude>src/main/platform/core/README.md</exclude>
+                        <exclude>src/main/frontend/karma-test-shim.js</exclude>
+                        <exclude>src/main/webapp/systemjs-angular-loader.js</exclude>
                     </excludes>
                 </configuration>
             </plugin>
