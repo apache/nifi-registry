@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "",
   "scripts": {
-    "protractor": "protractor protractor.config.js",
     "test": "./node_modules/protractor/bin/webdriver-manager update --gecko false && karma start karma.conf.js --single-run",
     "test:dev": "./node_modules/protractor/bin/webdriver-manager update --gecko false && karma start karma.conf.js"
   },
