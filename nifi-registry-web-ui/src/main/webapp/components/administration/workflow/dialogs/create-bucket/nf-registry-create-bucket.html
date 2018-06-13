@@ -38,7 +38,7 @@ limitations under the License.
                 i18n="Cancel creation of new bucket|A button for cancelling the creation of a new bucket in the registry.@@nf-admin-workflow-cancel-create-bucket-button">
             Cancel
         </button>
-        <button [disabled]="newBucketInput.value.length === 0" class="push-left-sm" (click)="createBucket(newBucketInput)" color="fds-primary" mat-raised-button
+        <button [disabled]="newBucketInput.value.length === 0" class="push-left-sm" id="create-new-bucket-button" (click)="createBucket(newBucketInput)" color="fds-primary" mat-raised-button
                 i18n="Create new bucket button|A button for creating a new bucket in the registry.@@nf-admin-workflow-create-bucket-button">
             Create
         </button>
