@@ -25,11 +25,6 @@ module.exports = function (grunt) {
                 outputStyle: 'compressed',
                 sourceMap: true
             },
-            minifyFds: {
-                files: [{
-                    './platform/core/common/styles/css/fluid-design-system.min.css': ['./platform/core/common/styles/fluid-design-system.scss']
-                }]
-            },
             minifyWebUi: {
                 files: [{
                     './webapp/css/nf-registry.min.css': ['./webapp/theming/nf-registry.scss']
@@ -74,18 +69,9 @@ module.exports = function (grunt) {
                     dest: './',
                     ext: '.min.css.gz'
                 }]
-            },
-            fdsStyles: {
-                files: [{
-                    expand: true,
-                    src: ['./platform/core/common/styles/css/fluid-design-system.min.css'],
-                    dest: './',
-                    ext: '.min.css.gz'
-                }]
             }
         }
     });
-    grunt.registerTask('compile-fds-styles', ['sass:minifyFds', 'compress:fdsStyles']);
     grunt.registerTask('compile-web-ui-styles', ['sass:minifyWebUi', 'compress:webUiStyles']);
     grunt.registerTask('bundle-web-ui', ['systemjs:bundleWebUi', 'compress:webUi']);
 };

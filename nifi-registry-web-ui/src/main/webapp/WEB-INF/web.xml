@@ -16,16 +16,6 @@
 <web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
     <display-name>nifi-registry</display-name>
 
-    <!-- servlet to map to fluid design system page -->
-    <servlet>
-        <servlet-name>FluidDesignSystem</servlet-name>
-        <jsp-file>/WEB-INF/pages/index.jsp</jsp-file>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>FluidDesignSystem</servlet-name>
-        <url-pattern>/fluid-design-system</url-pattern>
-    </servlet-mapping>
-
     <!-- servlet to map to login page -->
     <servlet>
         <servlet-name>Login</servlet-name>

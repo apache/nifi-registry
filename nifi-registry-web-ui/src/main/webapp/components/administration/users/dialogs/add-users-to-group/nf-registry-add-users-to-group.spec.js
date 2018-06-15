@@ -20,7 +20,7 @@ var NfRegistryService = require('nifi-registry/services/nf-registry.service.js')
 var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
 var rxjs = require('rxjs/Rx');
 var covalentCore = require('@covalent/core');
-var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
+var fdsSnackBarsModule = require('@flow-design-system/snackbars');
 
 describe('NfRegistryAddUsersToGroup Component isolated unit tests', function () {
     var comp;

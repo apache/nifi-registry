@@ -16,8 +16,8 @@
  */
 
 var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
-var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
+var fdsDialogsModule = require('@flow-design-system/dialogs');
+var fdsSnackBarsModule = require('@flow-design-system/snackbars');
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var ngRouter = require('@angular/router');
@@ -585,6 +585,20 @@ NfRegistryManageUser.prototype = {
                 });
             }
         });
+    },
+
+    /**
+     * Determine disabled state of 'Add to Groups' button
+     * @returns {boolean}
+     */
+    canAddNonConfigurableUserToGroup: function() {
+        var disabled = true;
+        this.nfRegistryService.groups.forEach(function (userGroup) {
+            if(userGroup.configurable === true){
+                disabled = false;
+            }
+        });
+        return disabled;
     }
 };
 

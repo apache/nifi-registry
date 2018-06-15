@@ -22,7 +22,7 @@ var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
 var ngRouter = require('@angular/router');
 var covalentCore = require('@covalent/core');
-var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
+var fdsSnackBarsModule = require('@flow-design-system/snackbars');
 
 /**
  * NfRegistryAddPolicyToBucket constructor.

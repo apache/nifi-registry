@@ -152,29 +152,6 @@
                         </configuration>
                     </execution>
                     <!--
-                        Simulate an npm installed FDS.
-                    -->
-                    <execution>
-                        <id>copy-fluid-design-system</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${frontend.working.dir}/node_modules/@fluid-design-system/dist
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>platform/**/*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!--
                         Stage client side node_modules dependencies for inclusion in .war.
                     -->
                     <execution>
@@ -191,11 +168,11 @@
                                     <filtering>false</filtering>
                                     <includes>
                                         <!-- roboto -->
-                                        <include>roboto-fontface/fonts/Roboto-Slab/Roboto-Slab-Regular.ttf</include>
-                                        <include>roboto-fontface/fonts/Roboto/Roboto-Regular.ttf</include>
-                                        <include>roboto-fontface/fonts/Roboto/Roboto-Medium.ttf</include>
-                                        <include>roboto-fontface/fonts/Roboto/Roboto-Light.ttf</include>
-                                        <include>roboto-fontface/fonts/Roboto/Roboto-Bold.ttf</include>
+                                        <include>roboto-fontface/fonts/roboto-slab/Roboto-Slab-Regular.ttf</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Regular.ttf</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Medium.ttf</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Light.ttf</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Bold.ttf</include>
                                         <include>roboto-fontface/LICENSE*</include>
                                         <!-- covalent -->
                                         <include>@covalent/core/common/platform.css</include>
@@ -203,10 +180,10 @@
                                         <include>@covalent/core/common/styles/font/MaterialIcons-Regular.ttf</include>
                                         <include>@covalent/core/README.md</include>
                                         <!-- FDS -->
-                                        <include>
-                                            @fluid-design-system/dist/platform/core/common/styles/css/*
-                                        </include>
-                                        <include>@fluid-design-system/dist/platform/core/LICENSE.md</include>
+                                        <include>@nifi-fds/core/common/styles/css/*</include>
+                                        <include>@nifi-fds/core/LICENSE</include>
+                                        <include>@nifi-fds/core/NOTICE</include>
+                                        <include>@nifi-fds/core/README.md</include>
                                         <!-- font-awesome -->
                                         <include>font-awesome/css/font-awesome.css</include>
                                         <include>font-awesome/fonts/fontawesome-webfont.woff2</include>
@@ -300,20 +277,6 @@
                         </configuration>
                     </execution>
                     <!--
-                        Compile FDS SASS into css and gzip compress it.
-                    -->
-                    <execution>
-                        <id>grunt-compile-fds-sass</id>
-                        <goals>
-                            <goal>grunt</goal>
-                        </goals>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <arguments>compile-fds-styles</arguments>
-                            <workingDirectory>${frontend.working.dir}</workingDirectory>
-                        </configuration>
-                    </execution>
-                    <!--
                         Compile nifi registry web ui SASS into css and gzip compress it.
                     -->
                     <execution>
@@ -327,13 +290,6 @@
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
                     <!--
                         Bundle, minify, and gzip compress all the javascript.
                     -->
@@ -483,7 +439,7 @@
                                             <directory>${frontend.working.dir}/node_modules</directory>
                                             <filtering>false</filtering>
                                             <includes>
-                                                <include>@fluid-design-system/**/*</include>
+                                                <include>@nifi-fds/**/*</include>
                                                 <include>@angular/**/*</include>
                                                 <include>hammerjs/**/*</include>
                                                 <include>@covalent/**/*</include>
