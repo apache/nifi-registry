@@ -585,6 +585,20 @@ NfRegistryManageUser.prototype = {
                 });
             }
         });
+    },
+
+    /**
+     * Determine disabled state of 'Add to Groups' button
+     * @returns {boolean}
+     */
+    canAddNonConfigurableUserToGroup: function() {
+        var disabled = true;
+        this.nfRegistryService.groups.forEach(function (userGroup) {
+            if(userGroup.configurable === true){
+                disabled = false;
+            }
+        });
+        return disabled;
     }
 };
 

@@ -154,7 +154,7 @@ limitations under the License.
                 <div flex fxLayout="row" fxLayoutAlign="space-between center">
                     <span class="md-card-title">Membership ({{nfRegistryService.user.userGroups.length}})</span>
                     <button color="fds-secondary"
-                            [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || !nfRegistryService.user.configurable"
+                            [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || canAddNonConfigurableUserToGroup()"
                             mat-raised-button
                             (click)="addUserToGroups()">
                         Add To Group
