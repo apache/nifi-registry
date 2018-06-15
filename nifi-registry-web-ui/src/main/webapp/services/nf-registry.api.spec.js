@@ -955,11 +955,6 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         // api call
         nfRegistryApi.getResourcePoliciesById('read', '/buckets', '123').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error');
-            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error');
-            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
@@ -1000,11 +995,6 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         // api call
         nfRegistryApi.getPolicyActionResource('read', '/buckets').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error');
-            var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
-            expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error');
-            expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-            expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
