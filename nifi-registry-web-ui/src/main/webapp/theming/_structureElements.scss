@@ -137,3 +137,7 @@ mat-sidenav {
   left: 0px;
   overflow: auto;
 }
+
+body[fds] mat-form-field.td-chips-form-field.mat-input-container {
+  width: unset;
+}
