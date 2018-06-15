@@ -19,10 +19,10 @@
     <parent>
         <groupId>org.apache.nifi.registry</groupId>
         <artifactId>nifi-registry</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.0</version>
     </parent>
     <artifactId>nifi-registry-web-api</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0</version>
     <packaging>war</packaging>
 
     <build>
@@ -158,29 +158,24 @@
                                     <echo>Copy static Swagger UI files to target</echo>
                                     <copy todir="${project.build.directory}/classes/static/swagger">
                                         <fileset dir="${project.build.directory}/swagger-ui-${swagger.ui.version}/dist">
-                                            <include name="**"/>
+                                            <include name="**" />
                                         </fileset>
                                     </copy>
                                     <echo>Disable schema validation by removing validatorUrl</echo>
-                                    <replace token="https://online.swagger.io/validator"
-                                             value=""
-                                             dir="${project.build.directory}/classes/static/swagger">
-                                        <include name="swagger-ui-bundle.js"/>
-                                        <include name="swagger-ui-standalone-preset.js"/>
+                                    <replace token="https://online.swagger.io/validator" value="" dir="${project.build.directory}/classes/static/swagger">
+                                        <include name="swagger-ui-bundle.js" />
+                                        <include name="swagger-ui-standalone-preset.js" />
                                     </replace>
                                     <echo>Rename 'index.html' to 'ui.html'</echo>
-                                    <move file="${project.build.directory}/classes/static/swagger/index.html"
-                                          tofile="${project.build.directory}/classes/static/swagger/ui.html"/>
+                                    <move file="${project.build.directory}/classes/static/swagger/index.html" tofile="${project.build.directory}/classes/static/swagger/ui.html" />
                                     <echo>Replace default swagger.json location</echo>
-                                    <replace token="http://petstore.swagger.io/v2/swagger.json"
-                                             value="/nifi-registry-api/swagger/swagger.json"
-                                             dir="${project.build.directory}/classes/static/swagger">
-                                        <include name="ui.html"/>
+                                    <replace token="http://petstore.swagger.io/v2/swagger.json" value="/nifi-registry-api/swagger/swagger.json" dir="${project.build.directory}/classes/static/swagger">
+                                        <include name="ui.html" />
                                     </replace>
                                     <echo>Copy swagger.json into static assets folder</echo>
                                     <copy todir="${project.build.directory}/classes/static/swagger">
                                         <fileset dir="${project.build.directory}/swagger">
-                                            <include name="*.json"/>
+                                            <include name="*.json" />
                                         </fileset>
                                     </copy>
                                 </sequential>
@@ -274,30 +269,30 @@
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-framework</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-properties</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>provided</scope> <!-- This will be in the lib directory -->
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-security-api</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>provided</scope> <!-- This will be in lib directory -->
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-provider-api</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>provided</scope> <!-- This will be in lib directory -->
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-security-utils</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -326,7 +321,7 @@
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-client</artifactId>
-            <version>0.2.0-SNAPSHOT</version>
+            <version>0.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
