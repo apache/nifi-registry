@@ -77,7 +77,7 @@ module.exports = function (config) {
             {pattern: 'node_modules/@angular/**/*.js.map', included: false, watched: false},
             {pattern: 'node_modules/@covalent/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/@covalent/**/*.js.map', included: false, watched: false},
-            {pattern: 'node_modules/@fluid-design-system/**/*.js', included: false, watched: false},
+            {pattern: 'node_modules/@nifi-fds/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/jquery/**/*.js', included: false, watched: false},
             {pattern: 'node_modules/roboto-fontface/**/*.ttf', included: false, watched: false},
             {pattern: 'node_modules/angular2-moment/**/*.js', included: false, watched: false},
@@ -88,23 +88,23 @@ module.exports = function (config) {
             {pattern: appBase + 'systemjs.spec.config.js', included: false, watched: false},
             'karma-test-shim.js', // optionally extend SystemJS mapping e.g., with barrels
 
-            // Include the Fluid Design System (which includes the Teradata Covalent and
+            // Include the Flow Design System (which includes the Teradata Covalent and
             // Angular Material themes) in the test suite.
             {
-                pattern: 'node_modules/@fluid-design-system/dist/platform/core/common/styles/css/*.min.css',
+                pattern: 'node_modules/@nifi-fds/core/common/styles/css/*.min.css',
                 included: true,
                 watched: true,
                 served: true
             },
             {
-                pattern: 'node_modules/@fluid-design-system/dist/platform/core/**/*.html',
+                pattern: 'node_modules/@nifi-fds/core/**/*.html',
                 included: true,
                 watched: true,
                 served: true
             },
 
             // Include the Nifi Registry styles (currently built based off of the
-            // @fluid-design-system/dist/platform/core/common/styles/_globalVars.scss)
+            // @nifi-fds/core/common/styles/_globalVars.scss)
             {
                 pattern: 'webapp/css/*.css',
                 included: true,
@@ -121,7 +121,7 @@ module.exports = function (config) {
             {pattern: '**/*.svg', watched: false, included: true, served: true},
 
             // Paths for debugging with source maps in dev tools
-            {pattern: 'node_modules/@fluid-design-system/dist/platform/**/*.css.map', included: false, watched: false},
+            {pattern: 'node_modules/@nifi-fds/core/**/*.css.map', included: false, watched: false},
             {pattern: appBase + '**/*.js.map', included: false, watched: false},
             {pattern: appBase + '**/*.css.map', included: false, watched: false},
             {pattern: appBase + '**/*.js', included: false, watched: false}

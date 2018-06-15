@@ -22,7 +22,7 @@ var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngRouter = require('@angular/router');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
 var ngMaterial = require('@angular/material');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var fdsDialogsModule = require('@flow-design-system/dialogs');
 var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
 var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
 

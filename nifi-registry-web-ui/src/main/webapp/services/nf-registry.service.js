@@ -17,8 +17,8 @@
 
 var covalentCore = require('@covalent/core');
 var ngRouter = require('@angular/router');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
-var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
+var fdsDialogsModule = require('@flow-design-system/dialogs');
+var fdsSnackBarsModule = require('@flow-design-system/snackbars');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var rxjs = require('rxjs/Observable');
