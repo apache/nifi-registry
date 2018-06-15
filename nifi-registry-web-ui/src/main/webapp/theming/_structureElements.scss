@@ -83,7 +83,7 @@ body {
 
 #nifi-registry-toolbar span, #nifi-registry-toolbar .link {
   color: $grey5;
-  font-weight: normal;
+  font-weight: lighter;
 }
 
 #nf-registry-perspectives-container {
@@ -140,4 +140,17 @@ mat-sidenav {
 
 body[fds] mat-form-field.td-chips-form-field.mat-input-container {
   width: unset;
+}
+
+body[fds] .md-title {
+  font-weight: normal;
+  color: $grey3;
+}
+
+body[fds] .md-subhead {
+  font-weight: lighter;
+}
+
+body[fds] .td-chip span {
+  font-size: 10px;
 }

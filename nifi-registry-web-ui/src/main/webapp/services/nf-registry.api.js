@@ -559,12 +559,6 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                self.dialogService.openConfirm({
-                    title: 'Error',
-                    message: error.error,
-                    acceptButton: 'Ok',
-                    acceptButtonColor: 'fds-warn'
-                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -583,12 +577,6 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                self.dialogService.openConfirm({
-                    title: 'Error',
-                    message: error.error,
-                    acceptButton: 'Ok',
-                    acceptButtonColor: 'fds-warn'
-                });
                 return rxjs.Observable.of(error);
             });
     },
