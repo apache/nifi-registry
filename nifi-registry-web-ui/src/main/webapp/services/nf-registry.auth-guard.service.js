@@ -18,7 +18,7 @@
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngRouter = require('@angular/router');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var fdsDialogsModule = require('@flow-design-system/dialogs');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 
 /**

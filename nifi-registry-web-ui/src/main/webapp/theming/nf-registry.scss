@@ -19,8 +19,8 @@
  * In this file you should centralize your imports. After compilation simply import this file using the following HTML or equivalent:
  * <link href='/stylesheets/nifi-flow-registry.css' media='screen, projection' rel='stylesheet' type='text/css' /> */
 
-@import '../../platform/core/common/styles/globalVars';
-@import '../../platform/core/theming/all-theme';
+@import '../../node_modules/@nifi-fds/core/common/styles/globalVars';
+@import '../../node_modules/@nifi-fds/core/theming/all-theme';
 @import 'structureElements';
 @import 'helperClasses';
 @import 'components/administration/structureElements';

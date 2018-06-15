@@ -17,7 +17,7 @@
 
 var NfStorage = require('nifi-registry/services/nf-storage.service.js');
 var ngCommonHttp = require('@angular/common/http');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var fdsDialogsModule = require('@flow-design-system/dialogs');
 var rxjs = require('rxjs/Observable');
 var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
@@ -559,12 +559,6 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                self.dialogService.openConfirm({
-                    title: 'Error',
-                    message: error.error,
-                    acceptButton: 'Ok',
-                    acceptButtonColor: 'fds-warn'
-                });
                 return rxjs.Observable.of(error);
             });
     },
@@ -583,12 +577,6 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                self.dialogService.openConfirm({
-                    title: 'Error',
-                    message: error.error,
-                    acceptButton: 'Ok',
-                    acceptButtonColor: 'fds-warn'
-                });
                 return rxjs.Observable.of(error);
             });
     },

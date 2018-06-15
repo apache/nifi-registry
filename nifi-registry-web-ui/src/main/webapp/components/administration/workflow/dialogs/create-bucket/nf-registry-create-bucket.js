@@ -18,7 +18,7 @@ var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
 var ngMaterial = require('@angular/material');
-var fdsSnackBarsModule = require('@fluid-design-system/snackbars');
+var fdsSnackBarsModule = require('@flow-design-system/snackbars');
 
 /**
  * NfRegistryCreateBucket constructor.

@@ -17,7 +17,7 @@
 var ngCore = require('@angular/core');
 var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
 var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var fdsDialogsModule = require('@fluid-design-system/dialogs');
+var fdsDialogsModule = require('@flow-design-system/dialogs');
 var ngRouter = require('@angular/router');
 
 /**
