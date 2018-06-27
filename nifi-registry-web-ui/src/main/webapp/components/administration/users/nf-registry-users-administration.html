@@ -24,7 +24,7 @@ limitations under the License.
                       (add)="nfRegistryService.usersSearchAdd($event)"
                       (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
             <div matTooltip="{{(!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite) ? 'You do not have permission. Please contact your system administrator.': ''}}">
-                <button id="add-user-button" class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()" [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite">
+                <button id="add-user-button" class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()" [disabled]="!canEditUsers()">
                     Add User
                 </button>
             </div>
@@ -36,13 +36,13 @@ limitations under the License.
         <mat-menu class="fds-primary-dropdown-button-menu" #userActionMenu="matMenu" [overlapTrigger]="false">
             <div matTooltip="{{nfRegistryService.disableMultiDeleteAction ? 'Please deselect any non-configurable users or groups to enable multi-delete.': ''}}">
                 <button mat-menu-item
-                    [disabled]="((nfRegistryService.getSelectedGroups().length === 0) && (nfRegistryService.getSelectedUsers().length === 0)) || nfRegistryService.disableMultiDeleteAction"
+                    [disabled]="((nfRegistryService.getSelectedGroups().length === 0) && (nfRegistryService.getSelectedUsers().length === 0)) || nfRegistryService.disableMultiDeleteAction || !canEditUsers()"
                     (click)="nfRegistryService.deleteSelectedUsersAndGroups()">
                     <span>Delete</span>
                 </button>
             </div>
             <div matTooltip="{{(nfRegistryService.getSelectedGroups().length > 0) ? 'Only users can be added when creating a new group. Please deselect any groups to enable.': (!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite) ? 'You do not have permission. Please contact your system administrator.': ''}}">
-                <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0) || !nfRegistryService.currentUser.resourcePermissions.tenants.canWrite"
+                <button mat-menu-item [disabled]="(nfRegistryService.getSelectedGroups().length > 0) || !canEditUsers()"
                     (click)="createNewGroup()">
                     <span>Create new group</span>
                 </button>

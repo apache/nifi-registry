@@ -577,6 +577,15 @@ NfRegistryManageGroup.prototype = {
                 });
             }
         });
+    },
+
+    /**
+     * Determine if 'Special Privileges' can be edited.
+     * @returns {boolean}
+     */
+    canEditSpecialPrivileges: function() {
+        return this.nfRegistryService.currentUser.resourcePermissions.policies.canWrite
+                && this.nfRegistryService.registry.config.supportsConfigurableAuthorizer;
     }
 };
 

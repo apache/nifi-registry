@@ -49,7 +49,7 @@ limitations under the License.
             </span>
             </div>
             <mat-checkbox
-                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [disabled]="!canEditSpecialPrivileges()"
                     [checked]="nfRegistryService.user.resourcePermissions.buckets.canRead && nfRegistryService.user.resourcePermissions.buckets.canWrite && nfRegistryService.user.resourcePermissions.buckets.canDelete"
                     (change)="toggleUserManageBucketsPrivileges($event)">
             <span class="description">Can manage buckets<i
@@ -58,26 +58,26 @@ limitations under the License.
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canRead"
                               (change)="toggleUserManageBucketsPrivileges($event, 'read')">
                     <span class="description">Read</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canWrite"
                               (change)="toggleUserManageBucketsPrivileges($event, 'write')">
                     <span class="description">Write</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.buckets.canDelete"
                               (change)="toggleUserManageBucketsPrivileges($event, 'delete')">
                     <span class="description">Delete</span>
                 </mat-checkbox>
             </div>
             <mat-checkbox
-                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [disabled]="!canEditSpecialPrivileges()"
                     [checked]="nfRegistryService.user.resourcePermissions.tenants.canRead && nfRegistryService.user.resourcePermissions.tenants.canWrite && nfRegistryService.user.resourcePermissions.tenants.canDelete"
                     (change)="toggleUserManageTenantsPrivileges($event)">
             <span class="description">Can manage users<i
@@ -86,26 +86,26 @@ limitations under the License.
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canRead"
                               (change)="toggleUserManageTenantsPrivileges($event, 'read')">
                     <span class="description">Read</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canWrite"
                               (change)="toggleUserManageTenantsPrivileges($event, 'write')">
                     <span class="description">Write</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.tenants.canDelete"
                               (change)="toggleUserManageTenantsPrivileges($event, 'delete')">
                     <span class="description">Delete</span>
                 </mat-checkbox>
             </div>
             <mat-checkbox
-                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [disabled]="!canEditSpecialPrivileges()"
                     [checked]="nfRegistryService.user.resourcePermissions.policies.canRead && nfRegistryService.user.resourcePermissions.policies.canWrite && nfRegistryService.user.resourcePermissions.policies.canDelete"
                     (change)="toggleUserManagePoliciesPrivileges($event)">
             <span class="description">Can manage policies<i
@@ -114,26 +114,26 @@ limitations under the License.
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.policies.canRead"
                               (change)="toggleUserManagePoliciesPrivileges($event, 'read')">
                     <span class="description">Read</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.policies.canWrite"
                               (change)="toggleUserManagePoliciesPrivileges($event, 'write')">
                     <span class="description">Write</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.user.resourcePermissions.policies.canDelete"
                               (change)="toggleUserManagePoliciesPrivileges($event, 'delete')">
                     <span class="description">Delete</span>
                 </mat-checkbox>
             </div>
             <mat-checkbox
-                    [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity)"
+                    [disabled]="!canEditSpecialPrivileges()"
                     [checked]="nfRegistryService.user.resourcePermissions.proxy.canWrite"
                     (change)="toggleUserManageProxyPrivileges($event)">
             <span class="description">Can proxy user requests<i

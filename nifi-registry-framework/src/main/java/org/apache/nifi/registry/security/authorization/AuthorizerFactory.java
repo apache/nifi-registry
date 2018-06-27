@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.extension.ExtensionCloseable;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
@@ -193,7 +194,12 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         // configure each authorizer
                         for (final org.apache.nifi.registry.security.authorization.generated.Authorizer provider : authorizerConfiguration.getAuthorizer()) {
                             final Authorizer instance = authorizers.get(provider.getIdentifier());
-                            instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            final Class authorizerClass = instance instanceof WrappedAuthorizer
+                                    ? ((WrappedAuthorizer) instance).getBaseAuthorizer().getClass()
+                                    : instance.getClass();
+                            try (ExtensionCloseable extCloseable = ExtensionCloseable.withComponentClassLoader(extensionManager, authorizerClass)) {
+                                instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            }
                         }
 
                         // get the authorizer instance
@@ -458,351 +464,380 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         };
     }
 
+    private interface WrappedAuthorizer {
+        Authorizer getBaseAuthorizer();
+    }
+
+    private static class ManagedAuthorizerWrapper implements ManagedAuthorizer, WrappedAuthorizer {
+        private final ManagedAuthorizer baseManagedAuthorizer;
+
+        public ManagedAuthorizerWrapper(ManagedAuthorizer baseManagedAuthorizer) {
+            this.baseManagedAuthorizer = baseManagedAuthorizer;
+        }
+
+        @Override
+        public Authorizer getBaseAuthorizer() {
+            return baseManagedAuthorizer;
+        }
+
+        @Override
+        public String getFingerprint() throws AuthorizationAccessException {
+            return baseManagedAuthorizer.getFingerprint();
+        }
+
+        @Override
+        public void inheritFingerprint(String fingerprint) throws AuthorizationAccessException {
+            baseManagedAuthorizer.inheritFingerprint(fingerprint);
+        }
+
+        @Override
+        public void checkInheritability(String proposedFingerprint) throws AuthorizationAccessException, UninheritableAuthorizationsException {
+            baseManagedAuthorizer.checkInheritability(proposedFingerprint);
+        }
+
+        @Override
+        public AccessPolicyProvider getAccessPolicyProvider() {
+            final AccessPolicyProvider baseAccessPolicyProvider = baseManagedAuthorizer.getAccessPolicyProvider();
+            if (baseAccessPolicyProvider instanceof ConfigurableAccessPolicyProvider) {
+                final ConfigurableAccessPolicyProvider baseConfigurableAccessPolicyProvider = (ConfigurableAccessPolicyProvider) baseAccessPolicyProvider;
+                return new ConfigurableAccessPolicyProvider() {
+                    @Override
+                    public String getFingerprint() throws AuthorizationAccessException {
+                        return baseConfigurableAccessPolicyProvider.getFingerprint();
+                    }
+
+                    @Override
+                    public void inheritFingerprint(String fingerprint) throws AuthorizationAccessException {
+                        baseConfigurableAccessPolicyProvider.inheritFingerprint(fingerprint);
+                    }
+
+                    @Override
+                    public void checkInheritability(String proposedFingerprint) throws AuthorizationAccessException, UninheritableAuthorizationsException {
+                        baseConfigurableAccessPolicyProvider.checkInheritability(proposedFingerprint);
+                    }
+
+                    @Override
+                    public AccessPolicy addAccessPolicy(AccessPolicy accessPolicy) throws AuthorizationAccessException {
+                        if (policyExists(baseConfigurableAccessPolicyProvider, accessPolicy)) {
+                            throw new IllegalStateException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
+                        }
+                        return baseConfigurableAccessPolicyProvider.addAccessPolicy(accessPolicy);
+                    }
+
+                    @Override
+                    public boolean isConfigurable(AccessPolicy accessPolicy) {
+                        return baseConfigurableAccessPolicyProvider.isConfigurable(accessPolicy);
+                    }
+
+                    @Override
+                    public AccessPolicy updateAccessPolicy(AccessPolicy accessPolicy) throws AuthorizationAccessException {
+                        if (!baseConfigurableAccessPolicyProvider.isConfigurable(accessPolicy)) {
+                            throw new IllegalArgumentException("The specified access policy is not support modification.");
+                        }
+                        return baseConfigurableAccessPolicyProvider.updateAccessPolicy(accessPolicy);
+                    }
+
+                    @Override
+                    public AccessPolicy deleteAccessPolicy(AccessPolicy accessPolicy) throws AuthorizationAccessException {
+                        if (!baseConfigurableAccessPolicyProvider.isConfigurable(accessPolicy)) {
+                            throw new IllegalArgumentException("The specified access policy is not support modification.");
+                        }
+                        return baseConfigurableAccessPolicyProvider.deleteAccessPolicy(accessPolicy);
+                    }
+
+                    @Override
+                    public AccessPolicy deleteAccessPolicy(String accessPolicyIdentifier) throws AuthorizationAccessException {
+                        if (!baseConfigurableAccessPolicyProvider.isConfigurable(baseConfigurableAccessPolicyProvider.getAccessPolicy(accessPolicyIdentifier))) {
+                            throw new IllegalArgumentException("The specified access policy is not support modification.");
+                        }
+                        return baseConfigurableAccessPolicyProvider.deleteAccessPolicy(accessPolicyIdentifier);
+                    }
+
+                    @Override
+                    public Set<AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
+                        return baseConfigurableAccessPolicyProvider.getAccessPolicies();
+                    }
+
+                    @Override
+                    public AccessPolicy getAccessPolicy(String identifier) throws AuthorizationAccessException {
+                        return baseConfigurableAccessPolicyProvider.getAccessPolicy(identifier);
+                    }
+
+                    @Override
+                    public AccessPolicy getAccessPolicy(String resourceIdentifier, RequestAction action) throws AuthorizationAccessException {
+                        return baseConfigurableAccessPolicyProvider.getAccessPolicy(resourceIdentifier, action);
+                    }
+
+                    @Override
+                    public UserGroupProvider getUserGroupProvider() {
+                        final UserGroupProvider baseUserGroupProvider = baseConfigurableAccessPolicyProvider.getUserGroupProvider();
+                        if (baseUserGroupProvider instanceof ConfigurableUserGroupProvider) {
+                            final ConfigurableUserGroupProvider baseConfigurableUserGroupProvider = (ConfigurableUserGroupProvider) baseUserGroupProvider;
+                            return new ConfigurableUserGroupProvider() {
+                                @Override
+                                public String getFingerprint() throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getFingerprint();
+                                }
+
+                                @Override
+                                public void inheritFingerprint(String fingerprint) throws AuthorizationAccessException {
+                                    baseConfigurableUserGroupProvider.inheritFingerprint(fingerprint);
+                                }
+
+                                @Override
+                                public void checkInheritability(String proposedFingerprint) throws AuthorizationAccessException, UninheritableAuthorizationsException {
+                                    baseConfigurableUserGroupProvider.checkInheritability(proposedFingerprint);
+                                }
+
+                                @Override
+                                public User addUser(User user) throws AuthorizationAccessException {
+                                    if (tenantExists(baseConfigurableUserGroupProvider, user.getIdentifier(), user.getIdentity())) {
+                                        throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", user.getIdentity()));
+                                    }
+                                    return baseConfigurableUserGroupProvider.addUser(user);
+                                }
+
+                                @Override
+                                public boolean isConfigurable(User user) {
+                                    return baseConfigurableUserGroupProvider.isConfigurable(user);
+                                }
+
+                                @Override
+                                public User updateUser(User user) throws AuthorizationAccessException {
+                                    if (tenantExists(baseConfigurableUserGroupProvider, user.getIdentifier(), user.getIdentity())) {
+                                        throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", user.getIdentity()));
+                                    }
+                                    if (!baseConfigurableUserGroupProvider.isConfigurable(user)) {
+                                        throw new IllegalArgumentException("The specified user does not support modification.");
+                                    }
+                                    return baseConfigurableUserGroupProvider.updateUser(user);
+                                }
+
+                                @Override
+                                public User deleteUser(User user) throws AuthorizationAccessException {
+                                    if (!baseConfigurableUserGroupProvider.isConfigurable(user)) {
+                                        throw new IllegalArgumentException("The specified user does not support modification.");
+                                    }
+                                    return baseConfigurableUserGroupProvider.deleteUser(user);
+                                }
+
+                                @Override
+                                public User deleteUser(String userIdentifier) throws AuthorizationAccessException {
+                                    if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getUser(userIdentifier))) {
+                                        throw new IllegalArgumentException("The specified user does not support modification.");
+                                    }
+                                    return baseConfigurableUserGroupProvider.deleteUser(userIdentifier);
+                                }
+
+                                @Override
+                                public Group addGroup(Group group) throws AuthorizationAccessException {
+                                    if (tenantExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
+                                        throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
+                                    }
+                                    if (!allGroupUsersExist(baseUserGroupProvider, group)) {
+                                        throw new IllegalStateException(String.format("Cannot create group '%s' with users that don't exist.", group.getName()));
+                                    }
+                                    return baseConfigurableUserGroupProvider.addGroup(group);
+                                }
+
+                                @Override
+                                public boolean isConfigurable(Group group) {
+                                    return baseConfigurableUserGroupProvider.isConfigurable(group);
+                                }
+
+                                @Override
+                                public Group updateGroup(Group group) throws AuthorizationAccessException {
+                                    if (tenantExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
+                                        throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
+                                    }
+                                    if (!baseConfigurableUserGroupProvider.isConfigurable(group)) {
+                                        throw new IllegalArgumentException("The specified group does not support modification.");
+                                    }
+                                    if (!allGroupUsersExist(baseUserGroupProvider, group)) {
+                                        throw new IllegalStateException(String.format("Cannot update group '%s' to add users that don't exist.", group.getName()));
+                                    }
+                                    return baseConfigurableUserGroupProvider.updateGroup(group);
+                                }
+
+                                @Override
+                                public Group deleteGroup(Group group) throws AuthorizationAccessException {
+                                    if (!baseConfigurableUserGroupProvider.isConfigurable(group)) {
+                                        throw new IllegalArgumentException("The specified group does not support modification.");
+                                    }
+                                    return baseConfigurableUserGroupProvider.deleteGroup(group);
+                                }
+
+                                @Override
+                                public Group deleteGroup(String groupId) throws AuthorizationAccessException {
+                                    if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getGroup(groupId))) {
+                                        throw new IllegalArgumentException("The specified group does not support modification.");
+                                    }
+                                    return baseConfigurableUserGroupProvider.deleteGroup(groupId);
+                                }
+
+                                @Override
+                                public Set<User> getUsers() throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getUsers();
+                                }
+
+                                @Override
+                                public User getUser(String identifier) throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getUser(identifier);
+                                }
+
+                                @Override
+                                public User getUserByIdentity(String identity) throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getUserByIdentity(identity);
+                                }
+
+                                @Override
+                                public Set<Group> getGroups() throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getGroups();
+                                }
+
+                                @Override
+                                public Group getGroup(String identifier) throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getGroup(identifier);
+                                }
+
+                                @Override
+                                public UserAndGroups getUserAndGroups(String identity) throws AuthorizationAccessException {
+                                    return baseConfigurableUserGroupProvider.getUserAndGroups(identity);
+                                }
+
+                                @Override
+                                public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
+                                    baseConfigurableUserGroupProvider.initialize(initializationContext);
+                                }
+
+                                @Override
+                                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
+                                    baseConfigurableUserGroupProvider.onConfigured(configurationContext);
+                                }
+
+                                @Override
+                                public void preDestruction() throws SecurityProviderDestructionException {
+                                    baseConfigurableUserGroupProvider.preDestruction();
+                                }
+                            };
+                        } else {
+                            return baseUserGroupProvider;
+                        }
+                    }
+
+                    @Override
+                    public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
+                        baseConfigurableAccessPolicyProvider.initialize(initializationContext);
+                    }
+
+                    @Override
+                    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
+                        baseConfigurableAccessPolicyProvider.onConfigured(configurationContext);
+                    }
+
+                    @Override
+                    public void preDestruction() throws SecurityProviderDestructionException {
+                        baseConfigurableAccessPolicyProvider.preDestruction();
+                    }
+                };
+            } else {
+                return baseAccessPolicyProvider;
+            }
+        }
+
+        @Override
+        public AuthorizationResult authorize(AuthorizationRequest request) throws AuthorizationAccessException {
+            final AuthorizationResult result = baseManagedAuthorizer.authorize(request);
+
+            // audit the authorization request
+            audit(baseManagedAuthorizer, request, result);
+
+            return result;
+        }
+
+        @Override
+        public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
+            baseManagedAuthorizer.initialize(initializationContext);
+        }
+
+        @Override
+        public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
+            baseManagedAuthorizer.onConfigured(configurationContext);
+
+            final AccessPolicyProvider accessPolicyProvider = baseManagedAuthorizer.getAccessPolicyProvider();
+            final UserGroupProvider userGroupProvider = accessPolicyProvider.getUserGroupProvider();
+
+            // ensure that only one policy per resource-action exists
+            for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
+                if (policyExists(accessPolicyProvider, accessPolicy)) {
+                    throw new SecurityProviderCreationException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
+                }
+            }
+
+            // ensure that only one group exists per identity
+            for (User user : userGroupProvider.getUsers()) {
+                if (tenantExists(userGroupProvider, user.getIdentifier(), user.getIdentity())) {
+                    throw new SecurityProviderCreationException(String.format("Found multiple users/user groups with identity '%s'.", user.getIdentity()));
+                }
+            }
+
+            // ensure that only one group exists per identity
+            for (Group group : userGroupProvider.getGroups()) {
+                if (tenantExists(userGroupProvider, group.getIdentifier(), group.getName())) {
+                    throw new SecurityProviderCreationException(String.format("Found multiple users/user groups with name '%s'.", group.getName()));
+                }
+            }
+        }
+
+        @Override
+        public void preDestruction() throws SecurityProviderDestructionException {
+            baseManagedAuthorizer.preDestruction();
+        }
+    }
+
+    private static class AuthorizerWrapper implements Authorizer, WrappedAuthorizer {
+        private final Authorizer baseAuthorizer;
+
+        public AuthorizerWrapper(Authorizer baseAuthorizer) {
+            this.baseAuthorizer = baseAuthorizer;
+        }
+
+        @Override
+        public Authorizer getBaseAuthorizer() {
+            return baseAuthorizer;
+        }
+
+        @Override
+        public AuthorizationResult authorize(AuthorizationRequest request) throws AuthorizationAccessException {
+            final AuthorizationResult result = baseAuthorizer.authorize(request);
+
+            // audit the authorization request
+            audit(baseAuthorizer, request, result);
+
+            return result;
+        }
+
+        @Override
+        public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
+            baseAuthorizer.initialize(initializationContext);
+        }
+
+        @Override
+        public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
+            baseAuthorizer.onConfigured(configurationContext);
+        }
+
+        @Override
+        public void preDestruction() throws SecurityProviderDestructionException {
+            baseAuthorizer.preDestruction();
+        }
+    }
+
     private static Authorizer installIntegrityChecks(final Authorizer baseAuthorizer) {
         if (baseAuthorizer instanceof ManagedAuthorizer) {
-            final ManagedAuthorizer baseManagedAuthorizer = (ManagedAuthorizer) baseAuthorizer;
-            return new ManagedAuthorizer() {
-                @Override
-                public String getFingerprint() throws AuthorizationAccessException {
-                    return baseManagedAuthorizer.getFingerprint();
-                }
-
-                @Override
-                public void inheritFingerprint(String fingerprint) throws AuthorizationAccessException {
-                    baseManagedAuthorizer.inheritFingerprint(fingerprint);
-                }
-
-                @Override
-                public void checkInheritability(String proposedFingerprint) throws AuthorizationAccessException, UninheritableAuthorizationsException {
-                    baseManagedAuthorizer.checkInheritability(proposedFingerprint);
-                }
-
-                @Override
-                public AccessPolicyProvider getAccessPolicyProvider() {
-                    final AccessPolicyProvider baseAccessPolicyProvider = baseManagedAuthorizer.getAccessPolicyProvider();
-                    if (baseAccessPolicyProvider instanceof ConfigurableAccessPolicyProvider) {
-                        final ConfigurableAccessPolicyProvider baseConfigurableAccessPolicyProvider = (ConfigurableAccessPolicyProvider) baseAccessPolicyProvider;
-                        return new ConfigurableAccessPolicyProvider() {
-                            @Override
-                            public String getFingerprint() throws AuthorizationAccessException {
-                                return baseConfigurableAccessPolicyProvider.getFingerprint();
-                            }
-
-                            @Override
-                            public void inheritFingerprint(String fingerprint) throws AuthorizationAccessException {
-                                baseConfigurableAccessPolicyProvider.inheritFingerprint(fingerprint);
-                            }
-
-                            @Override
-                            public void checkInheritability(String proposedFingerprint) throws AuthorizationAccessException, UninheritableAuthorizationsException {
-                                baseConfigurableAccessPolicyProvider.checkInheritability(proposedFingerprint);
-                            }
-
-                            @Override
-                            public AccessPolicy addAccessPolicy(AccessPolicy accessPolicy) throws AuthorizationAccessException {
-                                if (policyExists(baseConfigurableAccessPolicyProvider, accessPolicy)) {
-                                    throw new IllegalStateException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
-                                }
-                                return baseConfigurableAccessPolicyProvider.addAccessPolicy(accessPolicy);
-                            }
-
-                            @Override
-                            public boolean isConfigurable(AccessPolicy accessPolicy) {
-                                return baseConfigurableAccessPolicyProvider.isConfigurable(accessPolicy);
-                            }
-
-                            @Override
-                            public AccessPolicy updateAccessPolicy(AccessPolicy accessPolicy) throws AuthorizationAccessException {
-                                if (!baseConfigurableAccessPolicyProvider.isConfigurable(accessPolicy)) {
-                                    throw new IllegalArgumentException("The specified access policy is not support modification.");
-                                }
-                                return baseConfigurableAccessPolicyProvider.updateAccessPolicy(accessPolicy);
-                            }
-
-                            @Override
-                            public AccessPolicy deleteAccessPolicy(AccessPolicy accessPolicy) throws AuthorizationAccessException {
-                                if (!baseConfigurableAccessPolicyProvider.isConfigurable(accessPolicy)) {
-                                    throw new IllegalArgumentException("The specified access policy is not support modification.");
-                                }
-                                return baseConfigurableAccessPolicyProvider.deleteAccessPolicy(accessPolicy);
-                            }
-
-                            @Override
-                            public AccessPolicy deleteAccessPolicy(String accessPolicyIdentifier) throws AuthorizationAccessException {
-                                if (!baseConfigurableAccessPolicyProvider.isConfigurable(baseConfigurableAccessPolicyProvider.getAccessPolicy(accessPolicyIdentifier))) {
-                                    throw new IllegalArgumentException("The specified access policy is not support modification.");
-                                }
-                                return baseConfigurableAccessPolicyProvider.deleteAccessPolicy(accessPolicyIdentifier);
-                            }
-
-                            @Override
-                            public Set<AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
-                                return baseConfigurableAccessPolicyProvider.getAccessPolicies();
-                            }
-
-                            @Override
-                            public AccessPolicy getAccessPolicy(String identifier) throws AuthorizationAccessException {
-                                return baseConfigurableAccessPolicyProvider.getAccessPolicy(identifier);
-                            }
-
-                            @Override
-                            public AccessPolicy getAccessPolicy(String resourceIdentifier, RequestAction action) throws AuthorizationAccessException {
-                                return baseConfigurableAccessPolicyProvider.getAccessPolicy(resourceIdentifier, action);
-                            }
-
-                            @Override
-                            public UserGroupProvider getUserGroupProvider() {
-                                final UserGroupProvider baseUserGroupProvider = baseConfigurableAccessPolicyProvider.getUserGroupProvider();
-                                if (baseUserGroupProvider instanceof ConfigurableUserGroupProvider) {
-                                    final ConfigurableUserGroupProvider baseConfigurableUserGroupProvider = (ConfigurableUserGroupProvider) baseUserGroupProvider;
-                                    return new ConfigurableUserGroupProvider() {
-                                        @Override
-                                        public String getFingerprint() throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getFingerprint();
-                                        }
-
-                                        @Override
-                                        public void inheritFingerprint(String fingerprint) throws AuthorizationAccessException {
-                                            baseConfigurableUserGroupProvider.inheritFingerprint(fingerprint);
-                                        }
-
-                                        @Override
-                                        public void checkInheritability(String proposedFingerprint) throws AuthorizationAccessException, UninheritableAuthorizationsException {
-                                            baseConfigurableUserGroupProvider.checkInheritability(proposedFingerprint);
-                                        }
-
-                                        @Override
-                                        public User addUser(User user) throws AuthorizationAccessException {
-                                            if (tenantExists(baseConfigurableUserGroupProvider, user.getIdentifier(), user.getIdentity())) {
-                                                throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", user.getIdentity()));
-                                            }
-                                            return baseConfigurableUserGroupProvider.addUser(user);
-                                        }
-
-                                        @Override
-                                        public boolean isConfigurable(User user) {
-                                            return baseConfigurableUserGroupProvider.isConfigurable(user);
-                                        }
-
-                                        @Override
-                                        public User updateUser(User user) throws AuthorizationAccessException {
-                                            if (tenantExists(baseConfigurableUserGroupProvider, user.getIdentifier(), user.getIdentity())) {
-                                                throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", user.getIdentity()));
-                                            }
-                                            if (!baseConfigurableUserGroupProvider.isConfigurable(user)) {
-                                                throw new IllegalArgumentException("The specified user does not support modification.");
-                                            }
-                                            return baseConfigurableUserGroupProvider.updateUser(user);
-                                        }
-
-                                        @Override
-                                        public User deleteUser(User user) throws AuthorizationAccessException {
-                                            if (!baseConfigurableUserGroupProvider.isConfigurable(user)) {
-                                                throw new IllegalArgumentException("The specified user does not support modification.");
-                                            }
-                                            return baseConfigurableUserGroupProvider.deleteUser(user);
-                                        }
-
-                                        @Override
-                                        public User deleteUser(String userIdentifier) throws AuthorizationAccessException {
-                                            if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getUser(userIdentifier))) {
-                                                throw new IllegalArgumentException("The specified user does not support modification.");
-                                            }
-                                            return baseConfigurableUserGroupProvider.deleteUser(userIdentifier);
-                                        }
-
-                                        @Override
-                                        public Group addGroup(Group group) throws AuthorizationAccessException {
-                                            if (tenantExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
-                                                throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
-                                            }
-                                            if (!allGroupUsersExist(baseUserGroupProvider, group)) {
-                                                throw new IllegalStateException(String.format("Cannot create group '%s' with users that don't exist.", group.getName()));
-                                            }
-                                            return baseConfigurableUserGroupProvider.addGroup(group);
-                                        }
-
-                                        @Override
-                                        public boolean isConfigurable(Group group) {
-                                            return baseConfigurableUserGroupProvider.isConfigurable(group);
-                                        }
-
-                                        @Override
-                                        public Group updateGroup(Group group) throws AuthorizationAccessException {
-                                            if (tenantExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
-                                                throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
-                                            }
-                                            if (!baseConfigurableUserGroupProvider.isConfigurable(group)) {
-                                                throw new IllegalArgumentException("The specified group does not support modification.");
-                                            }
-                                            if (!allGroupUsersExist(baseUserGroupProvider, group)) {
-                                                throw new IllegalStateException(String.format("Cannot update group '%s' to add users that don't exist.", group.getName()));
-                                            }
-                                            return baseConfigurableUserGroupProvider.updateGroup(group);
-                                        }
-
-                                        @Override
-                                        public Group deleteGroup(Group group) throws AuthorizationAccessException {
-                                            if (!baseConfigurableUserGroupProvider.isConfigurable(group)) {
-                                                throw new IllegalArgumentException("The specified group does not support modification.");
-                                            }
-                                            return baseConfigurableUserGroupProvider.deleteGroup(group);
-                                        }
-
-                                        @Override
-                                        public Group deleteGroup(String groupId) throws AuthorizationAccessException {
-                                            if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getGroup(groupId))) {
-                                                throw new IllegalArgumentException("The specified group does not support modification.");
-                                            }
-                                            return baseConfigurableUserGroupProvider.deleteGroup(groupId);
-                                        }
-
-                                        @Override
-                                        public Set<User> getUsers() throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getUsers();
-                                        }
-
-                                        @Override
-                                        public User getUser(String identifier) throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getUser(identifier);
-                                        }
-
-                                        @Override
-                                        public User getUserByIdentity(String identity) throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getUserByIdentity(identity);
-                                        }
-
-                                        @Override
-                                        public Set<Group> getGroups() throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getGroups();
-                                        }
-
-                                        @Override
-                                        public Group getGroup(String identifier) throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getGroup(identifier);
-                                        }
-
-                                        @Override
-                                        public UserAndGroups getUserAndGroups(String identity) throws AuthorizationAccessException {
-                                            return baseConfigurableUserGroupProvider.getUserAndGroups(identity);
-                                        }
-
-                                        @Override
-                                        public void initialize(UserGroupProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
-                                            baseConfigurableUserGroupProvider.initialize(initializationContext);
-                                        }
-
-                                        @Override
-                                        public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
-                                            baseConfigurableUserGroupProvider.onConfigured(configurationContext);
-                                        }
-
-                                        @Override
-                                        public void preDestruction() throws SecurityProviderDestructionException {
-                                            baseConfigurableUserGroupProvider.preDestruction();
-                                        }
-                                    };
-                                } else {
-                                    return baseUserGroupProvider;
-                                }
-                            }
-
-                            @Override
-                            public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
-                                baseConfigurableAccessPolicyProvider.initialize(initializationContext);
-                            }
-
-                            @Override
-                            public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
-                                baseConfigurableAccessPolicyProvider.onConfigured(configurationContext);
-                            }
-
-                            @Override
-                            public void preDestruction() throws SecurityProviderDestructionException {
-                                baseConfigurableAccessPolicyProvider.preDestruction();
-                            }
-                        };
-                    } else {
-                        return baseAccessPolicyProvider;
-                    }
-                }
-
-                @Override
-                public AuthorizationResult authorize(AuthorizationRequest request) throws AuthorizationAccessException {
-                    final AuthorizationResult result = baseAuthorizer.authorize(request);
-
-                    // audit the authorization request
-                    audit(baseAuthorizer, request, result);
-
-                    return result;
-                }
-
-                @Override
-                public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
-                    baseManagedAuthorizer.initialize(initializationContext);
-                }
-
-                @Override
-                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
-                    baseManagedAuthorizer.onConfigured(configurationContext);
-
-                    final AccessPolicyProvider accessPolicyProvider = baseManagedAuthorizer.getAccessPolicyProvider();
-                    final UserGroupProvider userGroupProvider = accessPolicyProvider.getUserGroupProvider();
-
-                    // ensure that only one policy per resource-action exists
-                    for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
-                        if (policyExists(accessPolicyProvider, accessPolicy)) {
-                            throw new SecurityProviderCreationException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
-                        }
-                    }
-
-                    // ensure that only one group exists per identity
-                    for (User user : userGroupProvider.getUsers()) {
-                        if (tenantExists(userGroupProvider, user.getIdentifier(), user.getIdentity())) {
-                            throw new SecurityProviderCreationException(String.format("Found multiple users/user groups with identity '%s'.", user.getIdentity()));
-                        }
-                    }
-
-                    // ensure that only one group exists per identity
-                    for (Group group : userGroupProvider.getGroups()) {
-                        if (tenantExists(userGroupProvider, group.getIdentifier(), group.getName())) {
-                            throw new SecurityProviderCreationException(String.format("Found multiple users/user groups with name '%s'.", group.getName()));
-                        }
-                    }
-                }
-
-                @Override
-                public void preDestruction() throws SecurityProviderDestructionException {
-                    baseManagedAuthorizer.preDestruction();
-                }
-            };
+            return new ManagedAuthorizerWrapper((ManagedAuthorizer) baseAuthorizer);
         } else {
-            return new Authorizer() {
-                @Override
-                public AuthorizationResult authorize(AuthorizationRequest request) throws AuthorizationAccessException {
-                    final AuthorizationResult result = baseAuthorizer.authorize(request);
-
-                    // audit the authorization request
-                    audit(baseAuthorizer, request, result);
-
-                    return result;
-                }
-
-                @Override
-                public void initialize(AuthorizerInitializationContext initializationContext) throws SecurityProviderCreationException {
-                    baseAuthorizer.initialize(initializationContext);
-                }
-
-                @Override
-                public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
-                    baseAuthorizer.onConfigured(configurationContext);
-                }
-
-                @Override
-                public void preDestruction() throws SecurityProviderDestructionException {
-                    baseAuthorizer.preDestruction();
-                }
-            };
+            return new AuthorizerWrapper(baseAuthorizer);
         }
     }
 
