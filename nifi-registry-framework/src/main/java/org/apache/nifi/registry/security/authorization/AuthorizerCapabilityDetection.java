@@ -16,15 +16,6 @@
  */
 package org.apache.nifi.registry.security.authorization;
 
-import org.apache.nifi.registry.security.authorization.AccessPolicy;
-import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
-import org.apache.nifi.registry.security.authorization.Group;
-import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
-import org.apache.nifi.registry.security.authorization.User;
-
 public final class AuthorizerCapabilityDetection {
 
     public static boolean isManagedAuthorizer(final Authorizer authorizer) {

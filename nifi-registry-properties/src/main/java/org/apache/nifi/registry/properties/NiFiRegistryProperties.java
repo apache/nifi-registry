@@ -76,6 +76,8 @@ public class NiFiRegistryProperties extends Properties {
     public static final String KERBEROS_SPNEGO_PRINCIPAL = "nifi.registry.kerberos.spnego.principal";
     public static final String KERBEROS_SPNEGO_KEYTAB_LOCATION = "nifi.registry.kerberos.spnego.keytab.location";
     public static final String KERBEROS_SPNEGO_AUTHENTICATION_EXPIRATION = "nifi.registry.kerberos.spnego.authentication.expiration";
+    public static final String KERBEROS_SERVICE_PRINCIPAL = "nifi.registry.kerberos.service.principal";
+    public static final String KERBEROS_SERVICE_KEYTAB_LOCATION = "nifi.registry.kerberos.service.keytab.location";
 
     // Defaults
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
@@ -228,6 +230,14 @@ public class NiFiRegistryProperties extends Properties {
 
     public boolean isKerberosSpnegoSupportEnabled() {
         return !StringUtils.isBlank(getKerberosSpnegoPrincipal()) && !StringUtils.isBlank(getKerberosSpnegoKeytabLocation());
+    }
+
+    public String getKerberosServicePrincipal() {
+        return getPropertyAsTrimmedString(KERBEROS_SERVICE_PRINCIPAL);
+    }
+
+    public String getKerberosServiceKeytabLocation() {
+        return getPropertyAsTrimmedString(KERBEROS_SERVICE_KEYTAB_LOCATION);
     }
 
     public Set<String> getExtensionsDirs() {

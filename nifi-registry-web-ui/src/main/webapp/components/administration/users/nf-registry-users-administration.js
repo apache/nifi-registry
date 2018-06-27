@@ -115,6 +115,15 @@ NfRegistryUsersAdministration.prototype = {
         this.dialog.open(NfRegistryCreateNewGroup, {
             disableClose: true
         });
+    },
+
+    /**
+     * Determine if users can be edited.
+     * @returns {boolean}
+     */
+    canEditUsers: function () {
+        return this.nfRegistryService.currentUser.resourcePermissions.tenants.canWrite
+                && this.nfRegistryService.registry.config.supportsConfigurableUsersAndGroups;
     }
 };
 

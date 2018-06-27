@@ -37,8 +37,14 @@ var rxjs = require('rxjs/Observable');
 function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router, fdsDialogService, fdsSnackBarService) {
     var self = this;
     this.registry = {
-        name: "NiFi Registry"
+        name: "NiFi Registry",
+        // Config is updated later by calling the /config API.
+        config: {}
     };
+    nfRegistryApi.getRegistryConfig().subscribe(function (registryConfig) {
+        self.registry.config = registryConfig;
+    });
+
     this.documentation = {
         link: 'nifi-registry-docs/documentation'
     }

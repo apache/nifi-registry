@@ -756,7 +756,25 @@ NfRegistryApi.prototype = {
                     }
                 });
             });
+    },
+
+    /**
+     * Get NiFi Registry configuration resource.
+     *
+     * @returns {*}
+     */
+    getRegistryConfig: function (action, resource) {
+        var self = this;
+        return this.http.get('/nifi-registry-api/config')
+            .map(function (response) {
+                return response;
+            })
+            .catch(function (error) {
+                // If failed, return an empty object.
+                return rxjs.Observable.of({});
+            });
     }
+
 };
 
 NfRegistryApi.parameters = [

@@ -45,7 +45,7 @@ limitations under the License.
             <div flex fxLayout="row" fxLayoutAlign="space-between center">
                 <span class="md-card-title">Policies ({{userIdentitiesWithPolicies.length + groupIdentitiesWithPolicies.length}})</span>
                 <button color="fds-secondary"
-                        [disabled]="nfRegistryService.currentUser.anonymous || !nfRegistryService.currentUser.resourcePermissions.policies.canWrite || !nfRegistryService.currentUser.resourcePermissions.tenants.canRead"
+                        [disabled]="nfRegistryService.currentUser.anonymous || !canEditBucketPolicies() || !nfRegistryService.currentUser.resourcePermissions.tenants.canRead"
                         mat-raised-button
                         (click)="addPolicy()">
                     New Policy
@@ -79,12 +79,12 @@ limitations under the License.
                     </div>
                     <div class="td-data-table-cell">
                         <button (click)="editPolicy(row);row.checked = !row.checked;"
-                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                                [disabled]="!canEditBucketPolicies()"
                                 matTooltip="'Edit user policies of this bucket'" mat-icon-button color="accent">
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </button>
                         <button (click)="removePolicyFromBucket(row);row.checked = !row.checked;"
-                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                                [disabled]="!canEditBucketPolicies()"
                                 matTooltip="'Remove group policies from bucket'" mat-icon-button color="accent">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
@@ -103,12 +103,12 @@ limitations under the License.
                     <div class="td-data-table-cell">
                         <button (click)="editPolicy(row);row.checked = !row.checked;"
                                 matTooltip="'Edit user policies of this bucket'" mat-icon-button color="accent"
-                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite">
+                                [disabled]="!canEditBucketPolicies()">
                             <i class="fa fa-pencil" aria-hidden="true"></i>
                         </button>
                         <button (click)="removePolicyFromBucket(row);row.checked = !row.checked;"
                                 matTooltip="'Remove user policies from this bucket'" mat-icon-button color="accent"
-                                [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite">
+                                [disabled]="!canEditBucketPolicies()">
                             <i class="fa fa-trash" aria-hidden="true"></i>
                         </button>
                     </div>
