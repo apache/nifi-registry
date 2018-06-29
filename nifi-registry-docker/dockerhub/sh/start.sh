@@ -23,6 +23,8 @@ scripts_dir='/opt/nifi-registry/scripts'
 prop_replace 'nifi.registry.web.http.port'      "${NIFI_REGISTRY_WEB_HTTP_PORT:-18080}"
 prop_replace 'nifi.registry.web.http.host'      "${NIFI_REGISTRY_WEB_HTTP_HOST:-$HOSTNAME}"
 
+. ${scripts_dir}/update_database.sh
+
 # Check if we are secured or unsecured
 case ${AUTH} in
     tls)
