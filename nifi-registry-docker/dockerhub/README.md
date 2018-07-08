@@ -135,3 +135,14 @@ volume to provide certificates on the host system to the container instance.
 | nifi.registry.db.driver.password       | NIFI_REGISTRY_DB_PASS      |
 | nifi.registry.db.driver.maxConnections | NIFI_REGISTRY_DB_MAX_CONNS |
 | nifi.registry.db.sql.debug             | NIFI_REGISTRY_DB_DEBUG_SQL |
+
+#### The following, optional environment variables may be added to configure flow persistence provider.
+
+| Environment Variable           | Configuration Property               |
+|--------------------------------|--------------------------------------|
+| NIFI_REGISTRY_FLOW_STORAGE_DIR | Flow Storage Directory               |
+| NIFI_REGISTRY_FLOW_PROVIDER    | (Class tag); valid values: git, file |
+| NIFI_REGISTRY_GIT_REMOTE       | Remote to Push                       |
+| NIFI_REGISTRY_GIT_USER         | Remote Access User                   |
+| NIFI_REGISTRY_GIT_PASSWORD     | Remote Access Password               |
+
