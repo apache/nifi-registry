@@ -18,7 +18,7 @@ limitations under the License.
 <div fxFill>
     <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-sm pad-bottom-md pad-left-md pad-right-md">
         <span class="md-card-title ellipsis">{{nfRegistryService.user.identity}}</span>
-        <button mat-icon-button (click)="closeSideNav()">
+        <button mat-icon-button id="nf-registry-manage-user-close-side-nav" (click)="closeSideNav()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
@@ -34,6 +34,7 @@ limitations under the License.
             </mat-input-container>
             <button [disabled]="nfRegistryService.user.identity === _username || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
                     (click)="updateUserName(usernameInput.value)"
+                    id="nf-registry-manage-user-save-side-nav"
                     class="input-button"
                     color="fds-regular"
                     mat-raised-button>
