@@ -38,7 +38,7 @@ limitations under the License.
                 i18n="Cancel creation of new user|A button for cancelling the creation of a new user in the registry.@@nf-admin-workflow-create-bucket-button">
             Cancel
         </button>
-        <button [disabled]="newUserInput.value.length === 0" class="push-left-sm" (click)="addUser(newUserInput)" color="fds-primary" mat-raised-button
+        <button [disabled]="newUserInput.value.length === 0" class="push-left-sm" id="add-new-user-button" (click)="addUser(newUserInput)" color="fds-primary" mat-raised-button
                 i18n="Add new user button|A button for adding a new user in the registry.@@nf-admin-workflow-add-user-button">
             Add
         </button>
