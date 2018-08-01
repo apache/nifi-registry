@@ -66,10 +66,12 @@ public class ConfigResource extends AuthorizableApplicationResource {
             extensions = {
                     @Extension(name = "access-policy", properties = {
                             @ExtensionProperty(name = "action", value = "read"),
-                            @ExtensionProperty(name = "resource", value = "/config") })
+                            @ExtensionProperty(name = "resource", value = "/policies,/tenants") })
             }
     )
-    @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getConfiguration() {
 
         final RegistryConfiguration config = new RegistryConfiguration();

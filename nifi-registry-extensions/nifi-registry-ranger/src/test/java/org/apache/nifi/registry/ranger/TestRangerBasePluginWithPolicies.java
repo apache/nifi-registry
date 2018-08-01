@@ -540,4 +540,5 @@ public class TestRangerBasePluginWithPolicies {
         assertEquals(1, writeResource2.getUsers().size());
         assertTrue(writeResource2.getUsers().contains(new User.Builder().identifierGenerateFromSeed(user2).identity(user2).build().getIdentifier()));
         assertTrue(writeResource2.getGroups().isEmpty());
-    }}
+    }
+}

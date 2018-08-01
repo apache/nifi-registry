@@ -19,8 +19,7 @@
 <configuration>
 	<property>
 		<name>ranger.plugin.nifi-registry.policy.rest.url</name>
-		<!-- TODO: Back to localhost -->
-		<value>http://192.168.99.100:6080</value>
+		<value>http://localhost:6080</value>
 		<description>
 			URL to Ranger Admin
 		</description>

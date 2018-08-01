@@ -41,9 +41,6 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
         // Config is updated later by calling the /config API.
         config: {}
     };
-    nfRegistryApi.getRegistryConfig().subscribe(function (registryConfig) {
-        self.registry.config = registryConfig;
-    });
 
     this.documentation = {
         link: 'nifi-registry-docs/documentation'
