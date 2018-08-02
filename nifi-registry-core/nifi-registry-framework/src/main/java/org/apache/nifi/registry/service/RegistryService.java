@@ -16,16 +16,14 @@
  */
 package org.apache.nifi.registry.service;
 
+import com.fasterxml.jackson.core.Versioned;
+import io.swagger.annotations.OAuth2Definition;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.db.entity.BucketEntity;
-import org.apache.nifi.registry.db.entity.BucketItemEntity;
-import org.apache.nifi.registry.db.entity.BundleEntity;
-import org.apache.nifi.registry.db.entity.FlowEntity;
-import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.*;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
@@ -59,6 +57,7 @@ import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
+import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
@@ -78,15 +77,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -1232,6 +1223,57 @@ public class RegistryService {
 
     public Set<String> getFlowFields() {
         return metadataService.getFlowFields();
+    }
+
+
+    public Collection<Bucket> syncBuckets(){
+        if (this.flowPersistenceProvider instanceof GitFlowPersistenceProvider){
+            GitFlowPersistenceProvider gitProvider = (GitFlowPersistenceProvider)this.flowPersistenceProvider;
+            Collection<Bucket> createdBuckets = new ArrayList<>();
+
+            for (BucketEntity bucketEntity : this.metadataService.getAllBuckets()) {
+                this.metadataService.deleteBucket(bucketEntity);
+            }
+
+            for (VersionedFlowSnapshot snapshot : gitProvider.getFlowSnapshots()){
+                BucketEntity entity = new BucketEntity();
+                entity.setDescription(snapshot.getBucket().getDescription());
+                entity.setId(snapshot.getBucket().getIdentifier());
+                entity.setName(snapshot.getBucket().getName());
+                entity.setCreated(new Date(snapshot.getBucket().getCreatedTimestamp()));
+                if (this.metadataService.getBucketById(entity.getId()) == null){
+                    this.metadataService.createBucket(entity);
+                    createdBuckets.add(snapshot.getBucket());
+                }
+
+                VersionedFlow bucketFlow = snapshot.getFlow();
+                if (this.metadataService.getFlowById(bucketFlow.getIdentifier()) == null){
+                    FlowEntity flowEntity = new FlowEntity();
+                    flowEntity.setBucketId(bucketFlow.getBucketIdentifier());
+                    flowEntity.setBucketName(bucketFlow.getBucketName());
+                    flowEntity.setId(bucketFlow.getIdentifier());
+                    flowEntity.setName(bucketFlow.getName());
+                    flowEntity.setCreated(new Date(bucketFlow.getCreatedTimestamp()));
+                    flowEntity.setModified(new Date(bucketFlow.getModifiedTimestamp()));
+                    flowEntity.setType(BucketItemEntityType.FLOW);
+                    flowEntity.setSnapshotCount(bucketFlow.getVersionCount());
+                    this.metadataService.createFlow(flowEntity);
+                }
+
+                FlowSnapshotEntity flowSnapshot = new FlowSnapshotEntity();
+                VersionedFlowSnapshotMetadata snapshotMetadata = snapshot.getSnapshotMetadata();
+                flowSnapshot.setFlowId(bucketFlow.getIdentifier());
+                flowSnapshot.setCreated(new Date(snapshotMetadata.getTimestamp()));
+                flowSnapshot.setCreatedBy(snapshotMetadata.getAuthor());
+                flowSnapshot.setComments(snapshotMetadata.getComments());
+                flowSnapshot.setVersion(snapshotMetadata.getVersion());
+                this.metadataService.createFlowSnapshot(flowSnapshot);
+            }
+
+            return createdBuckets;
+        }
+
+        return new ArrayList<>();
     }
 
 }

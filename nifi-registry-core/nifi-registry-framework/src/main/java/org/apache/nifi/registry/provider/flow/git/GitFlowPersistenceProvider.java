@@ -21,9 +21,11 @@ import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.apache.nifi.registry.flow.MetadataAwareFlowPersistenceProvider;
 import org.apache.nifi.registry.metadata.BucketMetadata;
 import org.apache.nifi.registry.metadata.FlowMetadata;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
+import org.apache.nifi.registry.service.MetadataService;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -33,11 +35,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.sql.Date;
+import java.time.Instant;
+import java.util.*;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -91,6 +91,59 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
         } catch (IOException|GitAPIException e) {
             throw new ProviderCreationException("Failed to load a git repository " + flowStorageDir, e);
         }
+    }
+
+    public Collection<VersionedFlowSnapshot> getFlowSnapshots(){
+        Collection<VersionedFlowSnapshot> flows = new ArrayList<>();
+        for (Bucket existingBucket : this.flowMetaData.getBuckets()) {
+            org.apache.nifi.registry.bucket.Bucket modelBucket = new org.apache.nifi.registry.bucket.Bucket();
+            modelBucket.setCreatedTimestamp(Date.from(Instant.now()).getTime());
+            modelBucket.setName(existingBucket.getBucketDirName());
+            modelBucket.setIdentifier(existingBucket.getBucketId());
+            modelBucket.setDescription("synced with git repository");
+
+            for (Flow flow : existingBucket.getFlows()) {
+                VersionedFlow modelFlow = new VersionedFlow();
+                modelFlow.setIdentifier(flow.getFlowId());
+                modelFlow.setBucketIdentifier(existingBucket.getBucketId());
+                modelFlow.setCreatedTimestamp(new java.util.Date().getTime());
+                modelFlow.setModifiedTimestamp(new java.util.Date().getTime());
+                modelFlow.setName("unknown");
+                //TODO get flow description
+                modelFlow.setDescription("lost by sync because unavailable atm");
+
+                for (Map.Entry<Integer, Flow.FlowPointer> version : flow.getVersions().entrySet()) {
+                    Integer versionNumber = version.getKey();
+                    Flow.FlowPointer flowPointer = version.getValue();
+
+                    if (flow.getLatestVersion().isPresent() && flow.getLatestVersion().get() == versionNumber) {
+                        modelFlow.setName(FilenameUtils.getBaseName(flowPointer.getFileName()));
+                    }
+                }
+
+                for (Map.Entry<Integer, Flow.FlowPointer> version : flow.getVersions().entrySet()){
+                    Integer versionNumber = version.getKey();
+                    Flow.FlowPointer flowPointer = version.getValue();
+
+                    modelFlow.setVersionCount(Math.max(versionNumber, modelFlow.getVersionCount()));
+
+                    VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
+                    metadata.setVersion(versionNumber);
+                    metadata.setAuthor(flowPointer.getAuthor());
+                    metadata.setComments(flowPointer.getComments());
+                    metadata.setTimestamp(flowPointer.getTimestamp().getTime());
+
+                    VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
+                    snapshot.setFlow(modelFlow);
+                    snapshot.setBucket(modelBucket);
+                    snapshot.setSnapshotMetadata(metadata);
+
+                    flows.add(snapshot);
+                }
+            }
+        }
+
+        return flows;
     }
 
     @Override

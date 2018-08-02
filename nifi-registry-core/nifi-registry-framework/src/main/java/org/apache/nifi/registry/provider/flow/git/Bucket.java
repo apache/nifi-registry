@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -56,6 +57,10 @@ class Bucket {
 
     public Flow getFlowOrCreate(String flowId) {
         return this.flows.computeIfAbsent(flowId, k -> new Flow(flowId));
+    }
+
+    public Collection<Flow> getFlows(){
+        return this.flows.values();
     }
 
     public Optional<Flow> getFlow(String flowId) {

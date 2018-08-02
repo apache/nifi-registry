@@ -16,9 +16,9 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import org.apache.nifi.registry.util.FileUtils;
+
+import java.util.*;
 
 class Flow {
     /**
@@ -41,7 +41,9 @@ class Flow {
 
     public FlowPointer getFlowVersion(int version) {
         return versions.get(version);
-    }
+    }    
+
+    public String getFlowId(){ return this.flowId; }
 
     public void putVersion(int version, FlowPointer pointer) {
         versions.put(version, pointer);
@@ -55,6 +57,8 @@ class Flow {
         private String gitRev;
         private String objectId;
         private final String fileName;
+        private String comments;        
+        private Date timestamp;
 
         // May not be populated pre-0.3.0
         private String flowName;
@@ -65,7 +69,7 @@ class Flow {
 
         /**
          * Create new FlowPointer instance.
-         * @param fileName The filename must be sanitized, use {@link org.apache.nifi.registry.util.FileUtils#sanitizeFilename(String)} to do so.
+         * @param fileName The filename must be sanitized, use {@link FileUtils#sanitizeFilename(String)} to do so.
          */
         public FlowPointer(String fileName) {
             this.fileName = fileName;
