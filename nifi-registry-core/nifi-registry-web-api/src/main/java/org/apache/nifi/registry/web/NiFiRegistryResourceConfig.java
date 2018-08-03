@@ -16,18 +16,7 @@
  */
 package org.apache.nifi.registry.web;
 
-import org.apache.nifi.registry.web.api.AccessPolicyResource;
-import org.apache.nifi.registry.web.api.AccessResource;
-import org.apache.nifi.registry.web.api.BucketBundleResource;
-import org.apache.nifi.registry.web.api.BucketFlowResource;
-import org.apache.nifi.registry.web.api.BucketResource;
-import org.apache.nifi.registry.web.api.ConfigResource;
-import org.apache.nifi.registry.web.api.ExtensionRepoResource;
-import org.apache.nifi.registry.web.api.BundleResource;
-import org.apache.nifi.registry.web.api.ExtensionResource;
-import org.apache.nifi.registry.web.api.FlowResource;
-import org.apache.nifi.registry.web.api.ItemResource;
-import org.apache.nifi.registry.web.api.TenantResource;
+import org.apache.nifi.registry.web.api.*;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
@@ -73,6 +62,7 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
 
         // register multipart feature
         register(MultiPartFeature.class);
+        register(SyncResource.class);
 
         // include bean validation errors in response
         property(ServerProperties.BV_SEND_ERROR_IN_RESPONSE, true);
