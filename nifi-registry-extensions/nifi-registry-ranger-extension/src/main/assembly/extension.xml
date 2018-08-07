@@ -28,4 +28,21 @@
             <fileMode>0660</fileMode>
         </dependencySet>
     </dependencySets>
+
+    <files>
+        <file>
+            <source>./README.md</source>
+            <outputDirectory>./</outputDirectory>
+            <destName>README.md</destName>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </file>
+    </files>
+
+    <fileSets>
+        <fileSet>
+            <directory>conf</directory>
+            <outputDirectory>conf</outputDirectory>
+        </fileSet>
+    </fileSets>
 </assembly>
