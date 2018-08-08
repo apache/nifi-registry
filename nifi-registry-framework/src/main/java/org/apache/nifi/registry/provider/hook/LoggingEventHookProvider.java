@@ -25,17 +25,19 @@ import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LoggingEventHookProvider implements EventHookProvider {
+public class LoggingEventHookProvider
+    implements EventHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(LoggingEventHookProvider.class);
 
     @Override
-    public void onConfigured(final ProviderConfigurationContext configurationContext) throws ProviderCreationException {
-        // nothing to do
+    public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
+        // Nothing to do
     }
 
     @Override
     public void handle(final Event event) throws EventHookException {
+
         final StringBuilder builder = new StringBuilder()
                 .append(event.getEventType())
                 .append(" [");
