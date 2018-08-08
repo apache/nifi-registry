@@ -19,13 +19,13 @@ package org.apache.nifi.registry.provider.hook;
 import org.apache.nifi.registry.hook.Event;
 import org.apache.nifi.registry.hook.EventField;
 import org.apache.nifi.registry.hook.EventHookException;
-import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LoggingEventHookProvider implements EventHookProvider {
+public class LoggingEventHookProvider
+        extends AbstractHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(LoggingEventHookProvider.class);
 
@@ -36,6 +36,10 @@ public class LoggingEventHookProvider implements EventHookProvider {
 
     @Override
     public void handle(final Event event) throws EventHookException {
+
+        // Purposely leaving off "handleEvent" logic as its assumed that everything should be logged.
+        //handleEvent(event)
+
         final StringBuilder builder = new StringBuilder()
                 .append(event.getEventType())
                 .append(" [");

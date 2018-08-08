@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.hook.Event;
 import org.apache.nifi.registry.hook.EventField;
-import org.apache.nifi.registry.hook.EventHookProvider;
+import org.apache.nifi.registry.hook.EventType;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A EventHookProvider that is used to execute a script to handle the event.
  */
-public class ScriptEventHookProvider implements EventHookProvider {
+public class ScriptEventHookProvider
+        extends AbstractHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(ScriptEventHookProvider.class);
     static final String SCRIPT_PATH_PROP = "Script Path";
@@ -45,23 +46,30 @@ public class ScriptEventHookProvider implements EventHookProvider {
 
     @Override
     public void handle(final Event event) {
-        List<String> command = new ArrayList<String>();
-        command.add(scriptFile.getAbsolutePath());
-        command.add(event.getEventType().name());
 
-        for (EventField arg : event.getFields()) {
-            command.add(arg.getValue());
-        }
+        // If the whitelist of events is not empty then check if this one matches and if not return
+        if (handleEvent(event)) {
+            List<String> command = new ArrayList<String>();
+            command.add(scriptFile.getAbsolutePath());
+            command.add(event.getEventType().name());
 
-        final String commandString = StringUtils.join(command, " ");
-        final ProcessBuilder builder = new ProcessBuilder(command);
-        builder.directory(workDirFile);
-        LOGGER.debug("Execution of " + commandString);
+            for (EventField arg : event.getFields()) {
+                command.add(arg.getValue());
+            }
 
-        try {
-            builder.start();
-        } catch (IOException e) {
-            LOGGER.error("Execution of {0} failed with: {1}", new Object[] { commandString, e.getLocalizedMessage() }, e);
+            final String commandString = StringUtils.join(command, " ");
+            final ProcessBuilder builder = new ProcessBuilder(command);
+            builder.directory(workDirFile);
+            LOGGER.debug("Execution of " + commandString);
+
+            try {
+                builder.start();
+            } catch (IOException e) {
+                LOGGER.error("Execution of {0} failed with: {1}", new Object[] { commandString, e.getLocalizedMessage() }, e);
+            }
+        } else {
+            LOGGER.debug("Event Type: " + event.getEventType().toString() + " is not configured in the whitelist " +
+                    "for this ScriptEventHookProvider. The script will not be executed due to this.");
         }
     }
 
@@ -84,6 +92,22 @@ public class ScriptEventHookProvider implements EventHookProvider {
                 FileUtils.ensureDirectoryExistAndCanRead(workDirFile);
             } catch (IOException e) {
                 throw new ProviderCreationException("The working directory " + workdir + " cannot be read.");
+            }
+        }
+
+        if (props.containsKey(EVENT_WHITELIST) && !StringUtils.isBlank(props.get(EVENT_WHITELIST))) {
+            whiteListEvents = new ArrayList<>();
+            final String eventWhitelist = props.get(EVENT_WHITELIST);
+            try {
+                String[] wlEvents = StringUtils.split(eventWhitelist, ",");
+                if (wlEvents != null && wlEvents.length > 0) {
+                    LOGGER.info("Number of splits: " + wlEvents.length);
+                    for (int i = 0; i < wlEvents.length; i++) {
+                        whiteListEvents.add(EventType.valueOf(wlEvents[i].trim().toUpperCase()));
+                    }
+                }
+            } catch (Exception ex) {
+                throw new ProviderCreationException("Error parsing event whitelist " + eventWhitelist + " from Event Whitelist property");
             }
         }
 

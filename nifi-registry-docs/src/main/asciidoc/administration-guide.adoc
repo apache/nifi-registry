@@ -1094,3 +1094,63 @@ Here is the data model version histories:
 |2|0.2|JSON formatted text file. The root object contains header and Flow content object.
 |1|0.1|Binary format having header bytes at the beginning followed by Flow content represented as XML.
 |====
+
+== Event Hooks
+Event hooks are an integration point that allows for custom code to to be triggered when NiFi Registry application events occur.
+
+[options="header,footer"]
+|==================================================================================================================================================
+| Event Name | Description
+|`CREATE_BUCKET` | A new registry bucket is created.
+|`CREATE_FLOW` | A new flow is created in a specified bucket. Only triggered on first time creation of a flow with a given name.
+|`CREATE_FLOW_VERSION` | A new version for a flow has been saved in the registry.
+|`UPDATE_BUCKET` | A bucket has been updated.
+|`UPDATE_FLOW` | A flow that exist in a bucket has been updated.
+|`DELETE_BUCKET` | An existing bucket in the registry is deleted.
+|`DELETE_FLOW` | An existing flow in the registry is deleted.
+|==================================================================================================================================================
+
+=== Shared Event Hook Properties
+There are certain properties that are shared amongst all of the NiFi Registry provided Event Hook implementations. Those properties and
+their purpose are listed below.
+
+[options="header,footer"]
+|==================================================================================================================================================
+| Property Name | Description
+|`Event Whitelist` | A comma separated list of events the the hook provider configured with this property should respond to. If this property is left blank or not provided all events will fire for the configured hook provider.
+|==================================================================================================================================================
+
+=== ScriptEventHookProvider
+Hook provider for invoking a shell script that has been written by a user and placed on a file system that is accessible
+by the NiFi Registry instance that the provider is configured for.
+
+....
+<eventHookProvider>
+    <class>
+      org.apache.nifi.registry.provider.hook.ScriptEventHookProvider
+    </class>
+    <property name="Script Path"></property>
+    <property name="Working Directory"></property>
+    <!-- optional -->
+    <property name="Event Whitelist">CREATE_FLOW,UPDATE_FLOW</property>
+</eventHookProvider>
+....
+
+[options="header,footer"]
+|==================================================================================================================================================
+| Property Name | Description
+|`Script Path` | Full path to a script that will executed for each event. The arguments to the script will be the event fields in the order they are specified for the given event type.
+|`Working Directory` | Working directory from where the commands will be executed.
+|==================================================================================================================================================
+
+=== LoggingEventHookProvider
+The LoggingEventHookProvider logs a string representation of each event using an SLF4J logger. The logger can be configured
+via NiFi Registry’s logback.xml, which by default contains an appender that writes to a log file named nifi-registry-event.log in the logs directory.
+
+....
+<eventHookProvider>
+    <class>
+      org.apache.nifi.registry.provider.hook.LoggingEventHookProvider
+    </class>
+</eventHookProvider>
+....
