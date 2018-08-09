@@ -16,10 +16,18 @@
  */
 package org.apache.nifi.registry;
 
+import org.apache.nifi.registry.event.EventService;
+import org.apache.nifi.registry.event.StandardEvent;
+import org.apache.nifi.registry.hook.Event;
+import org.apache.nifi.registry.hook.EventType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
@@ -39,6 +47,9 @@ public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
     public static final String NIFI_REGISTRY_PROPERTIES_ATTRIBUTE = "nifi-registry.properties";
     public static final String NIFI_REGISTRY_MASTER_KEY_ATTRIBUTE = "nifi-registry.key";
 
+    @Autowired
+    private EventService eventService;
+
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         final Properties defaultProperties = new Properties();
@@ -52,6 +63,19 @@ public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
         return application
                 .sources(NiFiRegistryApiApplication.class)
                 .properties(defaultProperties);
+    }
+
+    @Component
+    private class OnApplicationReadyEventing
+            implements ApplicationListener<ApplicationReadyEvent> {
+
+        @Override
+        public void onApplicationEvent(final ApplicationReadyEvent event) {
+            Event registryStartEvent = new StandardEvent.Builder()
+                    .eventType(EventType.REGISTRY_START)
+                    .build();
+            eventService.publish(registryStartEvent);
+        }
     }
 
     public static void main(String[] args) {
