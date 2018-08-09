@@ -16,6 +16,8 @@
  */
 package org.apache.nifi.registry.web;
 
+import org.apache.nifi.registry.event.EventService;
+import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.web.api.AccessPolicyResource;
 import org.apache.nifi.registry.web.api.AccessResource;
 import org.apache.nifi.registry.web.api.BucketFlowResource;
@@ -29,6 +31,8 @@ import org.glassfish.jersey.server.filter.HttpMethodOverrideFilter;
 import org.glassfish.jersey.servlet.ServletProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.servlet.ServletContext;
@@ -43,6 +47,14 @@ import javax.ws.rs.core.Context;
 public class NiFiRegistryResourceConfig extends ResourceConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistryResourceConfig.class);
+
+    @Autowired
+    private StandardProviderFactory standardProviderFactory;
+
+    @Bean
+    public EventService eventService() {
+        return new EventService(standardProviderFactory.getEventHookProviders());
+    }
 
     public NiFiRegistryResourceConfig(@Context ServletContext servletContext) {
         // register filters

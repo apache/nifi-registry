@@ -41,7 +41,7 @@ public enum EventType {
             EventFieldName.VERSION,
             EventFieldName.USER,
             EventFieldName.COMMENT),
-
+    REGISTRY_START(),
     UPDATE_BUCKET(
             EventFieldName.BUCKET_ID,
             EventFieldName.USER),
@@ -49,7 +49,6 @@ public enum EventType {
             EventFieldName.BUCKET_ID,
             EventFieldName.FLOW_ID,
             EventFieldName.USER),
-
     DELETE_BUCKET(
             EventFieldName.BUCKET_ID,
             EventFieldName.USER),
