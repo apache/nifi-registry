@@ -16,55 +16,57 @@
  */
 package org.apache.nifi.registry.provider.hook;
 
-import org.apache.nifi.registry.hook.Event;
-import org.apache.nifi.registry.hook.EventHookException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.hook.EventType;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * An AbstractHookProvider class that serves as a place to keep common Event Hook implementation details.
- */
-public abstract class AbstractHookProvider
+public abstract class AbstractEventHookProvider
         implements EventHookProvider {
 
-    static final Logger LOGGER = LoggerFactory.getLogger(AbstractHookProvider.class);
+    static final String EVENT_WHITELIST_PREFIX = "Whitelisted Event Type ";
+    static final Pattern EVENT_WHITELIST_PATTERN = Pattern.compile(EVENT_WHITELIST_PREFIX + "\\S+");
 
-    static final String EVENT_WHITELIST = "Event Whitelist";
-    protected List<EventType> whiteListEvents = null;
-
-    @Override
-    public void handle(Event event) throws EventHookException {
-        // Abstract event handling logic can be implemented here.
-    }
+    protected Set<EventType> whiteListEvents = null;
 
     @Override
     public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
+        whiteListEvents = new HashSet<>();
+        for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
+            Matcher matcher = EVENT_WHITELIST_PATTERN.matcher(entry.getKey());
+            if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
+                whiteListEvents.add(EventType.valueOf(entry.getValue()));
+            }
 
+        }
     }
 
     /**
-     * Determines if the Event should be handled or ignored based on the user configured Event Whitelist property
+     * Standard method for deciding if the EventType should be handled by the Hook provider or not.
      *
-     * @param event
-     *  Event that has been passed to the provider by the framework.
+     * @param eventType
+     *  EventType that was fired by the framework.
      *
      * @return
-     *  True if the event should be handled by this provider and false otherwise.
+     *  True if the EventType is in the whitelist set and false otherwise.
      */
-    public boolean handleEvent(Event event) {
+    public boolean standardShouldHandleEventType(EventType eventType) {
         if (!CollectionUtils.isEmpty(whiteListEvents)) {
-            if (!whiteListEvents.contains(event.getEventType())) {
+            if (whiteListEvents.contains(eventType)) {
                 return true;
             }
+        } else {
+            // If the whitelist property is not set or empty we want to fire for all events.
+            return true;
         }
-
         return false;
     }
 }

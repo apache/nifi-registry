@@ -25,20 +25,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoggingEventHookProvider
-        extends AbstractHookProvider {
+        extends AbstractEventHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(LoggingEventHookProvider.class);
 
     @Override
     public void onConfigured(final ProviderConfigurationContext configurationContext) throws ProviderCreationException {
         // nothing to do
+        super.onConfigured(configurationContext);
     }
 
     @Override
     public void handle(final Event event) throws EventHookException {
-
-        // Purposely leaving off "handleEvent" logic as its assumed that everything should be logged.
-        //handleEvent(event)
 
         final StringBuilder builder = new StringBuilder()
                 .append(event.getEventType())

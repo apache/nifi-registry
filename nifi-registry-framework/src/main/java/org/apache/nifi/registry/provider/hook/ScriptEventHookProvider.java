@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * A EventHookProvider that is used to execute a script to handle the event.
  */
 public class ScriptEventHookProvider
-        extends AbstractHookProvider {
+        extends AbstractEventHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(ScriptEventHookProvider.class);
     static final String SCRIPT_PATH_PROP = "Script Path";
@@ -44,37 +44,43 @@ public class ScriptEventHookProvider
     private File scriptFile;
     private File workDirFile;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean shouldHandle(EventType eventType) {
+        if (standardShouldHandleEventType(eventType)) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void handle(final Event event) {
+        List<String> command = new ArrayList<>();
+        command.add(scriptFile.getAbsolutePath());
+        command.add(event.getEventType().name());
 
-        // If the whitelist of events is not empty then check if this one matches and if not return
-        if (handleEvent(event)) {
-            List<String> command = new ArrayList<String>();
-            command.add(scriptFile.getAbsolutePath());
-            command.add(event.getEventType().name());
+        for (EventField arg : event.getFields()) {
+            command.add(arg.getValue());
+        }
 
-            for (EventField arg : event.getFields()) {
-                command.add(arg.getValue());
-            }
+        final String commandString = StringUtils.join(command, " ");
+        final ProcessBuilder builder = new ProcessBuilder(command);
+        builder.directory(workDirFile);
+        LOGGER.debug("Execution of " + commandString);
 
-            final String commandString = StringUtils.join(command, " ");
-            final ProcessBuilder builder = new ProcessBuilder(command);
-            builder.directory(workDirFile);
-            LOGGER.debug("Execution of " + commandString);
-
-            try {
-                builder.start();
-            } catch (IOException e) {
-                LOGGER.error("Execution of {0} failed with: {1}", new Object[] { commandString, e.getLocalizedMessage() }, e);
-            }
-        } else {
-            LOGGER.debug("Event Type: " + event.getEventType().toString() + " is not configured in the whitelist " +
-                    "for this ScriptEventHookProvider. The script will not be executed due to this.");
+        try {
+            builder.start();
+        } catch (IOException e) {
+            LOGGER.error("Execution of {0} failed with: {1}", new Object[] { commandString, e.getLocalizedMessage() }, e);
         }
     }
 
     @Override
     public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
+        super.onConfigured(configurationContext);
+
         final Map<String,String> props = configurationContext.getProperties();
         if (!props.containsKey(SCRIPT_PATH_PROP)) {
             throw new ProviderCreationException("The property " + SCRIPT_PATH_PROP + " must be provided");
@@ -92,22 +98,6 @@ public class ScriptEventHookProvider
                 FileUtils.ensureDirectoryExistAndCanRead(workDirFile);
             } catch (IOException e) {
                 throw new ProviderCreationException("The working directory " + workdir + " cannot be read.");
-            }
-        }
-
-        if (props.containsKey(EVENT_WHITELIST) && !StringUtils.isBlank(props.get(EVENT_WHITELIST))) {
-            whiteListEvents = new ArrayList<>();
-            final String eventWhitelist = props.get(EVENT_WHITELIST);
-            try {
-                String[] wlEvents = StringUtils.split(eventWhitelist, ",");
-                if (wlEvents != null && wlEvents.length > 0) {
-                    LOGGER.info("Number of splits: " + wlEvents.length);
-                    for (int i = 0; i < wlEvents.length; i++) {
-                        whiteListEvents.add(EventType.valueOf(wlEvents[i].trim().toUpperCase()));
-                    }
-                }
-            } catch (Exception ex) {
-                throw new ProviderCreationException("Error parsing event whitelist " + eventWhitelist + " from Event Whitelist property");
             }
         }
 

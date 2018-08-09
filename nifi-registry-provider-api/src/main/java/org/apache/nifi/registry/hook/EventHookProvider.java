@@ -36,4 +36,18 @@ public interface EventHookProvider extends Provider {
      */
     void handle(Event event) throws EventHookException;
 
+    /**
+     * Examines the values from the 'Event Whitelist X' properties in the hook provider definition to determine
+     * if the Event should be invoked for this particular EventType
+     *
+     * @param eventType
+     *  EventType that has been fired by the framework.
+     *
+     * @return
+     *  True if the hook provider should be 'handled' and false otherwise.
+     */
+    default boolean shouldHandle(EventType eventType) {
+        return true;
+    }
+
 }
