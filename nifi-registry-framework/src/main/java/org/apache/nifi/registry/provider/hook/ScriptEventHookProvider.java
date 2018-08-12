@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.hook.Event;
 import org.apache.nifi.registry.hook.EventField;
-import org.apache.nifi.registry.hook.EventType;
+import org.apache.nifi.registry.hook.WhitelistFilteringEventHookProvider;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * A EventHookProvider that is used to execute a script to handle the event.
  */
 public class ScriptEventHookProvider
-        extends AbstractEventHookProvider {
+        extends WhitelistFilteringEventHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(ScriptEventHookProvider.class);
     static final String SCRIPT_PATH_PROP = "Script Path";
@@ -44,16 +44,6 @@ public class ScriptEventHookProvider
     private File scriptFile;
     private File workDirFile;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean shouldHandle(EventType eventType) {
-        if (standardShouldHandleEventType(eventType)) {
-            return true;
-        }
-        return false;
-    }
 
     @Override
     public void handle(final Event event) {

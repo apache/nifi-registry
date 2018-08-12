@@ -37,7 +37,7 @@ public interface EventHookProvider extends Provider {
     void handle(Event event) throws EventHookException;
 
     /**
-     * Examines the values from the 'Event Whitelist X' properties in the hook provider definition to determine
+     * Examines the values from the 'Whitelisted Event Type ' properties in the hook provider definition to determine
      * if the Event should be invoked for this particular EventType
      *
      * @param eventType

@@ -19,20 +19,20 @@ package org.apache.nifi.registry.provider.hook;
 import org.apache.nifi.registry.hook.Event;
 import org.apache.nifi.registry.hook.EventField;
 import org.apache.nifi.registry.hook.EventHookException;
+import org.apache.nifi.registry.hook.EventHookProvider;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LoggingEventHookProvider
-        extends AbstractEventHookProvider {
+    implements EventHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(LoggingEventHookProvider.class);
 
     @Override
-    public void onConfigured(final ProviderConfigurationContext configurationContext) throws ProviderCreationException {
-        // nothing to do
-        super.onConfigured(configurationContext);
+    public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
+        // Nothing to do
     }
 
     @Override

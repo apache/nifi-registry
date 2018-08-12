@@ -14,14 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider.hook;
+package org.apache.nifi.registry.hook;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.hook.EventHookProvider;
-import org.apache.nifi.registry.hook.EventType;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
-import org.springframework.util.CollectionUtils;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -29,7 +25,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class AbstractEventHookProvider
+public abstract class WhitelistFilteringEventHookProvider
         implements EventHookProvider {
 
     static final String EVENT_WHITELIST_PREFIX = "Whitelisted Event Type ";
@@ -42,7 +38,7 @@ public abstract class AbstractEventHookProvider
         whiteListEvents = new HashSet<>();
         for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
             Matcher matcher = EVENT_WHITELIST_PATTERN.matcher(entry.getKey());
-            if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
+            if (matcher.matches() && (entry.getValue() != null && entry.getValue().length() > 0)) {
                 whiteListEvents.add(EventType.valueOf(entry.getValue()));
             }
 
@@ -58,8 +54,9 @@ public abstract class AbstractEventHookProvider
      * @return
      *  True if the EventType is in the whitelist set and false otherwise.
      */
-    public boolean standardShouldHandleEventType(EventType eventType) {
-        if (!CollectionUtils.isEmpty(whiteListEvents)) {
+    @Override
+    public boolean shouldHandle(EventType eventType) {
+        if (whiteListEvents != null && whiteListEvents.size() > 0) {
             if (whiteListEvents.contains(eventType)) {
                 return true;
             }
@@ -69,4 +66,5 @@ public abstract class AbstractEventHookProvider
         }
         return false;
     }
+
 }

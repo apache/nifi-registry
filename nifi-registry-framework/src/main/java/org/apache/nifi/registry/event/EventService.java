@@ -70,7 +70,8 @@ public class EventService implements DisposableBean {
                     // event was available so notify each provider, contain errors per-provider
                     for(final EventHookProvider provider : eventHookProviders) {
                         try {
-                            if (provider.shouldHandle(event.getEventType())) {
+                            if (event.getEventType() == null
+                                    || (event.getEventType() != null && provider.shouldHandle(event.getEventType()))) {
                                 provider.handle(event);
                             }
                         } catch (Exception e) {
