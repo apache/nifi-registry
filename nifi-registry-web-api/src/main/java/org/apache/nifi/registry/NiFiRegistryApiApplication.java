@@ -24,9 +24,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.context.ApplicationListener;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.util.Properties;
 
 /**
@@ -63,14 +65,18 @@ public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
                 .properties(defaultProperties);
     }
 
-    @PostConstruct
-    public void postConstruct() {
-        Event registryStartEvent = new StandardEvent.Builder()
-                .eventType(EventType.REGISTRY_START)
-                .build();
-        eventService.publish(registryStartEvent);
-    }
+    @Component
+    private class OnApplicationReadyEventing
+            implements ApplicationListener<ApplicationReadyEvent> {
 
+        @Override
+        public void onApplicationEvent(final ApplicationReadyEvent event) {
+            Event registryStartEvent = new StandardEvent.Builder()
+                    .eventType(EventType.REGISTRY_START)
+                    .build();
+            eventService.publish(registryStartEvent);
+        }
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(NiFiRegistryApiApplication.class, args);
