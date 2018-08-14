@@ -35,6 +35,11 @@ public class VersionedConnection extends VersionedComponent {
     private List<String> prioritizers;
     private List<Position> bends;
 
+    private String loadBalanceStrategy;
+    private String partitioningAttribute;
+    private String loadBalanceCompression;
+
+
     @ApiModelProperty("The source of the connection.")
     public ConnectableComponent getSource() {
         return source;
@@ -132,6 +137,36 @@ public class VersionedConnection extends VersionedComponent {
 
     public void setPrioritizers(List<String> prioritizers) {
         this.prioritizers = prioritizers;
+    }
+
+    @ApiModelProperty(value = "The Strategy to use for load balancing data across the cluster, or null, if no Load Balance Strategy has been specified.",
+            allowableValues = "DO_NOT_LOAD_BALANCE, PARTITION_BY_ATTRIBUTE, ROUND_ROBIN")
+    public String getLoadBalanceStrategy() {
+        return loadBalanceStrategy;
+    }
+
+    public void setLoadBalanceStrategy(String loadBalanceStrategy) {
+        this.loadBalanceStrategy = loadBalanceStrategy;
+    }
+
+    @ApiModelProperty("The attribute to use for partitioning data as it is load balanced across the cluster. If the Load Balance Strategy is configured to use PARTITION_BY_ATTRIBUTE, the value " +
+            "returned by this method is the name of the FlowFile Attribute that will be used to determine which node in the cluster should receive a given FlowFile. If the Load Balance Strategy is " +
+            "unset or is set to any other value, the Partitioning Attribute has no effect.")
+    public String getPartitioningAttribute() {
+        return partitioningAttribute;
+    }
+
+    public void setPartitioningAttribute(final String partitioningAttribute) {
+        this.partitioningAttribute = partitioningAttribute;
+    }
+
+    @ApiModelProperty("Whether or not compression should be used when transferring FlowFiles between nodes")
+    public String getLoadBalanceCompression() {
+        return loadBalanceCompression;
+    }
+
+    public void setLoadBalanceCompression(final String compression) {
+        this.loadBalanceStrategy = compression;
     }
 
     @Override

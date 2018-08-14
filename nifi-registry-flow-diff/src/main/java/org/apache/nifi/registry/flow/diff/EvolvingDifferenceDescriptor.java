@@ -27,7 +27,7 @@ public class EvolvingDifferenceDescriptor implements DifferenceDescriptor {
 
     @Override
     public String describeDifference(final DifferenceType type, final String flowAName, final String flowBName, final VersionedComponent componentA,
-        final VersionedComponent componentB, final Object valueA, final Object valueB) {
+        final VersionedComponent componentB, final String fieldName, final Object valueA, final Object valueB) {
 
         final String description;
         switch (type) {
@@ -38,16 +38,16 @@ public class EvolvingDifferenceDescriptor implements DifferenceDescriptor {
                 description = String.format("%s with ID %s was removed from flow", componentA.getComponentType().getTypeName(), componentA.getIdentifier());
                 break;
             case PROPERTY_ADDED:
-                description = String.format("Property '%s' was added to %s with ID %s", valueB, componentB.getComponentType().getTypeName(), componentB.getIdentifier());
+                description = String.format("Property '%s' was added to %s with ID %s", fieldName, componentB.getComponentType().getTypeName(), componentB.getIdentifier());
                 break;
             case PROPERTY_REMOVED:
-                description = String.format("Property '%s' was removed from %s with ID %s", valueA, componentA.getComponentType().getTypeName(), componentA.getIdentifier());
+                description = String.format("Property '%s' was removed from %s with ID %s", fieldName, componentA.getComponentType().getTypeName(), componentA.getIdentifier());
                 break;
             case VARIABLE_ADDED:
-                description = String.format("Variable '%s' was added to Process Group with ID %s", valueB, componentB.getIdentifier());
+                description = String.format("Variable '%s' was added to Process Group with ID %s", fieldName, componentB.getIdentifier());
                 break;
             case VARIABLE_REMOVED:
-                description = String.format("Variable '%s' was removed from Process Group with ID %s", valueA, componentA.getIdentifier());
+                description = String.format("Variable '%s' was removed from Process Group with ID %s", fieldName, componentA.getIdentifier());
                 break;
             default:
                 description = String.format("%s for %s with ID %s from '%s' to '%s'",
