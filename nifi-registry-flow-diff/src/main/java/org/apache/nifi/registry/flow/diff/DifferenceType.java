@@ -64,16 +64,6 @@ public enum DifferenceType {
     AUTO_TERMINATED_RELATIONSHIPS_CHANGED("Auto-Terminated Relationships Changed"),
 
     /**
-     * The component has a different set of Outbound Connections in each of the flows
-     */
-    OUTBOUND_CONNECTIONS_CHANGED("Outbound Connections Changed"),
-
-    /**
-     * The component has a different set of Inbound Connections in each of the flows
-     */
-    INBOUND_CONNECTIONS_CHANGED("Inbound Connections Changed"),
-
-    /**
      * The component has a different scheduling strategy in each of the flows
      */
     SCHEDULING_STRATEGY_CHANGED("Scheduling Strategy Changed"),
@@ -157,6 +147,21 @@ public enum DifferenceType {
      * The Connection has a different value for the Data Size Backpressure Threshold in each of the flows
      */
     BACKPRESSURE_DATA_SIZE_THRESHOLD_CHANGED("Backpressure Data Size Threshold Changed"),
+
+    /**
+     * The Connection has a different value for the Load Balance Strategy in each of the flows
+     */
+    LOAD_BALANCE_STRATEGY_CHANGED("Load-Balance Strategy Changed"),
+
+    /**
+     * The Connection has a different value for the Partitioning Attribute in each of the flows
+     */
+    PARTITIONING_ATTRIBUTE_CHANGED("Partitioning Attribute Changed"),
+
+    /**
+     * The Connection has a different value for the Load Balancing Compression in each of the flows
+     */
+    LOAD_BALANCE_COMPRESSION_CHANGED("Load-Balance Compression Changed"),
 
     /**
      * The Connection has a different set of Bend Points in each of the flows

@@ -30,7 +30,7 @@ public class ConciseEvolvingDifferenceDescriptor implements DifferenceDescriptor
 
     @Override
     public String describeDifference(final DifferenceType type, final String flowAName, final String flowBName, final VersionedComponent componentA,
-        final VersionedComponent componentB, final Object valueA, final Object valueB) {
+        final VersionedComponent componentB, final String fieldName, final Object valueA, final Object valueB) {
 
         final String description;
         switch (type) {
@@ -41,16 +41,16 @@ public class ConciseEvolvingDifferenceDescriptor implements DifferenceDescriptor
                 description = String.format("%s was removed", componentA.getComponentType().getTypeName());
                 break;
             case PROPERTY_ADDED:
-                description = String.format("Property '%s' was added", valueB);
+                description = String.format("Property '%s' was added", fieldName);
                 break;
             case PROPERTY_REMOVED:
-                description = String.format("Property '%s' was removed", valueA);
+                description = String.format("Property '%s' was removed", fieldName);
                 break;
             case VARIABLE_ADDED:
-                description = String.format("Variable '%s' was added", valueB);
+                description = String.format("Variable '%s' was added", fieldName);
                 break;
             case VARIABLE_REMOVED:
-                description = String.format("Variable '%s' was removed", valueA);
+                description = String.format("Variable '%s' was removed", fieldName);
                 break;
             case POSITION_CHANGED:
                 description = "Position was changed";

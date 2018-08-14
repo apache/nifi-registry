@@ -18,6 +18,7 @@
 package org.apache.nifi.registry.flow.diff;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.apache.nifi.registry.flow.VersionedComponent;
 
@@ -25,15 +26,22 @@ public class StandardFlowDifference implements FlowDifference {
     private final DifferenceType type;
     private final VersionedComponent componentA;
     private final VersionedComponent componentB;
+    private final Optional<String> fieldName;
     private final Object valueA;
     private final Object valueB;
     private final String description;
 
     public StandardFlowDifference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB, final Object valueA, final Object valueB,
-        final String description) {
+            final String description) {
+        this(type, componentA, componentB, null, valueA, valueB, description);
+    }
+
+    public StandardFlowDifference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB, final String fieldName,
+            final Object valueA, final Object valueB, final String description) {
         this.type = type;
         this.componentA = componentA;
         this.componentB = componentB;
+        this.fieldName = Optional.ofNullable(fieldName);
         this.valueA = valueA;
         this.valueB = valueB;
         this.description = description;
@@ -52,6 +60,11 @@ public class StandardFlowDifference implements FlowDifference {
     @Override
     public VersionedComponent getComponentB() {
         return componentB;
+    }
+
+    @Override
+    public Optional<String> getFieldName() {
+        return fieldName;
     }
 
     @Override
