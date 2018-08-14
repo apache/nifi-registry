@@ -54,6 +54,17 @@
             <!-- The one in registry/lib can be used -->
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-ranger-jersey-bundle</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-bundle</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- Ranger dependencies -->
         <dependency>
@@ -82,6 +93,12 @@
                      that is used by newer Jetty. -->
                     <groupId>com.sun.jersey</groupId>
                     <artifactId>jersey-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- Use nifi-registry-ranger-jersey-bundle instead to avoid
+                    javax.ws.rs version conflict. -->
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-bundle</artifactId>
                 </exclusion>
                 <exclusion>
                     <!-- The one in hadoop-common conflicts with jersey-bundle. -->
