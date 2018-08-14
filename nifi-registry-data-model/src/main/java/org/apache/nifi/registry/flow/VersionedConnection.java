@@ -140,7 +140,7 @@ public class VersionedConnection extends VersionedComponent {
     }
 
     @ApiModelProperty(value = "The Strategy to use for load balancing data across the cluster, or null, if no Load Balance Strategy has been specified.",
-            allowableValues = "DO_NOT_LOAD_BALANCE, PARTITION_BY_ATTRIBUTE, ROUND_ROBIN")
+            allowableValues = "DO_NOT_LOAD_BALANCE, PARTITION_BY_ATTRIBUTE, ROUND_ROBIN, SINGLE_NODE")
     public String getLoadBalanceStrategy() {
         return loadBalanceStrategy;
     }
@@ -160,7 +160,8 @@ public class VersionedConnection extends VersionedComponent {
         this.partitioningAttribute = partitioningAttribute;
     }
 
-    @ApiModelProperty("Whether or not compression should be used when transferring FlowFiles between nodes")
+    @ApiModelProperty(value = "Whether or not compression should be used when transferring FlowFiles between nodes",
+            allowableValues = "DO_NOT_COMPRESS, COMPRESS_ATTRIBUTES_ONLY, COMPRESS_ATTRIBUTES_AND_CONTENT")
     public String getLoadBalanceCompression() {
         return loadBalanceCompression;
     }
