@@ -17,6 +17,8 @@
 
 package org.apache.nifi.registry.flow.diff;
 
+import java.util.Optional;
+
 import org.apache.nifi.registry.flow.VersionedComponent;
 
 public interface FlowDifference {
@@ -25,6 +27,8 @@ public interface FlowDifference {
     VersionedComponent getComponentA();
 
     VersionedComponent getComponentB();
+
+    Optional<String> getFieldName();
 
     Object getValueA();
 

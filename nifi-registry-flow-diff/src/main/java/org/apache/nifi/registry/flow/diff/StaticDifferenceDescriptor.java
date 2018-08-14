@@ -30,7 +30,7 @@ public class StaticDifferenceDescriptor implements DifferenceDescriptor {
 
     @Override
     public String describeDifference(final DifferenceType type, final String flowAName, final String flowBName, final VersionedComponent componentA,
-        final VersionedComponent componentB, final Object valueA, final Object valueB) {
+        final VersionedComponent componentB, final String fieldName, final Object valueA, final Object valueB) {
 
         final String description;
         switch (type) {
@@ -44,19 +44,19 @@ public class StaticDifferenceDescriptor implements DifferenceDescriptor {
                 break;
             case PROPERTY_ADDED:
                 description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
-                    valueB, componentB.getComponentType().getTypeName(), componentB.getIdentifier(), flowBName, flowAName);
+                    fieldName, componentB.getComponentType().getTypeName(), componentB.getIdentifier(), flowBName, flowAName);
                 break;
             case PROPERTY_REMOVED:
                 description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
-                    valueA, componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowAName, flowBName);
+                    fieldName, componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowAName, flowBName);
                 break;
             case VARIABLE_ADDED:
                 description = String.format("Variable '%s' exists for Process Group with ID %s in %s but not in %s",
-                    valueB, componentB.getIdentifier(), flowBName, flowAName);
+                    fieldName, componentB.getIdentifier(), flowBName, flowAName);
                 break;
             case VARIABLE_REMOVED:
                 description = String.format("Variable '%s' exists for Process Group with ID %s in %s but not in %s",
-                    valueA, componentA.getIdentifier(), flowAName, flowBName);
+                    fieldName, componentA.getIdentifier(), flowAName, flowBName);
                 break;
             case VERSIONED_FLOW_COORDINATES_CHANGED:
                 if (valueA instanceof VersionedFlowCoordinates && valueB instanceof VersionedFlowCoordinates) {
