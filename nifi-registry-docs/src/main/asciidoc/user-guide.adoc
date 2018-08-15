@@ -317,7 +317,7 @@ image::create_new_group.png["Create New Group"]
 +
 image::create_new_group_dialog.png["Create New Group Dialog"]
 
-NOTE: To quickly create multiple empty groups, check the "Keep this dialog open after creating user" checkbox.
+NOTE: To quickly create multiple empty groups, check "Keep this dialog open after creating group".
 
 
 === Add User to a Group
