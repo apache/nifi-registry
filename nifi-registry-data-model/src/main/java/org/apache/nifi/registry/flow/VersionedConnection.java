@@ -167,7 +167,7 @@ public class VersionedConnection extends VersionedComponent {
     }
 
     public void setLoadBalanceCompression(final String compression) {
-        this.loadBalanceStrategy = compression;
+        this.loadBalanceCompression = compression;
     }
 
     @Override
