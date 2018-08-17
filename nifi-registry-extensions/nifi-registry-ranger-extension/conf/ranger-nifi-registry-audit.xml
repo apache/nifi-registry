@@ -71,6 +71,25 @@
 	</property>
 
 
+	<!--
+		NOTE: These HDFS related configurations can be specified from here, or putting core-site.xml and hdfs-site.xml under classpath.
+	<property>
+		<name>xasecure.audit.destination.hdfs.config.fs.hdfs.impl</name>
+		<value>org.apache.hadoop.hdfs.DistributedFileSystem</value>
+	</property>
+
+	<property>
+		<name>xasecure.audit.destination.hdfs.config.hadoop.security.authentication</name>
+		<value>kerberos</value>
+	</property>
+
+	<property>
+		<name>xasecure.audit.destination.hdfs.config.dfs.namenode.kerberos.principal</name>
+		<value>nn/_HOST@EXAMPLE.COM</value>
+	</property>
+    -->
+
+
 	<!-- Log4j audit provider configuration -->
 	<property>
 		<name>xasecure.audit.destination.log4j</name>

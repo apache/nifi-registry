@@ -17,7 +17,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>nifi-registry</artifactId>
+        <artifactId>nifi-registry-extensions</artifactId>
         <groupId>org.apache.nifi.registry</groupId>
         <version>0.3.0-SNAPSHOT</version>
     </parent>
@@ -28,6 +28,7 @@
 
     <properties>
         <ranger.version>1.0.0</ranger.version>
+        <ranger.hadoop.version>3.0.0</ranger.hadoop.version>
     </properties>
 
     <dependencies>
@@ -81,20 +82,6 @@
                     <artifactId>jsr305</artifactId>
                 </exclusion>
                 <exclusion>
-                    <!-- Avoid using old jsr311 which does not have
-                     javax.ws.rs.core.Application.getProperties method
-                     that is used by newer Jetty. -->
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <!-- Avoid using old jersey-core which does not have
-                     javax.ws.rs.core.Application.getProperties method
-                     that is used by newer Jetty. -->
-                    <groupId>com.sun.jersey</groupId>
-                    <artifactId>jersey-core</artifactId>
-                </exclusion>
-                <exclusion>
                     <!-- Use nifi-registry-ranger-jersey-bundle instead to avoid
                     javax.ws.rs version conflict. -->
                     <groupId>com.sun.jersey</groupId>
@@ -132,6 +119,63 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- hadoop-client is needed for auditing to HDFS -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${ranger.hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-yarn-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-yarn-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-mapreduce-client</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-mapreduce-client-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- hadoop-common and hadoop-auth are transitive dependencies of ranger client, but we need to make sure they
+                are the same version as hadoop-client above -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+            <version>${ranger.hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <!-- Avoid using old jsr311 which does not have
+                     javax.ws.rs.core.Application.getProperties method
+                     that is used by newer Jetty. -->
+                    <groupId>javax.ws.rs</groupId>
+                    <artifactId>jsr311-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <!-- Avoid using old jersey-core which does not have
+                     javax.ws.rs.core.Application.getProperties method
+                     that is used by newer Jetty. -->
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-auth</artifactId>
+            <version>${ranger.hadoop.version}</version>
         </dependency>
 
         <!-- Followings are required by com.sun.jersey.core.spi.factory.MessageBodyFactory -->

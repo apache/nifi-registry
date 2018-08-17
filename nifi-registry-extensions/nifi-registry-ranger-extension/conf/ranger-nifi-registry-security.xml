@@ -80,4 +80,13 @@
 			RangerRestClient read Timeout in Milli Seconds
 		</description>
 	</property>
+
+	<property>
+		<name>xasecure.add-hadoop-authorization</name>
+		<value>true</value>
+		<description>
+			Enable SPNEGO authentication using principal and keytab to download policies from Ranger
+		</description>
+	</property>
+
 </configuration>

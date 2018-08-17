@@ -96,9 +96,16 @@ Add following `authorizer` element:
         <property name="Ranger Admin Identity">ranger@NIFI</property>
 
         <!--
-            If set to true, NiFi Registry will use the principal and keytab defined at nifi-registry.properties to access Ranger:
+            Specify if target Ranger is Kerberized.
+            If set to true, NiFi Registry will use the principal and keytab defined at nifi-registry.properties:
             - nifi.registry.kerberos.service.principal
             - nifi.registry.kerberos.service.keytab.location
+
+            The specified credential is used to access Ranger API, and to write audit logs into HDFS (if enabled).
+
+            At Ranger side, the configured user needs to be added to 'policy.download.auth.users' property, see Ranger configuration section below.
+
+            Also, ranger-nifi-registry-security.xml needs additional "xasecure.add-hadoop-authorization = true" configuration.
         -->
         <property name="Ranger Kerberos Enabled">false</property>
 
@@ -117,3 +124,8 @@ At Ranger side, add a NiFi Registry service. NiFi Registry service has following
 - Truststore: Specify a Truststore filepath to verify NiFi Registry server certificate.
 - Truststore Type: Specify the type of Truststore. E.g. `JKS`
 - Truststore Password: Specify the password of Truststore.
+- Add New Configurations:
+  - policy.download.auth.users: Required if Ranger is Kerberized.
+    Specify the NiFi Registry user to download policies,
+    which is configured by 'nifi.registry.kerberos.service.principal' at nifi-registry.properties,
+    when NiFi Registry Ranger authorizer is configured as 'Ranger Kerberos Enabled' to true.
