@@ -80,7 +80,10 @@ Add following `authorizer` element:
         <!-- Specify Ranger service name to use -->
         <property name="Ranger Application Id">nifi-registry-service-name</property>
 
-        <!-- Specify configuration file paths for Ranger plugin -->
+        <!--
+            Specify configuration file paths for Ranger plugin.
+            See the XML files bundled with this extension for further details.
+         -->
         <property name="Ranger Security Config Path">./ext/ranger/conf/ranger-nifi-registry-security.xml</property>
         <property name="Ranger Audit Config Path">./ext/ranger/conf/ranger-nifi-registry-audit.xml</property>
 

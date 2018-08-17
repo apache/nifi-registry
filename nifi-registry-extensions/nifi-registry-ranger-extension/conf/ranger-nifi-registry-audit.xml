@@ -93,9 +93,63 @@
 		<value>/tmp/audit/solr/spool</value>
 	</property>
 
+	<!--
+	  IMPORTANT: Solr destination can be specified by either HTTP URL or Zookeeper address.
+	  However, when the target Solr is Kerberized, use Zookeeper address.
+	  Because LBHttpSolrClient can not use following In-memory JAAS config as it overwrites JAAS config internally.
+	-->
 	<property>
 		<name>xasecure.audit.destination.solr.urls</name>
+		<!-- by HTTP URL
 		<value>http://localhost:6083/solr/ranger_audits</value>
+		-->
+		<!-- by Zookeeper address, recommended -->
+		<value>localhost:2181/solr</value>
+	</property>
+
+	<!--
+	  If Solr is Kerberized, following in-memory JAAS properties are also needed to authenticate NiFi Registry as a Solr client.
+
+	  Also, solr-security.json should be configured to allow this NiFi Registry user (specified by the principal)
+	  to write audits to 'ranger_audits' Solr collection. See Solr documentation for how to configure solr-security.json.
+	  https://lucene.apache.org/solr/guide/6_6/authentication-and-authorization-plugins.html
+
+      In case Ranger uses infra-solr resides in the same cluster managed by Ambari, you can configure required solr-security.json from:
+      Ambari -> Infra Solr -> Config -> Advanced -> Advanced infra-solr-security-json -> Ranger audit service users
+      E.g. {default_ranger_audit_users},nifi-registry
+	-->
+	<!-- Also, solr-security.json Ranger audit service users -->
+	<property>
+		<name>xasecure.audit.destination.solr.force.use.inmemory.jaas.config</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.option.useKeyTab</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.option.storeKey</name>
+		<value>false</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.option.serviceName</name>
+		<value>solr</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.option.principal</name>
+		<value>nifi-registry@EXAMPLE.COM</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.option.keyTab</name>
+		<value>/etc/security/keytabs/nifi-registry.keytab</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.loginModuleName</name>
+		<value>com.sun.security.auth.module.Krb5LoginModule</value>
+	</property>
+	<property>
+		<name>xasecure.audit.jaas.Client.loginModuleControlFlag</name>
+		<value>required</value>
 	</property>
 
 </configuration>
