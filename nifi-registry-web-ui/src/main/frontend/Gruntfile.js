@@ -22,6 +22,7 @@ module.exports = function (grunt) {
     grunt.initConfig({
         sass: {
             options: {
+                implementation: require('node-sass'),
                 outputStyle: 'compressed',
                 sourceMap: true
             },
