@@ -25,7 +25,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.hook.Event;
 import org.apache.nifi.registry.hook.EventField;
-import org.apache.nifi.registry.hook.EventHookProvider;
+import org.apache.nifi.registry.hook.WhitelistFilteringEventHookProvider;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 /**
  * A EventHookProvider that is used to execute a script to handle the event.
  */
-public class ScriptEventHookProvider implements EventHookProvider {
+public class ScriptEventHookProvider
+        extends WhitelistFilteringEventHookProvider {
 
     static final Logger LOGGER = LoggerFactory.getLogger(ScriptEventHookProvider.class);
     static final String SCRIPT_PATH_PROP = "Script Path";
@@ -43,9 +44,10 @@ public class ScriptEventHookProvider implements EventHookProvider {
     private File scriptFile;
     private File workDirFile;
 
+
     @Override
     public void handle(final Event event) {
-        List<String> command = new ArrayList<String>();
+        List<String> command = new ArrayList<>();
         command.add(scriptFile.getAbsolutePath());
         command.add(event.getEventType().name());
 
@@ -67,6 +69,8 @@ public class ScriptEventHookProvider implements EventHookProvider {
 
     @Override
     public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
+        super.onConfigured(configurationContext);
+
         final Map<String,String> props = configurationContext.getProperties();
         if (!props.containsKey(SCRIPT_PATH_PROP)) {
             throw new ProviderCreationException("The property " + SCRIPT_PATH_PROP + " must be provided");
