@@ -66,7 +66,7 @@
                 <exclude>nifi-registry-bootstrap</exclude>
                 <exclude>nifi-registry-utils</exclude>
                 <exclude>nifi-registry-docs</exclude>
-                <exclude>nifi-registry-ranger-extension</exclude>
+                <exclude>nifi-registry-ranger-assembly</exclude>
             </excludes>
         </dependencySet>
         

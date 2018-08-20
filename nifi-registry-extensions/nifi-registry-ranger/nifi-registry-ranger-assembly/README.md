@@ -40,7 +40,7 @@ To do so, build the extension with the following command:
 
 ```
 cd nifi-registry
-mvn clean install -f nifi-registry-extensions/nifi-registry-ranger-extension
+mvn clean install -f nifi-registry-extensions/nifi-registry-ranger
 ```
 
 The extension zip will be created as `nifi-registry-extensions/nifi-registry-ranger-extension/target/nifi-registry-ranger-extension-xxx-bin.zip`.

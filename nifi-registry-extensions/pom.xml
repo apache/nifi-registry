@@ -28,8 +28,6 @@
 
     <modules>
         <module>nifi-registry-ranger</module>
-        <module>nifi-registry-ranger-extension</module>
-        <module>nifi-registry-ranger-jersey-bundle</module>
     </modules>
 
 

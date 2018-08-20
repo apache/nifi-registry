@@ -387,7 +387,7 @@
             <dependencies>
                 <dependency>
                     <groupId>org.apache.nifi.registry</groupId>
-                    <artifactId>nifi-registry-ranger-extension</artifactId>
+                    <artifactId>nifi-registry-ranger-assembly</artifactId>
                     <version>0.3.0-SNAPSHOT</version>
                     <classifier>bin</classifier>
                     <scope>runtime</scope>
@@ -408,7 +408,7 @@
                                 <configuration>
                                     <outputDirectory>${project.build.directory}/ext/ranger</outputDirectory>
                                     <includeGroupIds>org.apache.nifi.registry</includeGroupIds>
-                                    <includeArtifactIds>nifi-registry-ranger-extension</includeArtifactIds>
+                                    <includeArtifactIds>nifi-registry-ranger-assembly</includeArtifactIds>
                                     <excludeTransitive>false</excludeTransitive>
                                 </configuration>
                             </execution>
