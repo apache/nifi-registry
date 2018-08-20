@@ -1161,6 +1161,7 @@ Event hooks are an integration point that allows for custom code to to be trigge
 |`UPDATE_FLOW` | A flow that exist in a bucket has been updated.
 |`DELETE_BUCKET` | An existing bucket in the registry is deleted.
 |`DELETE_FLOW` | An existing flow in the registry is deleted.
+|`REGISTRY_START` | Invoked once the NiFi Registry application has been successfully started. This is only invoked after a complete and successful start.
 |==================================================================================================================================================
 
 === Shared Event Hook Properties
