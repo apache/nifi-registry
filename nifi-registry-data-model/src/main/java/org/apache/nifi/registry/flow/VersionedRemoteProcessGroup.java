@@ -37,10 +37,14 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
     private Set<VersionedRemoteGroupPort> inputPorts;
     private Set<VersionedRemoteGroupPort> outputPorts;
 
+
+    @Deprecated
     @ApiModelProperty(
-            value = "The target URI of the remote process group." +
+            value = "[DEPRECATED] The target URI of the remote process group." +
                     " If target uri is not set, but uris are set, then returns the first uri in the uris." +
-                    " If neither target uri nor uris are set, then returns null.")
+                    " If neither target uri nor uris are set, then returns null.",
+            notes = "This field is deprecated and will be removed in version 1.x of NiFi Registry." +
+                    " Please migrate to using targetUris only.")
     public String getTargetUri() {
 
         if (!StringUtils.isEmpty(targetUri)) {
