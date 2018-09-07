@@ -17,9 +17,10 @@
 
 package org.apache.nifi.registry.flow;
 
-import java.util.Set;
-
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Set;
 
 public class VersionedRemoteProcessGroup extends VersionedComponent {
     private String targetUri;
@@ -37,46 +38,42 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
     private Set<VersionedRemoteGroupPort> outputPorts;
 
 
+    @Deprecated
+    @ApiModelProperty(
+            value = "[DEPRECATED] The target URI of the remote process group." +
+                    " If target uri is not set, but uris are set, then returns the first uri in the uris." +
+                    " If neither target uri nor uris are set, then returns null.",
+            notes = "This field is deprecated and will be removed in version 1.x of NiFi Registry." +
+                    " Please migrate to using targetUris only.")
+    public String getTargetUri() {
+
+        if (!StringUtils.isEmpty(targetUri)) {
+            return targetUri;
+        }
+        return !StringUtils.isEmpty(targetUris) ? targetUris.split(",", 2)[0] : null;
+
+    }
+
     public void setTargetUri(final String targetUri) {
         this.targetUri = targetUri;
     }
 
+    @ApiModelProperty(
+            value = "The target URIs of the remote process group." +
+                    " If target uris is not set but target uri is set, then returns the single target uri." +
+                    " If neither target uris nor target uri is set, then returns null.")
+    public String getTargetUris() {
 
-    @ApiModelProperty("The target URI of the remote process group." +
-        " If target uri is not set, but uris are set, then returns the first url in the urls." +
-        " If neither target uri nor uris are set, then returns null.")
-    public String getTargetUri() {
-        if (targetUri != null && targetUri.length() > 0) {
-            return targetUri;
+        if (!StringUtils.isEmpty(targetUris)) {
+            return targetUris;
         }
-        if (targetUris == null || targetUris.length() == 0) {
-            return null;
-        }
+        return !StringUtils.isEmpty(targetUri) ? targetUri : null;
 
-        if (targetUris.contains(",")) {
-            return targetUris.substring(0, targetUris.indexOf(','));
-        }
-
-        return this.targetUri;
     }
 
     public void setTargetUris(String targetUris) {
         this.targetUris = targetUris;
     }
-
-
-    @ApiModelProperty("The target URI of the remote process group." +
-        " If target uris is not set but target uri is set," +
-        " then returns the single target uri." +
-        " If neither target uris nor target uri is set, then returns null.")
-    public String getTargetUris() {
-        if (targetUris == null || targetUris.length() == 0) {
-            return targetUri;
-        }
-
-        return this.targetUris;
-    }
-
 
     @ApiModelProperty("The time period used for the timeout when communicating with the target.")
     public String getCommunicationsTimeout() {
