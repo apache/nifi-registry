@@ -46,7 +46,7 @@ limitations under the License.
                    class="pad-left-sm fa fa-question-circle-o help-icon"></i>
             </span>
             </div>
-            <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+            <mat-checkbox [disabled]="!canEditSpecialPrivileges()"
                           [checked]="nfRegistryService.group.resourcePermissions.buckets.canRead && nfRegistryService.group.resourcePermissions.buckets.canWrite && nfRegistryService.group.resourcePermissions.buckets.canDelete"
                           (change)="toggleGroupManageBucketsPrivileges($event)">
             <span class="description">Can manage buckets<i
@@ -55,25 +55,25 @@ limitations under the License.
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.buckets.canRead"
                               (change)="toggleGroupManageBucketsPrivileges($event, 'read')">
                     <span class="description">Read</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.buckets.canWrite"
                               (change)="toggleGroupManageBucketsPrivileges($event, 'write')">
                     <span class="description">Write</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.buckets.canDelete"
                               (change)="toggleGroupManageBucketsPrivileges($event, 'delete')">
                     <span class="description">Delete</span>
                 </mat-checkbox>
             </div>
-            <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+            <mat-checkbox [disabled]="!canEditSpecialPrivileges()"
                           [checked]="nfRegistryService.group.resourcePermissions.tenants.canRead && nfRegistryService.group.resourcePermissions.tenants.canWrite && nfRegistryService.group.resourcePermissions.tenants.canDelete"
                           (change)="toggleGroupManageTenantsPrivileges($event)">
             <span class="description">Can manage users<i
@@ -82,25 +82,25 @@ limitations under the License.
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.tenants.canRead"
                               (change)="toggleGroupManageTenantsPrivileges($event, 'read')">
                     <span class="description">Read</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.tenants.canWrite"
                               (change)="toggleGroupManageTenantsPrivileges($event, 'write')">
                     <span class="description">Write</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.tenants.canDelete"
                               (change)="toggleGroupManageTenantsPrivileges($event, 'delete')">
                     <span class="description">Delete</span>
                 </mat-checkbox>
             </div>
-            <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+            <mat-checkbox [disabled]="!canEditSpecialPrivileges()"
                           [checked]="nfRegistryService.group.resourcePermissions.policies.canRead && nfRegistryService.group.resourcePermissions.policies.canWrite && nfRegistryService.group.resourcePermissions.policies.canDelete"
                           (change)="toggleGroupManagePoliciesPrivileges($event)">
             <span class="description">Can manage policies<i
@@ -109,25 +109,25 @@ limitations under the License.
             </mat-checkbox>
             <div flex fxLayout="row" fxLayoutAlign="space-around center">
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.policies.canRead"
                               (change)="toggleGroupManagePoliciesPrivileges($event, 'read')">
                     <span class="description">Read</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.policies.canWrite"
                               (change)="toggleGroupManagePoliciesPrivileges($event, 'write')">
                     <span class="description">Write</span>
                 </mat-checkbox>
                 <mat-checkbox class="pad-left-md"
-                              [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+                              [disabled]="!canEditSpecialPrivileges()"
                               [(checked)]="nfRegistryService.group.resourcePermissions.policies.canDelete"
                               (change)="toggleGroupManagePoliciesPrivileges($event, 'delete')">
                     <span class="description">Delete</span>
                 </mat-checkbox>
             </div>
-            <mat-checkbox [disabled]="!nfRegistryService.currentUser.resourcePermissions.policies.canWrite"
+            <mat-checkbox [disabled]="!canEditSpecialPrivileges()"
                           [checked]="nfRegistryService.group.resourcePermissions.proxy.canWrite"
                           (change)="toggleGroupManageProxyPrivileges($event)">
             <span class="description">Can proxy user requests<i

@@ -53,6 +53,10 @@ NfRegistry.prototype = {
     ngOnInit: function () {
         var self = this;
         this.nfRegistryService.sidenav = this.sidenav; //ngCore.ViewChild
+
+        this.nfRegistryApi.getRegistryConfig().subscribe(function (registryConfig) {
+            self.nfRegistryService.registry.config = registryConfig;
+        });
     },
 
     /**

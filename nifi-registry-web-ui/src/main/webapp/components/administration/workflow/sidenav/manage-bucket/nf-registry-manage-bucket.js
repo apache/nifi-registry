@@ -430,6 +430,15 @@ NfRegistryManageBucket.prototype = {
                 });
             }
         });
+    },
+
+    /**
+     * Determine if bucket policies can be edited.
+     * @returns {boolean}
+     */
+    canEditBucketPolicies: function () {
+        return this.nfRegistryService.currentUser.resourcePermissions.policies.canWrite
+                && this.nfRegistryService.registry.config.supportsConfigurableAuthorizer;
     }
 };
 
