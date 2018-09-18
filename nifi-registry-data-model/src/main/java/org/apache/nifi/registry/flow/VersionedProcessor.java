@@ -22,7 +22,8 @@ import java.util.Set;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class VersionedProcessor extends VersionedComponent {
+public class VersionedProcessor extends VersionedComponent
+        implements VersionedConfigurableComponent, VersionedExtensionComponent {
 
     private Bundle bundle;
     private Map<String, String> style;
@@ -61,11 +62,13 @@ public class VersionedProcessor extends VersionedComponent {
         this.schedulingStrategy = schedulingStrategy;
     }
 
+    @Override
     @ApiModelProperty("The type of Processor")
     public String getType() {
         return type;
     }
 
+    @Override
     public void setType(final String type) {
         this.type = type;
     }
@@ -115,21 +118,24 @@ public class VersionedProcessor extends VersionedComponent {
         this.concurrentlySchedulableTaskCount = concurrentlySchedulableTaskCount;
     }
 
-
+    @Override
     @ApiModelProperty("The properties for the processor. Properties whose value is not set will only contain the property name.")
     public Map<String, String> getProperties() {
         return properties;
     }
 
+    @Override
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
+    @Override
     @ApiModelProperty("The property descriptors for the processor.")
     public Map<String, VersionedPropertyDescriptor> getPropertyDescriptors() {
         return propertyDescriptors;
     }
 
+    @Override
     public void setPropertyDescriptors(Map<String, VersionedPropertyDescriptor> propertyDescriptors) {
         this.propertyDescriptors = propertyDescriptors;
     }
@@ -164,11 +170,13 @@ public class VersionedProcessor extends VersionedComponent {
         this.runDurationMillis = runDurationMillis;
     }
 
+    @Override
     @ApiModelProperty("Information about the bundle from which the component came")
     public Bundle getBundle() {
         return bundle;
     }
 
+    @Override
     public void setBundle(Bundle bundle) {
         this.bundle = bundle;
     }

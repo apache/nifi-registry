@@ -22,7 +22,8 @@ import java.util.Map;
 
 import io.swagger.annotations.ApiModelProperty;
 
-public class VersionedControllerService extends VersionedComponent {
+public class VersionedControllerService extends VersionedComponent
+        implements VersionedConfigurableComponent, VersionedExtensionComponent {
 
     private String type;
     private Bundle bundle;
@@ -33,20 +34,24 @@ public class VersionedControllerService extends VersionedComponent {
     private String annotationData;
 
 
+    @Override
     @ApiModelProperty(value = "The type of the controller service.")
     public String getType() {
         return type;
     }
 
+    @Override
     public void setType(String type) {
         this.type = type;
     }
 
+    @Override
     @ApiModelProperty(value = "The details of the artifact that bundled this processor type.")
     public Bundle getBundle() {
         return bundle;
     }
 
+    @Override
     public void setBundle(Bundle bundle) {
         this.bundle = bundle;
     }
@@ -60,20 +65,24 @@ public class VersionedControllerService extends VersionedComponent {
         this.controllerServiceApis = controllerServiceApis;
     }
 
+    @Override
     @ApiModelProperty(value = "The properties of the controller service.")
     public Map<String, String> getProperties() {
         return properties;
     }
 
+    @Override
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
+    @Override
     @ApiModelProperty("The property descriptors for the processor.")
     public Map<String, VersionedPropertyDescriptor> getPropertyDescriptors() {
         return propertyDescriptors;
     }
 
+    @Override
     public void setPropertyDescriptors(Map<String, VersionedPropertyDescriptor> propertyDescriptors) {
         this.propertyDescriptors = propertyDescriptors;
     }
