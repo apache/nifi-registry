@@ -30,26 +30,9 @@
         of NiFi and/or MiNiFi.
     </description>
     <modules>
-        <module>nifi-registry-properties</module>
-        <module>nifi-registry-utils</module>
-        <module>nifi-registry-data-model</module>
-        <module>nifi-registry-flow-diff</module>
-        <module>nifi-registry-jetty</module>
-        <module>nifi-registry-resources</module>
-        <module>nifi-registry-runtime</module>
-        <module>nifi-registry-security-api</module>
-        <module>nifi-registry-security-utils</module>
-	    <module>nifi-registry-framework</module>
-        <module>nifi-registry-provider-api</module>
-        <module>nifi-registry-web-api</module>
-        <module>nifi-registry-web-ui</module>
-        <module>nifi-registry-web-docs</module>
-	    <module>nifi-registry-bootstrap</module>
-        <module>nifi-registry-docs</module>
-        <module>nifi-registry-assembly</module>
-	    <module>nifi-registry-client</module>
-        <module>nifi-registry-docker</module>
+        <module>nifi-registry-core</module>
         <module>nifi-registry-extensions</module>
+        <module>nifi-registry-assembly</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
@@ -167,6 +150,7 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Logging dependencies that will be directly in lib -->
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
@@ -203,102 +187,13 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${org.slf4j.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-server</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlet</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-webapp</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-servlets</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-annotations</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>apache-jsp</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>apache-jstl</artifactId>
-                <version>${jetty.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>3.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>${jax.rs.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>javax.validation</groupId>
-                <artifactId>validation-api</artifactId>
-                <version>2.0.0.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>6.0.2.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish</groupId>
-                <artifactId>javax.el</artifactId>
-                <version>3.0.1-b08</version>
-            </dependency>
-            <!-- Spring Boot 2.0 Requires Jackson 2.9.x -->
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.module</groupId>
-                <artifactId>jackson-module-jaxb-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
+	    <!-- lib/shared -->
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.5</version>
             </dependency>
-            <dependency>
-                <groupId>commons-io</groupId>
-                <artifactId>commons-io</artifactId>
-                <version>2.5</version>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>1.5.16</version>
-            </dependency>
+	    <!-- NiFi Registry Modules -->
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-utils</artifactId>
@@ -344,6 +239,7 @@
                 <scope>runtime</scope>
                 <type>zip</type>
             </dependency>
+	    <!-- Test dependencies -->
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>

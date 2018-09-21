@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.apache.nifi.registry</groupId>
+        <artifactId>nifi-registry-core</artifactId>
+        <version>0.3.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>nifi-registry-web-api</artifactId>
+    <version>0.3.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring.boot.version}</version>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.kongchen</groupId>
+                <artifactId>swagger-maven-plugin</artifactId>
+                <version>3.1.6</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <apiSources>
+                                <apiSource>
+                                    <locations>
+                                        <location>org.apache.nifi.registry.web.api</location>
+                                    </locations>
+                                    <schemes>
+                                        <scheme>http</scheme>
+                                        <scheme>https</scheme>
+                                    </schemes>
+                                    <basePath>/nifi-registry-api</basePath>
+                                    <info>
+                                        <title>NiFi Registry REST API</title>
+                                        <version>${project.version}</version>
+                                        <description>
+                                            The REST API provides an interface to a registry with operations for saving, versioning, reading NiFi flows and components.
+                                        </description>
+                                        <contact>
+                                            <name>Apache NiFi Registry</name>
+                                            <email>dev@nifi.apache.org</email>
+                                            <url>https://nifi.apache.org</url>
+                                        </contact>
+                                        <license>
+                                            <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
+                                            <name>Apache 2.0 License</name>
+                                        </license>
+                                    </info>
+                                    <securityDefinitions>
+                                        <securityDefinition>
+                                            <jsonPath>${project.basedir}/src/main/resources/swagger/security-definitions.json</jsonPath>
+                                        </securityDefinition>
+                                    </securityDefinitions>
+                                    <templatePath>classpath:/templates/index.html.hbs</templatePath>
+                                    <outputPath>
+                                        ${project.build.directory}/${project.artifactId}-${project.version}/docs/rest-api/index.html
+                                    </outputPath>
+                                    <swaggerDirectory>${project.build.directory}/swagger</swaggerDirectory>
+                                </apiSource>
+                            </apiSources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/docs/rest-api/images</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources/images</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <id>download-swagger-ui</id>
+                        <!-- This plugin downloads swagger UI static assets during the build, to be
+                             served by the web app to render the dynamically generated Swagger spec.
+                             For offline development, or to build without the swagger UI, activate
+                             the "no-swagger-ui" maven profile during the build with the "-P" flag -->
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>
+                                https://github.com/swagger-api/swagger-ui/archive/v${swagger.ui.version}.tar.gz
+                            </url>
+                            <unpack>true</unpack>
+                            <outputDirectory>${project.build.directory}
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>bundle-swagger-ui</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <sequential>
+                                    <echo>Copy static Swagger UI files to target</echo>
+                                    <copy todir="${project.build.directory}/classes/static/swagger">
+                                        <fileset dir="${project.build.directory}/swagger-ui-${swagger.ui.version}/dist">
+                                            <include name="**" />
+                                        </fileset>
+                                    </copy>
+                                    <echo>Disable schema validation by removing validatorUrl</echo>
+                                    <replace token="https://online.swagger.io/validator" value="" dir="${project.build.directory}/classes/static/swagger">
+                                        <include name="swagger-ui-bundle.js" />
+                                        <include name="swagger-ui-standalone-preset.js" />
+                                    </replace>
+                                    <echo>Rename 'index.html' to 'ui.html'</echo>
+                                    <move file="${project.build.directory}/classes/static/swagger/index.html" tofile="${project.build.directory}/classes/static/swagger/ui.html" />
+                                    <echo>Replace default swagger.json location</echo>
+                                    <replace token="http://petstore.swagger.io/v2/swagger.json" value="/nifi-registry-api/swagger/swagger.json" dir="${project.build.directory}/classes/static/swagger">
+                                        <include name="ui.html" />
+                                    </replace>
+                                    <echo>Copy swagger.json into static assets folder</echo>
+                                    <copy todir="${project.build.directory}/classes/static/swagger">
+                                        <fileset dir="${project.build.directory}/swagger">
+                                            <include name="*.json" />
+                                        </fileset>
+                                    </copy>
+                                </sequential>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>no-swagger-ui</id>
+            <!-- Activate this profile with "-P no-swagger-ui" to disable the Swagger UI
+                 static assets from being downloaded and bundled with the web api WAR. -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>download-swagger-ui</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.8</version>
+                        <executions>
+                            <execution>
+                                <id>bundle-swagger-ui</id>
+                                <phase>none</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jersey</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <!-- Exclude micrometer-core because it creates a class cast issue with logback, revisit later -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${spring.boot.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.micrometer</groupId>
+                    <artifactId>micrometer-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security.kerberos</groupId>
+            <artifactId>spring-security-kerberos-core</artifactId>
+            <version>1.0.1.RELEASE</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework.security</groupId>
+                    <artifactId>spring-security-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- Must be marked provided in order to produce a correct WAR -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-framework</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-properties</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <scope>provided</scope> <!-- This will be in the lib directory -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-security-api</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <scope>provided</scope> <!-- This will be in lib directory -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-provider-api</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <scope>provided</scope> <!-- This will be in lib directory -->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-security-utils</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.7.0</version>
+        </dependency>
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-client</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jetty</artifactId>
+            <version>${spring.boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.unboundid</groupId>
+            <artifactId>unboundid-ldapsdk</artifactId>
+            <version>3.2.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spockframework</groupId>
+            <artifactId>spock-core</artifactId>
+            <version>1.0-groovy-2.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <version>2.4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>cglib</groupId>
+            <artifactId>cglib-nodep</artifactId>
+            <version>2.2.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
