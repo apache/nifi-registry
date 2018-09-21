@@ -107,12 +107,12 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2017</inceptionYear>
         <org.slf4j.version>1.7.12</org.slf4j.version>
-        <jetty.version>9.4.3.v20170317</jetty.version>
+        <jetty.version>9.4.11.v20180605</jetty.version>
         <jax.rs.api.version>2.1</jax.rs.api.version>
         <jersey.version>2.26</jersey.version>
-        <jackson.version>2.9.2</jackson.version>
-        <spring.boot.version>2.0.2.RELEASE</spring.boot.version>
-        <spring.security.version>5.0.5.RELEASE</spring.security.version>
+        <jackson.version>2.9.6</jackson.version>
+        <spring.boot.version>2.0.4.RELEASE</spring.boot.version>
+        <spring.security.version>5.0.7.RELEASE</spring.security.version>
         <flyway.version>4.2.0</flyway.version>
         <swagger.ui.version>3.12.0</swagger.ui.version>
     </properties>
