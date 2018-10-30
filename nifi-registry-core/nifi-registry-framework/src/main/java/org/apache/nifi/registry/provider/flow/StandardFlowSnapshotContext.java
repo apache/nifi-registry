@@ -31,6 +31,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     private final String bucketName;
     private final String flowId;
     private final String flowName;
+    private final String flowDescription;
     private final int version;
     private final String comments;
     private final String author;
@@ -41,6 +42,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         this.bucketName = builder.bucketName;
         this.flowId = builder.flowId;
         this.flowName = builder.flowName;
+        this.flowDescription = builder.flowDescription;
         this.version = builder.version;
         this.comments = builder.comments;
         this.author = builder.author;
@@ -75,6 +77,11 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     }
 
     @Override
+    public String getFlowDescription() {
+        return flowDescription;
+    }
+
+    @Override
     public int getVersion() {
         return version;
     }
@@ -103,6 +110,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
         private String bucketName;
         private String flowId;
         private String flowName;
+        private String flowDescription;
         private int version;
         private String comments;
         private String author;
@@ -117,6 +125,7 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
             bucketName(bucket.getName());
             flowId(snapshotMetadata.getFlowIdentifier());
             flowName(versionedFlow.getName());
+            flowDescription(versionedFlow.getDescription());
             version(snapshotMetadata.getVersion());
             comments(snapshotMetadata.getComments());
             author(snapshotMetadata.getAuthor());
@@ -140,6 +149,11 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
 
         public Builder flowName(final String flowName) {
             this.flowName = flowName;
+            return this;
+        }
+
+        public Builder flowDescription(final String flowDescription) {
+            this.flowDescription = flowDescription;
             return this;
         }
 

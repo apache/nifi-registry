@@ -17,8 +17,11 @@
 package org.apache.nifi.registry.provider.flow.git;
 
 import org.apache.nifi.registry.flow.FlowPersistenceException;
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
+import org.apache.nifi.registry.flow.MetadataAwareFlowPersistenceProvider;
+import org.apache.nifi.registry.metadata.BucketMetadata;
+import org.apache.nifi.registry.metadata.FlowMetadata;
+import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
@@ -30,6 +33,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,7 +43,7 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.nifi.registry.util.FileUtils.sanitizeFilename;
 
-public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
+public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(GitFlowMetaData.class);
     static final String FLOW_STORAGE_DIR_PROP = "Flow Storage Directory";
@@ -117,6 +123,12 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
 
         // Add new version.
         final Flow.FlowPointer flowPointer = new Flow.FlowPointer(flowSnapshotFilename);
+        flowPointer.setFlowName(context.getFlowName());
+        flowPointer.setFlowDescription(context.getFlowDescription());
+        flowPointer.setAuthor(context.getAuthor());
+        flowPointer.setComment(context.getComments());
+        flowPointer.setCreated(context.getSnapshotTimestamp());
+
         flow.putVersion(context.getVersion(), flowPointer);
 
         final File bucketDir = new File(flowStorageDir, bucketDirName);
@@ -262,4 +274,77 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
         // TODO: Do nothing? This signature is not used. Actually there's nothing to do to the old versions as those exist in old commits even if this method is called.
     }
 
+    @Override
+    public List<BucketMetadata> getMetadata() {
+        final Map<String, Bucket> gitBuckets = flowMetaData.getBuckets();
+        if (gitBuckets == null || gitBuckets.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<BucketMetadata> bucketMetadataList = new ArrayList<>();
+        for (Map.Entry<String,Bucket> bucketEntry : gitBuckets.entrySet()) {
+            final String bucketId = bucketEntry.getKey();
+            final Bucket gitBucket = bucketEntry.getValue();
+
+            final BucketMetadata bucketMetadata = new BucketMetadata();
+            bucketMetadata.setIdentifier(bucketId);
+            bucketMetadata.setName(gitBucket.getBucketDirName());
+            bucketMetadata.setFlowMetadata(createFlowMetadata(gitBucket));
+            bucketMetadataList.add(bucketMetadata);
+        }
+        return bucketMetadataList;
+    }
+
+    private List<FlowMetadata> createFlowMetadata(final Bucket bucket) {
+        if (bucket.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<FlowMetadata> flowMetadataList = new ArrayList<>();
+        for (Map.Entry<String, Flow> flowEntry : bucket.getFlows().entrySet()) {
+            final String flowId = flowEntry.getKey();
+            final Flow flow = flowEntry.getValue();
+
+            final Optional<Integer> latestVersion = flow.getLatestVersion();
+            if (latestVersion.isPresent()) {
+                final Flow.FlowPointer latestFlowPointer = flow.getFlowVersion(latestVersion.get());
+
+                String flowName = latestFlowPointer.getFlowName();
+                if (flowName == null) {
+                    flowName = latestFlowPointer.getFileName();
+                    if (flowName.endsWith(".snapshot")) {
+                        flowName = flowName.substring(0, flowName.lastIndexOf("."));
+                    }
+                }
+
+
+                final FlowMetadata flowMetadata = new FlowMetadata();
+                flowMetadata.setIdentifier(flowId);
+                flowMetadata.setName(flowName);
+                flowMetadata.setDescription(latestFlowPointer.getFlowDescription());
+                flowMetadata.setFlowSnapshotMetadata(createFlowSnapshotMetdata(flow));
+                flowMetadataList.add(flowMetadata);
+            }
+        }
+        return flowMetadataList;
+    }
+
+    private List<FlowSnapshotMetadata> createFlowSnapshotMetdata(final Flow flow) {
+        final List<FlowSnapshotMetadata> flowSnapshotMetadataList = new ArrayList<>();
+
+        final Map<Integer, Flow.FlowPointer> versions = flow.getVersions();
+        for (Map.Entry<Integer, Flow.FlowPointer> entry : versions.entrySet()) {
+            final Integer version = entry.getKey();
+            final Flow.FlowPointer flowPointer = entry.getValue();
+
+            final FlowSnapshotMetadata snapshotMetadata = new FlowSnapshotMetadata();
+            snapshotMetadata.setVersion(version);
+            snapshotMetadata.setAuthor(flowPointer.getAuthor());
+            snapshotMetadata.setComments(flowPointer.getComment());
+            snapshotMetadata.setCreated(flowPointer.getCreated());
+            flowSnapshotMetadataList.add(snapshotMetadata);
+        }
+
+        return flowSnapshotMetadataList;
+    }
 }

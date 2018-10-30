@@ -42,6 +42,11 @@ public interface FlowSnapshotContext {
     String getFlowName();
 
     /**
+     * @return the description of the flow this snapshot belongs to
+     */
+    String getFlowDescription();
+
+    /**
      * @return the version of the snapshot
      */
     int getVersion();
