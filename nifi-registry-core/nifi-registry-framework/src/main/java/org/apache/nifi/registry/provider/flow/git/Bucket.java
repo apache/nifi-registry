@@ -70,6 +70,10 @@ class Bucket {
         return flows.isEmpty();
     }
 
+    Map<String, Flow> getFlows() {
+        return flows;
+    }
+
     /**
      * Serialize the latest version of this Bucket meta data.
      * @return serialized bucket

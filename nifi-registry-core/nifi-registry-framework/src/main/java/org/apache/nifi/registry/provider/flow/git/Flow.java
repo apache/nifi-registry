@@ -47,10 +47,21 @@ class Flow {
         versions.put(version, pointer);
     }
 
+    Map<Integer, FlowPointer> getVersions() {
+        return versions;
+    }
+
     public static class FlowPointer {
         private String gitRev;
         private String objectId;
         private final String fileName;
+
+        // May not be populated pre-0.3.0
+        private String flowName;
+        private String flowDescription;
+        private String author;
+        private String comment;
+        private Long created;
 
         /**
          * Create new FlowPointer instance.
@@ -79,6 +90,46 @@ class Flow {
         public void setObjectId(String objectId) {
             this.objectId = objectId;
         }
+
+        public String getFlowName() {
+            return flowName;
+        }
+
+        public void setFlowName(String flowName) {
+            this.flowName = flowName;
+        }
+
+        public String getFlowDescription() {
+            return flowDescription;
+        }
+
+        public void setFlowDescription(String flowDescription) {
+            this.flowDescription = flowDescription;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public void setAuthor(String author) {
+            this.author = author;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public void setComment(String comment) {
+            this.comment = comment;
+        }
+
+        public Long getCreated() {
+            return created;
+        }
+
+        public void setCreated(Long created) {
+            this.created = created;
+        }
     }
 
     /**
@@ -91,9 +142,28 @@ class Flow {
         if (!latestVerOpt.isPresent()) {
             throw new IllegalStateException("Flow version is not added yet, can not be serialized.");
         }
+
         final Integer latestVer = latestVerOpt.get();
+        final Flow.FlowPointer latestFlowPointer = versions.get(latestVer);
+
         map.put(GitFlowMetaData.VER, latestVer);
-        map.put(GitFlowMetaData.FILE, versions.get(latestVer).fileName);
+        map.put(GitFlowMetaData.FILE, latestFlowPointer.fileName);
+
+        if (latestFlowPointer.flowName != null) {
+            map.put(GitFlowMetaData.FLOW_NAME, latestFlowPointer.flowName);
+        }
+        if (latestFlowPointer.flowDescription != null) {
+            map.put(GitFlowMetaData.FLOW_DESC, latestFlowPointer.flowDescription);
+        }
+        if (latestFlowPointer.author != null) {
+            map.put(GitFlowMetaData.AUTHOR, latestFlowPointer.author);
+        }
+        if (latestFlowPointer.comment != null) {
+            map.put(GitFlowMetaData.COMMENTS, latestFlowPointer.comment);
+        }
+        if (latestFlowPointer.created != null) {
+            map.put(GitFlowMetaData.CREATED, latestFlowPointer.created);
+        }
 
         return map;
     }

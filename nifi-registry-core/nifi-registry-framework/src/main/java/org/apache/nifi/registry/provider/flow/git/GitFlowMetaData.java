@@ -67,6 +67,11 @@ class GitFlowMetaData {
     static final String FLOWS = "flows";
     static final String VER = "ver";
     static final String FILE = "file";
+    static final String FLOW_NAME = "flowName";
+    static final String FLOW_DESC = "flowDesc";
+    static final String AUTHOR = "author";
+    static final String COMMENTS = "comments";
+    static final String CREATED = "created";
     static final String BUCKET_FILENAME = "bucket.yml";
 
     private static final Logger logger = LoggerFactory.getLogger(GitFlowMetaData.class);
@@ -318,6 +323,23 @@ class GitFlowMetaData {
                 }
                 pointer.setGitRev(commit.getName());
                 pointer.setObjectId(objectId.getName());
+
+                if (flowMeta.containsKey(FLOW_NAME)) {
+                    pointer.setFlowName((String)flowMeta.get(FLOW_NAME));
+                }
+                if (flowMeta.containsKey(FLOW_DESC)) {
+                    pointer.setFlowDescription((String)flowMeta.get(FLOW_DESC));
+                }
+                if (flowMeta.containsKey(AUTHOR)) {
+                    pointer.setAuthor((String)flowMeta.get(AUTHOR));
+                }
+                if (flowMeta.containsKey(COMMENTS)) {
+                    pointer.setComment((String)flowMeta.get(COMMENTS));
+                }
+                if (flowMeta.containsKey(CREATED)) {
+                    pointer.setCreated((long)flowMeta.get(CREATED));
+                }
+
                 flow.putVersion(version, pointer);
             }
         }
@@ -341,6 +363,9 @@ class GitFlowMetaData {
         return Optional.ofNullable(buckets.get(bucketId));
     }
 
+    Map<String, Bucket> getBuckets() {
+        return buckets;
+    }
 
     void saveBucket(final Bucket bucket, final File bucketDir) throws IOException {
         final Yaml yaml = new Yaml();
