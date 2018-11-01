@@ -597,6 +597,7 @@
                         </exclude> <!-- Console banner text that does not have a mechanism of including comments -->
                         <exclude>src/main/resources/swagger/security-definitions.json
                         </exclude> <!-- A maven-swagger-plugin input file that does not have a mechanism of including comments -->
+			<exclude>.travis-output-filters</exclude> <!-- grep patterns to exclude from travis output -->
                     </excludes>
                 </configuration>
                 <dependencies>
