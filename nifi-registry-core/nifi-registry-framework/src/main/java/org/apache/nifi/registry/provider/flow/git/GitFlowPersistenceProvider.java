@@ -188,7 +188,14 @@ public class GitFlowPersistenceProvider implements FlowPersistenceProvider {
     @Override
     public void deleteAllFlowContent(String bucketId, String flowId) throws FlowPersistenceException {
         final Bucket bucket = getBucketOrFail(bucketId);
-        final Flow flow = getFlowOrFail(bucket, flowId);
+        final Optional<Flow> flowOpt = bucket.getFlow(flowId);
+        if (!flowOpt.isPresent()) {
+            logger.debug(format("Tried deleting all versions, but the Flow ID %s was not found in bucket %s:%s.",
+                    flowId, bucket.getBucketDirName(), bucket.getBucketId()));
+            return;
+        }
+
+        final Flow flow = flowOpt.get();
         final Optional<Integer> latestVersionOpt = flow.getLatestVersion();
         if (!latestVersionOpt.isPresent()) {
             throw new IllegalStateException("Flow version is not added yet, can not be deleted.");
