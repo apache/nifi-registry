@@ -27,12 +27,12 @@ limitations under the License.
     <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-md">
         <div class="fill-available-width">
             <mat-form-field floatLabel="always" fxFlex>
-                <input #usernameInput matInput floatPlaceholder="always" placeholder="Username">
+                <input #usernameInput matInput floatPlaceholder="always" placeholder="Username" (keyup.enter)="login(usernameInput, passwordInput)">
             </mat-form-field>
         </div>
         <div class="fill-available-width">
             <mat-form-field floatLabel="always" fxFlex>
-                <input #passwordInput type="password" matInput floatPlaceholder="always" placeholder="Password" autocomplete="off">
+                <input #passwordInput type="password" matInput floatPlaceholder="always" placeholder="Password" autocomplete="off" (keyup.enter)="login(usernameInput, passwordInput)">
             </mat-form-field>
         </div>
     </div>
