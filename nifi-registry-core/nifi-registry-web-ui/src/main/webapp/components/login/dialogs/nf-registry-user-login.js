@@ -50,6 +50,9 @@ NfRegistryUserLogin.prototype = {
      * @param password  The password.
      */
     login: function (username, password) {
+        if (username.value.length === 0 || password.value.length === 0) {
+            return;
+        }
         var self = this;
         this.nfRegistryApi.postToLogin(username.value, password.value).subscribe(function (response) {
             if (response || response.status === 200) {
