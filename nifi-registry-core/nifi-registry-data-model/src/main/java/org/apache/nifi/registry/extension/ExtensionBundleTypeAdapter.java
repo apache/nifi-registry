@@ -14,33 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.link.builder;
+package org.apache.nifi.registry.extension;
 
-import org.apache.nifi.registry.flow.VersionedFlow;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
-
-/**
- * LinkBuilder that builds "self" links for VersionedFlows.
- */
-public class VersionedFlowLinkBuilder implements LinkBuilder<VersionedFlow> {
-
-    private static final String PATH = "buckets/{bucketId}/flows/{flowId}";
+public class ExtensionBundleTypeAdapter extends XmlAdapter<String,ExtensionBundleType> {
 
     @Override
-    public Link createLink(final VersionedFlow versionedFlow) {
-        if (versionedFlow == null) {
+    public ExtensionBundleType unmarshal(String v) throws Exception {
+        if (v == null) {
             return null;
         }
 
-        final URI uri = UriBuilder.fromPath(PATH)
-                .resolveTemplate("bucketId", versionedFlow.getBucketIdentifier())
-                .resolveTemplate("flowId", versionedFlow.getIdentifier())
-                .build();
-
-        return Link.fromUri(uri).rel("self").build();
+        return ExtensionBundleType.fromString(v);
     }
 
+    @Override
+    public String marshal(final ExtensionBundleType v) throws Exception {
+        if (v == null) {
+            return null;
+        }
+
+        return v.toString();
+    }
 }

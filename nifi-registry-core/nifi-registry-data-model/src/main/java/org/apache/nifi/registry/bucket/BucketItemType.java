@@ -23,5 +23,8 @@ public enum BucketItemType {
 
     // The case of these enum names matches what we want to return in
     // the BucketItem.type field when serialized in an API response.
-    Flow;
+
+    Flow,
+
+    Extension_Bundle;
 }

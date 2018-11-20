@@ -27,4 +27,10 @@
     	<property name="Working Directory"></property>
     </eventHookProvider>
 
+    <extensionBundlePersistenceProvider>
+        <class>org.apache.nifi.registry.provider.MockExtensionBundlePersistenceProvider</class>
+        <property name="Extension Property 1">extension foo</property>
+        <property name="Extension Property 2">extension bar</property>
+    </extensionBundlePersistenceProvider>
+
 </providers>

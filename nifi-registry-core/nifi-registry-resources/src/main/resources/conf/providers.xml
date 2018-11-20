@@ -51,4 +51,9 @@
     </eventHookProvider>
     -->
 
+    <extensionBundlePersistenceProvider>
+        <class>org.apache.nifi.registry.provider.extension.FileSystemExtensionBundlePersistenceProvider</class>
+        <property name="Extension Bundle Storage Directory">./extension_bundles</property>
+    </extensionBundlePersistenceProvider>
+
 </providers>

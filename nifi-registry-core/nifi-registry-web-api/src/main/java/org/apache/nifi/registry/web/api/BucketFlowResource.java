@@ -119,7 +119,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         publish(EventFactory.flowCreated(createdFlow));
 
         permissionsService.populateItemPermissions(createdFlow);
-        linkService.populateFlowLinks(createdFlow);
+        linkService.populateLinks(createdFlow);
         return Response.status(Response.Status.OK).entity(createdFlow).build();
     }
 
@@ -151,7 +151,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         final List<VersionedFlow> flows = registryService.getFlows(bucketId);
         permissionsService.populateItemPermissions(flows);
-        linkService.populateFlowLinks(flows);
+        linkService.populateLinks(flows);
 
         return Response.status(Response.Status.OK).entity(flows).build();
     }
@@ -187,7 +187,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         final VersionedFlow flow = registryService.getFlow(bucketId, flowId);
         permissionsService.populateItemPermissions(flow);
-        linkService.populateFlowLinks(flow);
+        linkService.populateLinks(flow);
 
         return Response.status(Response.Status.OK).entity(flow).build();
     }
@@ -230,7 +230,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         final VersionedFlow updatedFlow = registryService.updateFlow(flow);
         publish(EventFactory.flowUpdated(updatedFlow));
         permissionsService.populateItemPermissions(updatedFlow);
-        linkService.populateFlowLinks(updatedFlow);
+        linkService.populateLinks(updatedFlow);
 
         return Response.status(Response.Status.OK).entity(updatedFlow).build();
     }
@@ -311,11 +311,11 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         publish(EventFactory.flowVersionCreated(createdSnapshot));
 
         if (createdSnapshot.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(createdSnapshot.getSnapshotMetadata());
+            linkService.populateLinks(createdSnapshot.getSnapshotMetadata());
         }
         if (createdSnapshot.getBucket() != null) {
             permissionsService.populateBucketPermissions(createdSnapshot.getBucket());
-            linkService.populateBucketLinks(createdSnapshot.getBucket());
+            linkService.populateLinks(createdSnapshot.getBucket());
         }
         return Response.status(Response.Status.OK).entity(createdSnapshot).build();
     }
@@ -351,7 +351,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
         final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
         if (snapshots != null ) {
-            linkService.populateSnapshotLinks(snapshots);
+            linkService.populateLinks(snapshots);
         }
 
         return Response.status(Response.Status.OK).entity(snapshots).build();
@@ -421,7 +421,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
         final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
-        linkService.populateSnapshotLinks(latest);
+        linkService.populateLinks(latest);
 
         return Response.status(Response.Status.OK).entity(latest).build();
     }
@@ -502,16 +502,16 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
 
     private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
         if (snapshot.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(snapshot.getSnapshotMetadata());
+            linkService.populateLinks(snapshot.getSnapshotMetadata());
         }
 
         if (snapshot.getFlow() != null) {
-            linkService.populateFlowLinks(snapshot.getFlow());
+            linkService.populateLinks(snapshot.getFlow());
         }
 
         if (snapshot.getBucket() != null) {
             permissionsService.populateBucketPermissions(snapshot.getBucket());
-            linkService.populateBucketLinks(snapshot.getBucket());
+            linkService.populateLinks(snapshot.getBucket());
         }
 
     }

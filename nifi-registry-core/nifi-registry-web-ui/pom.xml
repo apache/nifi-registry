@@ -216,6 +216,53 @@
                             </resources>
                         </configuration>
                     </execution>
+
+                    <!--
+                        Stage the final bundle of JS to be included in the .war
+                    -->
+                    <execution>
+                        <id>copy-web-ui-bundle</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}/webapp</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>nf-registry.bundle.*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <!--
+                        Stage the localization files to be included in the .war
+                    -->
+                    <execution>
+                        <id>copy-localization</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.working.dir}/locale</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>*</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <!--
@@ -302,58 +349,6 @@
                         <configuration>
                             <arguments>bundle-web-ui</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <!--
-                        Stage the final bundle of JS to be included in the .war
-                    -->
-                    <execution>
-                        <id>copy-web-ui-bundle</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}/webapp</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>nf-registry.bundle.*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!--
-                        Stage the localization files to be included in the .war
-                    -->
-                    <execution>
-                        <id>copy-localization</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}/locale</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
                         </configuration>
                     </execution>
                 </executions>

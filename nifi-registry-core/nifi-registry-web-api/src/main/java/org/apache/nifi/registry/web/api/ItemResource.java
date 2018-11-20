@@ -115,7 +115,7 @@ public class ItemResource extends AuthorizableApplicationResource {
             items = Collections.emptyList();
         }
         permissionsService.populateItemPermissions(items);
-        linkService.populateItemLinks(items);
+        linkService.populateLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();
     }
@@ -149,7 +149,7 @@ public class ItemResource extends AuthorizableApplicationResource {
 
         final List<BucketItem> items = registryService.getBucketItems(bucketId);
         permissionsService.populateItemPermissions(items);
-        linkService.populateItemLinks(items);
+        linkService.populateLinks(items);
 
         return Response.status(Response.Status.OK).entity(items).build();
     }

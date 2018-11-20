@@ -52,9 +52,11 @@ public class TestLegacyDatabaseService {
 
         jdbcTemplate = new JdbcTemplate(dataSource);
 
-        flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.setLocations("db/original");
+        flyway = Flyway.configure()
+                .dataSource(dataSource)
+                .locations("db/original")
+                .load();
+
         flyway.migrate();
 
         bucketEntityV1 = new BucketEntityV1();

@@ -18,16 +18,28 @@ package org.apache.nifi.registry.web.link;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.bucket.BucketItemType;
+import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestLinkService {
+
+    private static final String BASE_URI = "http://localhost:18080/nifi-registry-api";
+    private URI baseUri = UriBuilder.fromUri(BASE_URI).build();
 
     private LinkService linkService;
 
@@ -36,6 +48,14 @@ public class TestLinkService {
     private List<VersionedFlowSnapshotMetadata> snapshots;
     private List<BucketItem> items;
 
+    private List<ExtensionBundle> extensionBundles;
+    private List<ExtensionBundleVersionMetadata> extensionBundleVersionMetadata;
+
+    private List<ExtensionRepoBucket> extensionRepoBuckets;
+    private List<ExtensionRepoGroup> extensionRepoGroups;
+    private List<ExtensionRepoArtifact> extensionRepoArtifacts;
+    private List<ExtensionRepoVersionSummary> extensionRepoVersions;
+
     @Before
     public void setup() {
         linkService = new LinkService();
@@ -43,11 +63,11 @@ public class TestLinkService {
         // setup buckets
         final Bucket bucket1 = new Bucket();
         bucket1.setIdentifier("b1");
-        bucket1.setName("Bucket 1");
+        bucket1.setName("Bucket_1");
 
         final Bucket bucket2 = new Bucket();
         bucket2.setIdentifier("b2");
-        bucket2.setName("Bucket 2");
+        bucket2.setName("Bucket_2");
 
         buckets = new ArrayList<>();
         buckets.add(bucket1);
@@ -56,12 +76,12 @@ public class TestLinkService {
         // setup flows
         final VersionedFlow flow1 = new VersionedFlow();
         flow1.setIdentifier("f1");
-        flow1.setName("Flow 1");
+        flow1.setName("Flow_1");
         flow1.setBucketIdentifier(bucket1.getIdentifier());
 
         final VersionedFlow flow2 = new VersionedFlow();
         flow2.setIdentifier("f2");
-        flow2.setName("Flow 2");
+        flow2.setName("Flow_2");
         flow2.setBucketIdentifier(bucket1.getIdentifier());
 
         flows = new ArrayList<>();
@@ -83,42 +103,197 @@ public class TestLinkService {
         snapshots.add(snapshotMetadata1);
         snapshots.add(snapshotMetadata2);
 
+        // setup extension bundles
+        final ExtensionBundle bundle1 = new ExtensionBundle();
+        bundle1.setIdentifier("eb1");
+
+        final ExtensionBundle bundle2 = new ExtensionBundle();
+        bundle2.setIdentifier("eb2");
+
+        extensionBundles = new ArrayList<>();
+        extensionBundles.add(bundle1);
+        extensionBundles.add(bundle2);
+
+        // setup extension bundle versions
+        final ExtensionBundleVersionMetadata bundleVersion1 = new ExtensionBundleVersionMetadata();
+        bundleVersion1.setExtensionBundleId(bundle1.getIdentifier());
+        bundleVersion1.setVersion("1.0.0");
+
+        final ExtensionBundleVersionMetadata bundleVersion2 = new ExtensionBundleVersionMetadata();
+        bundleVersion2.setExtensionBundleId(bundle1.getIdentifier());
+        bundleVersion2.setVersion("2.0.0");
+
+        extensionBundleVersionMetadata = new ArrayList<>();
+        extensionBundleVersionMetadata.add(bundleVersion1);
+        extensionBundleVersionMetadata.add(bundleVersion2);
+
+        // setup extension repo buckets
+        final ExtensionRepoBucket rb1 = new ExtensionRepoBucket();
+        rb1.setBucketName(bucket1.getName());
+
+        final ExtensionRepoBucket rb2 = new ExtensionRepoBucket();
+        rb2.setBucketName(bucket2.getName());
+
+        extensionRepoBuckets = new ArrayList<>();
+        extensionRepoBuckets.add(rb1);
+        extensionRepoBuckets.add(rb2);
+
+        // setup extension repo groups
+        final ExtensionRepoGroup rg1 = new ExtensionRepoGroup();
+        rg1.setBucketName(rb1.getBucketName());
+        rg1.setGroupId("g1");
+
+        final ExtensionRepoGroup rg2 = new ExtensionRepoGroup();
+        rg2.setBucketName(rb1.getBucketName());
+        rg2.setGroupId("g2");
+
+        extensionRepoGroups = new ArrayList<>();
+        extensionRepoGroups.add(rg1);
+        extensionRepoGroups.add(rg2);
+
+        // setup extension repo artifacts
+        final ExtensionRepoArtifact ra1 = new ExtensionRepoArtifact();
+        ra1.setBucketName(rb1.getBucketName());
+        ra1.setGroupId(rg1.getGroupId());
+        ra1.setArtifactId("a1");
+
+        final ExtensionRepoArtifact ra2 = new ExtensionRepoArtifact();
+        ra2.setBucketName(rb1.getBucketName());
+        ra2.setGroupId(rg1.getGroupId());
+        ra2.setArtifactId("a2");
+
+        extensionRepoArtifacts = new ArrayList<>();
+        extensionRepoArtifacts.add(ra1);
+        extensionRepoArtifacts.add(ra2);
+
+        // setup extension repo versions
+        final ExtensionRepoVersionSummary rv1 = new ExtensionRepoVersionSummary();
+        rv1.setBucketName(rb1.getBucketName());
+        rv1.setGroupId(rg1.getGroupId());
+        rv1.setArtifactId(ra1.getArtifactId());
+        rv1.setVersion("1.0.0");
+
+        final ExtensionRepoVersionSummary rv2 = new ExtensionRepoVersionSummary();
+        rv2.setBucketName(rb1.getBucketName());
+        rv2.setGroupId(rg1.getGroupId());
+        rv2.setArtifactId(ra1.getArtifactId());
+        rv2.setVersion("2.0.0");
+
+        extensionRepoVersions = new ArrayList<>();
+        extensionRepoVersions.add(rv1);
+        extensionRepoVersions.add(rv2);
+
         // setup items
         items = new ArrayList<>();
         items.add(flow1);
         items.add(flow2);
+        items.add(bundle1);
+        items.add(bundle2);
     }
 
     @Test
     public void testPopulateBucketLinks() {
-        buckets.stream().forEach(b -> Assert.assertNull(b.getLink()));
-        linkService.populateBucketLinks(buckets);
-        buckets.stream().forEach(b -> Assert.assertEquals(
+        buckets.forEach(b -> Assert.assertNull(b.getLink()));
+        linkService.populateLinks(buckets);
+        buckets.forEach(b -> Assert.assertEquals(
                 "buckets/" + b.getIdentifier(), b.getLink().getUri().toString()));
     }
 
     @Test
     public void testPopulateFlowLinks() {
-        flows.stream().forEach(f -> Assert.assertNull(f.getLink()));
-        linkService.populateFlowLinks(flows);
-        flows.stream().forEach(f -> Assert.assertEquals(
+        flows.forEach(f -> Assert.assertNull(f.getLink()));
+        linkService.populateLinks(flows);
+        flows.forEach(f -> Assert.assertEquals(
                 "buckets/" + f.getBucketIdentifier() + "/flows/" + f.getIdentifier(), f.getLink().getUri().toString()));
     }
 
     @Test
     public void testPopulateSnapshotLinks() {
-        snapshots.stream().forEach(s -> Assert.assertNull(s.getLink()));
-        linkService.populateSnapshotLinks(snapshots);
-        snapshots.stream().forEach(s -> Assert.assertEquals(
+        snapshots.forEach(s -> Assert.assertNull(s.getLink()));
+        linkService.populateLinks(snapshots);
+        snapshots.forEach(s -> Assert.assertEquals(
                 "buckets/" + s.getBucketIdentifier() + "/flows/" + s.getFlowIdentifier() + "/versions/" + s.getVersion(), s.getLink().getUri().toString()));
     }
 
     @Test
     public void testPopulateItemLinks() {
-        items.stream().forEach(i -> Assert.assertNull(i.getLink()));
-        linkService.populateItemLinks(items);
-        items.stream().forEach(i -> Assert.assertEquals(
-                "buckets/" + i.getBucketIdentifier() + "/flows/" + i.getIdentifier(), i.getLink().getUri().toString()));
+        items.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(items);
+        items.forEach(i -> {
+            if (i.getType() == BucketItemType.Flow) {
+                Assert.assertEquals("buckets/" + i.getBucketIdentifier() + "/flows/" + i.getIdentifier(), i.getLink().getUri().toString());
+            } else {
+                Assert.assertEquals("extensions/bundles/" + i.getIdentifier(), i.getLink().getUri().toString());
+            }
+        });
     }
 
+    @Test
+    public void testPopulateExtensionBundleLinks() {
+        extensionBundles.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionBundles);
+        extensionBundles.forEach(eb -> Assert.assertEquals("extensions/bundles/" + eb.getIdentifier(), eb.getLink().getUri().toString()));
+    }
+
+    @Test
+    public void testPopulateExtensionBundleVersionLinks() {
+        extensionBundleVersionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionBundleVersionMetadata);
+        extensionBundleVersionMetadata.forEach(eb -> Assert.assertEquals(
+                "extensions/bundles/" + eb.getExtensionBundleId() + "/versions/" + eb.getVersion(), eb.getLink().getUri().toString()));
+    }
+
+    @Test
+    public void testPopulateExtensionRepoBucketLinks() {
+        extensionRepoBuckets.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionRepoBuckets);
+        extensionRepoBuckets.forEach(i -> Assert.assertEquals(
+                "extensions/repo/" + i.getBucketName(),
+                i.getLink().getUri().toString())
+        );
+    }
+
+    @Test
+    public void testPopulateExtensionRepoGroupLinks() {
+        extensionRepoGroups.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionRepoGroups);
+        extensionRepoGroups.forEach(i -> {
+            Assert.assertEquals(
+                    "extensions/repo/" + i.getBucketName() + "/" + i.getGroupId(),
+                    i.getLink().getUri().toString()); }
+        );
+    }
+
+    @Test
+    public void testPopulateExtensionRepoArtifactLinks() {
+        extensionRepoArtifacts.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionRepoArtifacts);
+        extensionRepoArtifacts.forEach(i -> {
+            Assert.assertEquals(
+                    "extensions/repo/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId(),
+                    i.getLink().getUri().toString()); }
+        );
+    }
+
+    @Test
+    public void testPopulateExtensionRepoVersionLinks() {
+        extensionRepoVersions.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionRepoVersions);
+        extensionRepoVersions.forEach(i -> {
+            Assert.assertEquals(
+                    "extensions/repo/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId() + "/" + i.getVersion(),
+                    i.getLink().getUri().toString()); }
+        );
+    }
+
+    @Test
+    public void testPopulateExtensionRepoVersionFullLinks() {
+        extensionRepoVersions.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateFullLinks(extensionRepoVersions, baseUri);
+        extensionRepoVersions.forEach(i -> {
+            Assert.assertEquals(
+                    BASE_URI + "/extensions/repo/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId() + "/" + i.getVersion(),
+                    i.getLink().getUri().toString()); }
+        );
+    }
 }

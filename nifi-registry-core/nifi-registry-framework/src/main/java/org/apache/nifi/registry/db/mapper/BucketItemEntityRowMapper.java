@@ -18,6 +18,8 @@ package org.apache.nifi.registry.db.mapper;
 
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.lang.Nullable;
@@ -37,6 +39,13 @@ public class BucketItemEntityRowMapper implements RowMapper<BucketItemEntity> {
         switch (type) {
             case FLOW:
                 item = new FlowEntity();
+                break;
+            case EXTENSION_BUNDLE:
+                final ExtensionBundleEntity bundleEntity = new ExtensionBundleEntity();
+                bundleEntity.setBundleType(ExtensionBundleEntityType.valueOf(rs.getString("BUNDLE_TYPE")));
+                bundleEntity.setGroupId(rs.getString("BUNDLE_GROUP_ID"));
+                bundleEntity.setArtifactId(rs.getString("BUNDLE_ARTIFACT_ID"));
+                item = bundleEntity;
                 break;
             default:
                 // should never happen

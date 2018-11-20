@@ -21,7 +21,10 @@ package org.apache.nifi.registry.db.entity;
  */
 public enum BucketItemEntityType {
 
-    FLOW(Values.FLOW);
+    FLOW(Values.FLOW),
+
+    EXTENSION_BUNDLE(Values.EXTENSION_BUNDLE);
+
 
     private final String value;
 
@@ -37,6 +40,7 @@ public enum BucketItemEntityType {
     // need these constants to reference from @DiscriminatorValue
     public static class Values {
         public static final String FLOW = "FLOW";
+        public static final String EXTENSION_BUNDLE = "EXTENSION_BUNDLE";
     }
 
 }

@@ -118,7 +118,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         publish(EventFactory.bucketCreated(createdBucket));
 
         permissionsService.populateBucketPermissions(createdBucket);
-        linkService.populateBucketLinks(createdBucket);
+        linkService.populateLinks(createdBucket);
         return Response.status(Response.Status.OK).entity(createdBucket).build();
     }
 
@@ -152,7 +152,7 @@ public class BucketResource extends AuthorizableApplicationResource {
 
         final List<Bucket> buckets = registryService.getBuckets(authorizedBucketIds);
         permissionsService.populateBucketPermissions(buckets);
-        linkService.populateBucketLinks(buckets);
+        linkService.populateLinks(buckets);
 
         return Response.status(Response.Status.OK).entity(buckets).build();
     }
@@ -182,7 +182,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.READ, bucketId);
         final Bucket bucket = registryService.getBucket(bucketId);
         permissionsService.populateBucketPermissions(bucket);
-        linkService.populateBucketLinks(bucket);
+        linkService.populateLinks(bucket);
 
         return Response.status(Response.Status.OK).entity(bucket).build();
     }
@@ -233,7 +233,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         publish(EventFactory.bucketUpdated(updatedBucket));
 
         permissionsService.populateBucketPermissions(updatedBucket);
-        linkService.populateBucketLinks(updatedBucket);
+        linkService.populateLinks(updatedBucket);
         return Response.status(Response.Status.OK).entity(updatedBucket).build();
     }
 

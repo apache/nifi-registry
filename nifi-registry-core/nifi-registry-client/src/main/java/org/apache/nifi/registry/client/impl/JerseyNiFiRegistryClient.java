@@ -24,6 +24,9 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.client.BucketClient;
+import org.apache.nifi.registry.client.ExtensionBundleClient;
+import org.apache.nifi.registry.client.ExtensionBundleVersionClient;
+import org.apache.nifi.registry.client.ExtensionRepoClient;
 import org.apache.nifi.registry.client.FlowClient;
 import org.apache.nifi.registry.client.FlowSnapshotClient;
 import org.apache.nifi.registry.client.ItemsClient;
@@ -33,7 +36,9 @@ import org.apache.nifi.registry.client.UserClient;
 import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.RequestEntityProcessing;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -107,9 +112,13 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
         final ClientConfig clientConfig = new ClientConfig();
         clientConfig.property(ClientProperties.CONNECT_TIMEOUT, connectTimeout);
         clientConfig.property(ClientProperties.READ_TIMEOUT, readTimeout);
+        clientConfig.property(ClientProperties.REQUEST_ENTITY_PROCESSING, RequestEntityProcessing.CHUNKED);
         clientConfig.register(jacksonJaxbJsonProvider());
         clientBuilder.withConfig(clientConfig);
-        this.client = clientBuilder.build();
+
+        this.client = clientBuilder
+                .register(MultiPartFeature.class)
+                .build();
 
         this.baseTarget = client.target(baseUrl);
         this.bucketClient = new JerseyBucketClient(baseTarget);
@@ -171,6 +180,39 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     public UserClient getUserClient(String... proxiedEntity) {
         final Map<String,String> headers = getHeaders(proxiedEntity);
         return new JerseyUserClient(baseTarget, headers);
+    }
+
+    @Override
+    public ExtensionBundleClient getExtensionBundleClient() {
+        return new JerseyExtensionBundleClient(baseTarget);
+    }
+
+    @Override
+    public ExtensionBundleClient getExtensionBundleClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyExtensionBundleClient(baseTarget, headers);
+    }
+
+    @Override
+    public ExtensionBundleVersionClient getExtensionBundleVersionClient() {
+        return new JerseyExtensionBundleVersionClient(baseTarget);
+    }
+
+    @Override
+    public ExtensionBundleVersionClient getExtensionBundleVersionClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyExtensionBundleVersionClient(baseTarget, headers);
+    }
+
+    @Override
+    public ExtensionRepoClient getExtensionRepoClient() {
+        return new JerseyExtensionRepoClient(baseTarget);
+    }
+
+    @Override
+    public ExtensionRepoClient getExtensionRepoClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyExtensionRepoClient(baseTarget, headers);
     }
 
     private Map<String,String> getHeaders(String[] proxiedEntities) {

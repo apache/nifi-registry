@@ -54,6 +54,13 @@ public class NiFiRegistryApiApplication extends SpringBootServletInitializer {
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
         final Properties defaultProperties = new Properties();
 
+        // Spring Boot 2.1.0 disabled bean overriding so this re-enables it
+        defaultProperties.setProperty("spring.main.allow-bean-definition-overriding", "true");
+
+        // Disable unnecessary Spring MVC filters that cause problems with Jersey
+        defaultProperties.setProperty("spring.mvc.hiddenmethod.filter.enabled", "false");
+        defaultProperties.setProperty("spring.mvc.formcontent.filter.enabled", "false");
+
         // Enable Actuator Endpoints
         defaultProperties.setProperty("management.endpoints.web.expose", "*");
 

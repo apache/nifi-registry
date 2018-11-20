@@ -61,7 +61,7 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
 
     @Override
     public void migrate(Flyway flyway) {
-        final boolean newDatabase = isNewDatabase(flyway.getDataSource());
+        final boolean newDatabase = isNewDatabase(flyway.getConfiguration().getDataSource());
         if (newDatabase) {
             LOGGER.info("First time initializing database...");
         } else {
@@ -90,7 +90,7 @@ public class CustomFlywayMigrationStrategy implements FlywayMigrationStrategy {
         if (newDatabase && existingLegacyDatabase) {
             final LegacyDataSourceFactory legacyDataSourceFactory = new LegacyDataSourceFactory(properties);
             final DataSource legacyDataSource = legacyDataSourceFactory.getDataSource();
-            final DataSource primaryDataSource = flyway.getDataSource();
+            final DataSource primaryDataSource = flyway.getConfiguration().getDataSource();
             migrateData(legacyDataSource, primaryDataSource);
         }
     }

@@ -74,6 +74,36 @@ public interface NiFiRegistryClient extends Closeable {
     UserClient getUserClient(String ... proxiedEntity);
 
     /**
+     * @return the client for interacting with extension bundles
+     */
+    ExtensionBundleClient getExtensionBundleClient();
+
+    /**
+     * @return the client for interacting with extension bundles on behalf of the given proxied entities
+     */
+    ExtensionBundleClient getExtensionBundleClient(String ... proxiedEntity);
+
+    /**
+     * @return the client for interacting with extension bundle versions
+     */
+    ExtensionBundleVersionClient getExtensionBundleVersionClient();
+
+    /**
+     * @return the client for interacting with extension bundle versions on behalf of the given proxied entities
+     */
+    ExtensionBundleVersionClient getExtensionBundleVersionClient(String ... proxiedEntity);
+
+    /**
+     * @return the client for interacting with the extension repository
+     */
+    ExtensionRepoClient getExtensionRepoClient();
+
+    /**
+     * @return the client for interacting with the extension repository on behalf of the given proxied entities
+     */
+    ExtensionRepoClient getExtensionRepoClient(String ... proxiedEntity);
+
+    /**
      * The builder interface that implementations should provide for obtaining the client.
      */
     interface Builder {

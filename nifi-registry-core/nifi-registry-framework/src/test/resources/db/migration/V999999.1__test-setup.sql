@@ -68,3 +68,224 @@ insert into flow_snapshot (flow_id, version, created, created_by, comments)
 
 insert into signing_key (id, tenant_identity, key_value)
   values ('1', 'unit_test_tenant_identity', '0123456789abcdef');
+
+-- test data for extension bundles
+
+-- processors bundle, depends on service api bundle
+insert into bucket_item (
+  id,
+  name,
+  description,
+  created,
+  modified,
+  item_type,
+  bucket_id
+) values (
+  'eb1',
+  'nifi-example-processors-nar',
+  'Example processors bundle',
+  parsedatetime('2018-11-02 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  parsedatetime('2018-11-02 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  'EXTENSION_BUNDLE',
+  '3'
+);
+
+insert into extension_bundle (
+  id,
+  bucket_id,
+  bundle_type,
+  group_id,
+  artifact_id
+) values (
+  'eb1',
+  '3',
+  'NIFI_NAR',
+  'org.apache.nifi',
+  'nifi-example-processors-nar'
+);
+
+insert into extension_bundle_version (
+  id,
+  extension_bundle_id,
+  version,
+  created,
+  created_by,
+  description,
+  sha_256_hex,
+  sha_256_supplied
+) values (
+  'eb1-v1',
+  'eb1',
+  '1.0.0',
+  parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  'user1',
+  'First version of eb1',
+  '123456789',
+  '1'
+);
+
+insert into extension_bundle_version_dependency (
+  id,
+  extension_bundle_version_id,
+  group_id,
+  artifact_id,
+  version
+) values (
+  'eb1-v1-dep1',
+  'eb1-v1',
+  'org.apache.nifi',
+  'nifi-example-service-api-nar',
+  '2.0.0'
+);
+
+-- service impl bundle, depends on service api bundle
+insert into bucket_item (
+  id,
+  name,
+  description,
+  created,
+  modified,
+  item_type,
+  bucket_id
+) values (
+  'eb2',
+  'nifi-example-services-nar',
+  'Example services bundle',
+  parsedatetime('2018-11-02 12:57:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  parsedatetime('2018-11-02 12:57:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  'EXTENSION_BUNDLE',
+  '3'
+);
+
+insert into extension_bundle (
+  id,
+  bucket_id,
+  bundle_type,
+  group_id,
+  artifact_id
+) values (
+  'eb2',
+  '3',
+  'NIFI_NAR',
+  'org.apache.nifi',
+  'nifi-example-services-nar'
+);
+
+insert into extension_bundle_version (
+  id,
+  extension_bundle_id,
+  version,
+  created,
+  created_by,
+  description,
+  sha_256_hex,
+  sha_256_supplied
+) values (
+  'eb2-v1',
+  'eb2',
+  '1.0.0',
+  parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  'user1',
+  'First version of eb2',
+  '123456789',
+  '1'
+);
+
+insert into extension_bundle_version_dependency (
+  id,
+  extension_bundle_version_id,
+  group_id,
+  artifact_id,
+  version
+) values (
+  'eb2-v1-dep1',
+  'eb2-v1',
+  'org.apache.nifi',
+  'nifi-example-service-api-nar',
+  '2.0.0'
+);
+
+-- service api bundle
+insert into bucket_item (
+  id,
+  name,
+  description,
+  created,
+  modified,
+  item_type,
+  bucket_id
+) values (
+  'eb3',
+  'nifi-example-service-api-nar',
+  'Example service API bundle',
+  parsedatetime('2018-11-02 12:58:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  parsedatetime('2017-11-02 12:58:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  'EXTENSION_BUNDLE',
+  '3'
+);
+
+insert into extension_bundle (
+  id,
+  bucket_id,
+  bundle_type,
+  group_id,
+  artifact_id
+) values (
+  'eb3',
+  '3',
+  'NIFI_NAR',
+  'org.apache.nifi',
+  'nifi-example-service-api-nar'
+);
+
+insert into extension_bundle_version (
+  id,
+  extension_bundle_id,
+  version,
+  created,
+  created_by,
+  description,
+  sha_256_hex,
+  sha_256_supplied
+) values (
+  'eb3-v1',
+  'eb3',
+  '2.0.0',
+  parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
+  'user1',
+  'First version of eb3',
+  '123456789',
+  '1'
+);
+
+-- test data for extensions
+
+insert into extension (
+  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags
+) values (
+  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'This is Example Processor 1', 0, 'PROCESSOR', 'example, processor'
+);
+
+insert into extension (
+  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags)
+values (
+  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'This is Example Processor Restricted', 1, 'PROCESSOR', 'example, processor, restricted'
+);
+
+insert into extension (
+  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags)
+values (
+  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'This is Example Service', 0, 'CONTROLLER_SERVICE', 'example, service'
+);
+
+-- test data for extension tags
+
+insert into extension_tag (extension_id, tag) values ('e1', 'example');
+insert into extension_tag (extension_id, tag) values ('e1', 'processor');
+
+insert into extension_tag (extension_id, tag) values ('e2', 'example');
+insert into extension_tag (extension_id, tag) values ('e2', 'processor');
+insert into extension_tag (extension_id, tag) values ('e2', 'restricted');
+
+insert into extension_tag (extension_id, tag) values ('e3', 'example');
+insert into extension_tag (extension_id, tag) values ('e3', 'service');

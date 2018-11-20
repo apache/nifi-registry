@@ -45,6 +45,7 @@
         <module>nifi-registry-docs</module>
 	<module>nifi-registry-client</module>
         <module>nifi-registry-docker</module>
+	<module>nifi-registry-bundle-utils</module>
     </modules>
 
     <dependencyManagement>
@@ -97,12 +98,7 @@
             <dependency>
                 <groupId>javax.validation</groupId>
                 <artifactId>validation-api</artifactId>
-                <version>2.0.0.Final</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-validator</artifactId>
-                <version>6.0.2.Final</version>
+                <version>2.0.1.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
@@ -139,6 +135,11 @@
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-annotations</artifactId>
                 <version>1.5.16</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
