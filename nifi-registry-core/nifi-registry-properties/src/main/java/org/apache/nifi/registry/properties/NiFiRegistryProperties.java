@@ -16,15 +16,15 @@
  */
 package org.apache.nifi.registry.properties;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NiFiRegistryProperties extends Properties {
 
@@ -58,6 +58,8 @@ public class NiFiRegistryProperties extends Properties {
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
 
+    public static final String EXTENSIONS_WORKING_DIR = "nifi.registry.extensions.working.directory";
+
     // Original DB properties
     public static final String DATABASE_DIRECTORY = "nifi.registry.db.directory";
     public static final String DATABASE_URL_APPEND = "nifi.registry.db.url.append";
@@ -86,6 +88,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "./conf/authorizers.xml";
     public static final String DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE = "./conf/identity-providers.xml";
     public static final String DEFAULT_AUTHENTICATION_EXPIRATION = "12 hours";
+    public static final String DEFAULT_EXTENSIONS_WORKING_DIR = "./work/extensions";
 
     public int getWebThreads() {
         int webThreads = 200;
@@ -156,6 +159,10 @@ public class NiFiRegistryProperties extends Properties {
 
     public File getWebWorkingDirectory() {
         return new File(getProperty(WEB_WORKING_DIR, DEFAULT_WEB_WORKING_DIR));
+    }
+
+    public File getExtensionsWorkingDirectory() {
+        return  new File(getProperty(EXTENSIONS_WORKING_DIR, DEFAULT_EXTENSIONS_WORKING_DIR));
     }
 
     public File getProvidersConfigurationFile() {

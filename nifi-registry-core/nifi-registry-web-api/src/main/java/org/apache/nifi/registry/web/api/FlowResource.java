@@ -123,7 +123,7 @@ public class FlowResource extends AuthorizableApplicationResource {
         authorizeBucketAccess(RequestAction.READ, flow.getBucketIdentifier());
 
         permissionsService.populateItemPermissions(flow);
-        linkService.populateFlowLinks(flow);
+        linkService.populateLinks(flow);
 
         return Response.status(Response.Status.OK).entity(flow).build();
     }
@@ -164,7 +164,7 @@ public class FlowResource extends AuthorizableApplicationResource {
 
         final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
         if (snapshots != null ) {
-            linkService.populateSnapshotLinks(snapshots);
+            linkService.populateLinks(snapshots);
         }
 
         return Response.status(Response.Status.OK).entity(snapshots).build();
@@ -284,7 +284,7 @@ public class FlowResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.READ, bucketId);
 
-        linkService.populateSnapshotLinks(latestMetadata);
+        linkService.populateLinks(latestMetadata);
         return Response.status(Response.Status.OK).entity(latestMetadata).build();
     }
 
@@ -299,16 +299,16 @@ public class FlowResource extends AuthorizableApplicationResource {
 
     private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
         if (snapshot.getSnapshotMetadata() != null) {
-            linkService.populateSnapshotLinks(snapshot.getSnapshotMetadata());
+            linkService.populateLinks(snapshot.getSnapshotMetadata());
         }
 
         if (snapshot.getFlow() != null) {
-            linkService.populateFlowLinks(snapshot.getFlow());
+            linkService.populateLinks(snapshot.getFlow());
         }
 
         if (snapshot.getBucket() != null) {
             permissionsService.populateBucketPermissions(snapshot.getBucket());
-            linkService.populateBucketLinks(snapshot.getBucket());
+            linkService.populateLinks(snapshot.getBucket());
         }
 
     }

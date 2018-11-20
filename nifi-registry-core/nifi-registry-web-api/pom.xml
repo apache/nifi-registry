@@ -231,6 +231,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
             <version>${spring.boot.version}</version>
+            <exclusions>
+                <!-- spring-boot-starter-jersey brings in a Spring 4.x version of spring-aop which causes problems -->
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-aop</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Exclude micrometer-core because it creates a class cast issue with logback, revisit later -->
         <dependency>
@@ -306,6 +313,10 @@
         <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-multipart</artifactId>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

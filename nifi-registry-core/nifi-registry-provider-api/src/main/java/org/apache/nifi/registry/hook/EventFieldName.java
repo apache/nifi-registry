@@ -23,6 +23,7 @@ public enum EventFieldName {
 
     BUCKET_ID,
     FLOW_ID,
+    EXTENSION_BUNDLE_ID,
     VERSION,
     USER,
     COMMENT;

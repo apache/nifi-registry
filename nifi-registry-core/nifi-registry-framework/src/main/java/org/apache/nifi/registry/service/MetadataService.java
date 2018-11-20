@@ -18,6 +18,10 @@ package org.apache.nifi.registry.service;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 
@@ -211,6 +215,216 @@ public interface MetadataService {
      * @param flowSnapshot the flow snapshot to delete
      */
     void deleteFlowSnapshot(FlowSnapshotEntity flowSnapshot);
+
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Creates the given extension bundle.
+     *
+     * @param extensionBundle the extension bundle to create
+     * @return the created extension bundle
+     */
+    ExtensionBundleEntity createExtensionBundle(ExtensionBundleEntity extensionBundle);
+
+    /**
+     * Retrieves the extension bundle with the given id.
+     *
+     * @param extensionBundleId the id of the extension bundle
+     * @return the extension bundle with the id, or null if one does not exist
+     */
+    ExtensionBundleEntity getExtensionBundle(String extensionBundleId);
+
+    /**
+     * Retrieves the extension bundle in the given bucket with the given group and artifact id.
+     *
+     * @return the extension bundle, or null if one does not exist
+     */
+    ExtensionBundleEntity getExtensionBundle(String bucketId, String groupId, String artifactId);
+
+    /**
+     * Retrieves all extension bundles in the buckets with the given bucket ids.
+     *
+     * @param bucketIds the bucket ids
+     * @return the list of all extension bundles in the given buckets
+     */
+    List<ExtensionBundleEntity> getExtensionBundles(Set<String> bucketIds);
+
+    /**
+     * Retrieves the extension bundles for the given bucket.
+     *
+     * @param bucketId the bucket id
+     * @return the list of extension bundles for the bucket
+     */
+    List<ExtensionBundleEntity> getExtensionBundlesByBucket(String bucketId);
+
+    /**
+     * Retrieves the extension bundles for the given bucket and group.
+     *
+     * @param bucketId the bucket id
+     * @param groupId the group id
+     * @return the list of extension bundles for the bucket and group
+     */
+    List<ExtensionBundleEntity> getExtensionBundlesByBucketAndGroup(String bucketId, String groupId);
+
+    /**
+     * Deletes the given extension bundle.
+     *
+     * @param extensionBundle the extension bundle to delete
+     */
+    void deleteExtensionBundle(ExtensionBundleEntity extensionBundle);
+
+    /**
+     * Deletes the extension bundle with the given id.
+     *
+     * @param extensionBundleId the id extension bundle to delete
+     */
+    void deleteExtensionBundle(String extensionBundleId);
+
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Creates a version of an extension bundle.
+     *
+     * @param extensionBundleVersion the bundle version to create
+     * @return the created bundle version
+     */
+    ExtensionBundleVersionEntity createExtensionBundleVersion(ExtensionBundleVersionEntity extensionBundleVersion);
+
+    /**
+     * Retrieves the extension bundle version for the given bundle id and version.
+     *
+     * @param extensionBundleId the id of the extension bundle
+     * @param version the version of the extension bundle
+     * @return the extension bundle version, or null if does not exist
+     */
+    ExtensionBundleVersionEntity getExtensionBundleVersion(String extensionBundleId, String version);
+
+    /**
+     * Retrieves the extension bundle version by bucket, group, artifact, version.
+     *
+     * @param bucketId the bucket id
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the version
+     * @return the extension bundle version, or null if does not exist
+     */
+    ExtensionBundleVersionEntity getExtensionBundleVersion(String bucketId, String groupId, String artifactId, String version);
+
+    /**
+     * Retrieves the extension bundle versions for the given extension bundle id.
+     *
+     * @param extensionBundleId the extension bundle id
+     * @return the list of extension bundle versions
+     */
+    List<ExtensionBundleVersionEntity> getExtensionBundleVersions(String extensionBundleId);
+
+    /**
+     * Retrieves the extension bundle version with the given group id and artifact id in the given bucket.
+     *
+     * @param bucketId the bucket id
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @return the list of extension bundles
+     */
+    List<ExtensionBundleVersionEntity> getExtensionBundleVersions(String bucketId, String groupId, String artifactId);
+
+    /**
+     * Retrieves the extension bundle versions with the given group id, artifact id, and version across all buckets.
+     *
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the versions
+     * @return all bundle versions for the group id, artifact id, and version
+     */
+    List<ExtensionBundleVersionEntity> getExtensionBundleVersionsGlobal(String groupId, String artifactId, String version);
+
+    /**
+     * Deletes the extension bundle version.
+     *
+     * @param extensionBundleVersion the extension bundle version to delete
+     */
+    void deleteExtensionBundleVersion(ExtensionBundleVersionEntity extensionBundleVersion);
+
+    /**
+     * Deletes the extension bundle version.
+     *
+     * @param extensionBundleVersionId the id of the extension bundle version
+     */
+    void deleteExtensionBundleVersion(String extensionBundleVersionId);
+
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Creates the given extension.
+     *
+     * @param extension the extension to create
+     * @return the created extension
+     */
+    ExtensionEntity createExtension(ExtensionEntity extension);
+
+    /**
+     * Retrieves the extension with the given id.
+     *
+     * @param id the id of the extension
+     * @return the extension with the id, or null if one does not exist
+     */
+    ExtensionEntity getExtensionById(String id);
+
+    /**
+     * Retrieves all extensions.
+     *
+     * @return the list of all extensions
+     */
+    List<ExtensionEntity> getAllExtensions();
+
+    /**
+     * Retrieves the extensions for the given extension bundle version.
+     *
+     * @param extensionBundleVersionId the id of the extension bundle version
+     * @return the extensions in the given bundle
+     */
+    List<ExtensionEntity> getExtensionsByBundleVersionId(String extensionBundleVersionId);
+
+    /**
+     * Retrieves the extensions for the bundle in the given bucket with the given group, artifact, and version.
+     *
+     * @param bucketId the bucket of the bundle
+     * @param groupId the group of the bundle
+     * @param artifactId the artifact id of the bundle
+     * @param version the version of the bundle
+     * @return the extensions for the bundle
+     */
+    List<ExtensionEntity> getExtensionsByBundleCoordinate(String bucketId, String groupId, String artifactId, String version);
+
+    /**
+     * Retrieves the extensions for the given category (i.e. processor, controller service, reporting task).
+     *
+     * @param category the category
+     * @return the extensions for the given category
+     */
+    List<ExtensionEntity> getExtensionsByCategory(ExtensionEntityCategory category);
+
+    /**
+     * Retrieves the extensions with the given tag.
+     *
+     * @param tag the tag
+     * @return the extensions with the given tag
+     */
+    List<ExtensionEntity> getExtensionsByTag(String tag);
+
+    /**
+     * Retrieves the set of all extension tags.
+     *
+     * @return the set of all extension tags
+     */
+    Set<String> getAllExtensionTags();
+
+    /**
+     * Deletes the given extension.
+     *
+     * @param extension the extension to delete
+     */
+    void deleteExtension(ExtensionEntity extension);
 
     // --------------------------------------------------------------------------------------------
 

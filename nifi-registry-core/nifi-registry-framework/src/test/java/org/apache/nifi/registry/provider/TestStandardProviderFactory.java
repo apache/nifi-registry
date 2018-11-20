@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.provider;
 
+import org.apache.nifi.registry.extension.ExtensionBundlePersistenceProvider;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
@@ -47,6 +48,14 @@ public class TestStandardProviderFactory {
         assertNotNull(mockFlowProvider.getProperties());
         assertEquals("flow foo", mockFlowProvider.getProperties().get("Flow Property 1"));
         assertEquals("flow bar", mockFlowProvider.getProperties().get("Flow Property 2"));
+
+        final ExtensionBundlePersistenceProvider bundlePersistenceProvider = providerFactory.getExtensionBundlePersistenceProvider();
+        assertNotNull(bundlePersistenceProvider);
+
+        final MockExtensionBundlePersistenceProvider mockBundlePersistenceProvider = (MockExtensionBundlePersistenceProvider) bundlePersistenceProvider;
+        assertNotNull(mockBundlePersistenceProvider.getProperties());
+        assertEquals("extension foo", mockBundlePersistenceProvider.getProperties().get("Extension Property 1"));
+        assertEquals("extension bar", mockBundlePersistenceProvider.getProperties().get("Extension Property 2"));
     }
 
     @Test(expected = ProviderFactoryException.class)

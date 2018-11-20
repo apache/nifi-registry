@@ -14,33 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.link.builder;
-
-import org.apache.nifi.registry.flow.VersionedFlow;
+package org.apache.nifi.registry.web.link;
 
 import javax.ws.rs.core.Link;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
 
 /**
- * LinkBuilder that builds "self" links for VersionedFlows.
+ * Creates a Link for a given type.
+ *
+ * @param <T> the type to create a link for
  */
-public class VersionedFlowLinkBuilder implements LinkBuilder<VersionedFlow> {
+public interface LinkBuilder<T> {
 
-    private static final String PATH = "buckets/{bucketId}/flows/{flowId}";
-
-    @Override
-    public Link createLink(final VersionedFlow versionedFlow) {
-        if (versionedFlow == null) {
-            return null;
-        }
-
-        final URI uri = UriBuilder.fromPath(PATH)
-                .resolveTemplate("bucketId", versionedFlow.getBucketIdentifier())
-                .resolveTemplate("flowId", versionedFlow.getIdentifier())
-                .build();
-
-        return Link.fromUri(uri).rel("self").build();
-    }
+    Link createLink(T t);
 
 }

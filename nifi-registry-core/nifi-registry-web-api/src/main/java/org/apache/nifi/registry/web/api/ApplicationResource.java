@@ -71,9 +71,8 @@ public class ApplicationResource {
         }
     }
 
-    protected String generateResourceUri(final String... path) {
+    protected URI getBaseUri() {
         final UriBuilder uriBuilder = uriInfo.getBaseUriBuilder();
-        uriBuilder.segment(path);
         URI uri = uriBuilder.build();
         try {
 
@@ -126,7 +125,13 @@ public class ApplicationResource {
         } catch (final URISyntaxException use) {
             throw new UriBuilderException(use);
         }
-        return uri.toString();
+        return uri;
+    }
+
+    protected String generateResourceUri(final String... path) {
+        final URI baseUri = getBaseUri();
+        final URI fullUri = UriBuilder.fromUri(baseUri).segment(path).build();
+        return fullUri.toString();
     }
 
     /**

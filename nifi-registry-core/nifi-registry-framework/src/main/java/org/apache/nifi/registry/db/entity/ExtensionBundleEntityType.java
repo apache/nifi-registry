@@ -14,32 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.web.link.builder;
-
-import org.apache.nifi.registry.bucket.Bucket;
-
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
+package org.apache.nifi.registry.db.entity;
 
 /**
- * LinkBuilder that builds "self" links for Buckets.
+ * The possible types of extension bundles.
  */
-public class BucketLinkBuilder implements LinkBuilder<Bucket> {
+public enum ExtensionBundleEntityType {
 
-    private static final String PATH = "buckets/{id}";
+    NIFI_NAR,
 
-    @Override
-    public Link createLink(final Bucket bucket) {
-        if (bucket == null) {
-            return null;
-        }
-
-        final URI uri = UriBuilder.fromPath(PATH)
-                .resolveTemplate("id", bucket.getIdentifier())
-                .build();
-
-        return Link.fromUri(uri).rel("self").build();
-    }
+    MINIFI_CPP;
 
 }

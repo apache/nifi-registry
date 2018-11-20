@@ -22,4 +22,9 @@
         <property name="Flow Storage Directory">./target/test-classes/flow_storage</property>
     </flowPersistenceProvider>
 
+    <extensionBundlePersistenceProvider>
+        <class>org.apache.nifi.registry.provider.extension.FileSystemExtensionBundlePersistenceProvider</class>
+        <property name="Extension Bundle Storage Directory">./target/test-classes/extension_bundles</property>
+    </extensionBundlePersistenceProvider>
+
 </providers>

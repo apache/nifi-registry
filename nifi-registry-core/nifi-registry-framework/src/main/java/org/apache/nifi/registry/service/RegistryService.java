@@ -23,11 +23,20 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
+import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.ExtensionBundleType;
+import org.apache.nifi.registry.extension.ExtensionBundleVersion;
+import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.apache.nifi.registry.flow.VersionedComponent;
@@ -44,6 +53,8 @@ import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
+import org.apache.nifi.registry.service.extension.ExtensionBundleVersionCoordinate;
+import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +66,9 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -85,6 +98,7 @@ public class RegistryService {
     private final MetadataService metadataService;
     private final FlowPersistenceProvider flowPersistenceProvider;
     private final Serializer<VersionedProcessGroup> processGroupSerializer;
+    private final ExtensionService extensionService;
     private final Validator validator;
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -95,14 +109,17 @@ public class RegistryService {
     public RegistryService(final MetadataService metadataService,
                            final FlowPersistenceProvider flowPersistenceProvider,
                            final Serializer<VersionedProcessGroup> processGroupSerializer,
+                           final ExtensionService extensionService,
                            final Validator validator) {
         this.metadataService = metadataService;
         this.flowPersistenceProvider = flowPersistenceProvider;
         this.processGroupSerializer = processGroupSerializer;
+        this.extensionService = extensionService;
         this.validator = validator;
         Validate.notNull(this.metadataService);
         Validate.notNull(this.flowPersistenceProvider);
         Validate.notNull(this.processGroupSerializer);
+        Validate.notNull(this.extensionService);
         Validate.notNull(this.validator);
     }
 
@@ -154,6 +171,25 @@ public class RegistryService {
             }
 
             return DataModelMapper.map(bucket);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public Bucket getBucketByName(final String bucketName) {
+        if (bucketName == null) {
+            throw new IllegalArgumentException("Bucket name cannot be null");
+        }
+
+        readLock.lock();
+        try {
+            final List<BucketEntity> buckets = metadataService.getBucketsByName(bucketName);
+            if (buckets.isEmpty()) {
+                LOGGER.warn("The specified bucket name [{}] does not exist.", bucketName);
+                throw new ResourceNotFoundException("The specified bucket name does not exist in this registry.");
+            }
+
+            return DataModelMapper.map(buckets.get(0));
         } finally {
             readLock.unlock();
         }
@@ -298,11 +334,13 @@ public class RegistryService {
     }
 
     private void addBucketItem(final List<BucketItem> bucketItems, final BucketItemEntity itemEntity) {
+        // Currently we don't populate the bucket name for items so we pass in null in the map methods
         if (itemEntity instanceof FlowEntity) {
             final FlowEntity flowEntity = (FlowEntity) itemEntity;
-
-            // Currently we don't populate the bucket name for items
             bucketItems.add(DataModelMapper.map(null, flowEntity));
+        } else if (itemEntity instanceof ExtensionBundleEntity) {
+            final ExtensionBundleEntity bundleEntity = (ExtensionBundleEntity) itemEntity;
+            bucketItems.add(DataModelMapper.map(null, bundleEntity));
         } else {
             LOGGER.error("Unknown type of BucketItemEntity: " + itemEntity.getClass().getCanonicalName());
         }
@@ -975,6 +1013,128 @@ public class RegistryService {
             group.getDifferences().add(DataModelMapper.map(diff));
         }
         return differenceGroups.values().stream().collect(Collectors.toSet());
+    }
+
+    // ---------------------- ExtensionBundle methods ---------------------------------------------
+
+    public ExtensionBundleVersion createExtensionBundleVersion(final String bucketIdentifier, final ExtensionBundleType bundleType,
+                                                               final InputStream inputStream) throws IOException {
+        writeLock.lock();
+        try {
+            return extensionService.createExtensionBundleVersion(bucketIdentifier, bundleType, inputStream);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundles(bucketIdentifiers);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public List<ExtensionBundle> getExtensionBundlesByBucket(final String bucketIdentifier) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundlesByBucket(bucketIdentifier);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public ExtensionBundle getExtensionBundle(final String extensionBundleId) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundle(extensionBundleId);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public ExtensionBundle deleteExtensionBundle(final ExtensionBundle extensionBundle) {
+        writeLock.lock();
+        try {
+            return extensionService.deleteExtensionBundle(extensionBundle);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final String extensionBundleIdentifier) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundleVersions(extensionBundleIdentifier);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public ExtensionBundleVersion getExtensionBundleVersion(ExtensionBundleVersionCoordinate versionCoordinate) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundleVersion(versionCoordinate);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public void writeExtensionBundleVersionContent(final ExtensionBundleVersion bundleVersion, final OutputStream out) {
+        readLock.lock();
+        try {
+            extensionService.writeExtensionBundleVersionContent(bundleVersion, out);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public ExtensionBundleVersion deleteExtensionBundleVersion(final ExtensionBundleVersion bundleVersion) {
+        writeLock.lock();
+        try {
+            return extensionService.deleteExtensionBundleVersion(bundleVersion);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    // ---------------------- Extension Repository methods ---------------------------------------------
+
+    public SortedSet<ExtensionRepoBucket> getExtensionRepoBuckets(final Set<String> bucketIds) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionRepoBuckets(bucketIds);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<ExtensionRepoGroup> getExtensionRepoGroups(final Bucket bucket) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionRepoGroups(bucket);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<ExtensionRepoArtifact> getExtensionRepoArtifacts(final Bucket bucket, final String groupId) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionRepoArtifacts(bucket, groupId);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<ExtensionRepoVersionSummary> getExtensionRepoVersions(final Bucket bucket, final String groupId, final String artifactId) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionRepoVersions(bucket, groupId, artifactId);
+        } finally {
+            readLock.unlock();
+        }
     }
 
     // ---------------------- Field methods ---------------------------------------------

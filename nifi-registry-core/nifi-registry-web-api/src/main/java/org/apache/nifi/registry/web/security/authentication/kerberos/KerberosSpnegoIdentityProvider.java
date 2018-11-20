@@ -39,13 +39,11 @@ import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.kerberos.authentication.KerberosServiceAuthenticationProvider;
 import org.springframework.security.kerberos.authentication.KerberosServiceRequestToken;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-@Component
 public class KerberosSpnegoIdentityProvider implements IdentityProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(KerberosSpnegoIdentityProvider.class);

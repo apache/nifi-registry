@@ -19,11 +19,18 @@ package org.apache.nifi.registry.service;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.db.entity.KeyEntity;
 import org.apache.nifi.registry.diff.ComponentDifference;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
+import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.ExtensionBundleType;
+import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
+import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -143,6 +150,118 @@ public class DataModelMapper {
             return valueA.toString();
         }
         return null;
+    }
+
+    // -- Map ExtensionBundleType
+
+    public static ExtensionBundleEntityType map(final ExtensionBundleType bundleType) {
+        switch (bundleType) {
+            case NIFI_NAR:
+                return ExtensionBundleEntityType.NIFI_NAR;
+
+            case MINIFI_CPP:
+                return ExtensionBundleEntityType.MINIFI_CPP;
+            default:
+                throw new IllegalArgumentException("Unknown bundle type: " + bundleType);
+        }
+    }
+
+    public static ExtensionBundleType map(final ExtensionBundleEntityType bundleEntityType) {
+        switch (bundleEntityType) {
+            case NIFI_NAR:
+                return ExtensionBundleType.NIFI_NAR;
+            case MINIFI_CPP:
+                return ExtensionBundleType.MINIFI_CPP;
+            default:
+                throw new IllegalArgumentException("Unknown bundle type: " + bundleEntityType);
+        }
+    }
+
+    // -- Map ExtensionBundle
+
+    public static ExtensionBundleEntity map(final ExtensionBundle bundle) {
+        final ExtensionBundleEntity entity = new ExtensionBundleEntity();
+        entity.setId(bundle.getIdentifier());
+        entity.setName(bundle.getName());
+        entity.setDescription(bundle.getDescription());
+        entity.setCreated(new Date(bundle.getCreatedTimestamp()));
+        entity.setModified(new Date(bundle.getModifiedTimestamp()));
+        entity.setType(BucketItemEntityType.EXTENSION_BUNDLE);
+        entity.setBucketId(bundle.getBucketIdentifier());
+
+        entity.setGroupId(bundle.getGroupId());
+        entity.setArtifactId(bundle.getArtifactId());
+        entity.setBundleType(map(bundle.getBundleType()));
+        return entity;
+    }
+
+    public static ExtensionBundle map(final BucketEntity bucketEntity, final ExtensionBundleEntity bundleEntity) {
+        final ExtensionBundle bundle = new ExtensionBundle();
+        bundle.setIdentifier(bundleEntity.getId());
+        bundle.setName(bundleEntity.getName());
+        bundle.setDescription(bundleEntity.getDescription());
+        bundle.setCreatedTimestamp(bundleEntity.getCreated().getTime());
+        bundle.setModifiedTimestamp(bundleEntity.getModified().getTime());
+        bundle.setBucketIdentifier(bundleEntity.getBucketId());
+
+        if (bucketEntity != null) {
+            bundle.setBucketName(bucketEntity.getName());
+        } else {
+            bundle.setBucketName(bundleEntity.getBucketName());
+        }
+
+        bundle.setGroupId(bundleEntity.getGroupId());
+        bundle.setArtifactId(bundleEntity.getArtifactId());
+        bundle.setBundleType(map(bundleEntity.getBundleType()));
+        bundle.setVersionCount(bundleEntity.getVersionCount());
+        return bundle;
+    }
+
+    // -- Map ExtensionBundleVersion
+
+    public static ExtensionBundleVersionEntity map(final ExtensionBundleVersionMetadata bundleVersionMetadata) {
+        final ExtensionBundleVersionEntity entity = new ExtensionBundleVersionEntity();
+        entity.setId(bundleVersionMetadata.getId());
+        entity.setExtensionBundleId(bundleVersionMetadata.getExtensionBundleId());
+        entity.setVersion(bundleVersionMetadata.getVersion());
+        entity.setCreated(new Date(bundleVersionMetadata.getTimestamp()));
+        entity.setCreatedBy(bundleVersionMetadata.getAuthor());
+        entity.setDescription(bundleVersionMetadata.getDescription());
+        entity.setSha256Hex(bundleVersionMetadata.getSha256Hex());
+
+        final ExtensionBundleVersionDependency dependency = bundleVersionMetadata.getDependency();
+        if (dependency != null) {
+            entity.setDependencyGroupId(dependency.getGroupId());
+            entity.setDependencyArtifactId(dependency.getArtifactId());
+            entity.setDependencyVersion(dependency.getVersion());
+        }
+
+        return entity;
+    }
+
+    public static ExtensionBundleVersionMetadata map(final BucketEntity bucketEntity, final ExtensionBundleVersionEntity bundleVersionEntity) {
+        final ExtensionBundleVersionMetadata bundleVersionMetadata = new ExtensionBundleVersionMetadata();
+        bundleVersionMetadata.setId(bundleVersionEntity.getId());
+        bundleVersionMetadata.setExtensionBundleId(bundleVersionEntity.getExtensionBundleId());
+        bundleVersionMetadata.setVersion(bundleVersionEntity.getVersion());
+        bundleVersionMetadata.setTimestamp(bundleVersionEntity.getCreated().getTime());
+        bundleVersionMetadata.setAuthor(bundleVersionEntity.getCreatedBy());
+        bundleVersionMetadata.setDescription(bundleVersionEntity.getDescription());
+        bundleVersionMetadata.setSha256Hex(bundleVersionEntity.getSha256Hex());
+
+        if (bundleVersionEntity.getDependencyArtifactId() != null) {
+            final ExtensionBundleVersionDependency dependency = new ExtensionBundleVersionDependency();
+            dependency.setGroupId(bundleVersionEntity.getDependencyGroupId());
+            dependency.setArtifactId(bundleVersionEntity.getDependencyArtifactId());
+            dependency.setVersion(bundleVersionEntity.getVersion());
+            bundleVersionMetadata.setDependency(dependency);
+        }
+
+        if (bucketEntity != null) {
+            bundleVersionMetadata.setBucketId(bucketEntity.getId());
+        }
+
+        return bundleVersionMetadata;
     }
 
     // --- Map keys

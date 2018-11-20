@@ -41,6 +41,17 @@ public enum EventType {
             EventFieldName.VERSION,
             EventFieldName.USER,
             EventFieldName.COMMENT),
+    CREATE_EXTENSION_BUNDLE(
+            EventFieldName.BUCKET_ID,
+            EventFieldName.EXTENSION_BUNDLE_ID,
+            EventFieldName.USER
+    ),
+    CREATE_EXTENSION_BUNDLE_VERSION(
+            EventFieldName.BUCKET_ID,
+            EventFieldName.EXTENSION_BUNDLE_ID,
+            EventFieldName.VERSION,
+            EventFieldName.USER
+    ),
     REGISTRY_START(),
     UPDATE_BUCKET(
             EventFieldName.BUCKET_ID,
@@ -55,7 +66,19 @@ public enum EventType {
     DELETE_FLOW(
             EventFieldName.BUCKET_ID,
             EventFieldName.FLOW_ID,
-            EventFieldName.USER);
+            EventFieldName.USER),
+    DELETE_EXTENSION_BUNDLE(
+            EventFieldName.BUCKET_ID,
+            EventFieldName.EXTENSION_BUNDLE_ID,
+            EventFieldName.USER
+    ),
+    DELETE_EXTENSION_BUNDLE_VERSION(
+            EventFieldName.BUCKET_ID,
+            EventFieldName.EXTENSION_BUNDLE_ID,
+            EventFieldName.VERSION,
+            EventFieldName.USER
+    )
+    ;
 
 
     private List<EventFieldName> fieldNames;

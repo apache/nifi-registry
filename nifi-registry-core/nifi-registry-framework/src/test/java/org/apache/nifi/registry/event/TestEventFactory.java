@@ -17,6 +17,10 @@
 package org.apache.nifi.registry.event;
 
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.ExtensionBundleType;
+import org.apache.nifi.registry.extension.ExtensionBundleVersion;
+import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -36,6 +40,8 @@ public class TestEventFactory {
     private Bucket bucket;
     private VersionedFlow versionedFlow;
     private VersionedFlowSnapshot versionedFlowSnapshot;
+    private ExtensionBundle extensionBundle;
+    private ExtensionBundleVersion extensionBundleVersion;
 
     @Before
     public void setup() {
@@ -60,6 +66,24 @@ public class TestEventFactory {
         versionedFlowSnapshot = new VersionedFlowSnapshot();
         versionedFlowSnapshot.setSnapshotMetadata(metadata);
         versionedFlowSnapshot.setFlowContents(new VersionedProcessGroup());
+
+        extensionBundle = new ExtensionBundle();
+        extensionBundle.setIdentifier(UUID.randomUUID().toString());
+        extensionBundle.setBucketIdentifier(bucket.getIdentifier());
+        extensionBundle.setBundleType(ExtensionBundleType.NIFI_NAR);
+        extensionBundle.setGroupId("org.apache.nifi");
+        extensionBundle.setArtifactId("nifi-foo-nar");
+
+        final ExtensionBundleVersionMetadata bundleVersionMetadata = new ExtensionBundleVersionMetadata();
+        bundleVersionMetadata.setId(UUID.randomUUID().toString());
+        bundleVersionMetadata.setVersion("1.0.0");
+        bundleVersionMetadata.setBucketId(bucket.getIdentifier());
+        bundleVersionMetadata.setExtensionBundleId(extensionBundle.getIdentifier());
+
+        extensionBundleVersion = new ExtensionBundleVersion();
+        extensionBundleVersion.setVersionMetadata(bundleVersionMetadata);
+        extensionBundleVersion.setExtensionBundle(extensionBundle);
+        extensionBundleVersion.setBucket(bucket);
     }
 
     @Test
@@ -166,4 +190,57 @@ public class TestEventFactory {
         assertEquals("", event.getField(EventFieldName.COMMENT).getValue());
     }
 
+    @Test
+    public void testExtensionBundleCreated() {
+        final Event event = EventFactory.extensionBundleCreated(extensionBundle);
+        event.validate();
+
+        assertEquals(EventType.CREATE_EXTENSION_BUNDLE, event.getEventType());
+        assertEquals(3, event.getFields().size());
+
+        assertEquals(bucket.getIdentifier(), event.getField(EventFieldName.BUCKET_ID).getValue());
+        assertEquals(extensionBundle.getIdentifier(), event.getField(EventFieldName.EXTENSION_BUNDLE_ID).getValue());
+        assertEquals("unknown", event.getField(EventFieldName.USER).getValue());
+    }
+
+    @Test
+    public void testExtensionBundleDeleted() {
+        final Event event = EventFactory.extensionBundleDeleted(extensionBundle);
+        event.validate();
+
+        assertEquals(EventType.DELETE_EXTENSION_BUNDLE, event.getEventType());
+        assertEquals(3, event.getFields().size());
+
+        assertEquals(bucket.getIdentifier(), event.getField(EventFieldName.BUCKET_ID).getValue());
+        assertEquals(extensionBundle.getIdentifier(), event.getField(EventFieldName.EXTENSION_BUNDLE_ID).getValue());
+        assertEquals("unknown", event.getField(EventFieldName.USER).getValue());
+    }
+
+    @Test
+    public void testExtensionBundleVersionCreated() {
+        final Event event = EventFactory.extensionBundleVersionCreated(extensionBundleVersion);
+        event.validate();
+
+        assertEquals(EventType.CREATE_EXTENSION_BUNDLE_VERSION, event.getEventType());
+        assertEquals(4, event.getFields().size());
+
+        assertEquals(bucket.getIdentifier(), event.getField(EventFieldName.BUCKET_ID).getValue());
+        assertEquals(extensionBundle.getIdentifier(), event.getField(EventFieldName.EXTENSION_BUNDLE_ID).getValue());
+        assertEquals(extensionBundleVersion.getVersionMetadata().getVersion(), event.getField(EventFieldName.VERSION).getValue());
+        assertEquals("unknown", event.getField(EventFieldName.USER).getValue());
+    }
+
+    @Test
+    public void testExtensionBundleVersionDeleted() {
+        final Event event = EventFactory.extensionBundleVersionDeleted(extensionBundleVersion);
+        event.validate();
+
+        assertEquals(EventType.DELETE_EXTENSION_BUNDLE_VERSION, event.getEventType());
+        assertEquals(4, event.getFields().size());
+
+        assertEquals(bucket.getIdentifier(), event.getField(EventFieldName.BUCKET_ID).getValue());
+        assertEquals(extensionBundle.getIdentifier(), event.getField(EventFieldName.EXTENSION_BUNDLE_ID).getValue());
+        assertEquals(extensionBundleVersion.getVersionMetadata().getVersion(), event.getField(EventFieldName.VERSION).getValue());
+        assertEquals("unknown", event.getField(EventFieldName.USER).getValue());
+    }
 }
