@@ -16,9 +16,12 @@
  */
 package org.apache.nifi.registry.extension;
 
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
 /**
  * The possible types of extension bundles.
  */
+@XmlJavaTypeAdapter(ExtensionBundleTypeAdapter.class)
 public enum ExtensionBundleType {
 
     NIFI_NAR("nifi-nar"),

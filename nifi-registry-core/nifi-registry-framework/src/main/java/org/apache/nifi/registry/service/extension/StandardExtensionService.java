@@ -188,13 +188,14 @@ public class StandardExtensionService implements ExtensionService {
 
             // create the bundle version in the metadata db
             final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
+            final long bundleCreatedTime = extensionBundle.getCreated().getTime();
 
             final ExtensionBundleVersionMetadata versionMetadata = new ExtensionBundleVersionMetadata();
             versionMetadata.setId(UUID.randomUUID().toString());
             versionMetadata.setExtensionBundleId(extensionBundle.getId());
             versionMetadata.setBucketId(bucketIdentifier);
             versionMetadata.setVersion(version);
-            versionMetadata.setTimestamp(System.currentTimeMillis());
+            versionMetadata.setTimestamp(bundleCreatedTime);
             versionMetadata.setAuthor(userIdentity);
             versionMetadata.setSha256Hex(sha256Hex);
 
