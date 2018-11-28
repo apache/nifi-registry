@@ -16,26 +16,22 @@
  */
 package org.apache.nifi.registry.db.mapper;
 
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ExtensionBundleVersionEntityRowMapper implements RowMapper<ExtensionBundleVersionEntity> {
+public class ExtensionBundleVersionDependencyEntityRowMapper implements RowMapper<ExtensionBundleVersionDependencyEntity> {
 
     @Override
-    public ExtensionBundleVersionEntity mapRow(final ResultSet rs, final int i) throws SQLException {
-        final ExtensionBundleVersionEntity entity = new ExtensionBundleVersionEntity();
+    public ExtensionBundleVersionDependencyEntity mapRow(final ResultSet rs, final int i) throws SQLException {
+        final ExtensionBundleVersionDependencyEntity entity = new ExtensionBundleVersionDependencyEntity();
         entity.setId(rs.getString("ID"));
-        entity.setExtensionBundleId(rs.getString("EXTENSION_BUNDLE_ID"));
+        entity.setExtensionBundleVersionId(rs.getString("EXTENSION_BUNDLE_VERSION_ID"));
+        entity.setGroupId(rs.getString("GROUP_ID"));
+        entity.setArtifactId(rs.getString("ARTIFACT_ID"));
         entity.setVersion(rs.getString("VERSION"));
-        entity.setSha256Hex(rs.getString("SHA_256_HEX"));
-
-        entity.setCreated(rs.getTimestamp("CREATED"));
-        entity.setCreatedBy(rs.getString("CREATED_BY"));
-        entity.setDescription(rs.getString("DESCRIPTION"));
-
         return entity;
     }
 

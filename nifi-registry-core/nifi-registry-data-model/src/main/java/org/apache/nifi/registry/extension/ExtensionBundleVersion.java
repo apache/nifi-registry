@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.util.Set;
 
 @ApiModel
 @XmlRootElement
@@ -33,6 +34,9 @@ public class ExtensionBundleVersion extends LinkableEntity {
     @Valid
     @NotNull
     private ExtensionBundleVersionMetadata versionMetadata;
+
+    // read-only, only populated from retrieval of an individual bundle version
+    private Set<ExtensionBundleVersionDependency> dependencies;
 
     // read-only, only populated from retrieval of an individual bundle version
     private ExtensionBundle extensionBundle;
@@ -47,6 +51,15 @@ public class ExtensionBundleVersion extends LinkableEntity {
 
     public void setVersionMetadata(ExtensionBundleVersionMetadata versionMetadata) {
         this.versionMetadata = versionMetadata;
+    }
+
+    @ApiModelProperty(value = "The set of other bundle versions that this version is dependent on", readOnly = true)
+    public Set<ExtensionBundleVersionDependency> getDependencies() {
+        return dependencies;
+    }
+
+    public void setDependencies(Set<ExtensionBundleVersionDependency> dependencies) {
+        this.dependencies = dependencies;
     }
 
     @ApiModelProperty(value = "The bundle this version is for", readOnly = true)

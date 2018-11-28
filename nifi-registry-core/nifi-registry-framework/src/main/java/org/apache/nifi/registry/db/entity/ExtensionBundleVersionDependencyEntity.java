@@ -14,27 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension;
+package org.apache.nifi.registry.db.entity;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+public class ExtensionBundleVersionDependencyEntity {
 
-import javax.validation.constraints.NotBlank;
-import java.util.Objects;
+    // Database id for this specific dependency
+    private String id;
 
-@ApiModel
-public class ExtensionBundleVersionDependency {
+    // Foreign key to the extension bundle version this dependency goes with
+    private String extensionBundleVersionId;
 
-    @NotBlank
+    // The bundle coordinates for this dependency
     private String groupId;
-
-    @NotBlank
     private String artifactId;
-
-    @NotBlank
     private String version;
 
-    @ApiModelProperty(value = "The group id of the bundle dependency")
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getExtensionBundleVersionId() {
+        return extensionBundleVersionId;
+    }
+
+    public void setExtensionBundleVersionId(String extensionBundleVersionId) {
+        this.extensionBundleVersionId = extensionBundleVersionId;
+    }
+
     public String getGroupId() {
         return groupId;
     }
@@ -43,7 +54,6 @@ public class ExtensionBundleVersionDependency {
         this.groupId = groupId;
     }
 
-    @ApiModelProperty(value = "The artifact id of the bundle dependency")
     public String getArtifactId() {
         return artifactId;
     }
@@ -52,7 +62,6 @@ public class ExtensionBundleVersionDependency {
         this.artifactId = artifactId;
     }
 
-    @ApiModelProperty(value = "The version of the bundle dependency")
     public String getVersion() {
         return version;
     }
@@ -61,24 +70,4 @@ public class ExtensionBundleVersionDependency {
         this.version = version;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(groupId, artifactId, version);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        final ExtensionBundleVersionDependency other = (ExtensionBundleVersionDependency) obj;
-
-        return Objects.equals(groupId, other.groupId)
-                && Objects.equals(artifactId, other.artifactId)
-                && Objects.equals(version, other.version);
-    }
 }

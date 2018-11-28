@@ -84,12 +84,7 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
     @ApiOperation(
             value = "Gets the names of the buckets the current user is authorized for in order to browse the repo by bucket",
             response = ExtensionRepoBucket.class,
-            responseContainer = "List",
-            extensions = {
-                    @Extension(name = "access-policy", properties = {
-                            @ExtensionProperty(name = "action", value = "read"),
-                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
-            }
+            responseContainer = "List"
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -369,7 +364,7 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
                 bucket.getIdentifier(), groupId, artifactId, version);
 
         final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
-        final String sha256Hex = bundleVersion.getVersionMetadata().getSha256Hex();
+        final String sha256Hex = bundleVersion.getVersionMetadata().getSha256();
 
         return Response.ok(sha256Hex, MediaType.TEXT_PLAIN).build();
     }

@@ -19,6 +19,7 @@ package org.apache.nifi.registry.service;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
@@ -351,6 +352,24 @@ public interface MetadataService {
      * @param extensionBundleVersionId the id of the extension bundle version
      */
     void deleteExtensionBundleVersion(String extensionBundleVersionId);
+
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Creates the given extension bundle version dependency.
+     *
+     * @param dependencyEntity the dependency entity
+     * @return the created dependency
+     */
+    ExtensionBundleVersionDependencyEntity createDependency(ExtensionBundleVersionDependencyEntity dependencyEntity);
+
+    /**
+     * Retrieves the bundle dependencies for the given bundle version.
+     *
+     * @param extensionBundleVersionId the id of the extension bundle version
+     * @return the list of dependencies
+     */
+    List<ExtensionBundleVersionDependencyEntity> getDependenciesForBundleVersion(String extensionBundleVersionId);
 
     // --------------------------------------------------------------------------------------------
 

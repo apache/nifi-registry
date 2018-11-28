@@ -108,9 +108,6 @@ insert into extension_bundle_version (
   id,
   extension_bundle_id,
   version,
-  dependency_group_id,
-  dependency_artifact_id,
-  dependency_version,
   created,
   created_by,
   description,
@@ -119,13 +116,24 @@ insert into extension_bundle_version (
   'eb1-v1',
   'eb1',
   '1.0.0',
-  'org.apache.nifi',
-  'nifi-example-service-api-nar',
-  '2.0.0',
   parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   'user1',
   'First version of eb1',
   '123456789'
+);
+
+insert into extension_bundle_version_dependency (
+  id,
+  extension_bundle_version_id,
+  group_id,
+  artifact_id,
+  version
+) values (
+  'eb1-v1-dep1',
+  'eb1-v1',
+  'org.apache.nifi',
+  'nifi-example-service-api-nar',
+  '2.0.0'
 );
 
 -- service impl bundle, depends on service api bundle
@@ -165,9 +173,6 @@ insert into extension_bundle_version (
   id,
   extension_bundle_id,
   version,
-  dependency_group_id,
-  dependency_artifact_id,
-  dependency_version,
   created,
   created_by,
   description,
@@ -176,13 +181,24 @@ insert into extension_bundle_version (
   'eb2-v1',
   'eb2',
   '1.0.0',
-  'org.apache.nifi',
-  'nifi-example-service-api-nar',
-  '2.0.0',
   parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   'user1',
   'First version of eb2',
   '123456789'
+);
+
+insert into extension_bundle_version_dependency (
+  id,
+  extension_bundle_version_id,
+  group_id,
+  artifact_id,
+  version
+) values (
+  'eb2-v1-dep1',
+  'eb2-v1',
+  'org.apache.nifi',
+  'nifi-example-service-api-nar',
+  '2.0.0'
 );
 
 -- service api bundle
@@ -222,9 +238,6 @@ insert into extension_bundle_version (
   id,
   extension_bundle_id,
   version,
-  dependency_group_id,
-  dependency_artifact_id,
-  dependency_version,
   created,
   created_by,
   description,
@@ -233,9 +246,6 @@ insert into extension_bundle_version (
   'eb3-v1',
   'eb3',
   '2.0.0',
-  null,
-  null,
-  null,
   parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   'user1',
   'First version of eb3',

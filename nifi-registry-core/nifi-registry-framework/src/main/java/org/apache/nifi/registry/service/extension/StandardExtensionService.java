@@ -25,6 +25,7 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.extension.BundleCoordinate;
@@ -65,6 +66,7 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -160,7 +162,7 @@ public class StandardExtensionService implements ExtensionService {
             }
 
             final BundleCoordinate bundleCoordinate = bundleDetails.getBundleCoordinate();
-            final BundleCoordinate dependencyCoordinate = bundleDetails.getDependencyBundleCoordinate();
+            final Set<BundleCoordinate> dependencyCoordinates = bundleDetails.getDependencyBundleCoordinates();
 
             final String groupId = bundleCoordinate.getGroupId();
             final String artifactId = bundleCoordinate.getArtifactId();
@@ -186,7 +188,7 @@ public class StandardExtensionService implements ExtensionService {
                 throw new IllegalStateException("The specified version already exists for the given extension bundle");
             }
 
-            // create the bundle version in the metadata db
+            // create the version metadata instance and validate it has all the required fields
             final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
             final long bundleCreatedTime = extensionBundle.getCreated().getTime();
 
@@ -197,20 +199,33 @@ public class StandardExtensionService implements ExtensionService {
             versionMetadata.setVersion(version);
             versionMetadata.setTimestamp(bundleCreatedTime);
             versionMetadata.setAuthor(userIdentity);
-            versionMetadata.setSha256Hex(sha256Hex);
+            versionMetadata.setSha256(sha256Hex);
 
-            if (dependencyCoordinate != null) {
+            validate(versionMetadata, "Cannot create extension bundle version");
+
+            // create the version dependency instances and validate they have the required fields
+            final Set<ExtensionBundleVersionDependency> versionDependencies = new HashSet<>();
+            for (final BundleCoordinate dependencyCoordinate : dependencyCoordinates) {
                 final ExtensionBundleVersionDependency versionDependency = new ExtensionBundleVersionDependency();
                 versionDependency.setGroupId(dependencyCoordinate.getGroupId());
                 versionDependency.setArtifactId(dependencyCoordinate.getArtifactId());
                 versionDependency.setVersion(dependencyCoordinate.getVersion());
-                versionMetadata.setDependency(versionDependency);
+
+                validate(versionDependency, "Cannot create extension bundle version dependency");
+                versionDependencies.add(versionDependency);
             }
 
-            validate(versionMetadata, "Cannot create extension bundle version");
-
+            // create the bundle version in the metadata db
             final ExtensionBundleVersionEntity versionEntity = DataModelMapper.map(versionMetadata);
             metadataService.createExtensionBundleVersion(versionEntity);
+
+            // create the bundle version dependencies in the metadata db
+            for (final ExtensionBundleVersionDependency versionDependency : versionDependencies) {
+                final ExtensionBundleVersionDependencyEntity versionDependencyEntity = DataModelMapper.map(versionDependency);
+                versionDependencyEntity.setId(UUID.randomUUID().toString());
+                versionDependencyEntity.setExtensionBundleVersionId(versionEntity.getId());
+                metadataService.createDependency(versionDependencyEntity);
+            }
 
             // persist the content of the bundle to the persistence provider
             final ExtensionBundleContext context = new StandardExtensionBundleContext.Builder()
@@ -240,6 +255,7 @@ public class StandardExtensionService implements ExtensionService {
             extensionBundleVersion.setVersionMetadata(versionMetadata);
             extensionBundleVersion.setExtensionBundle(DataModelMapper.map(existingBucket, updatedBundle));
             extensionBundleVersion.setBucket(DataModelMapper.map(existingBucket));
+            extensionBundleVersion.setDependencies(versionDependencies);
             return extensionBundleVersion;
 
         } finally {
@@ -261,7 +277,7 @@ public class StandardExtensionService implements ExtensionService {
             final ExtensionBundle bundle = new ExtensionBundle();
             bundle.setIdentifier(UUID.randomUUID().toString());
             bundle.setBucketIdentifier(bucketId);
-            bundle.setName(groupId + " - " + artifactId);
+            bundle.setName(groupId + ":" + artifactId);
             bundle.setGroupId(groupId);
             bundle.setArtifactId(artifactId);
             bundle.setBundleType(bundleType);
@@ -419,11 +435,21 @@ public class StandardExtensionService implements ExtensionService {
             throw new ResourceNotFoundException("The specified extension bundle version does not exist in this bucket.");
         }
 
+        // get the dependencies for the bundle version
+        final List<ExtensionBundleVersionDependencyEntity> existingVersionDependencies = metadataService
+                .getDependenciesForBundleVersion(existingVersion.getId());
+
+        // convert the dependency db entities
+        final Set<ExtensionBundleVersionDependency> dependencies = existingVersionDependencies.stream()
+                .map(d -> DataModelMapper.map(d))
+                .collect(Collectors.toSet());
+
         // create the full ExtensionBundleVersion instance to return
         final ExtensionBundleVersion extensionBundleVersion = new ExtensionBundleVersion();
         extensionBundleVersion.setVersionMetadata(DataModelMapper.map(existingBucket, existingVersion));
         extensionBundleVersion.setExtensionBundle(DataModelMapper.map(existingBucket, existingBundle));
         extensionBundleVersion.setBucket(DataModelMapper.map(existingBucket));
+        extensionBundleVersion.setDependencies(dependencies);
         return extensionBundleVersion;
     }
 

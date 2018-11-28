@@ -17,16 +17,20 @@
 package org.apache.nifi.registry.extension;
 
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 public class BundleDetails {
 
     private final BundleCoordinate bundleCoordinate;
 
     // Can be null when there is no dependent bundle
-    private final BundleCoordinate dependencyBundleCoordinate;
+    private final Set<BundleCoordinate> dependencyBundleCoordinates;
 
     private BundleDetails(final Builder builder) {
         this.bundleCoordinate = builder.bundleCoordinate;
-        this.dependencyBundleCoordinate = builder.dependencyBundleCoordinate;
+        this.dependencyBundleCoordinates = Collections.unmodifiableSet(new HashSet<>(builder.dependencyBundleCoordinates));
         if (this.bundleCoordinate == null) {
             throw new IllegalStateException("A bundle coordinate is required");
         }
@@ -36,8 +40,8 @@ public class BundleDetails {
         return bundleCoordinate;
     }
 
-    public BundleCoordinate getDependencyBundleCoordinate() {
-        return dependencyBundleCoordinate;
+    public Set<BundleCoordinate> getDependencyBundleCoordinates() {
+        return dependencyBundleCoordinates;
     }
 
     /**
@@ -46,7 +50,7 @@ public class BundleDetails {
     public static class Builder {
 
         private BundleCoordinate bundleCoordinate;
-        private BundleCoordinate dependencyBundleCoordinate;
+        private Set<BundleCoordinate> dependencyBundleCoordinates = new HashSet<>();
 
         public Builder coordinate(final BundleCoordinate bundleCoordinate) {
             this.bundleCoordinate = bundleCoordinate;
@@ -54,7 +58,9 @@ public class BundleDetails {
         }
 
         public Builder dependencyCoordinate(final BundleCoordinate dependencyCoordinate) {
-            this.dependencyBundleCoordinate = dependencyCoordinate;
+            if (dependencyCoordinate != null) {
+                this.dependencyBundleCoordinates.add(dependencyCoordinate);
+            }
             return this;
         }
 

@@ -21,6 +21,7 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
@@ -227,15 +228,7 @@ public class DataModelMapper {
         entity.setCreated(new Date(bundleVersionMetadata.getTimestamp()));
         entity.setCreatedBy(bundleVersionMetadata.getAuthor());
         entity.setDescription(bundleVersionMetadata.getDescription());
-        entity.setSha256Hex(bundleVersionMetadata.getSha256Hex());
-
-        final ExtensionBundleVersionDependency dependency = bundleVersionMetadata.getDependency();
-        if (dependency != null) {
-            entity.setDependencyGroupId(dependency.getGroupId());
-            entity.setDependencyArtifactId(dependency.getArtifactId());
-            entity.setDependencyVersion(dependency.getVersion());
-        }
-
+        entity.setSha256Hex(bundleVersionMetadata.getSha256());
         return entity;
     }
 
@@ -247,21 +240,31 @@ public class DataModelMapper {
         bundleVersionMetadata.setTimestamp(bundleVersionEntity.getCreated().getTime());
         bundleVersionMetadata.setAuthor(bundleVersionEntity.getCreatedBy());
         bundleVersionMetadata.setDescription(bundleVersionEntity.getDescription());
-        bundleVersionMetadata.setSha256Hex(bundleVersionEntity.getSha256Hex());
-
-        if (bundleVersionEntity.getDependencyArtifactId() != null) {
-            final ExtensionBundleVersionDependency dependency = new ExtensionBundleVersionDependency();
-            dependency.setGroupId(bundleVersionEntity.getDependencyGroupId());
-            dependency.setArtifactId(bundleVersionEntity.getDependencyArtifactId());
-            dependency.setVersion(bundleVersionEntity.getVersion());
-            bundleVersionMetadata.setDependency(dependency);
-        }
+        bundleVersionMetadata.setSha256(bundleVersionEntity.getSha256Hex());
 
         if (bucketEntity != null) {
             bundleVersionMetadata.setBucketId(bucketEntity.getId());
         }
 
         return bundleVersionMetadata;
+    }
+
+    // -- Map ExtensionBundleVersionDependency
+
+    public static ExtensionBundleVersionDependencyEntity map(final ExtensionBundleVersionDependency bundleVersionDependency) {
+        final ExtensionBundleVersionDependencyEntity entity = new ExtensionBundleVersionDependencyEntity();
+        entity.setGroupId(bundleVersionDependency.getGroupId());
+        entity.setArtifactId(bundleVersionDependency.getArtifactId());
+        entity.setVersion(bundleVersionDependency.getVersion());
+        return entity;
+    }
+
+    public static ExtensionBundleVersionDependency map(final ExtensionBundleVersionDependencyEntity dependencyEntity) {
+        final ExtensionBundleVersionDependency dependency = new ExtensionBundleVersionDependency();
+        dependency.setGroupId(dependencyEntity.getGroupId());
+        dependency.setArtifactId(dependencyEntity.getArtifactId());
+        dependency.setVersion(dependencyEntity.getVersion());
+        return dependency;
     }
 
     // --- Map keys

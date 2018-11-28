@@ -41,8 +41,6 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
     @NotBlank
     private String version;
 
-    private ExtensionBundleVersionDependency dependency;
-
     @Min(1)
     private long timestamp;
 
@@ -52,7 +50,7 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
     private String description;
 
     @NotBlank
-    private String sha256Hex;
+    private String sha256;
 
 
     @ApiModelProperty(value = "The id of this version of the extension bundle")
@@ -91,15 +89,6 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
         this.version = version;
     }
 
-    @ApiModelProperty(value = "The optional bundle dependency (i.e. another bundle this bundle is dependent on)")
-    public ExtensionBundleVersionDependency getDependency() {
-        return dependency;
-    }
-
-    public void setDependency(ExtensionBundleVersionDependency dependency) {
-        this.dependency = dependency;
-    }
-
     @ApiModelProperty(value = "The timestamp of the create date of this version")
     public long getTimestamp() {
         return timestamp;
@@ -128,12 +117,12 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
     }
 
     @ApiModelProperty(value = "The hex representation of the SHA-256 digest of the binary content for this version")
-    public String getSha256Hex() {
-        return sha256Hex;
+    public String getSha256() {
+        return sha256;
     }
 
-    public void setSha256Hex(String sha256Hex) {
-        this.sha256Hex = sha256Hex;
+    public void setSha256(String sha256) {
+        this.sha256 = sha256;
     }
 
     @Override

@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -339,7 +340,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(ExtensionBundleType.NIFI_NAR, testNarV1Bundle.getBundleType());
         Assert.assertEquals(1, testNarV1Bundle.getVersionCount());
 
-        Assert.assertEquals("org.apache.nifi - nifi-test-nar", testNarV1Bundle.getName());
+        Assert.assertEquals("org.apache.nifi:nifi-test-nar", testNarV1Bundle.getName());
         Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Bundle.getBucketIdentifier());
         Assert.assertEquals(bundlesBucket.getName(), testNarV1Bundle.getBucketName());
         Assert.assertNotNull(testNarV1Bundle.getPermissions());
@@ -349,14 +350,17 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final ExtensionBundleVersionMetadata testNarV1Metadata = createdTestNarV1.getVersionMetadata();
         Assert.assertEquals("1.0.0", testNarV1Metadata.getVersion());
         Assert.assertNotNull(testNarV1Metadata.getId());
-        Assert.assertNotNull(testNarV1Metadata.getSha256Hex());
+        Assert.assertNotNull(testNarV1Metadata.getSha256());
         Assert.assertNotNull(testNarV1Metadata.getAuthor());
-        Assert.assertNotNull(testNarV1Metadata.getDependency());
         Assert.assertEquals(testNarV1Bundle.getIdentifier(), testNarV1Metadata.getExtensionBundleId());
         Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Metadata.getBucketId());
         Assert.assertTrue(testNarV1Metadata.getTimestamp() > 0);
 
-        final ExtensionBundleVersionDependency testNarV1Dependency = testNarV1Metadata.getDependency();
+        final Set<ExtensionBundleVersionDependency> dependencies = createdTestNarV1.getDependencies();
+        Assert.assertNotNull(dependencies);
+        Assert.assertEquals(1, dependencies.size());
+
+        final ExtensionBundleVersionDependency testNarV1Dependency = dependencies.stream().findFirst().get();
         Assert.assertEquals("org.apache.nifi", testNarV1Dependency.getGroupId());
         Assert.assertEquals("nifi-test-api-nar", testNarV1Dependency.getArtifactId());
         Assert.assertEquals("1.0.0", testNarV1Dependency.getVersion());
@@ -399,6 +403,8 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final ExtensionBundleVersion bundleVersion1 = bundleVersionClient.getBundleVersion(testNarV1Bundle.getIdentifier(), "1.0.0");
         Assert.assertNotNull(bundleVersion1);
         Assert.assertEquals("1.0.0", bundleVersion1.getVersionMetadata().getVersion());
+        Assert.assertNotNull(bundleVersion1.getDependencies());
+        Assert.assertEquals(1, bundleVersion1.getDependencies().size());
 
         final ExtensionBundleVersion bundleVersion2 = bundleVersionClient.getBundleVersion(testNarV1Bundle.getIdentifier(), "2.0.0");
         Assert.assertNotNull(bundleVersion2);
@@ -407,7 +413,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // verify getting the input stream for a bundle version
         try (final InputStream bundleVersion1InputStream = bundleVersionClient.getBundleVersionContent(testNarV1Bundle.getIdentifier(), "1.0.0")) {
             final String sha256Hex = DigestUtils.sha256Hex(bundleVersion1InputStream);
-            Assert.assertEquals(testNarV1Metadata.getSha256Hex(), sha256Hex);
+            Assert.assertEquals(testNarV1Metadata.getSha256(), sha256Hex);
         }
 
         // verify writing a bundle version to an output stream
@@ -417,7 +423,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         try (final InputStream bundleInputStream = new FileInputStream(bundleFile)) {
             final String sha256Hex = DigestUtils.sha256Hex(bundleInputStream);
-            Assert.assertEquals(testNarV1Metadata.getSha256Hex(), sha256Hex);
+            Assert.assertEquals(testNarV1Metadata.getSha256(), sha256Hex);
         }
 
         // Verify deleting a bundle version

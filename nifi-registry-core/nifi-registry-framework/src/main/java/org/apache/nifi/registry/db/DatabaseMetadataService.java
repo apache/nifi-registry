@@ -20,6 +20,7 @@ import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
@@ -29,6 +30,7 @@ import org.apache.nifi.registry.db.mapper.BucketEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.BucketItemEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
+import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionDependencyEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowEntityRowMapper;
@@ -601,22 +603,16 @@ public class DatabaseMetadataService implements MetadataService {
                     "ID, " +
                     "EXTENSION_BUNDLE_ID, " +
                     "VERSION, " +
-                    "DEPENDENCY_GROUP_ID, " +
-                    "DEPENDENCY_ARTIFACT_ID, " +
-                    "DEPENDENCY_VERSION, " +
                     "CREATED, " +
                     "CREATED_BY, " +
                     "DESCRIPTION, " +
                     "SHA_256_HEX " +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 extensionBundleVersion.getId(),
                 extensionBundleVersion.getExtensionBundleId(),
                 extensionBundleVersion.getVersion(),
-                extensionBundleVersion.getDependencyGroupId(),
-                extensionBundleVersion.getDependencyArtifactId(),
-                extensionBundleVersion.getDependencyVersion(),
                 extensionBundleVersion.getCreated(),
                 extensionBundleVersion.getCreatedBy(),
                 extensionBundleVersion.getDescription(),
@@ -644,9 +640,6 @@ public class DatabaseMetadataService implements MetadataService {
                 "ebv.id AS ID," +
                 "ebv.extension_bundle_id AS EXTENSION_BUNDLE_ID, " +
                 "ebv.version AS VERSION, " +
-                "ebv.dependency_group_id AS DEPENDENCY_GROUP_ID, " +
-                "ebv.dependency_artifact_id AS DEPENDENCY_ARTIFACT_ID, " +
-                "ebv.dependency_version AS DEPENDENCY_VERSION, " +
                 "ebv.created AS CREATED, " +
                 "ebv.created_by AS CREATED_BY, " +
                 "ebv.description AS DESCRIPTION, " +
@@ -708,6 +701,37 @@ public class DatabaseMetadataService implements MetadataService {
         final String sql = "DELETE FROM extension_bundle_version WHERE id = ?";
         jdbcTemplate.update(sql, extensionBundleVersionId);
     }
+
+    //------------ Extension Bundle Version Dependencies ------------
+
+    @Override
+    public ExtensionBundleVersionDependencyEntity createDependency(final ExtensionBundleVersionDependencyEntity dependencyEntity) {
+        final String dependencySql =
+                "INSERT INTO extension_bundle_version_dependency (" +
+                    "ID, " +
+                    "EXTENSION_BUNDLE_VERSION_ID, " +
+                    "GROUP_ID, " +
+                    "ARTIFACT_ID, " +
+                    "VERSION " +
+                ") VALUES (?, ?, ?, ?, ?)";
+
+        jdbcTemplate.update(dependencySql,
+                dependencyEntity.getId(),
+                dependencyEntity.getExtensionBundleVersionId(),
+                dependencyEntity.getGroupId(),
+                dependencyEntity.getArtifactId(),
+                dependencyEntity.getVersion());
+
+        return dependencyEntity;
+    }
+
+    @Override
+    public List<ExtensionBundleVersionDependencyEntity> getDependenciesForBundleVersion(final String extensionBundleVersionId) {
+        final String sql = "SELECT * FROM extension_bundle_version_dependency WHERE extension_bundle_version_id = ?";
+        final Object[] args = {extensionBundleVersionId};
+        return jdbcTemplate.query(sql, args, new ExtensionBundleVersionDependencyEntityRowMapper());
+    }
+
 
     //----------------- Extensions ---------------------------------
 

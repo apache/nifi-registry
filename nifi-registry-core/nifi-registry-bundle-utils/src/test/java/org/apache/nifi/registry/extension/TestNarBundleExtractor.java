@@ -26,7 +26,6 @@ import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class TestNarBundleExtractor {
@@ -44,7 +43,8 @@ public class TestNarBundleExtractor {
             final BundleDetails bundleDetails = extractor.extract(in);
             assertNotNull(bundleDetails);
             assertNotNull(bundleDetails.getBundleCoordinate());
-            assertNull(bundleDetails.getDependencyBundleCoordinate());
+            assertNotNull(bundleDetails.getDependencyBundleCoordinates());
+            assertEquals(0, bundleDetails.getDependencyBundleCoordinates().size());
 
             final BundleCoordinate bundleCoordinate = bundleDetails.getBundleCoordinate();
             assertEquals("org.apache.nifi", bundleCoordinate.getGroupId());
@@ -59,14 +59,15 @@ public class TestNarBundleExtractor {
             final BundleDetails bundleDetails = extractor.extract(in);
             assertNotNull(bundleDetails);
             assertNotNull(bundleDetails.getBundleCoordinate());
-            assertNotNull(bundleDetails.getDependencyBundleCoordinate());
+            assertNotNull(bundleDetails.getDependencyBundleCoordinates());
+            assertEquals(1, bundleDetails.getDependencyBundleCoordinates().size());
 
             final BundleCoordinate bundleCoordinate = bundleDetails.getBundleCoordinate();
             assertEquals("org.apache.nifi", bundleCoordinate.getGroupId());
             assertEquals("nifi-foo-nar", bundleCoordinate.getArtifactId());
             assertEquals("1.8.0", bundleCoordinate.getVersion());
 
-            final BundleCoordinate dependencyCoordinate = bundleDetails.getDependencyBundleCoordinate();
+            final BundleCoordinate dependencyCoordinate = bundleDetails.getDependencyBundleCoordinates().stream().findFirst().get();
             assertEquals("org.apache.nifi", dependencyCoordinate.getGroupId());
             assertEquals("nifi-bar-nar", dependencyCoordinate.getArtifactId());
             assertEquals("2.0.0", dependencyCoordinate.getVersion());

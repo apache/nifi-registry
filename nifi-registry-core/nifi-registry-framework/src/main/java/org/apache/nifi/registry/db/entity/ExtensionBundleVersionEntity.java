@@ -29,11 +29,6 @@ public class ExtensionBundleVersionEntity {
     // The version of this bundle
     private String version;
 
-    // Optional bundle coordinate that this bundle is dependent on
-    private String dependencyGroupId;
-    private String dependencyArtifactId;
-    private String dependencyVersion;
-
     // General info about this version of the bundle
     private Date created;
     private String createdBy;
@@ -65,30 +60,6 @@ public class ExtensionBundleVersionEntity {
 
     public void setVersion(String version) {
         this.version = version;
-    }
-
-    public String getDependencyGroupId() {
-        return dependencyGroupId;
-    }
-
-    public void setDependencyGroupId(String dependencyGroupId) {
-        this.dependencyGroupId = dependencyGroupId;
-    }
-
-    public String getDependencyArtifactId() {
-        return dependencyArtifactId;
-    }
-
-    public void setDependencyArtifactId(String dependencyArtifactId) {
-        this.dependencyArtifactId = dependencyArtifactId;
-    }
-
-    public String getDependencyVersion() {
-        return dependencyVersion;
-    }
-
-    public void setDependencyVersion(String dependencyVersion) {
-        this.dependencyVersion = dependencyVersion;
     }
 
     public Date getCreated() {

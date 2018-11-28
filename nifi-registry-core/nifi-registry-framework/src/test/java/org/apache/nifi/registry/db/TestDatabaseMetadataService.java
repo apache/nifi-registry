@@ -21,6 +21,7 @@ import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
+import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
@@ -540,9 +541,6 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bundleVersion.setId(UUID.randomUUID().toString());
         bundleVersion.setExtensionBundleId("eb1");
         bundleVersion.setVersion("1.1.0");
-        bundleVersion.setDependencyGroupId("org.apache.nifi");
-        bundleVersion.setDependencyArtifactId("nifi-example-service-api-nar");
-        bundleVersion.setDependencyVersion("2.0.0");
         bundleVersion.setCreated(new Date());
         bundleVersion.setCreatedBy("user2");
         bundleVersion.setDescription("This is v1.1.0");
@@ -562,9 +560,6 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals("eb1-v1", bundleVersion.getId());
         assertEquals("eb1", bundleVersion.getExtensionBundleId());
         assertEquals("1.0.0", bundleVersion.getVersion());
-        assertEquals("org.apache.nifi", bundleVersion.getDependencyGroupId());
-        assertEquals("nifi-example-service-api-nar", bundleVersion.getDependencyArtifactId());
-        assertEquals("2.0.0", bundleVersion.getDependencyVersion());
         assertNotNull(bundleVersion.getCreated());
         assertEquals("user1", bundleVersion.getCreatedBy());
         assertEquals("First version of eb1", bundleVersion.getDescription());
@@ -664,6 +659,52 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
         final ExtensionBundleVersionEntity deletedBundleVersion = metadataService.getExtensionBundleVersion("eb1", "1.0.0");
         assertNull(deletedBundleVersion);
+    }
+
+    // ---------- Extension Bundle Version Dependencies ------------
+
+    @Test
+    public void testCreateExtensionBundleVersionDependency() {
+        final ExtensionBundleVersionEntity versionEntity = metadataService.getExtensionBundleVersion("eb1", "1.0.0");
+        assertNotNull(versionEntity);
+
+        final List<ExtensionBundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion(versionEntity.getId());
+        assertNotNull(dependencies);
+        assertEquals(1, dependencies.size());
+
+        final ExtensionBundleVersionDependencyEntity dependencyEntity = new ExtensionBundleVersionDependencyEntity();
+        dependencyEntity.setId(UUID.randomUUID().toString());
+        dependencyEntity.setExtensionBundleVersionId(versionEntity.getId());
+        dependencyEntity.setGroupId("com.foo");
+        dependencyEntity.setArtifactId("foo-nar");
+        dependencyEntity.setVersion("1.1.1");
+
+        metadataService.createDependency(dependencyEntity);
+
+        final List<ExtensionBundleVersionDependencyEntity> dependencies2 = metadataService.getDependenciesForBundleVersion(versionEntity.getId());
+        assertNotNull(dependencies2);
+        assertEquals(2, dependencies2.size());
+    }
+
+    @Test
+    public void testGetExtensionBundleVersionDependencies() {
+        final List<ExtensionBundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion("eb1-v1");
+        assertNotNull(dependencies);
+        assertEquals(1, dependencies.size());
+
+        final ExtensionBundleVersionDependencyEntity dependency = dependencies.get(0);
+        assertEquals("eb1-v1-dep1", dependency.getId());
+        assertEquals("eb1-v1", dependency.getExtensionBundleVersionId());
+        assertEquals("org.apache.nifi", dependency.getGroupId());
+        assertEquals("nifi-example-service-api-nar", dependency.getArtifactId());
+        assertEquals("2.0.0", dependency.getVersion());
+    }
+
+    @Test
+    public void testGetExtensionBundleVersionDependenciesWhenNoneExist() {
+        final List<ExtensionBundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion("DOES-NOT-EXIST");
+        assertNotNull(dependencies);
+        assertEquals(0, dependencies.size());
     }
 
     //----------------- Extensions ---------------------------------
