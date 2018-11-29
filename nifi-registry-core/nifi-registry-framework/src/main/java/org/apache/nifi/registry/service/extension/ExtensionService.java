@@ -46,10 +46,12 @@ public interface ExtensionService {
      * @param bucketIdentifier the bucket id
      * @param bundleType the type of bundle
      * @param inputStream the binary content of the bundle
+     * @param clientSha256 the SHA-256 hex supplied by the client
      * @return the ExtensionBundleVersion representing all of the information about the bundle
      * @throws IOException if an error occurs processing the InputStream
      */
-    ExtensionBundleVersion createExtensionBundleVersion(String bucketIdentifier, ExtensionBundleType bundleType, InputStream inputStream) throws IOException;
+    ExtensionBundleVersion createExtensionBundleVersion(String bucketIdentifier, ExtensionBundleType bundleType,
+                                                        InputStream inputStream, String clientSha256) throws IOException;
 
     /**
      * Retrieves the extension bundles in the given buckets.

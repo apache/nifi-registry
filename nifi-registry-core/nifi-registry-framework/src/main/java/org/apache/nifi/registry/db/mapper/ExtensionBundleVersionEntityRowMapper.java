@@ -31,6 +31,7 @@ public class ExtensionBundleVersionEntityRowMapper implements RowMapper<Extensio
         entity.setExtensionBundleId(rs.getString("EXTENSION_BUNDLE_ID"));
         entity.setVersion(rs.getString("VERSION"));
         entity.setSha256Hex(rs.getString("SHA_256_HEX"));
+        entity.setSha256Supplied(rs.getInt("SHA_256_SUPPLIED") == 1);
 
         entity.setCreated(rs.getTimestamp("CREATED"));
         entity.setCreatedBy(rs.getString("CREATED_BY"));

@@ -61,6 +61,12 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
     @Override
     public ExtensionBundleVersion create(final String bucketId, final ExtensionBundleType bundleType, final InputStream bundleContentStream)
             throws IOException, NiFiRegistryException {
+        return create(bucketId, bundleType, bundleContentStream, null);
+    }
+
+        @Override
+    public ExtensionBundleVersion create(final String bucketId, final ExtensionBundleType bundleType, final InputStream bundleContentStream, final String sha256)
+            throws IOException, NiFiRegistryException {
 
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket id cannot be null or blank");
@@ -85,6 +91,10 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
             final FormDataMultiPart multipart = new FormDataMultiPart();
             multipart.bodyPart(streamBodyPart);
 
+            if (!StringUtils.isBlank(sha256)) {
+                multipart.field("sha256", sha256);
+            }
+
             return getRequestBuilder(target)
                     .post(
                             Entity.entity(multipart, multipart.getMediaType()),
@@ -94,7 +104,13 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
     }
 
     @Override
-    public ExtensionBundleVersion create(String bucketId, ExtensionBundleType bundleType, File bundleFile)
+    public ExtensionBundleVersion create(final String bucketId, final ExtensionBundleType bundleType, final File bundleFile)
+            throws IOException, NiFiRegistryException {
+        return create(bucketId, bundleType, bundleFile, null);
+    }
+
+    @Override
+    public ExtensionBundleVersion create(final String bucketId, final ExtensionBundleType bundleType, final File bundleFile, final String sha256)
             throws IOException, NiFiRegistryException {
 
         if (StringUtils.isBlank(bucketId)) {
@@ -119,6 +135,10 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
 
             final FormDataMultiPart multipart = new FormDataMultiPart();
             multipart.bodyPart(fileBodyPart);
+
+            if (!StringUtils.isBlank(sha256)) {
+                multipart.field("sha256", sha256);
+            }
 
             return getRequestBuilder(target)
                     .post(

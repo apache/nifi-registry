@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.bucket.Bucket;
@@ -53,6 +54,7 @@ import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
 import org.apache.nifi.registry.util.FileUtils;
+import org.bouncycastle.util.encoders.Hex;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
 import org.junit.Assert;
@@ -330,7 +332,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // create version 1.0.0 of nifi-test-nar
         final String testNar1 = "src/test/resources/extensions/nars/nifi-test-nar-1.0.0.nar";
-        final ExtensionBundleVersion createdTestNarV1 = createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar1);
+        final ExtensionBundleVersion createdTestNarV1 = createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar1, null);
 
         final ExtensionBundle testNarV1Bundle = createdTestNarV1.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{testNarV1Bundle.getIdentifier()});
@@ -355,6 +357,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(testNarV1Bundle.getIdentifier(), testNarV1Metadata.getExtensionBundleId());
         Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Metadata.getBucketId());
         Assert.assertTrue(testNarV1Metadata.getTimestamp() > 0);
+        Assert.assertFalse(testNarV1Metadata.getSha256Supplied());
 
         final Set<ExtensionBundleVersionDependency> dependencies = createdTestNarV1.getDependencies();
         Assert.assertNotNull(dependencies);
@@ -365,16 +368,29 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals("nifi-test-api-nar", testNarV1Dependency.getArtifactId());
         Assert.assertEquals("1.0.0", testNarV1Dependency.getVersion());
 
-        // create version 2.0.0 of nifi-test-nar
         final String testNar2 = "src/test/resources/extensions/nars/nifi-test-nar-2.0.0.nar";
-        final ExtensionBundleVersion createdTestNarV2 = createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar2);
+
+        // try to create version 2.0.0 of nifi-test-nar when the supplied SHA-256 does not match server's
+        final String madeUpSha256 = "MADE-UP-SHA-256";
+        try {
+            createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar2, madeUpSha256);
+            Assert.fail("Should have thrown exception");
+        } catch (Exception e) {
+            // should have thrown exception from mismatched SHA-256
+        }
+
+        // create version 2.0.0 of nifi-test-nar using correct supplied SHA-256
+        final String testNar2Sha256 = calculateSha256Hex(testNar2);
+        final ExtensionBundleVersion createdTestNarV2 = createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar2, testNar2Sha256);
+        Assert.assertTrue(createdTestNarV2.getVersionMetadata().getSha256Supplied());
 
         final ExtensionBundle testNarV2Bundle = createdTestNarV2.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{testNarV2Bundle.getIdentifier()});
 
         // create version 1.0.0 of nifi-foo-nar, use the file variant
         final String fooNar = "src/test/resources/extensions/nars/nifi-foo-nar-1.0.0.nar";
-        final ExtensionBundleVersion createdFooNarV1 = createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar);
+        final ExtensionBundleVersion createdFooNarV1 = createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null);
+        Assert.assertFalse(createdFooNarV1.getVersionMetadata().getSha256Supplied());
 
         final ExtensionBundle fooNarV1Bundle = createdFooNarV1.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{fooNarV1Bundle.getIdentifier()});
@@ -568,12 +584,18 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
     private ExtensionBundleVersion createExtensionBundleVersionWithStream(final Bucket bundlesBucket,
                                                                           final ExtensionBundleVersionClient bundleVersionClient,
-                                                                          final String narFile) throws IOException, NiFiRegistryException {
+                                                                          final String narFile, final String sha256)
+            throws IOException, NiFiRegistryException {
 
         final ExtensionBundleVersion createdBundleVersion;
         try (final InputStream bundleInputStream = new FileInputStream(narFile)) {
-            createdBundleVersion = bundleVersionClient.create(
-                    bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, bundleInputStream);
+            if (StringUtils.isBlank(sha256)) {
+                createdBundleVersion = bundleVersionClient.create(
+                        bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, bundleInputStream);
+            } else {
+                createdBundleVersion = bundleVersionClient.create(
+                        bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, bundleInputStream, sha256);
+            }
         }
 
         Assert.assertNotNull(createdBundleVersion);
@@ -586,10 +608,17 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
     private ExtensionBundleVersion createExtensionBundleVersionWithFile(final Bucket bundlesBucket,
                                                                         final ExtensionBundleVersionClient bundleVersionClient,
-                                                                        final String narFile) throws IOException, NiFiRegistryException {
+                                                                        final String narFile, final String sha256)
+            throws IOException, NiFiRegistryException {
 
-        final ExtensionBundleVersion createdBundleVersion = bundleVersionClient.create(
-                bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, new File(narFile));
+        final ExtensionBundleVersion createdBundleVersion;
+        if (StringUtils.isBlank(sha256)) {
+            createdBundleVersion = bundleVersionClient.create(
+                    bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, new File(narFile));
+        } else {
+            createdBundleVersion = bundleVersionClient.create(
+                    bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, new File(narFile), sha256);
+        }
 
         Assert.assertNotNull(createdBundleVersion);
         Assert.assertNotNull(createdBundleVersion.getBucket());
@@ -597,6 +626,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertNotNull(createdBundleVersion.getVersionMetadata());
 
         return createdBundleVersion;
+    }
+
+    private String calculateSha256Hex(final String narFile) throws IOException {
+        try (final InputStream bundleInputStream = new FileInputStream(narFile)) {
+            return Hex.toHexString(DigestUtils.sha256(bundleInputStream));
+        }
     }
 
     private static Bucket createBucket(BucketClient bucketClient, int num) throws IOException, NiFiRegistryException {

@@ -273,6 +273,7 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
         final ExtensionRepoVersion repoVersion = new ExtensionRepoVersion();
         repoVersion.setDownloadLink(Link.fromUri(downloadUri).rel("content").build());
         repoVersion.setSha256Link(Link.fromUri(sha256Uri).rel("sha256").build());
+        repoVersion.setSha256Supplied(bundleVersion.getVersionMetadata().getSha256Supplied());
 
         return Response.ok(repoVersion).build();
     }

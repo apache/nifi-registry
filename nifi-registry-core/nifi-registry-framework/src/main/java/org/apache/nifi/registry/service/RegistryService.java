@@ -1018,10 +1018,10 @@ public class RegistryService {
     // ---------------------- ExtensionBundle methods ---------------------------------------------
 
     public ExtensionBundleVersion createExtensionBundleVersion(final String bucketIdentifier, final ExtensionBundleType bundleType,
-                                                               final InputStream inputStream) throws IOException {
+                                                               final InputStream inputStream, final String clientSha256) throws IOException {
         writeLock.lock();
         try {
-            return extensionService.createExtensionBundleVersion(bucketIdentifier, bundleType, inputStream);
+            return extensionService.createExtensionBundleVersion(bucketIdentifier, bundleType, inputStream, clientSha256);
         } finally {
             writeLock.unlock();
         }

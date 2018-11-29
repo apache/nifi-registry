@@ -113,7 +113,7 @@ public class StandardExtensionService implements ExtensionService {
 
     @Override
     public ExtensionBundleVersion createExtensionBundleVersion(final String bucketIdentifier, final ExtensionBundleType bundleType,
-                                                               final InputStream inputStream) throws IOException {
+                                                               final InputStream inputStream, final String clientSha256) throws IOException {
         if (StringUtils.isBlank(bucketIdentifier)) {
             throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
         }
@@ -152,7 +152,13 @@ public class StandardExtensionService implements ExtensionService {
                 IOUtils.copy(digestInputStream, out);
             }
 
+            // get the hex of the SHA-256 computed by the server and compare to the client provided SHA-256, if one was provided
             final String sha256Hex = Hex.encodeHexString(sha256Digest.digest());
+            final boolean sha256Supplied = !StringUtils.isBlank(clientSha256);
+            if (sha256Supplied && !sha256Hex.equalsIgnoreCase(clientSha256)) {
+                LOGGER.error("Client provided SHA-256 of '{}', but server calculated '{}'", new Object[]{clientSha256, sha256Hex});
+                throw new IllegalStateException("The SHA-256 of the received extension bundle does not match the SHA-256 provided by the client");
+            }
 
             // extract the details of the bundle from the temp file in the working directory
             final BundleDetails bundleDetails;
@@ -199,6 +205,7 @@ public class StandardExtensionService implements ExtensionService {
             versionMetadata.setTimestamp(currentTime);
             versionMetadata.setAuthor(userIdentity);
             versionMetadata.setSha256(sha256Hex);
+            versionMetadata.setSha256Supplied(sha256Supplied);
 
             validate(versionMetadata, "Cannot create extension bundle version");
 

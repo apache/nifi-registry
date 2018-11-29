@@ -22,6 +22,7 @@ import org.apache.nifi.registry.link.LinkableEntity;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 
@@ -51,6 +52,9 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
 
     @NotBlank
     private String sha256;
+
+    @NotNull
+    private Boolean sha256Supplied;
 
 
     @ApiModelProperty(value = "The id of this version of the extension bundle")
@@ -123,6 +127,15 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
 
     public void setSha256(String sha256) {
         this.sha256 = sha256;
+    }
+
+    @ApiModelProperty(value = "Whether or not the client supplied a SHA-256 when uploading the bundle")
+    public Boolean getSha256Supplied() {
+        return sha256Supplied;
+    }
+
+    public void setSha256Supplied(Boolean sha256Supplied) {
+        this.sha256Supplied = sha256Supplied;
     }
 
     @Override

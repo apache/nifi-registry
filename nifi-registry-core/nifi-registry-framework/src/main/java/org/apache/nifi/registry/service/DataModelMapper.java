@@ -229,6 +229,7 @@ public class DataModelMapper {
         entity.setCreatedBy(bundleVersionMetadata.getAuthor());
         entity.setDescription(bundleVersionMetadata.getDescription());
         entity.setSha256Hex(bundleVersionMetadata.getSha256());
+        entity.setSha256Supplied(bundleVersionMetadata.getSha256Supplied());
         return entity;
     }
 
@@ -241,6 +242,7 @@ public class DataModelMapper {
         bundleVersionMetadata.setAuthor(bundleVersionEntity.getCreatedBy());
         bundleVersionMetadata.setDescription(bundleVersionEntity.getDescription());
         bundleVersionMetadata.setSha256(bundleVersionEntity.getSha256Hex());
+        bundleVersionMetadata.setSha256Supplied(bundleVersionEntity.getSha256Supplied());
 
         if (bucketEntity != null) {
             bundleVersionMetadata.setBucketId(bucketEntity.getId());

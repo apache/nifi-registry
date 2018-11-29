@@ -37,6 +37,9 @@ public class ExtensionBundleVersionEntity {
     // The hex representation of the SHA-256 digest for the binary content of this version
     private String sha256Hex;
 
+    // Indicates whether the SHA-256 was supplied by the client, which means it matched the server's calculation, or was not supplied by the client
+    private boolean sha256Supplied;
+
 
     public String getId() {
         return id;
@@ -94,4 +97,11 @@ public class ExtensionBundleVersionEntity {
         this.sha256Hex = sha256Hex;
     }
 
+    public boolean getSha256Supplied() {
+        return sha256Supplied;
+    }
+
+    public void setSha256Supplied(boolean sha256Supplied) {
+        this.sha256Supplied = sha256Supplied;
+    }
 }

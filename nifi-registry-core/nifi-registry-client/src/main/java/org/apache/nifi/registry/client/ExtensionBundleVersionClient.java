@@ -45,6 +45,21 @@ public interface ExtensionBundleVersionClient {
             throws IOException, NiFiRegistryException;
 
     /**
+     * Uploads a version of an extension bundle to NiFi Registry where the bundle content comes from an InputStream.
+     *
+     * @param bucketId the bucket where the extension bundle will leave
+     * @param bundleType the type of bundle being uploaded
+     * @param bundleContentStream the input stream with the binary content of the bundle
+     * @param sha256 the optional SHA-256 in hex form
+     * @return the ExtensionBundleVersion entity
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    ExtensionBundleVersion create(String bucketId, ExtensionBundleType bundleType, InputStream bundleContentStream, String sha256)
+            throws IOException, NiFiRegistryException;
+
+    /**
      * Uploads a version of an extension bundle to NiFi Registry where the bundle content comes from a File.
      *
      * @param bucketId the bucket where the extension bundle will leave
@@ -56,6 +71,21 @@ public interface ExtensionBundleVersionClient {
      * @throws NiFiRegistryException if an non I/O error occurs
      */
     ExtensionBundleVersion create(String bucketId, ExtensionBundleType bundleType, File bundleFile)
+            throws IOException, NiFiRegistryException;
+
+    /**
+     * Uploads a version of an extension bundle to NiFi Registry where the bundle content comes from a File.
+     *
+     * @param bucketId the bucket where the extension bundle will leave
+     * @param bundleType the type of bundle being uploaded
+     * @param bundleFile the file with the binary content of the bundle
+     * @param sha256 the optional SHA-256 in hex form
+     * @return the ExtensionBundleVersion entity
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    ExtensionBundleVersion create(String bucketId, ExtensionBundleType bundleType, File bundleFile, String sha256)
             throws IOException, NiFiRegistryException;
 
 

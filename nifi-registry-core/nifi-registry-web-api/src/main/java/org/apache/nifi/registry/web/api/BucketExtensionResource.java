@@ -90,7 +90,11 @@ public class BucketExtensionResource extends AuthorizableApplicationResource {
             notes = "If an extension bundle already exists in the given bucket with the same group id and artifact id " +
                     "as that of the bundle being uploaded, then it will be added as a new version to the existing bundle. " +
                     "If an extension bundle does not already exist in the given bucket with the same group id and artifact id, " +
-                    "then a new extension bundle will be created and this version will be added to the new bundle.",
+                    "then a new extension bundle will be created and this version will be added to the new bundle. " +
+                    "Client's may optionally supply a SHA-256 in hex format through the multi-part form field 'sha256'. " +
+                    "If supplied, then this value will be compared against the SHA-256 computed by the server, and the bundle " +
+                    "will be rejected if the values do not match. If not supplied, the bundle will be accepted, but will be marked " +
+                    "to indicate that the client did not supply a SHA-256 during creation.",
             response = ExtensionBundleVersion.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -114,7 +118,9 @@ public class BucketExtensionResource extends AuthorizableApplicationResource {
             @FormDataParam("file")
                 final InputStream fileInputStream,
             @FormDataParam("file")
-                final FormDataContentDisposition fileMetaData) throws IOException {
+                final FormDataContentDisposition fileMetaData,
+            @FormDataParam("sha256")
+                final String clientSha256) throws IOException {
 
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
@@ -122,7 +128,7 @@ public class BucketExtensionResource extends AuthorizableApplicationResource {
         LOGGER.debug("Creating extension bundle version for bundle type {}", new Object[]{extensionBundleType});
 
         final ExtensionBundleVersion createdBundleVersion = registryService.createExtensionBundleVersion(
-                bucketId, extensionBundleType, fileInputStream);
+                bucketId, extensionBundleType, fileInputStream, clientSha256);
 
         publish(EventFactory.extensionBundleCreated(createdBundleVersion.getExtensionBundle()));
         publish(EventFactory.extensionBundleVersionCreated(createdBundleVersion));

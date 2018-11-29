@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -545,12 +546,14 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bundleVersion.setCreatedBy("user2");
         bundleVersion.setDescription("This is v1.1.0");
         bundleVersion.setSha256Hex("123456789");
+        bundleVersion.setSha256Supplied(false);
 
         metadataService.createExtensionBundleVersion(bundleVersion);
 
         final ExtensionBundleVersionEntity createdBundleVersion = metadataService.getExtensionBundleVersion("eb1", "1.1.0");
         assertNotNull(createdBundleVersion);
         assertEquals(bundleVersion.getId(), createdBundleVersion.getId());
+        assertFalse(bundleVersion.getSha256Supplied());
     }
 
     @Test
@@ -563,6 +566,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertNotNull(bundleVersion.getCreated());
         assertEquals("user1", bundleVersion.getCreatedBy());
         assertEquals("First version of eb1", bundleVersion.getDescription());
+        assertTrue(bundleVersion.getSha256Supplied());
     }
 
     @Test
@@ -581,6 +585,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final ExtensionBundleVersionEntity bundleVersion = metadataService.getExtensionBundleVersion(bucketId, groupId, artifactId, version);
         assertNotNull(bundleVersion);
         assertEquals("eb1-v1", bundleVersion.getId());
+        assertTrue(bundleVersion.getSha256Supplied());
     }
 
     @Test

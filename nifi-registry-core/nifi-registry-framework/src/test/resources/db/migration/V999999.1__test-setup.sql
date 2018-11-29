@@ -111,7 +111,8 @@ insert into extension_bundle_version (
   created,
   created_by,
   description,
-  sha_256_hex
+  sha_256_hex,
+  sha_256_supplied
 ) values (
   'eb1-v1',
   'eb1',
@@ -119,7 +120,8 @@ insert into extension_bundle_version (
   parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   'user1',
   'First version of eb1',
-  '123456789'
+  '123456789',
+  '1'
 );
 
 insert into extension_bundle_version_dependency (
@@ -176,7 +178,8 @@ insert into extension_bundle_version (
   created,
   created_by,
   description,
-  sha_256_hex
+  sha_256_hex,
+  sha_256_supplied
 ) values (
   'eb2-v1',
   'eb2',
@@ -184,7 +187,8 @@ insert into extension_bundle_version (
   parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   'user1',
   'First version of eb2',
-  '123456789'
+  '123456789',
+  '1'
 );
 
 insert into extension_bundle_version_dependency (
@@ -241,7 +245,8 @@ insert into extension_bundle_version (
   created,
   created_by,
   description,
-  sha_256_hex
+  sha_256_hex,
+  sha_256_supplied
 ) values (
   'eb3-v1',
   'eb3',
@@ -249,7 +254,8 @@ insert into extension_bundle_version (
   parsedatetime('2018-11-02 13:00:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   'user1',
   'First version of eb3',
-  '123456789'
+  '123456789',
+  '1'
 );
 
 -- test data for extensions

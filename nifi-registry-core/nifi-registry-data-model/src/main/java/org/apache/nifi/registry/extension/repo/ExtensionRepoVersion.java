@@ -33,6 +33,8 @@ public class ExtensionRepoVersion {
 
     private Link sha256Link;
 
+    private Boolean sha256Supplied;
+
     @XmlElement
     @XmlJavaTypeAdapter(LinkAdapter.class)
     @ApiModelProperty(value = "The WebLink to download this version of the extension bundle.", readOnly = true)
@@ -55,4 +57,12 @@ public class ExtensionRepoVersion {
         this.sha256Link = sha256Link;
     }
 
+    @ApiModelProperty(value = "Indicates if the client supplied a SHA-256 when uploading this version of the extension bundle.", readOnly = true)
+    public Boolean getSha256Supplied() {
+        return sha256Supplied;
+    }
+
+    public void setSha256Supplied(Boolean sha256Supplied) {
+        this.sha256Supplied = sha256Supplied;
+    }
 }
