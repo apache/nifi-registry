@@ -44,7 +44,7 @@ limitations under the License.
                             [disabled]="disabled" (expanded)="nfRegistryService.getDropletSnapshotMetadata(droplet)">
             <ng-template td-expansion-panel-label>
                 <div fxLayout="column" fxLayoutAlign="space-between start">
-                    <span class="md-title capitalize">{{droplet.name}} - {{droplet.bucketName}}</span>
+                    <span class="md-title">{{droplet.name}} - {{droplet.bucketName}}</span>
                     <span class="md-subhead">{{droplet.type}}</span>
                 </div>
             </ng-template>
