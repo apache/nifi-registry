@@ -179,7 +179,8 @@ public class StandardExtensionService implements ExtensionService {
             }
 
             // get the existing extension bundle entity, or create a new one if one does not exist in the bucket with the group + artifact
-            final ExtensionBundleEntity extensionBundle = getOrCreateExtensionBundle(bucketIdentifier, groupId, artifactId, bundleType);
+            final long currentTime = System.currentTimeMillis();
+            final ExtensionBundleEntity extensionBundle = getOrCreateExtensionBundle(bucketIdentifier, groupId, artifactId, bundleType, currentTime);
 
             // ensure there isn't already a version of the bundle with the same version
             final ExtensionBundleVersionEntity existingVersion = metadataService.getExtensionBundleVersion(bucketIdentifier, groupId, artifactId, version);
@@ -190,14 +191,12 @@ public class StandardExtensionService implements ExtensionService {
 
             // create the version metadata instance and validate it has all the required fields
             final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
-            final long bundleCreatedTime = extensionBundle.getCreated().getTime();
-
             final ExtensionBundleVersionMetadata versionMetadata = new ExtensionBundleVersionMetadata();
             versionMetadata.setId(UUID.randomUUID().toString());
             versionMetadata.setExtensionBundleId(extensionBundle.getId());
             versionMetadata.setBucketId(bucketIdentifier);
             versionMetadata.setVersion(version);
-            versionMetadata.setTimestamp(bundleCreatedTime);
+            versionMetadata.setTimestamp(currentTime);
             versionMetadata.setAuthor(userIdentity);
             versionMetadata.setSha256(sha256Hex);
 
@@ -271,7 +270,8 @@ public class StandardExtensionService implements ExtensionService {
     }
 
     private ExtensionBundleEntity getOrCreateExtensionBundle(final String bucketId, final String groupId,
-                                                             final String artifactId, final ExtensionBundleType bundleType) {
+                                                             final String artifactId, final ExtensionBundleType bundleType,
+                                                             final long currentTime) {
         ExtensionBundleEntity existingBundleEntity = metadataService.getExtensionBundle(bucketId, groupId, artifactId);
         if (existingBundleEntity == null) {
             final ExtensionBundle bundle = new ExtensionBundle();
@@ -281,10 +281,8 @@ public class StandardExtensionService implements ExtensionService {
             bundle.setGroupId(groupId);
             bundle.setArtifactId(artifactId);
             bundle.setBundleType(bundleType);
-
-            final long timestamp = System.currentTimeMillis();
-            bundle.setCreatedTimestamp(timestamp);
-            bundle.setModifiedTimestamp(timestamp);
+            bundle.setCreatedTimestamp(currentTime);
+            bundle.setModifiedTimestamp(currentTime);
 
             validate(bundle, "Cannot create extension bundle");
             existingBundleEntity = metadataService.createExtensionBundle(DataModelMapper.map(bundle));
