@@ -56,6 +56,10 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
     @NotNull
     private Boolean sha256Supplied;
 
+    @NotNull
+    @Min(0)
+    private long contentSize;
+
 
     @ApiModelProperty(value = "The id of this version of the extension bundle")
     public String getId() {
@@ -136,6 +140,15 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
 
     public void setSha256Supplied(Boolean sha256Supplied) {
         this.sha256Supplied = sha256Supplied;
+    }
+
+    @ApiModelProperty(value = "The size of the binary content for this version in bytes")
+    public long getContentSize() {
+        return contentSize;
+    }
+
+    public void setContentSize(long contentSize) {
+        this.contentSize = contentSize;
     }
 
     @Override

@@ -607,8 +607,9 @@ public class DatabaseMetadataService implements MetadataService {
                     "CREATED_BY, " +
                     "DESCRIPTION, " +
                     "SHA_256_HEX, " +
-                    "SHA_256_SUPPLIED " +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    "SHA_256_SUPPLIED," +
+                    "CONTENT_SIZE " +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 extensionBundleVersion.getId(),
@@ -618,7 +619,8 @@ public class DatabaseMetadataService implements MetadataService {
                 extensionBundleVersion.getCreatedBy(),
                 extensionBundleVersion.getDescription(),
                 extensionBundleVersion.getSha256Hex(),
-                extensionBundleVersion.getSha256Supplied() ? 1 : 0);
+                extensionBundleVersion.getSha256Supplied() ? 1 : 0,
+                extensionBundleVersion.getContentSize());
 
         return extensionBundleVersion;
     }
@@ -646,7 +648,8 @@ public class DatabaseMetadataService implements MetadataService {
                 "ebv.created_by AS CREATED_BY, " +
                 "ebv.description AS DESCRIPTION, " +
                 "ebv.sha_256_hex AS SHA_256_HEX, " +
-                "ebv.sha_256_supplied AS SHA_256_SUPPLIED " +
+                "ebv.sha_256_supplied AS SHA_256_SUPPLIED ," +
+                "ebv.content_size AS CONTENT_SIZE " +
             "FROM extension_bundle eb, extension_bundle_version ebv " +
             "WHERE eb.id = ebv.extension_bundle_id ";
 

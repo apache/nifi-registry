@@ -40,6 +40,8 @@ public class ExtensionBundleVersionEntity {
     // Indicates whether the SHA-256 was supplied by the client, which means it matched the server's calculation, or was not supplied by the client
     private boolean sha256Supplied;
 
+    // The size of binary content in bytes
+    private long contentSize;
 
     public String getId() {
         return id;
@@ -104,4 +106,13 @@ public class ExtensionBundleVersionEntity {
     public void setSha256Supplied(boolean sha256Supplied) {
         this.sha256Supplied = sha256Supplied;
     }
+
+    public long getContentSize() {
+        return contentSize;
+    }
+
+    public void setContentSize(long contentSize) {
+        this.contentSize = contentSize;
+    }
+
 }

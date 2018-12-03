@@ -358,6 +358,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Metadata.getBucketId());
         Assert.assertTrue(testNarV1Metadata.getTimestamp() > 0);
         Assert.assertFalse(testNarV1Metadata.getSha256Supplied());
+        Assert.assertTrue(testNarV1Metadata.getContentSize() > 1);
 
         final Set<ExtensionBundleVersionDependency> dependencies = createdTestNarV1.getDependencies();
         Assert.assertNotNull(dependencies);

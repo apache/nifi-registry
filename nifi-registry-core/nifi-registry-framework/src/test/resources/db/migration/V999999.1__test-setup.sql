@@ -112,7 +112,8 @@ insert into extension_bundle_version (
   created_by,
   description,
   sha_256_hex,
-  sha_256_supplied
+  sha_256_supplied,
+  content_size
 ) values (
   'eb1-v1',
   'eb1',
@@ -121,7 +122,8 @@ insert into extension_bundle_version (
   'user1',
   'First version of eb1',
   '123456789',
-  '1'
+  '1',
+  1024
 );
 
 insert into extension_bundle_version_dependency (
@@ -179,7 +181,8 @@ insert into extension_bundle_version (
   created_by,
   description,
   sha_256_hex,
-  sha_256_supplied
+  sha_256_supplied,
+  content_size
 ) values (
   'eb2-v1',
   'eb2',
@@ -188,7 +191,8 @@ insert into extension_bundle_version (
   'user1',
   'First version of eb2',
   '123456789',
-  '1'
+  '1',
+  1024
 );
 
 insert into extension_bundle_version_dependency (
@@ -246,7 +250,8 @@ insert into extension_bundle_version (
   created_by,
   description,
   sha_256_hex,
-  sha_256_supplied
+  sha_256_supplied,
+  content_size
 ) values (
   'eb3-v1',
   'eb3',
@@ -255,7 +260,8 @@ insert into extension_bundle_version (
   'user1',
   'First version of eb3',
   '123456789',
-  '1'
+  '1',
+  1024
 );
 
 -- test data for extensions

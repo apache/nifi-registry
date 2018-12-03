@@ -547,6 +547,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bundleVersion.setDescription("This is v1.1.0");
         bundleVersion.setSha256Hex("123456789");
         bundleVersion.setSha256Supplied(false);
+        bundleVersion.setContentSize(2048);
 
         metadataService.createExtensionBundleVersion(bundleVersion);
 
@@ -567,6 +568,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals("user1", bundleVersion.getCreatedBy());
         assertEquals("First version of eb1", bundleVersion.getDescription());
         assertTrue(bundleVersion.getSha256Supplied());
+        assertEquals(1024, bundleVersion.getContentSize());
     }
 
     @Test

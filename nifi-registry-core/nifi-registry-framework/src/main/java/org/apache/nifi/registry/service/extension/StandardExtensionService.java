@@ -206,6 +206,7 @@ public class StandardExtensionService implements ExtensionService {
             versionMetadata.setAuthor(userIdentity);
             versionMetadata.setSha256(sha256Hex);
             versionMetadata.setSha256Supplied(sha256Supplied);
+            versionMetadata.setContentSize(extensionWorkingFile.length());
 
             validate(versionMetadata, "Cannot create extension bundle version");
 
