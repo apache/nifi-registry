@@ -53,6 +53,7 @@ public class DataModelMapper {
         bucketEntity.setName(bucket.getName());
         bucketEntity.setDescription(bucket.getDescription());
         bucketEntity.setCreated(new Date(bucket.getCreatedTimestamp()));
+        bucketEntity.setAllowExtensionBundleRedeploy(bucket.isAllowExtensionBundleRedeploy());
         return bucketEntity;
     }
 
@@ -62,6 +63,7 @@ public class DataModelMapper {
         bucket.setName(bucketEntity.getName());
         bucket.setDescription(bucketEntity.getDescription());
         bucket.setCreatedTimestamp(bucketEntity.getCreated().getTime());
+        bucket.setAllowExtensionBundleRedeploy(bucketEntity.isAllowExtensionBundleRedeploy());
         return bucket;
     }
 
@@ -224,30 +226,29 @@ public class DataModelMapper {
         final ExtensionBundleVersionEntity entity = new ExtensionBundleVersionEntity();
         entity.setId(bundleVersionMetadata.getId());
         entity.setExtensionBundleId(bundleVersionMetadata.getExtensionBundleId());
+        entity.setBucketId(bundleVersionMetadata.getBucketId());
         entity.setVersion(bundleVersionMetadata.getVersion());
         entity.setCreated(new Date(bundleVersionMetadata.getTimestamp()));
         entity.setCreatedBy(bundleVersionMetadata.getAuthor());
         entity.setDescription(bundleVersionMetadata.getDescription());
         entity.setSha256Hex(bundleVersionMetadata.getSha256());
         entity.setSha256Supplied(bundleVersionMetadata.getSha256Supplied());
+        entity.setContentSize(bundleVersionMetadata.getContentSize());
         return entity;
     }
 
-    public static ExtensionBundleVersionMetadata map(final BucketEntity bucketEntity, final ExtensionBundleVersionEntity bundleVersionEntity) {
+    public static ExtensionBundleVersionMetadata map(final ExtensionBundleVersionEntity bundleVersionEntity) {
         final ExtensionBundleVersionMetadata bundleVersionMetadata = new ExtensionBundleVersionMetadata();
         bundleVersionMetadata.setId(bundleVersionEntity.getId());
         bundleVersionMetadata.setExtensionBundleId(bundleVersionEntity.getExtensionBundleId());
+        bundleVersionMetadata.setBucketId(bundleVersionEntity.getBucketId());
         bundleVersionMetadata.setVersion(bundleVersionEntity.getVersion());
         bundleVersionMetadata.setTimestamp(bundleVersionEntity.getCreated().getTime());
         bundleVersionMetadata.setAuthor(bundleVersionEntity.getCreatedBy());
         bundleVersionMetadata.setDescription(bundleVersionEntity.getDescription());
         bundleVersionMetadata.setSha256(bundleVersionEntity.getSha256Hex());
         bundleVersionMetadata.setSha256Supplied(bundleVersionEntity.getSha256Supplied());
-
-        if (bucketEntity != null) {
-            bundleVersionMetadata.setBucketId(bucketEntity.getId());
-        }
-
+        bundleVersionMetadata.setContentSize(bundleVersionEntity.getContentSize());
         return bundleVersionMetadata;
     }
 

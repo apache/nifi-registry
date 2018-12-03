@@ -41,6 +41,8 @@ import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -76,6 +78,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -161,6 +164,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         for (final Bucket bucket : createdBuckets) {
             final Bucket retrievedBucket = bucketClient.get(bucket.getIdentifier());
             Assert.assertNotNull(retrievedBucket);
+            Assert.assertFalse(retrievedBucket.isAllowExtensionBundleRedeploy());
             LOGGER.info("Retrieved bucket " + retrievedBucket.getIdentifier());
         }
 
@@ -328,6 +332,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(0, allBundles.size());
 
         final Bucket bundlesBucket = createdBuckets.get(1);
+        final Bucket bundlesBucket2 = createdBuckets.get(2);
         final ExtensionBundleVersionClient bundleVersionClient = client.getExtensionBundleVersionClient();
 
         // create version 1.0.0 of nifi-test-nar
@@ -358,6 +363,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Metadata.getBucketId());
         Assert.assertTrue(testNarV1Metadata.getTimestamp() > 0);
         Assert.assertFalse(testNarV1Metadata.getSha256Supplied());
+        Assert.assertTrue(testNarV1Metadata.getContentSize() > 1);
 
         final Set<ExtensionBundleVersionDependency> dependencies = createdTestNarV1.getDependencies();
         Assert.assertNotNull(dependencies);
@@ -395,9 +401,51 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final ExtensionBundle fooNarV1Bundle = createdFooNarV1.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{fooNarV1Bundle.getIdentifier()});
 
+        // verify that bucket 1 currently does not allow redeploying non-snapshot artifacts
+        Assert.assertFalse(bundlesBucket.isAllowExtensionBundleRedeploy());
+
+        // try to re-deploy version 1.0.0 of nifi-foo-nar, should fail
+        try {
+            createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null);
+            Assert.fail("Should have thrown exception when re-deploying foo nar");
+        } catch (Exception e) {
+            // Should throw exception
+        }
+
+        // now update bucket 1 to allow redeploy
+        bundlesBucket.setAllowExtensionBundleRedeploy(true);
+        final Bucket updatedBundlesBucket = bucketClient.update(bundlesBucket);
+        Assert.assertTrue(updatedBundlesBucket.isAllowExtensionBundleRedeploy());
+
+        // try to re-deploy version 1.0.0 of nifi-foo-nar again, this time should work
+        Assert.assertNotNull(createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null));
+
         // verify there are 2 bundles now
         final List<ExtensionBundle> allBundlesAfterCreate = bundleClient.getAll();
         Assert.assertEquals(2, allBundlesAfterCreate.size());
+
+        // create version 2.0.0-SNAPSHOT (build 1 content) of nifi-foor-nar in the first bucket
+        final String fooNarV2SnapshotB1 = "src/test/resources/extensions/nars/nifi-foo-nar-2.0.0-SNAPSHOT-BUILD1.nar";
+        final ExtensionBundleVersion createdFooNarV2SnapshotB1 = createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNarV2SnapshotB1, null);
+        Assert.assertFalse(createdFooNarV2SnapshotB1.getVersionMetadata().getSha256Supplied());
+
+        // create version 2.0.0-SNAPSHOT (build 2 content) of nifi-foor-nar in the second bucket
+        // proves that snapshots can have different checksums across buckets, non-snapshots can't
+        final String fooNarV2SnapshotB2 = "src/test/resources/extensions/nars/nifi-foo-nar-2.0.0-SNAPSHOT-BUILD2.nar";
+        final ExtensionBundleVersion createdFooNarV2SnapshotB2 = createExtensionBundleVersionWithFile(bundlesBucket2, bundleVersionClient, fooNarV2SnapshotB2, null);
+        Assert.assertFalse(createdFooNarV2SnapshotB2.getVersionMetadata().getSha256Supplied());
+
+        // create version 2.0.0-SNAPSHOT (build 2 content) of nifi-foor-nar in the second bucket
+        // proves that we can overwrite a snapshot in a given bucket
+        final String fooNarV2SnapshotB3 = "src/test/resources/extensions/nars/nifi-foo-nar-2.0.0-SNAPSHOT-BUILD3.nar";
+        final ExtensionBundleVersion createdFooNarV2SnapshotB3 = createExtensionBundleVersionWithFile(bundlesBucket2, bundleVersionClient, fooNarV2SnapshotB3, null);
+        Assert.assertFalse(createdFooNarV2SnapshotB3.getVersionMetadata().getSha256Supplied());
+
+        // verify retrieving nifi-foo-nar 2.0.0-SNAPSHOT from second bucket returns the build 3 content
+        final ExtensionBundleVersion retrievedFooNarV2SnapshotB3 = bundleVersionClient.getBundleVersion(
+                createdFooNarV2SnapshotB3.getVersionMetadata().getExtensionBundleId(),
+                createdFooNarV2SnapshotB3.getVersionMetadata().getVersion());
+        Assert.assertEquals(calculateSha256Hex(fooNarV2SnapshotB3), retrievedFooNarV2SnapshotB3.getVersionMetadata().getSha256());
 
         // verify getting bundles by bucket
         Assert.assertEquals(2, bundleClient.getByBucket(bundlesBucket.getIdentifier()).size());
@@ -455,6 +503,23 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
             // should catch exception
         }
 
+        // Verify getting bundles with filter params
+        Assert.assertEquals(3, bundleClient.getAll(ExtensionBundleFilterParams.empty()).size());
+
+        final List<ExtensionBundle> filteredBundles = bundleClient.getAll(ExtensionBundleFilterParams.of("org.apache.nifi", "nifi-test-nar"));
+        Assert.assertEquals(1, filteredBundles.size());
+
+        // Verify getting bundle versions with filter params
+        Assert.assertEquals(4, bundleVersionClient.getBundleVersions(ExtensionBundleVersionFilterParams.empty()).size());
+
+        final List<ExtensionBundleVersionMetadata> filteredVersions = bundleVersionClient.getBundleVersions(
+                ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-foo-nar", "1.0.0"));
+        Assert.assertEquals(1, filteredVersions.size());
+
+        final List<ExtensionBundleVersionMetadata> filteredVersions2 = bundleVersionClient.getBundleVersions(
+                ExtensionBundleVersionFilterParams.of("org.apache.nifi", null, null));
+        Assert.assertEquals(4, filteredVersions2.size());
+
         // ---------------------- TEST EXTENSION REPO ----------------------//
 
         final ExtensionRepoClient extensionRepoClient = client.getExtensionRepoClient();
@@ -499,9 +564,25 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // verify the client methods for content input stream and content sha256
         try (final InputStream repoVersionInputStream = extensionRepoClient.getVersionContent(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString)) {
             final String sha256Hex = DigestUtils.sha256Hex(repoVersionInputStream);
+
             final String repoSha256Hex = extensionRepoClient.getVersionSha256(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString);
             Assert.assertEquals(sha256Hex, repoSha256Hex);
+
+            final Optional<String> repoSha256HexOptional = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, repoVersionString);
+            Assert.assertTrue(repoSha256HexOptional.isPresent());
+            Assert.assertEquals(sha256Hex, repoSha256HexOptional.get());
         }
+
+        final Optional<String> repoSha256HexDoesNotExist = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, "DOES-NOT-EXIST");
+        Assert.assertFalse(repoSha256HexDoesNotExist.isPresent());
+
+        // since we uploaded two snapshot versions, make sure when we retrieve the sha that it's for the second snapshot that replaced the first
+        final Optional<String> fooNarV2SnapshotLatestSha = extensionRepoClient.getVersionSha256(
+                createdFooNarV2SnapshotB3.getExtensionBundle().getGroupId(),
+                createdFooNarV2SnapshotB3.getExtensionBundle().getArtifactId(),
+                createdFooNarV2SnapshotB2.getVersionMetadata().getVersion());
+        Assert.assertTrue(fooNarV2SnapshotLatestSha.isPresent());
+        Assert.assertEquals(calculateSha256Hex(fooNarV2SnapshotB3), fooNarV2SnapshotLatestSha.get());
 
         // ---------------------- TEST ITEMS -------------------------- //
 
@@ -514,7 +595,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // get all items
         final List<BucketItem> allItems = itemsClient.getAll();
-        Assert.assertEquals(4, allItems.size());
+        Assert.assertEquals(5, allItems.size());
         allItems.stream().forEach(i -> {
             Assert.assertNotNull(i.getBucketName());
             Assert.assertNotNull(i.getLink());
@@ -527,11 +608,11 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
                 .collect(Collectors.toList());
         Assert.assertEquals(2, flowItems.size());
 
-        // verify 2 bundle items
+        // verify 3 bundle items
         final List<BucketItem> extensionBundleItems = allItems.stream()
                 .filter(i -> i.getType() == BucketItemType.Extension_Bundle)
                 .collect(Collectors.toList());
-        Assert.assertEquals(2, extensionBundleItems.size());
+        Assert.assertEquals(3, extensionBundleItems.size());
 
         // get items for bucket
         final List<BucketItem> bucketItems = itemsClient.getByBucket(flowsBucket.getIdentifier());

@@ -21,6 +21,8 @@ import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -34,6 +36,8 @@ import java.util.Set;
 import java.util.SortedSet;
 
 public interface ExtensionService {
+
+    // ----- Extension Bundles -----
 
     /**
      * Creates a version of an extension bundle.
@@ -57,9 +61,10 @@ public interface ExtensionService {
      * Retrieves the extension bundles in the given buckets.
      *
      * @param bucketIdentifiers the bucket identifiers
+     * @param filterParams the optional filter params
      * @return the bundles in the given buckets
      */
-    List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers);
+    List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers, ExtensionBundleFilterParams filterParams);
 
     /**
      * Retrieves the extension bundles in the given bucket.
@@ -84,6 +89,18 @@ public interface ExtensionService {
      * @return the deleted bundle
      */
     ExtensionBundle deleteExtensionBundle(ExtensionBundle extensionBundle);
+
+    // ----- Extension Bundle Versions -----
+
+    /**
+     * Retrieves the extension bundle versions in the given buckets.
+     *
+     * @param bucketIdentifiers the bucket identifiers
+     * @param filterParams the optional filter params
+     * @return the set of extension bundle versions
+     */
+    SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(
+            Set<String> bucketIdentifiers, ExtensionBundleVersionFilterParams filterParams);
 
     /**
      * Retrieves the versions of the given extension bundle.
@@ -119,12 +136,39 @@ public interface ExtensionService {
 
     // ----- Extension Repo Methods -----
 
+    /**
+     * Retrieves the extension repo buckets for the given bucket ids.
+     *
+     * @param bucketIds the bucket ids
+     * @return the set of buckets
+     */
     SortedSet<ExtensionRepoBucket> getExtensionRepoBuckets(Set<String> bucketIds);
 
+    /**
+     * Retrieves the extension repo groups for the given bucket.
+     *
+     * @param bucket the bucket
+     * @return the groups for the bucket
+     */
     SortedSet<ExtensionRepoGroup> getExtensionRepoGroups(Bucket bucket);
 
+    /**
+     * Retrieves the extension repo artifacts for the given bucket and group.
+     *
+     * @param bucket the bucket
+     * @param groupId the group id
+     * @return the artifacts for the bucket and group
+     */
     SortedSet<ExtensionRepoArtifact> getExtensionRepoArtifacts(Bucket bucket, String groupId);
 
+    /**
+     * Retrieves the extension repo version summaries for the given bucket, group, and artifact.
+     *
+     * @param bucket the bucket
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @return the version summaries for the bucket, group, and artifact
+     */
     SortedSet<ExtensionRepoVersionSummary> getExtensionRepoVersions(Bucket bucket, String groupId, String artifactId);
 
 }

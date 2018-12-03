@@ -33,6 +33,8 @@ import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -140,6 +142,10 @@ public class RegistryService {
         // set an id, the created time, and clear out the flows since its read-only
         bucket.setIdentifier(UUID.randomUUID().toString());
         bucket.setCreatedTimestamp(System.currentTimeMillis());
+
+        if (bucket.isAllowExtensionBundleRedeploy() == null) {
+            bucket.setAllowExtensionBundleRedeploy(false);
+        }
 
         validate(bucket, "Cannot create Bucket");
 
@@ -257,6 +263,10 @@ public class RegistryService {
 
             if (bucket.getDescription() != null) {
                 existingBucketById.setDescription(bucket.getDescription());
+            }
+
+            if (bucket.isAllowExtensionBundleRedeploy() != null) {
+                existingBucketById.setAllowExtensionBundleRedeploy(bucket.isAllowExtensionBundleRedeploy());
             }
 
             // perform the actual update
@@ -1027,10 +1037,10 @@ public class RegistryService {
         }
     }
 
-    public List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers) {
+    public List<ExtensionBundle> getExtensionBundles(final Set<String> bucketIdentifiers, final ExtensionBundleFilterParams filterParams) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundles(bucketIdentifiers);
+            return extensionService.getExtensionBundles(bucketIdentifiers, filterParams);
         } finally {
             readLock.unlock();
         }
@@ -1063,6 +1073,17 @@ public class RegistryService {
         }
     }
 
+    public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final Set<String> bucketIdentifiers,
+                                                                                final ExtensionBundleVersionFilterParams filterParams) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundleVersions(bucketIdentifiers, filterParams);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+
     public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final String extensionBundleIdentifier) {
         readLock.lock();
         try {
@@ -1072,7 +1093,7 @@ public class RegistryService {
         }
     }
 
-    public ExtensionBundleVersion getExtensionBundleVersion(ExtensionBundleVersionCoordinate versionCoordinate) {
+    public ExtensionBundleVersion getExtensionBundleVersion(final ExtensionBundleVersionCoordinate versionCoordinate) {
         readLock.lock();
         try {
             return extensionService.getExtensionBundleVersion(versionCoordinate);

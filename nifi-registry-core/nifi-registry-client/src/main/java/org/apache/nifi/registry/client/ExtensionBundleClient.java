@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.client;
 
 import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +36,17 @@ public interface ExtensionBundleClient {
      * @throws NiFiRegistryException if an non I/O error occurs
      */
     List<ExtensionBundle> getAll() throws IOException, NiFiRegistryException;
+
+    /**
+     * Retrieves all extension bundles matching the specified filters, located in buckets the current user is authorized for.
+     *
+     * @param filterParams the filter params
+     * @return the list of extension bundles
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    List<ExtensionBundle> getAll(ExtensionBundleFilterParams filterParams) throws IOException, NiFiRegistryException;
 
     /**
      * Retrieves the extension bundles located in the given bucket.

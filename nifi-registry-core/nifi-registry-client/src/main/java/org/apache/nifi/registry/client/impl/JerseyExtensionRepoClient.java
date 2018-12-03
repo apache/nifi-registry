@@ -25,6 +25,7 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersion;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
@@ -33,6 +34,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class JerseyExtensionRepoClient extends AbstractJerseyClient implements ExtensionRepoClient {
 
@@ -176,6 +178,38 @@ public class JerseyExtensionRepoClient extends AbstractJerseyClient implements E
                     .resolveTemplate("version", version);
 
             return getRequestBuilder(target).accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+        });
+    }
+
+    @Override
+    public Optional<String> getVersionSha256(final String groupId, final String artifactId, final String version)
+            throws IOException, NiFiRegistryException {
+
+        if (StringUtils.isBlank(groupId)) {
+            throw new IllegalArgumentException("Group id cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(artifactId)) {
+            throw new IllegalArgumentException("Artifact id cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(version)) {
+            throw new IllegalArgumentException("Version cannot be null or blank");
+        }
+
+        return executeAction("Error retrieving version content for extension repo", () -> {
+            final WebTarget target = extensionRepoTarget
+                    .path("{groupId}/{artifactId}/{version}/sha256")
+                    .resolveTemplate("groupId", groupId)
+                    .resolveTemplate("artifactId", artifactId)
+                    .resolveTemplate("version", version);
+
+            try {
+                final String sha256 = getRequestBuilder(target).accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+                return Optional.of(sha256);
+            } catch (NotFoundException nfe) {
+                return Optional.empty();
+            }
         });
     }
 

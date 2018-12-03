@@ -76,7 +76,7 @@ public class FileSystemExtensionBundlePersistenceProvider implements ExtensionBu
     }
 
     @Override
-    public synchronized void saveBundleVersion(final ExtensionBundleContext context, final InputStream contentStream)
+    public synchronized void saveBundleVersion(final ExtensionBundleContext context, final InputStream contentStream, boolean overwrite)
             throws ExtensionBundlePersistenceException {
 
         final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
@@ -91,7 +91,7 @@ public class FileSystemExtensionBundlePersistenceProvider implements ExtensionBu
         final File bundleFile = getBundleFile(bundleVersionDir, context.getBundleArtifactId(),
                 context.getBundleVersion(), context.getBundleType());
 
-        if (bundleFile.exists()) {
+        if (bundleFile.exists() && !overwrite) {
             throw new ExtensionBundlePersistenceException("Unable to save because an extension bundle already exists at "
                     + bundleFile.getAbsolutePath());
         }

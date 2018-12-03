@@ -24,10 +24,13 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.event.EventService;
+import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
+import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -97,7 +100,7 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
         final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
             // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
+            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
         }
 
         final SortedSet<ExtensionRepoBucket> repoBuckets = registryService.getExtensionRepoBuckets(authorizedBucketIds);
@@ -370,5 +373,66 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
         return Response.ok(sha256Hex, MediaType.TEXT_PLAIN).build();
     }
 
+    @GET
+    @Path("{groupId}/{artifactId}/{version}/sha256")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation(
+            value = "Gets the hex representation of the SHA-256 digest for the binary content of the version of the extension bundle. Since the " +
+                    "same group-artifact-version can exist in multiple buckets, this will return the checksum of the first one returned. This will be " +
+                    "consistent since the checksum must be the same when existing in multiple buckets.",
+            response = String.class
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getExtensionBundleVersionSha256(
+            @PathParam("groupId")
+            @ApiParam("The group identifier")
+                final String groupId,
+            @PathParam("artifactId")
+            @ApiParam("The artifact identifier")
+                final String artifactId,
+            @PathParam("version")
+            @ApiParam("The version")
+                final String version
+    ) {
+        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
+        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
+            // not authorized for any bucket, return empty list of items
+            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
+        }
 
+        // Since we are using the filter params which are optional in the service layer, we need to validate these path params here
+
+        if (StringUtils.isBlank(groupId)) {
+            throw new IllegalArgumentException("Group id cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(artifactId)) {
+            throw new IllegalArgumentException("Artifact id cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(version)) {
+            throw new IllegalArgumentException("Version cannot be null or blank");
+        }
+
+        final ExtensionBundleVersionFilterParams filterParams = ExtensionBundleVersionFilterParams.of(groupId, artifactId, version);
+
+        final SortedSet<ExtensionBundleVersionMetadata> bundleVersions = registryService.getExtensionBundleVersions(authorizedBucketIds, filterParams);
+        if (bundleVersions.isEmpty()) {
+            throw new ResourceNotFoundException("An extension bundle version does not exist with the specific group, artifact, and version");
+        } else {
+            ExtensionBundleVersionMetadata latestVersionMetadata = null;
+            for (ExtensionBundleVersionMetadata versionMetadata : bundleVersions) {
+                if (latestVersionMetadata == null || versionMetadata.getTimestamp() > latestVersionMetadata.getTimestamp()) {
+                    latestVersionMetadata = versionMetadata;
+                }
+            }
+            return Response.ok(latestVersionMetadata.getSha256(), MediaType.TEXT_PLAIN).build();
+        }
+    }
 }
