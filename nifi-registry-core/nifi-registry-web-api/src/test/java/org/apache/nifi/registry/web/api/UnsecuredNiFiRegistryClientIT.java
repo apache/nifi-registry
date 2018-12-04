@@ -78,6 +78,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -519,9 +520,17 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // verify the client methods for content input stream and content sha256
         try (final InputStream repoVersionInputStream = extensionRepoClient.getVersionContent(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString)) {
             final String sha256Hex = DigestUtils.sha256Hex(repoVersionInputStream);
+
             final String repoSha256Hex = extensionRepoClient.getVersionSha256(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString);
             Assert.assertEquals(sha256Hex, repoSha256Hex);
+
+            final Optional<String> repoSha256HexOptional = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, repoVersionString);
+            Assert.assertTrue(repoSha256HexOptional.isPresent());
+            Assert.assertEquals(sha256Hex, repoSha256HexOptional.get());
         }
+
+        final Optional<String> repoSha256HexDoesNotExist = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, "DOES-NOT-EXIST");
+        Assert.assertFalse(repoSha256HexDoesNotExist.isPresent());
 
         // ---------------------- TEST ITEMS -------------------------- //
 

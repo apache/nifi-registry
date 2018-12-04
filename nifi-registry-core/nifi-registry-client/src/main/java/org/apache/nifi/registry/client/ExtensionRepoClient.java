@@ -25,6 +25,7 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Client for interacting with the extension repository.
@@ -121,6 +122,20 @@ public interface ExtensionRepoClient {
      * @throws NiFiRegistryException if an non I/O error occurs
      */
     String getVersionSha256(String bucketName, String groupId, String artifactId, String version)
+            throws IOException, NiFiRegistryException;
+
+    /**
+     * Gets the hex representation of the SHA-256 hash of the binary content for the given version.
+     *
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the version
+     * @return the SHA-256 hex string
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    Optional<String> getVersionSha256(String groupId, String artifactId, String version)
             throws IOException, NiFiRegistryException;
 
 }
