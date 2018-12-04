@@ -26,6 +26,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 
 import java.util.List;
 import java.util.Set;
@@ -312,6 +313,15 @@ public interface MetadataService {
      * @return the extension bundle version, or null if does not exist
      */
     ExtensionBundleVersionEntity getExtensionBundleVersion(String bucketId, String groupId, String artifactId, String version);
+
+    /**
+     * Retrieves the extension bundle versions in the given buckets, matching the optional filter parameters.
+     *
+     * @param bucketIdentifiers the bucket identifiers
+     * @param filterParams the optional filter params
+     * @return the extension bundle versions
+     */
+    List<ExtensionBundleVersionEntity> getExtensionBundleVersions(Set<String> bucketIdentifiers, ExtensionBundleVersionFilterParams filterParams);
 
     /**
      * Retrieves the extension bundle versions for the given extension bundle id.

@@ -37,6 +37,7 @@ import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -539,14 +540,7 @@ public class DatabaseMetadataService implements MetadataService {
             }
         }
 
-        sqlBuilder.append(" AND item.bucket_id IN (");
-        for (int i=0; i < bucketIds.size(); i++) {
-            if (i > 0) {
-                sqlBuilder.append(", ");
-            }
-            sqlBuilder.append("?");
-        }
-        sqlBuilder.append(") ");
+        addBucketIdentifiersClause(sqlBuilder, "item.bucket_id", bucketIds);
         sqlBuilder.append("ORDER BY eb.group_id ASC, eb.artifact_id ASC");
 
         args.addAll(bucketIds);
@@ -645,21 +639,7 @@ public class DatabaseMetadataService implements MetadataService {
         return extensionBundleVersion;
     }
 
-    @Override
-    public ExtensionBundleVersionEntity getExtensionBundleVersion(final String extensionBundleId, final String version) {
-        final String sql =
-                "SELECT * " +
-                "FROM extension_bundle_version " +
-                "WHERE extension_bundle_id = ? AND version = ?";
-
-        try {
-            return jdbcTemplate.queryForObject(sql, new ExtensionBundleVersionEntityRowMapper(), extensionBundleId, version);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    private static final String BASE_EXTENSION_BUNDLE_SQL =
+    private static final String BASE_EXTENSION_BUNDLE_VERSION_SQL =
             "SELECT " +
                 "ebv.id AS ID," +
                 "ebv.extension_bundle_id AS EXTENSION_BUNDLE_ID, " +
@@ -669,13 +649,25 @@ public class DatabaseMetadataService implements MetadataService {
                 "ebv.description AS DESCRIPTION, " +
                 "ebv.sha_256_hex AS SHA_256_HEX, " +
                 "ebv.sha_256_supplied AS SHA_256_SUPPLIED ," +
-                "ebv.content_size AS CONTENT_SIZE " +
+                "ebv.content_size AS CONTENT_SIZE, " +
+                "eb.bucket_id AS BUCKET_ID " +
             "FROM extension_bundle eb, extension_bundle_version ebv " +
             "WHERE eb.id = ebv.extension_bundle_id ";
 
     @Override
+    public ExtensionBundleVersionEntity getExtensionBundleVersion(final String extensionBundleId, final String version) {
+        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
+                " AND ebv.extension_bundle_id = ? AND ebv.version = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new ExtensionBundleVersionEntityRowMapper(), extensionBundleId, version);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    @Override
     public ExtensionBundleVersionEntity getExtensionBundleVersion(final String bucketId, final String groupId, final String artifactId, final String version) {
-        final String sql = BASE_EXTENSION_BUNDLE_SQL +
+        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
                     "AND eb.bucket_id = ? " +
                     "AND eb.group_id = ? " +
                     "AND eb.artifact_id = ? " +
@@ -689,14 +681,63 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
+    public List<ExtensionBundleVersionEntity> getExtensionBundleVersions(final Set<String> bucketIdentifiers, final ExtensionBundleVersionFilterParams filterParams) {
+        if (bucketIdentifiers == null || bucketIdentifiers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<Object> args = new ArrayList<>();
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_EXTENSION_BUNDLE_VERSION_SQL);
+
+        if (filterParams != null) {
+            final String groupId = filterParams.getGroupId();
+            if (!StringUtils.isBlank(groupId)) {
+                sqlBuilder.append(" AND eb.group_id LIKE ? ");
+                args.add(groupId);
+            }
+
+            final String artifactId = filterParams.getArtifactId();
+            if (!StringUtils.isBlank(artifactId)) {
+                sqlBuilder.append(" AND eb.artifact_id LIKE ? ");
+                args.add(artifactId);
+            }
+
+            final String version = filterParams.getVersion();
+            if (!StringUtils.isBlank(version)) {
+                sqlBuilder.append(" AND ebv.version LIKE ? ");
+                args.add(version);
+            }
+        }
+
+        addBucketIdentifiersClause(sqlBuilder, "eb.bucket_id", bucketIdentifiers);
+        args.addAll(bucketIdentifiers);
+
+        final List<ExtensionBundleVersionEntity> bundleVersionEntities = jdbcTemplate.query(
+                sqlBuilder.toString(), args.toArray(), new ExtensionBundleVersionEntityRowMapper());
+
+        return bundleVersionEntities;
+    }
+
+    private void addBucketIdentifiersClause(StringBuilder sqlBuilder, String bucketField, Set<String> bucketIdentifiers) {
+        sqlBuilder.append(" AND ").append(bucketField).append(" IN (");
+        for (int i = 0; i < bucketIdentifiers.size(); i++) {
+            if (i > 0) {
+                sqlBuilder.append(", ");
+            }
+            sqlBuilder.append("?");
+        }
+        sqlBuilder.append(") ");
+    }
+
+    @Override
     public List<ExtensionBundleVersionEntity> getExtensionBundleVersions(final String extensionBundleId) {
-        final String sql = "SELECT * FROM extension_bundle_version WHERE extension_bundle_id = ?";
+        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL + " AND ebv.extension_bundle_id = ?";
         return jdbcTemplate.query(sql, new Object[]{extensionBundleId}, new ExtensionBundleVersionEntityRowMapper());
     }
 
     @Override
     public List<ExtensionBundleVersionEntity> getExtensionBundleVersions(final String bucketId, final String groupId, final String artifactId) {
-        final String sql = BASE_EXTENSION_BUNDLE_SQL +
+        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
                     "AND eb.bucket_id = ? " +
                     "AND eb.group_id = ? " +
                     "AND eb.artifact_id = ? ";
@@ -707,7 +748,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public List<ExtensionBundleVersionEntity> getExtensionBundleVersionsGlobal(final String groupId, final String artifactId, final String version) {
-        final String sql = BASE_EXTENSION_BUNDLE_SQL +
+        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
                 "AND eb.group_id = ? " +
                 "AND eb.artifact_id = ? " +
                 "AND ebv.version = ?";

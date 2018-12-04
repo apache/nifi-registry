@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 
 import java.io.File;
 import java.io.IOException;
@@ -88,6 +89,18 @@ public interface ExtensionBundleVersionClient {
     ExtensionBundleVersion create(String bucketId, ExtensionBundleType bundleType, File bundleFile, String sha256)
             throws IOException, NiFiRegistryException;
 
+    /**
+     * Retrieves all the extension bundle versions located in buckets the current user is authorized for, and
+     * matching any of the provided filter params.
+     *
+     * @param filterParams the filter params
+     * @return the list of bundle version metadata
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    List<ExtensionBundleVersionMetadata> getBundleVersions(ExtensionBundleVersionFilterParams filterParams)
+            throws IOException, NiFiRegistryException;
 
     /**
      * Retrieves the metadata about the versions of the given bundle.

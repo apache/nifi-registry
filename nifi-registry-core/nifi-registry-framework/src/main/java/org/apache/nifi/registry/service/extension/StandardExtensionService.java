@@ -39,6 +39,7 @@ import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -67,6 +68,7 @@ import java.io.OutputStream;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -380,6 +382,26 @@ public class StandardExtensionService implements ExtensionService {
     }
 
     @Override
+    public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final Set<String> bucketIdentifiers,
+                                                                                final ExtensionBundleVersionFilterParams filterParams) {
+        if (bucketIdentifiers == null) {
+            throw new IllegalArgumentException("Bucket identifiers cannot be null");
+        }
+
+        final SortedSet<ExtensionBundleVersionMetadata> sortedVersions = new TreeSet<>(
+                Comparator.comparing(ExtensionBundleVersionMetadata::getExtensionBundleId)
+                        .thenComparing(ExtensionBundleVersionMetadata::getVersion)
+        );
+
+        final List<ExtensionBundleVersionEntity> bundleVersionEntities = metadataService.getExtensionBundleVersions(bucketIdentifiers,
+                filterParams == null ? ExtensionBundleVersionFilterParams.empty() : filterParams);
+        if (bundleVersionEntities != null) {
+            bundleVersionEntities.forEach(bv -> sortedVersions.add(DataModelMapper.map(bv)));
+        }
+        return sortedVersions;
+    }
+
+    @Override
     public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final String extensionBundleIdentifier) {
         if (StringUtils.isBlank(extensionBundleIdentifier)) {
             throw new IllegalArgumentException("Extension bundle identifier cannot be null or blank");
@@ -395,15 +417,13 @@ public class StandardExtensionService implements ExtensionService {
         return getExtensionBundleVersionsSet(existingBundle);
     }
 
-    private SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersionsSet(ExtensionBundleEntity existingBundle) {
+    private SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersionsSet(final ExtensionBundleEntity existingBundle) {
         final SortedSet<ExtensionBundleVersionMetadata> sortedVersions = new TreeSet<>(Collections.reverseOrder());
 
         final List<ExtensionBundleVersionEntity> existingVersions = metadataService.getExtensionBundleVersions(existingBundle.getId());
         if (existingVersions != null) {
-            final BucketEntity existingBucket = metadataService.getBucketById(existingBundle.getBucketId());
-            existingVersions.stream().forEach(s -> sortedVersions.add(DataModelMapper.map(existingBucket, s)));
+            existingVersions.stream().forEach(s -> sortedVersions.add(DataModelMapper.map(s)));
         }
-
         return sortedVersions;
     }
 
@@ -454,7 +474,7 @@ public class StandardExtensionService implements ExtensionService {
 
         // create the full ExtensionBundleVersion instance to return
         final ExtensionBundleVersion extensionBundleVersion = new ExtensionBundleVersion();
-        extensionBundleVersion.setVersionMetadata(DataModelMapper.map(existingBucket, existingVersion));
+        extensionBundleVersion.setVersionMetadata(DataModelMapper.map(existingVersion));
         extensionBundleVersion.setExtensionBundle(DataModelMapper.map(existingBucket, existingBundle));
         extensionBundleVersion.setBucket(DataModelMapper.map(existingBucket));
         extensionBundleVersion.setDependencies(dependencies);

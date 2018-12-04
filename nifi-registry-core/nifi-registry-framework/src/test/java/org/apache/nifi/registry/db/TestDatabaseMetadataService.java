@@ -28,6 +28,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.service.MetadataService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -594,6 +595,61 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertNotNull(createdBundleVersion);
         assertEquals(bundleVersion.getId(), createdBundleVersion.getId());
         assertFalse(bundleVersion.getSha256Supplied());
+    }
+
+    @Test
+    public void testGetExtensionBundleVersionsWithEmptyBucketIdsAndEmptyFilterParams() {
+        final List<ExtensionBundleVersionEntity> versionEntities = metadataService.getExtensionBundleVersions(
+                Collections.emptySet(), ExtensionBundleVersionFilterParams.empty());
+        assertEquals(0, versionEntities.size());
+    }
+
+    @Test
+    public void testGetExtensionBundleVersionsWithEmptyFilterParams() {
+        final Set<String> bucketIds = new HashSet<>();
+        bucketIds.add("1");
+        bucketIds.add("2");
+        bucketIds.add("3");
+
+        final List<ExtensionBundleVersionEntity> versionEntities = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.empty());
+        assertEquals(3, versionEntities.size());
+    }
+
+    @Test
+    public void testGetExtensionBundleVersionsWithFilterParams() {
+        final Set<String> bucketIds = new HashSet<>();
+        bucketIds.add("1");
+        bucketIds.add("2");
+        bucketIds.add("3");
+
+        final List<ExtensionBundleVersionEntity> versionEntities = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", null, null));
+        assertEquals(2, versionEntities.size());
+
+        final List<ExtensionBundleVersionEntity> versionEntities2 = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.%", null, null));
+        assertEquals(2, versionEntities2.size());
+
+        final List<ExtensionBundleVersionEntity> versionEntities3 = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", null));
+        assertEquals(1, versionEntities3.size());
+
+        final List<ExtensionBundleVersionEntity> versionEntities4 = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-%", null));
+        assertEquals(1, versionEntities4.size());
+
+        final List<ExtensionBundleVersionEntity> versionEntities5 = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "1.0.0"));
+        assertEquals(1, versionEntities5.size());
+
+        final List<ExtensionBundleVersionEntity> versionEntities6 = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "1.0.%"));
+        assertEquals(1, versionEntities6.size());
+
+        final List<ExtensionBundleVersionEntity> versionEntities7 = metadataService.getExtensionBundleVersions(
+                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "NOT-FOUND"));
+        assertEquals(0, versionEntities7.size());
     }
 
     @Test

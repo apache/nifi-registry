@@ -224,6 +224,7 @@ public class DataModelMapper {
         final ExtensionBundleVersionEntity entity = new ExtensionBundleVersionEntity();
         entity.setId(bundleVersionMetadata.getId());
         entity.setExtensionBundleId(bundleVersionMetadata.getExtensionBundleId());
+        entity.setBucketId(bundleVersionMetadata.getBucketId());
         entity.setVersion(bundleVersionMetadata.getVersion());
         entity.setCreated(new Date(bundleVersionMetadata.getTimestamp()));
         entity.setCreatedBy(bundleVersionMetadata.getAuthor());
@@ -234,10 +235,11 @@ public class DataModelMapper {
         return entity;
     }
 
-    public static ExtensionBundleVersionMetadata map(final BucketEntity bucketEntity, final ExtensionBundleVersionEntity bundleVersionEntity) {
+    public static ExtensionBundleVersionMetadata map(final ExtensionBundleVersionEntity bundleVersionEntity) {
         final ExtensionBundleVersionMetadata bundleVersionMetadata = new ExtensionBundleVersionMetadata();
         bundleVersionMetadata.setId(bundleVersionEntity.getId());
         bundleVersionMetadata.setExtensionBundleId(bundleVersionEntity.getExtensionBundleId());
+        bundleVersionMetadata.setBucketId(bundleVersionEntity.getBucketId());
         bundleVersionMetadata.setVersion(bundleVersionEntity.getVersion());
         bundleVersionMetadata.setTimestamp(bundleVersionEntity.getCreated().getTime());
         bundleVersionMetadata.setAuthor(bundleVersionEntity.getCreatedBy());
@@ -245,11 +247,6 @@ public class DataModelMapper {
         bundleVersionMetadata.setSha256(bundleVersionEntity.getSha256Hex());
         bundleVersionMetadata.setSha256Supplied(bundleVersionEntity.getSha256Supplied());
         bundleVersionMetadata.setContentSize(bundleVersionEntity.getContentSize());
-
-        if (bucketEntity != null) {
-            bundleVersionMetadata.setBucketId(bucketEntity.getId());
-        }
-
         return bundleVersionMetadata;
     }
 

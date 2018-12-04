@@ -42,6 +42,7 @@ import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -462,6 +463,17 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         final List<ExtensionBundle> filteredBundles = bundleClient.getAll(ExtensionBundleFilterParams.of("org.apache.nifi", "nifi-test-nar"));
         Assert.assertEquals(1, filteredBundles.size());
+
+        // Verify getting bundle versions with filter params
+        Assert.assertEquals(2, bundleVersionClient.getBundleVersions(ExtensionBundleVersionFilterParams.empty()).size());
+
+        final List<ExtensionBundleVersionMetadata> filteredVersions = bundleVersionClient.getBundleVersions(
+                ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-foo-nar", "1.0.0"));
+        Assert.assertEquals(1, filteredVersions.size());
+
+        final List<ExtensionBundleVersionMetadata> filteredVersions2 = bundleVersionClient.getBundleVersions(
+                ExtensionBundleVersionFilterParams.of("org.apache.nifi", null, null));
+        Assert.assertEquals(2, filteredVersions2.size());
 
         // ---------------------- TEST EXTENSION REPO ----------------------//
 

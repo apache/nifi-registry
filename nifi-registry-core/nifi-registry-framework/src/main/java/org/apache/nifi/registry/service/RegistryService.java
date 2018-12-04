@@ -34,6 +34,7 @@ import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -1063,6 +1064,17 @@ public class RegistryService {
             writeLock.unlock();
         }
     }
+
+    public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final Set<String> bucketIdentifiers,
+                                                                                final ExtensionBundleVersionFilterParams filterParams) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionBundleVersions(bucketIdentifiers, filterParams);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
 
     public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final String extensionBundleIdentifier) {
         readLock.lock();

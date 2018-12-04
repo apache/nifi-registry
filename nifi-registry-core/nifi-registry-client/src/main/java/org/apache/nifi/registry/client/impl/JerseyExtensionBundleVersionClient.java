@@ -22,6 +22,7 @@ import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
@@ -145,6 +146,32 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
                             Entity.entity(multipart, multipart.getMediaType()),
                             ExtensionBundleVersion.class
                     );
+        });
+    }
+
+    @Override
+    public List<ExtensionBundleVersionMetadata> getBundleVersions(final ExtensionBundleVersionFilterParams filterParams)
+            throws IOException, NiFiRegistryException {
+
+        return executeAction("Error getting extension bundle versions", () -> {
+            WebTarget target = extensionBundlesTarget.path("/versions");
+
+            if (filterParams != null) {
+                if (!StringUtils.isBlank(filterParams.getGroupId())) {
+                    target = target.queryParam("groupId", filterParams.getGroupId());
+                }
+
+                if (!StringUtils.isBlank(filterParams.getArtifactId())) {
+                    target = target.queryParam("artifactId", filterParams.getArtifactId());
+                }
+
+                if (!StringUtils.isBlank(filterParams.getVersion())) {
+                    target = target.queryParam("version", filterParams.getVersion());
+                }
+            }
+
+            final ExtensionBundleVersionMetadata[] bundleVersions = getRequestBuilder(target).get(ExtensionBundleVersionMetadata[].class);
+            return  bundleVersions == null ? Collections.emptyList() : Arrays.asList(bundleVersions);
         });
     }
 

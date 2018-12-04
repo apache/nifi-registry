@@ -26,6 +26,9 @@ public class ExtensionBundleVersionEntity {
     // Foreign key to the extension bundle this version goes with
     private String extensionBundleId;
 
+    // The bucket id where the bundle is located
+    private String bucketId;
+
     // The version of this bundle
     private String version;
 
@@ -57,6 +60,14 @@ public class ExtensionBundleVersionEntity {
 
     public void setExtensionBundleId(String extensionBundleId) {
         this.extensionBundleId = extensionBundleId;
+    }
+
+    public String getBucketId() {
+        return bucketId;
+    }
+
+    public void setBucketId(String bucketId) {
+        this.bucketId = bucketId;
     }
 
     public String getVersion() {

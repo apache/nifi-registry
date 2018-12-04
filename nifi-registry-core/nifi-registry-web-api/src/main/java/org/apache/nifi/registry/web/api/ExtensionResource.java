@@ -31,6 +31,7 @@ import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
@@ -81,6 +82,8 @@ public class ExtensionResource extends AuthorizableApplicationResource {
         this.linkService = linkService;
         this.permissionsService = permissionsService;
     }
+
+    // ---------- Extension Bundles ----------
 
     @GET
     @Path("bundles")
@@ -189,6 +192,48 @@ public class ExtensionResource extends AuthorizableApplicationResource {
         linkService.populateLinks(deletedExtensionBundle);
 
         return Response.status(Response.Status.OK).entity(deletedExtensionBundle).build();
+    }
+
+    // ---------- Extension Bundle Versions ----------
+
+    @GET
+    @Path("bundles/versions")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Get extension bundles versions across all authorized buckets",
+            notes = "The returned items will include only items from buckets for which the user is authorized. " +
+                    "If the user is not authorized to any buckets, an empty list will be returned.",
+            response = ExtensionBundleVersionMetadata.class,
+            responseContainer = "List"
+    )
+    @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
+    public Response getExtensionBundleVersions(
+            @QueryParam("groupId")
+            @ApiParam("Optional groupId to filter results. The value may be an exact match, or a trailing wildcard, " +
+                    "such as 'com.%' to select all bundle versions where the groupId starts with 'com.'.")
+                final String groupId,
+            @QueryParam("artifactId")
+            @ApiParam("Optional artifactId to filter results. The value may be an exact match, or a trailing wildcard, " +
+                    "such as 'nifi-%' to select all bundle versions where the artifactId starts with 'nifi-'.")
+                final String artifactId,
+            @QueryParam("version")
+            @ApiParam("Optional version to filter results. The value maye be an exact match, or a trailing wildcard, " +
+                    "such as '1.0.%' to select all bundle versions where the version starts with '1.0.'.")
+                final String version
+            ) {
+
+        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
+        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
+            // not authorized for any bucket, return empty list of items
+            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
+        }
+
+        final ExtensionBundleVersionFilterParams filterParams = ExtensionBundleVersionFilterParams.of(groupId, artifactId, version);
+        final SortedSet<ExtensionBundleVersionMetadata> bundleVersions = registryService.getExtensionBundleVersions(authorizedBucketIds, filterParams);
+        linkService.populateLinks(bundleVersions);
+
+        return Response.status(Response.Status.OK).entity(bundleVersions).build();
     }
 
     @GET
