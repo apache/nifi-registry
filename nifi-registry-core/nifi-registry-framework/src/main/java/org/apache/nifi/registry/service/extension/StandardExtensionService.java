@@ -38,6 +38,7 @@ import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -316,12 +317,13 @@ public class StandardExtensionService implements ExtensionService {
     }
 
     @Override
-    public List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers) {
+    public List<ExtensionBundle> getExtensionBundles(final Set<String> bucketIdentifiers, final ExtensionBundleFilterParams filterParams) {
         if (bucketIdentifiers == null) {
             throw new IllegalArgumentException("Bucket identifiers cannot be null");
         }
 
-        final List<ExtensionBundleEntity> bundleEntities = metadataService.getExtensionBundles(bucketIdentifiers);
+        final List<ExtensionBundleEntity> bundleEntities = metadataService.getExtensionBundles(bucketIdentifiers,
+                filterParams == null ? ExtensionBundleFilterParams.empty() : filterParams);
         return bundleEntities.stream().map(b -> DataModelMapper.map(null, b)).collect(Collectors.toList());
     }
 

@@ -25,7 +25,6 @@ import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
@@ -97,7 +96,7 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
         final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
             // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
+            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
         }
 
         final SortedSet<ExtensionRepoBucket> repoBuckets = registryService.getExtensionRepoBuckets(authorizedBucketIds);

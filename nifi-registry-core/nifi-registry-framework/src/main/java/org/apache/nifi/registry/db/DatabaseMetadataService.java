@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.db;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
@@ -35,6 +36,7 @@ import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -495,12 +497,14 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<ExtensionBundleEntity> getExtensionBundles(final Set<String> bucketIds) {
+    public List<ExtensionBundleEntity> getExtensionBundles(final Set<String> bucketIds, final ExtensionBundleFilterParams filterParams) {
         if (bucketIds == null || bucketIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final String selectSql =
+        final List<Object> args = new ArrayList<>();
+
+        final StringBuilder sqlBuilder = new StringBuilder(
                 "SELECT " +
                         "item.id as ID, " +
                         "item.name as NAME, " +
@@ -519,9 +523,23 @@ public class DatabaseMetadataService implements MetadataService {
                     "bucket b " +
                 "WHERE " +
                     "item.id = eb.id AND " +
-                    "b.id = item.bucket_id";
+                    "b.id = item.bucket_id");
 
-        final StringBuilder sqlBuilder = new StringBuilder(selectSql).append(" AND item.bucket_id IN (");
+        if (filterParams != null) {
+            final String groupId = filterParams.getGroupId();
+            if (!StringUtils.isBlank(groupId)) {
+                sqlBuilder.append(" AND eb.group_id LIKE ? ");
+                args.add(groupId);
+            }
+
+            final String artifactId = filterParams.getArtifactId();
+            if (!StringUtils.isBlank(artifactId)) {
+                sqlBuilder.append(" AND eb.artifact_id LIKE ? ");
+                args.add(artifactId);
+            }
+        }
+
+        sqlBuilder.append(" AND item.bucket_id IN (");
         for (int i=0; i < bucketIds.size(); i++) {
             if (i > 0) {
                 sqlBuilder.append(", ");
@@ -531,7 +549,9 @@ public class DatabaseMetadataService implements MetadataService {
         sqlBuilder.append(") ");
         sqlBuilder.append("ORDER BY eb.group_id ASC, eb.artifact_id ASC");
 
-        final List<ExtensionBundleEntity> bundleEntities = jdbcTemplate.query(sqlBuilder.toString(), bucketIds.toArray(), new ExtensionBundleEntityWithBucketNameRowMapper());
+        args.addAll(bucketIds);
+
+        final List<ExtensionBundleEntity> bundleEntities = jdbcTemplate.query(sqlBuilder.toString(), args.toArray(), new ExtensionBundleEntityWithBucketNameRowMapper());
         return populateVersionCounts(bundleEntities);
     }
 

@@ -169,7 +169,7 @@ insert into extension_bundle (
   'eb2',
   '3',
   'NIFI_NAR',
-  'org.apache.nifi',
+  'com.foo',
   'nifi-example-services-nar'
 );
 

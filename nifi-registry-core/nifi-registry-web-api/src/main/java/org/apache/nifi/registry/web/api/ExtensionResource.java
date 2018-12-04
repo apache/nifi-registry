@@ -25,12 +25,12 @@ import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
@@ -46,6 +46,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -93,15 +94,25 @@ public class ExtensionResource extends AuthorizableApplicationResource {
             responseContainer = "List"
     )
     @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
-    public Response getExtensionBundles() {
+    public Response getExtensionBundles(
+            @QueryParam("groupId")
+            @ApiParam("Optional groupId to filter results. The value may be an exact match, or a trailing wildcard, " +
+                    "such as 'com.%' to select all bundles where the groupId starts with 'com.'.")
+                final String groupId,
+            @QueryParam("artifactId")
+            @ApiParam("Optional artifactId to filter results. The value may be an exact match, or a trailing wildcard, " +
+                    "such as 'nifi-%' to select all bundles where the artifactId starts with 'nifi-'.")
+                final String artifactId) {
 
         final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
         if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
             // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
+            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
         }
 
-        List<ExtensionBundle> bundles = registryService.getExtensionBundles(authorizedBucketIds);
+        final ExtensionBundleFilterParams filterParams = ExtensionBundleFilterParams.of(groupId, artifactId);
+
+        List<ExtensionBundle> bundles = registryService.getExtensionBundles(authorizedBucketIds, filterParams);
         if (bundles == null) {
             bundles = Collections.emptyList();
         }

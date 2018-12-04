@@ -41,6 +41,7 @@ import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -455,6 +456,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         } catch (Exception e) {
             // should catch exception
         }
+
+        // Verify getting bundles with filter params
+        Assert.assertEquals(2, bundleClient.getAll(ExtensionBundleFilterParams.empty()).size());
+
+        final List<ExtensionBundle> filteredBundles = bundleClient.getAll(ExtensionBundleFilterParams.of("org.apache.nifi", "nifi-test-nar"));
+        Assert.assertEquals(1, filteredBundles.size());
 
         // ---------------------- TEST EXTENSION REPO ----------------------//
 

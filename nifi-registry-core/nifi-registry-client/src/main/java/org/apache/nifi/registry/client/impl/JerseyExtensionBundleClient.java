@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.ExtensionBundleClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
@@ -48,8 +49,22 @@ public class JerseyExtensionBundleClient extends AbstractJerseyClient implements
 
     @Override
     public List<ExtensionBundle> getAll() throws IOException, NiFiRegistryException {
+        return getAll(null);
+    }
+
+    @Override
+    public List<ExtensionBundle> getAll(final ExtensionBundleFilterParams filterParams) throws IOException, NiFiRegistryException {
         return executeAction("Error getting extension bundles", () -> {
             WebTarget target = extensionBundlesTarget;
+
+            if (filterParams != null) {
+                if (!StringUtils.isBlank(filterParams.getGroupId())) {
+                    target = target.queryParam("groupId", filterParams.getGroupId());
+                }
+                if (!StringUtils.isBlank(filterParams.getArtifactId())) {
+                    target = target.queryParam("artifactId", filterParams.getArtifactId());
+                }
+            }
 
             final ExtensionBundle[] bundles = getRequestBuilder(target).get(ExtensionBundle[].class);
             return  bundles == null ? Collections.emptyList() : Arrays.asList(bundles);

@@ -21,6 +21,7 @@ import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -57,9 +58,10 @@ public interface ExtensionService {
      * Retrieves the extension bundles in the given buckets.
      *
      * @param bucketIdentifiers the bucket identifiers
+     * @param filterParams the optional filter params
      * @return the bundles in the given buckets
      */
-    List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers);
+    List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers, ExtensionBundleFilterParams filterParams);
 
     /**
      * Retrieves the extension bundles in the given bucket.

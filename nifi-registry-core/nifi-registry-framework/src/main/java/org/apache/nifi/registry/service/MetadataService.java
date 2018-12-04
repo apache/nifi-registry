@@ -25,6 +25,7 @@ import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 
 import java.util.List;
 import java.util.Set;
@@ -246,9 +247,10 @@ public interface MetadataService {
      * Retrieves all extension bundles in the buckets with the given bucket ids.
      *
      * @param bucketIds the bucket ids
+     * @param filterParams the optional filter params
      * @return the list of all extension bundles in the given buckets
      */
-    List<ExtensionBundleEntity> getExtensionBundles(Set<String> bucketIds);
+    List<ExtensionBundleEntity> getExtensionBundles(Set<String> bucketIds, ExtensionBundleFilterParams filterParams);
 
     /**
      * Retrieves the extension bundles for the given bucket.
