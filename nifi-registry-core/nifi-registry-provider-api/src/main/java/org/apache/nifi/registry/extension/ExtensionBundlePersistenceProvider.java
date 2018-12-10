@@ -31,9 +31,11 @@ public interface ExtensionBundlePersistenceProvider extends Provider {
      *
      * @param context the context about the bundle version being persisted
      * @param contentStream the stream of binary content to persist
+     * @param overwrite if true the persistence provider should overwrite any content that may already exist for the given bundle version,
+     *                  if false the persistence provider should throw an ExtensionBundlePersistenceException if content already exists
      * @throws ExtensionBundlePersistenceException if an error occurs storing the content
      */
-    void saveBundleVersion(ExtensionBundleContext context, InputStream contentStream) throws ExtensionBundlePersistenceException;
+    void saveBundleVersion(ExtensionBundleContext context, InputStream contentStream, boolean overwrite) throws ExtensionBundlePersistenceException;
 
     /**
      * Writes the binary content of the bundle specified by the bucket-group-artifact-version to the provided OutputStream.

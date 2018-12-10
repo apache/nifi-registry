@@ -83,6 +83,8 @@ public class StandardExtensionService implements ExtensionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardExtensionService.class);
 
+    static final String SNAPSHOT_VERSION_SUFFIX = "SNAPSHOT";
+
     private final MetadataService metadataService;
     private final Map<ExtensionBundleType, BundleExtractor> extractors;
     private final ExtensionBundlePersistenceProvider bundlePersistenceProvider;
@@ -176,14 +178,16 @@ public class StandardExtensionService implements ExtensionService {
             final String groupId = bundleCoordinate.getGroupId();
             final String artifactId = bundleCoordinate.getArtifactId();
             final String version = bundleCoordinate.getVersion();
+            final boolean isSnapshotVersion = version.endsWith(SNAPSHOT_VERSION_SUFFIX);
+
             LOGGER.debug("Extracted bundle details - '{}' - '{}' - '{}'", new Object[]{groupId, artifactId, version});
 
-            // a bundle with the same group, artifact, and version can exist in multiple buckets, but only if it contains the same binary content,
+            // a bundle with the same group, artifact, and version can exist in multiple buckets, but only if it contains the same binary content, or if its a snapshot version
             // we can determine that by comparing the SHA-256 digest of the incoming bundle against existing bundles with the same group, artifact, version
             final List<ExtensionBundleVersionEntity> allExistingVersions = metadataService.getExtensionBundleVersionsGlobal(groupId, artifactId, version);
             for (final ExtensionBundleVersionEntity existingVersionEntity : allExistingVersions) {
-                if (!existingVersionEntity.getSha256Hex().equals(sha256Hex)) {
-                    throw new IllegalStateException("Found existing extension bundle with same group, artifact, and version, but different SHA-256 check-sum");
+                if (!existingVersionEntity.getSha256Hex().equals(sha256Hex) && !isSnapshotVersion) {
+                    throw new IllegalStateException("Found existing extension bundle with same group, artifact, and version, but different SHA-256 checksums");
                 }
             }
 
@@ -191,11 +195,17 @@ public class StandardExtensionService implements ExtensionService {
             final long currentTime = System.currentTimeMillis();
             final ExtensionBundleEntity extensionBundle = getOrCreateExtensionBundle(bucketIdentifier, groupId, artifactId, bundleType, currentTime);
 
-            // ensure there isn't already a version of the bundle with the same version
+            // check if the version of incoming bundle already exists in the bucket
+            // if it exists and it is a snapshot version, then we first delete the row in the extension_bundle_version table so we can create a new one
+            // otherwise we throw an exception because we don't allow the same version in the same bucket
             final ExtensionBundleVersionEntity existingVersion = metadataService.getExtensionBundleVersion(bucketIdentifier, groupId, artifactId, version);
             if (existingVersion != null) {
-                LOGGER.warn("The specified version [{}] already exists for extension bundle [{}].", new Object[]{version, extensionBundle.getId()});
-                throw new IllegalStateException("The specified version already exists for the given extension bundle");
+                if (isSnapshotVersion) {
+                    metadataService.deleteExtensionBundleVersion(existingVersion);
+                } else {
+                    LOGGER.warn("The specified version [{}] already exists for extension bundle [{}].", new Object[]{version, extensionBundle.getId()});
+                    throw new IllegalStateException("The specified version already exists for the given extension bundle");
+                }
             }
 
             // create the version metadata instance and validate it has all the required fields
@@ -250,9 +260,11 @@ public class StandardExtensionService implements ExtensionService {
                     .timestamp(versionMetadata.getTimestamp())
                     .build();
 
+            final boolean overwrite = isSnapshotVersion;
+
             try (final InputStream in = new FileInputStream(extensionWorkingFile);
                  final InputStream bufIn = new BufferedInputStream(in)) {
-                bundlePersistenceProvider.saveBundleVersion(context, bufIn);
+                bundlePersistenceProvider.saveBundleVersion(context, bufIn, overwrite);
                 LOGGER.debug("Bundle saved to persistence provider - '{}' - '{}' - '{}'",
                         new Object[]{groupId, artifactId, version});
             }

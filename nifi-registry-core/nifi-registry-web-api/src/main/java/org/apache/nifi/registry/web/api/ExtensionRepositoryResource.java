@@ -426,8 +426,13 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
         if (bundleVersions.isEmpty()) {
             throw new ResourceNotFoundException("An extension bundle version does not exist with the specific group, artifact, and version");
         } else {
-            final ExtensionBundleVersionMetadata firstVersion = bundleVersions.first();
-            return Response.ok(firstVersion.getSha256(), MediaType.TEXT_PLAIN).build();
+            ExtensionBundleVersionMetadata latestVersionMetadata = null;
+            for (ExtensionBundleVersionMetadata versionMetadata : bundleVersions) {
+                if (latestVersionMetadata == null || versionMetadata.getTimestamp() > latestVersionMetadata.getTimestamp()) {
+                    latestVersionMetadata = versionMetadata;
+                }
+            }
+            return Response.ok(latestVersionMetadata.getSha256(), MediaType.TEXT_PLAIN).build();
         }
     }
 }

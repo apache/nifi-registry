@@ -254,7 +254,7 @@ public class TestFileSystemExtensionBundlePersistenceProvider {
         final ExtensionBundleContext context = getExtensionBundleContext(bucketName, groupId, artifactId, version, bundleType);
 
         try (final InputStream in = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))) {
-            persistenceProvider.saveBundleVersion(context, in);
+            persistenceProvider.saveBundleVersion(context, in, false);
         }
     }
 

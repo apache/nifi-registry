@@ -29,7 +29,7 @@ public class MockExtensionBundlePersistenceProvider implements ExtensionBundlePe
     private Map<String,String> properties;
 
     @Override
-    public void saveBundleVersion(ExtensionBundleContext context, InputStream contentStream)
+    public void saveBundleVersion(ExtensionBundleContext context, InputStream contentStream, boolean overwrite)
             throws ExtensionBundlePersistenceException {
 
     }
