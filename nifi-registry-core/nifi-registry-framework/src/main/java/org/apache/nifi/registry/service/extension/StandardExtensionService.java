@@ -178,7 +178,9 @@ public class StandardExtensionService implements ExtensionService {
             final String groupId = bundleCoordinate.getGroupId();
             final String artifactId = bundleCoordinate.getArtifactId();
             final String version = bundleCoordinate.getVersion();
+
             final boolean isSnapshotVersion = version.endsWith(SNAPSHOT_VERSION_SUFFIX);
+            final boolean overwriteBundleVersion = isSnapshotVersion || existingBucket.isAllowExtensionBundleRedeploy();
 
             LOGGER.debug("Extracted bundle details - '{}' - '{}' - '{}'", new Object[]{groupId, artifactId, version});
 
@@ -196,11 +198,11 @@ public class StandardExtensionService implements ExtensionService {
             final ExtensionBundleEntity extensionBundle = getOrCreateExtensionBundle(bucketIdentifier, groupId, artifactId, bundleType, currentTime);
 
             // check if the version of incoming bundle already exists in the bucket
-            // if it exists and it is a snapshot version, then we first delete the row in the extension_bundle_version table so we can create a new one
+            // if it exists and it is a snapshot version or the bucket allows redeploying, then first delete the row in the extension_bundle_version table so we can create a new one
             // otherwise we throw an exception because we don't allow the same version in the same bucket
             final ExtensionBundleVersionEntity existingVersion = metadataService.getExtensionBundleVersion(bucketIdentifier, groupId, artifactId, version);
             if (existingVersion != null) {
-                if (isSnapshotVersion) {
+                if (overwriteBundleVersion) {
                     metadataService.deleteExtensionBundleVersion(existingVersion);
                 } else {
                     LOGGER.warn("The specified version [{}] already exists for extension bundle [{}].", new Object[]{version, extensionBundle.getId()});
@@ -260,13 +262,10 @@ public class StandardExtensionService implements ExtensionService {
                     .timestamp(versionMetadata.getTimestamp())
                     .build();
 
-            final boolean overwrite = isSnapshotVersion;
-
             try (final InputStream in = new FileInputStream(extensionWorkingFile);
                  final InputStream bufIn = new BufferedInputStream(in)) {
-                bundlePersistenceProvider.saveBundleVersion(context, bufIn, overwrite);
-                LOGGER.debug("Bundle saved to persistence provider - '{}' - '{}' - '{}'",
-                        new Object[]{groupId, artifactId, version});
+                bundlePersistenceProvider.saveBundleVersion(context, bufIn, overwriteBundleVersion);
+                LOGGER.debug("Bundle saved to persistence provider - '{}' - '{}' - '{}'", new Object[]{groupId, artifactId, version});
             }
 
             // get the updated extension bundle so it contains the correct version count

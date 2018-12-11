@@ -164,6 +164,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         for (final Bucket bucket : createdBuckets) {
             final Bucket retrievedBucket = bucketClient.get(bucket.getIdentifier());
             Assert.assertNotNull(retrievedBucket);
+            Assert.assertFalse(retrievedBucket.isAllowExtensionBundleRedeploy());
             LOGGER.info("Retrieved bucket " + retrievedBucket.getIdentifier());
         }
 
@@ -399,6 +400,25 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         final ExtensionBundle fooNarV1Bundle = createdFooNarV1.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{fooNarV1Bundle.getIdentifier()});
+
+        // verify that bucket 1 currently does not allow redeploying non-snapshot artifacts
+        Assert.assertFalse(bundlesBucket.isAllowExtensionBundleRedeploy());
+
+        // try to re-deploy version 1.0.0 of nifi-foo-nar, should fail
+        try {
+            createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null);
+            Assert.fail("Should have thrown exception when re-deploying foo nar");
+        } catch (Exception e) {
+            // Should throw exception
+        }
+
+        // now update bucket 1 to allow redeploy
+        bundlesBucket.setAllowExtensionBundleRedeploy(true);
+        final Bucket updatedBundlesBucket = bucketClient.update(bundlesBucket);
+        Assert.assertTrue(updatedBundlesBucket.isAllowExtensionBundleRedeploy());
+
+        // try to re-deploy version 1.0.0 of nifi-foo-nar again, this time should work
+        Assert.assertNotNull(createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null));
 
         // verify there are 2 bundles now
         final List<ExtensionBundle> allBundlesAfterCreate = bundleClient.getAll();

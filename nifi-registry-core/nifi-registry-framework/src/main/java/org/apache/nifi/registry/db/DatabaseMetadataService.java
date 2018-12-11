@@ -68,8 +68,13 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public BucketEntity createBucket(final BucketEntity b) {
-        final String sql = "INSERT INTO bucket (ID, NAME, DESCRIPTION, CREATED) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sql, b.getId(), b.getName(), b.getDescription(), b.getCreated());
+        final String sql = "INSERT INTO bucket (ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY) VALUES (?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql,
+                b.getId(),
+                b.getName(),
+                b.getDescription(),
+                b.getCreated(),
+                b.isAllowExtensionBundleRedeploy() ? 1 : 0);
         return b;
     }
 
@@ -91,8 +96,8 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public BucketEntity updateBucket(final BucketEntity bucket) {
-        final String sql = "UPDATE bucket SET name = ?, description = ? WHERE id = ?";
-        jdbcTemplate.update(sql, bucket.getName(), bucket.getDescription(), bucket.getId());
+        final String sql = "UPDATE bucket SET name = ?, description = ?, allow_extension_bundle_redeploy = ? WHERE id = ?";
+        jdbcTemplate.update(sql, bucket.getName(), bucket.getDescription(), bucket.isAllowExtensionBundleRedeploy() ? 1 : 0, bucket.getId());
         return bucket;
     }
 

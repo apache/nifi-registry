@@ -53,6 +53,7 @@ public class DataModelMapper {
         bucketEntity.setName(bucket.getName());
         bucketEntity.setDescription(bucket.getDescription());
         bucketEntity.setCreated(new Date(bucket.getCreatedTimestamp()));
+        bucketEntity.setAllowExtensionBundleRedeploy(bucket.isAllowExtensionBundleRedeploy());
         return bucketEntity;
     }
 
@@ -62,6 +63,7 @@ public class DataModelMapper {
         bucket.setName(bucketEntity.getName());
         bucket.setDescription(bucketEntity.getDescription());
         bucket.setCreatedTimestamp(bucketEntity.getCreated().getTime());
+        bucket.setAllowExtensionBundleRedeploy(bucketEntity.isAllowExtensionBundleRedeploy());
         return bucket;
     }
 

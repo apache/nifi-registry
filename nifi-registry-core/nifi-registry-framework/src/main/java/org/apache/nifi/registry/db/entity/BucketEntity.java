@@ -29,6 +29,8 @@ public class BucketEntity {
 
     private Date created;
 
+    private boolean allowExtensionBundleRedeploy;
+
 
     public String getId() {
         return id;
@@ -60,6 +62,14 @@ public class BucketEntity {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isAllowExtensionBundleRedeploy() {
+        return allowExtensionBundleRedeploy;
+    }
+
+    public void setAllowExtensionBundleRedeploy(final boolean allowExtensionBundleRedeploy) {
+        this.allowExtensionBundleRedeploy = allowExtensionBundleRedeploy;
     }
 
     @Override

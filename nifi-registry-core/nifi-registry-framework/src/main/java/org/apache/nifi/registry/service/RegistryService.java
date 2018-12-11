@@ -143,6 +143,10 @@ public class RegistryService {
         bucket.setIdentifier(UUID.randomUUID().toString());
         bucket.setCreatedTimestamp(System.currentTimeMillis());
 
+        if (bucket.isAllowExtensionBundleRedeploy() == null) {
+            bucket.setAllowExtensionBundleRedeploy(false);
+        }
+
         validate(bucket, "Cannot create Bucket");
 
         writeLock.lock();
@@ -259,6 +263,10 @@ public class RegistryService {
 
             if (bucket.getDescription() != null) {
                 existingBucketById.setDescription(bucket.getDescription());
+            }
+
+            if (bucket.isAllowExtensionBundleRedeploy() != null) {
+                existingBucketById.setAllowExtensionBundleRedeploy(bucket.isAllowExtensionBundleRedeploy());
             }
 
             // perform the actual update

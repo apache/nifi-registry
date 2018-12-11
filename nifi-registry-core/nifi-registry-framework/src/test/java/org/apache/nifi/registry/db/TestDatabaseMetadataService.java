@@ -70,6 +70,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(b.getName(), createdBucket.getName());
         assertEquals(b.getDescription(), createdBucket.getDescription());
         assertEquals(b.getCreated(), createdBucket.getCreated());
+        assertFalse(b.isAllowExtensionBundleRedeploy());
     }
 
     @Test
@@ -97,12 +98,14 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     public void testUpdateBucket() {
         final BucketEntity bucket = metadataService.getBucketById("1");
         assertNotNull(bucket);
+        assertFalse(bucket.isAllowExtensionBundleRedeploy());
 
         final String updatedName = bucket.getName() + " UPDATED";
         final String updatedDesc = bucket.getDescription() + "DESC";
 
         bucket.setName(updatedName);
         bucket.setDescription(updatedDesc);
+        bucket.setAllowExtensionBundleRedeploy(true);
 
         metadataService.updateBucket(bucket);
 
@@ -110,6 +113,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertNotNull(updatedName);
         assertEquals(updatedName, updatedBucket.getName());
         assertEquals(updatedDesc, updatedBucket.getDescription());
+        assertTrue(updatedBucket.isAllowExtensionBundleRedeploy());
     }
 
     @Test
