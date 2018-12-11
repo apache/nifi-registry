@@ -127,6 +127,9 @@ public interface ExtensionRepoClient {
     /**
      * Gets the hex representation of the SHA-256 hash of the binary content for the given version.
      *
+     * If the version is a SNAPSHOT version, there may be more than one instance of the SNAPSHOT version in different
+     * buckets. In this case the instance with the latest created timestamp will be used to obtain the checksum.
+     *
      * @param groupId the group id
      * @param artifactId the artifact id
      * @param version the version
