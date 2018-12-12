@@ -34,6 +34,15 @@ public class ExtensionBundleVersionEntityRowMapper implements RowMapper<Extensio
         entity.setSha256Hex(rs.getString("SHA_256_HEX"));
         entity.setSha256Supplied(rs.getInt("SHA_256_SUPPLIED") == 1);
         entity.setContentSize(rs.getLong("CONTENT_SIZE"));
+        entity.setSystemApiVersion(rs.getString("SYSTEM_API_VERSION"));
+
+        entity.setBuildTool(rs.getString("BUILD_TOOL"));
+        entity.setBuildFlags(rs.getString("BUILD_FLAGS"));
+        entity.setBuildBranch(rs.getString("BUILD_BRANCH"));
+        entity.setBuildTag(rs.getString("BUILD_TAG"));
+        entity.setBuildRevision(rs.getString("BUILD_REVISION"));
+        entity.setBuilt(rs.getTimestamp("BUILT"));
+        entity.setBuiltBy(rs.getString("BUILT_BY"));
 
         entity.setCreated(rs.getTimestamp("CREATED"));
         entity.setCreatedBy(rs.getString("CREATED_BY"));

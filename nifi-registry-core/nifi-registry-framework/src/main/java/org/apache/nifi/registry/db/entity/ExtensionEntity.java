@@ -16,22 +16,32 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import java.util.Set;
+
 public class ExtensionEntity {
 
     private String id;
 
     private String extensionBundleVersionId;
 
-    private String type;
+    private String name;
 
-    private String typeDescription;
+    private String description;
 
-    private boolean restricted;
+    private String generalRestriction;
 
     private ExtensionEntityCategory category;
 
+    // populated during creation if provided, but typically won't be populated on retrieval
+    private String additionalDetails;
+
     // Comma separated list of tags so we don't have to query tag table for each extension
     private String tags;
+
+    private Set<ExtensionProvidedServiceApiEntity> providedServiceApis;
+
+    private Set<ExtensionRestrictionEntity> restrictions;
+
 
     public String getId() {
         return id;
@@ -49,28 +59,28 @@ public class ExtensionEntity {
         this.extensionBundleVersionId = extensionBundleVersionId;
     }
 
-    public String getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getTypeDescription() {
-        return typeDescription;
+    public String getDescription() {
+        return description;
     }
 
-    public void setTypeDescription(String typeDescription) {
-        this.typeDescription = typeDescription;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public boolean isRestricted() {
-        return restricted;
+    public String getGeneralRestriction() {
+        return this.generalRestriction;
     }
 
-    public void setRestricted(boolean restricted) {
-        this.restricted = restricted;
+    public void setGeneralRestriction(String generalRestriction) {
+        this.generalRestriction = generalRestriction;
     }
 
     public ExtensionEntityCategory getCategory() {
@@ -87,6 +97,30 @@ public class ExtensionEntity {
 
     public void setTags(String tags) {
         this.tags = tags;
+    }
+
+    public Set<ExtensionProvidedServiceApiEntity> getProvidedServiceApis() {
+        return providedServiceApis;
+    }
+
+    public void setProvidedServiceApis(Set<ExtensionProvidedServiceApiEntity> providedServiceApis) {
+        this.providedServiceApis = providedServiceApis;
+    }
+
+    public Set<ExtensionRestrictionEntity> getRestrictions() {
+        return restrictions;
+    }
+
+    public void setRestrictions(Set<ExtensionRestrictionEntity> restrictions) {
+        this.restrictions = restrictions;
+    }
+
+    public String getAdditionalDetails() {
+        return additionalDetails;
+    }
+
+    public void setAdditionalDetails(String additionalDetails) {
+        this.additionalDetails = additionalDetails;
     }
 
 }

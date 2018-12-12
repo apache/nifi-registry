@@ -30,6 +30,7 @@ import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
@@ -257,6 +258,14 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
 
         final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
 
+        final String extensionsUri = generateResourceUri(
+                "extensions", "repo",
+                bundleVersion.getBucket().getName(),
+                bundleVersion.getExtensionBundle().getGroupId(),
+                bundleVersion.getExtensionBundle().getArtifactId(),
+                bundleVersion.getVersionMetadata().getVersion(),
+                "extension-metadata");
+
         final String downloadUri = generateResourceUri(
                 "extensions", "repo",
                 bundleVersion.getBucket().getName(),
@@ -274,11 +283,57 @@ public class ExtensionRepositoryResource extends AuthorizableApplicationResource
                 "sha256");
 
         final ExtensionRepoVersion repoVersion = new ExtensionRepoVersion();
+        repoVersion.setExtensionsLink(Link.fromUri(extensionsUri).rel("extension-metadata").build());
         repoVersion.setDownloadLink(Link.fromUri(downloadUri).rel("content").build());
         repoVersion.setSha256Link(Link.fromUri(sha256Uri).rel("sha256").build());
         repoVersion.setSha256Supplied(bundleVersion.getVersionMetadata().getSha256Supplied());
 
         return Response.ok(repoVersion).build();
+    }
+
+    @GET
+    @Path("{bucketName}/{groupId}/{artifactId}/{version}/extension-metadata")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = " Gets the information about the extensions in the extension bundle specified by the given bucket, group, artifact, and version",
+            response = ExtensionMetadata.class,
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getExtensionBundleVersionExtensions(
+            @PathParam("bucketName")
+            @ApiParam("The bucket name")
+                final String bucketName,
+            @PathParam("groupId")
+            @ApiParam("The group identifier")
+                final String groupId,
+            @PathParam("artifactId")
+            @ApiParam("The artifact identifier")
+                final String artifactId,
+            @PathParam("version")
+            @ApiParam("The version")
+                final String version
+    ) {
+        final Bucket bucket = registryService.getBucketByName(bucketName);
+        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
+
+        final ExtensionBundleVersionCoordinate versionCoordinate = new ExtensionBundleVersionCoordinate(
+                bucket.getIdentifier(), groupId, artifactId, version);
+
+        final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
+        final SortedSet<ExtensionMetadata> extensions = registryService.getExtensions(bundleVersion);
+        return Response.ok(extensions).build();
     }
 
     @GET

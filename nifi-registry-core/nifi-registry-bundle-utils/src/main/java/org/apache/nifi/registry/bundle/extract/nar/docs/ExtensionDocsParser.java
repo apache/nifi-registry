@@ -14,21 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension;
+package org.apache.nifi.registry.bundle.extract.nar.docs;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Extracts the bundle metadata from the given InputStream.
+ * Parses an InputStream that is expected to contain the content of META-INF/docs/extensions-docs.xml from a NAR.
  */
-public interface BundleExtractor {
+public interface ExtensionDocsParser {
 
-    /**
-     * @param inputStream the input stream of the binary bundle
-     * @return the bundle metadata extracted from the input stream
-     * @throws IOException if an error occurs reading from the InputStream
-     */
-    BundleDetails extract(InputStream inputStream) throws IOException;
+    ExtensionDocs parse(InputStream inputStream);
 
 }

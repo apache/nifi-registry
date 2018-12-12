@@ -25,6 +25,8 @@ import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
+import org.apache.nifi.registry.db.entity.ExtensionProvidedServiceApiEntity;
+import org.apache.nifi.registry.db.entity.ExtensionRestrictionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
@@ -501,6 +503,11 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
                 ExtensionBundleFilterParams.of(null, "nifi-example-processors-%"));
         assertNotNull(bundles6);
         assertEquals(1, bundles6.size());
+
+        final List<ExtensionBundleEntity> bundles7 = metadataService.getExtensionBundles(bucketIds,
+                ExtensionBundleFilterParams.of("Bucket %", null, "nifi-example-processors-%"));
+        assertNotNull(bundles7);
+        assertEquals(1, bundles7.size());
     }
 
     @Test
@@ -592,6 +599,15 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bundleVersion.setSha256Hex("123456789");
         bundleVersion.setSha256Supplied(false);
         bundleVersion.setContentSize(2048);
+        bundleVersion.setSystemApiVersion("2.0.0");
+
+        bundleVersion.setBuildTool("JDK");
+        bundleVersion.setBuildFlags("N/A");
+        bundleVersion.setBuildBranch("master");
+        bundleVersion.setBuildTag("HEAD");
+        bundleVersion.setBuildRevision("123456");
+        bundleVersion.setBuiltBy("jsmith");
+        bundleVersion.setBuilt(new Date());
 
         metadataService.createExtensionBundleVersion(bundleVersion);
 
@@ -599,6 +615,15 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertNotNull(createdBundleVersion);
         assertEquals(bundleVersion.getId(), createdBundleVersion.getId());
         assertFalse(bundleVersion.getSha256Supplied());
+
+        assertEquals(bundleVersion.getSystemApiVersion(), createdBundleVersion.getSystemApiVersion());
+        assertEquals(bundleVersion.getBuildTool(), createdBundleVersion.getBuildTool());
+        assertEquals(bundleVersion.getBuildFlags(), createdBundleVersion.getBuildFlags());
+        assertEquals(bundleVersion.getBuildBranch(), createdBundleVersion.getBuildBranch());
+        assertEquals(bundleVersion.getBuildTag(), createdBundleVersion.getBuildTag());
+        assertEquals(bundleVersion.getBuildRevision(), createdBundleVersion.getBuildRevision());
+        assertEquals(bundleVersion.getBuiltBy(), createdBundleVersion.getBuiltBy());
+        assertEquals(bundleVersion.getBuilt(), createdBundleVersion.getBuilt());
     }
 
     @Test
@@ -817,25 +842,46 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testCreateExtension() {
+        final String extensionId = "4";
+
+        final ExtensionRestrictionEntity restrictionEntity = new ExtensionRestrictionEntity();
+        restrictionEntity.setId(UUID.randomUUID().toString());
+        restrictionEntity.setExtensionId(extensionId);
+        restrictionEntity.setRequiredPermission("read filesystem");
+        restrictionEntity.setExplanation("Reads filesystem");
+
+        final ExtensionProvidedServiceApiEntity serviceApiEntity = new ExtensionProvidedServiceApiEntity();
+        serviceApiEntity.setId(UUID.randomUUID().toString());
+        serviceApiEntity.setExtensionId(extensionId);
+        serviceApiEntity.setClassName("com.foo.FooService");
+        serviceApiEntity.setGroupId("com.foo");
+        serviceApiEntity.setArtifactId("foo-nar");
+        serviceApiEntity.setVersion("1.0.0");
+
         final ExtensionEntity extension = new ExtensionEntity();
-        extension.setId("4");
+        extension.setId(extensionId);
         extension.setExtensionBundleVersionId("eb1-v1");
-        extension.setType("com.example.FooBarProcessor");
-        extension.setTypeDescription("This the FoorBarProcessor");
+        extension.setName("com.example.FooBarProcessor");
+        extension.setDescription("This the FoorBarProcessor");
         extension.setCategory(ExtensionEntityCategory.PROCESSOR);
-        extension.setRestricted(false);
+        extension.setGeneralRestriction("This proc be bad");
         extension.setTags("tag1, tag2");
+        extension.setProvidedServiceApis(Collections.singleton(serviceApiEntity));
+        extension.setRestrictions(Collections.singleton(restrictionEntity));
+        extension.setAdditionalDetails("DETAILS");
 
         metadataService.createExtension(extension);
 
         final ExtensionEntity retrievedExtension = metadataService.getExtensionById(extension.getId());
         assertEquals(extension.getId(), retrievedExtension.getId());
         assertEquals(extension.getExtensionBundleVersionId(), retrievedExtension.getExtensionBundleVersionId());
-        assertEquals(extension.getType(), retrievedExtension.getType());
-        assertEquals(extension.getTypeDescription(), retrievedExtension.getTypeDescription());
+        assertEquals(extension.getName(), retrievedExtension.getName());
+        assertEquals(extension.getDescription(), retrievedExtension.getDescription());
         assertEquals(extension.getCategory(), retrievedExtension.getCategory());
-        assertEquals(extension.isRestricted(), retrievedExtension.isRestricted());
+        assertEquals(extension.getGeneralRestriction(), retrievedExtension.getGeneralRestriction());
         assertEquals(extension.getTags(), retrievedExtension.getTags());
+        assertEquals(extension.getRestrictions(), retrievedExtension.getRestrictions());
+        assertEquals(extension.getProvidedServiceApis(), retrievedExtension.getProvidedServiceApis());
 
         final List<ExtensionEntity> tag1Extensions = metadataService.getExtensionsByTag("tag1");
         assertNotNull(tag1Extensions);
@@ -853,7 +899,41 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final ExtensionEntity extension = metadataService.getExtensionById("e1");
         assertNotNull(extension);
         assertEquals("e1", extension.getId());
-        assertEquals("org.apache.nifi.ExampleProcessor", extension.getType());
+        assertEquals("org.apache.nifi.ExampleProcessor", extension.getName());
+
+        assertNotNull(extension.getProvidedServiceApis());
+        assertEquals(0, extension.getProvidedServiceApis().size());
+
+        assertNotNull(extension.getRestrictions());
+        assertEquals(0, extension.getRestrictions().size());
+    }
+
+    @Test
+    public void testGetExtensionByIdWithServiceApi() {
+        final ExtensionEntity extension = metadataService.getExtensionById("e3");
+        assertNotNull(extension);
+        assertEquals("e3", extension.getId());
+        assertEquals("org.apache.nifi.ExampleService", extension.getName());
+
+        assertNotNull(extension.getProvidedServiceApis());
+        assertEquals(1, extension.getProvidedServiceApis().size());
+
+        assertNotNull(extension.getRestrictions());
+        assertEquals(0, extension.getRestrictions().size());
+    }
+
+    @Test
+    public void testGetExtensionByIdWithRestriction() {
+        final ExtensionEntity extension = metadataService.getExtensionById("e2");
+        assertNotNull(extension);
+        assertEquals("e2", extension.getId());
+        assertEquals("org.apache.nifi.ExampleProcessorRestricted", extension.getName());
+
+        assertNotNull(extension.getProvidedServiceApis());
+        assertEquals(0, extension.getProvidedServiceApis().size());
+
+        assertNotNull(extension.getRestrictions());
+        assertEquals(1, extension.getRestrictions().size());
     }
 
     @Test
@@ -934,6 +1014,17 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
         final ExtensionEntity deletedExtension = metadataService.getExtensionById("e1");
         assertNull(deletedExtension);
+    }
+
+    @Test
+    public void testGetExtensionsByProvidedServiceApi() {
+        final List<ExtensionEntity> extensions = metadataService.getExtensionsByProvidedServiceApi(
+                "org.apache.nifi.ExampleServiceAPI",
+                "org.apache.nifi",
+                "nifi-example-service-api-nar",
+                "2.0.0");
+        assertEquals(1, extensions.size());
+        assertEquals("e3", extensions.get(0).getId());
     }
 
 }

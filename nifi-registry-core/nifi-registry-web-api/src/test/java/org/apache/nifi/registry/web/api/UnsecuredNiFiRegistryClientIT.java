@@ -36,11 +36,13 @@ import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.client.UserClient;
 import org.apache.nifi.registry.client.impl.JerseyNiFiRegistryClient;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
+import org.apache.nifi.registry.extension.BuildInfo;
 import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
@@ -59,7 +61,6 @@ import org.apache.nifi.registry.util.FileUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -82,6 +83,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test all basic functionality of JerseyNiFiRegistryClient.
  */
@@ -100,13 +107,13 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
                 .baseUrl(baseUrl)
                 .build();
 
-        Assert.assertNotNull(clientConfig);
+        assertNotNull(clientConfig);
 
         final NiFiRegistryClient client = new JerseyNiFiRegistryClient.Builder()
                 .config(clientConfig)
                 .build();
 
-        Assert.assertNotNull(client);
+        assertNotNull(client);
         this.client = client;
 
         // Clear the extension bundles storage directory in case previous tests left data
@@ -133,15 +140,15 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
     public void testGetAccessStatus() throws IOException, NiFiRegistryException {
         final UserClient userClient = client.getUserClient();
         final CurrentUser currentUser = userClient.getAccessStatus();
-        Assert.assertEquals("anonymous", currentUser.getIdentity());
-        Assert.assertTrue(currentUser.isAnonymous());
-        Assert.assertNotNull(currentUser.getResourcePermissions());
+        assertEquals("anonymous", currentUser.getIdentity());
+        assertTrue(currentUser.isAnonymous());
+        assertNotNull(currentUser.getResourcePermissions());
         Permissions fullAccess = new Permissions().withCanRead(true).withCanWrite(true).withCanDelete(true);
-        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getAnyTopLevelResource());
-        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getBuckets());
-        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getTenants());
-        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getPolicies());
-        Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getProxy());
+        assertEquals(fullAccess, currentUser.getResourcePermissions().getAnyTopLevelResource());
+        assertEquals(fullAccess, currentUser.getResourcePermissions().getBuckets());
+        assertEquals(fullAccess, currentUser.getResourcePermissions().getTenants());
+        assertEquals(fullAccess, currentUser.getResourcePermissions().getPolicies());
+        assertEquals(fullAccess, currentUser.getResourcePermissions().getProxy());
     }
 
     @Test
@@ -163,24 +170,24 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // get each bucket
         for (final Bucket bucket : createdBuckets) {
             final Bucket retrievedBucket = bucketClient.get(bucket.getIdentifier());
-            Assert.assertNotNull(retrievedBucket);
-            Assert.assertFalse(retrievedBucket.isAllowExtensionBundleRedeploy());
+            assertNotNull(retrievedBucket);
+            assertFalse(retrievedBucket.isAllowExtensionBundleRedeploy());
             LOGGER.info("Retrieved bucket " + retrievedBucket.getIdentifier());
         }
 
         //final Bucket nonExistentBucket = bucketClient.get("does-not-exist");
-        //Assert.assertNull(nonExistentBucket);
+        //assertNull(nonExistentBucket);
 
         // get bucket fields
         final Fields bucketFields = bucketClient.getFields();
-        Assert.assertNotNull(bucketFields);
+        assertNotNull(bucketFields);
         LOGGER.info("Retrieved bucket fields, size = " + bucketFields.getFields().size());
-        Assert.assertTrue(bucketFields.getFields().size() > 0);
+        assertTrue(bucketFields.getFields().size() > 0);
 
         // get all buckets
         final List<Bucket> allBuckets = bucketClient.getAll();
         LOGGER.info("Retrieved buckets, size = " + allBuckets.size());
-        Assert.assertEquals(numBuckets, allBuckets.size());
+        assertEquals(numBuckets, allBuckets.size());
         allBuckets.stream().forEach(b -> System.out.println("Retrieve bucket " + b.getIdentifier()));
 
         // update each bucket
@@ -190,7 +197,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
             bucketUpdate.setDescription(bucket.getDescription() + " UPDATE");
 
             final Bucket updatedBucket = bucketClient.update(bucketUpdate);
-            Assert.assertNotNull(updatedBucket);
+            assertNotNull(updatedBucket);
             LOGGER.info("Updated bucket " + updatedBucket.getIdentifier());
         }
 
@@ -209,17 +216,17 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // get flow
         final VersionedFlow retrievedFlow1 = flowClient.get(flowsBucket.getIdentifier(), flow1.getIdentifier());
-        Assert.assertNotNull(retrievedFlow1);
+        assertNotNull(retrievedFlow1);
         LOGGER.info("Retrieved flow # 1 with id " + retrievedFlow1.getIdentifier());
 
         final VersionedFlow retrievedFlow2 = flowClient.get(flowsBucket.getIdentifier(), flow2.getIdentifier());
-        Assert.assertNotNull(retrievedFlow2);
+        assertNotNull(retrievedFlow2);
         LOGGER.info("Retrieved flow # 2 with id " + retrievedFlow2.getIdentifier());
 
         // get flow without bucket
         final VersionedFlow retrievedFlow1WithoutBucket = flowClient.get(flow1.getIdentifier());
-        Assert.assertNotNull(retrievedFlow1WithoutBucket);
-        Assert.assertEquals(flow1.getIdentifier(), retrievedFlow1WithoutBucket.getIdentifier());
+        assertNotNull(retrievedFlow1WithoutBucket);
+        assertEquals(flow1.getIdentifier(), retrievedFlow1WithoutBucket.getIdentifier());
         LOGGER.info("Retrieved flow # 1 without bucket id, with id " + retrievedFlow1WithoutBucket.getIdentifier());
 
         // update flows
@@ -228,19 +235,19 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         flow1Update.setName(flow1.getName() + " UPDATED");
 
         final VersionedFlow updatedFlow1 = flowClient.update(flowsBucket.getIdentifier(), flow1Update);
-        Assert.assertNotNull(updatedFlow1);
+        assertNotNull(updatedFlow1);
         LOGGER.info("Updated flow # 1 with id " + updatedFlow1.getIdentifier());
 
         // get flow fields
         final Fields flowFields = flowClient.getFields();
-        Assert.assertNotNull(flowFields);
+        assertNotNull(flowFields);
         LOGGER.info("Retrieved flow fields, size = " + flowFields.getFields().size());
-        Assert.assertTrue(flowFields.getFields().size() > 0);
+        assertTrue(flowFields.getFields().size() > 0);
 
         // get flows in bucket
         final List<VersionedFlow> flowsInBucket = flowClient.getByBucket(flowsBucket.getIdentifier());
-        Assert.assertNotNull(flowsInBucket);
-        Assert.assertEquals(2, flowsInBucket.size());
+        assertNotNull(flowsInBucket);
+        assertEquals(2, flowsInBucket.size());
         flowsInBucket.stream().forEach(f -> LOGGER.info("Flow in bucket, flow id " + f.getIdentifier()));
 
         // ---------------------- TEST SNAPSHOTS --------------------------//
@@ -258,78 +265,78 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // get snapshot
         final VersionedFlowSnapshot retrievedSnapshot1 = snapshotClient.get(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier(), 1);
-        Assert.assertNotNull(retrievedSnapshot1);
-        Assert.assertFalse(retrievedSnapshot1.isLatest());
+        assertNotNull(retrievedSnapshot1);
+        assertFalse(retrievedSnapshot1.isLatest());
         LOGGER.info("Retrieved snapshot # 1 with version " + retrievedSnapshot1.getSnapshotMetadata().getVersion());
 
         final VersionedFlowSnapshot retrievedSnapshot2 = snapshotClient.get(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier(), 2);
-        Assert.assertNotNull(retrievedSnapshot2);
-        Assert.assertTrue(retrievedSnapshot2.isLatest());
+        assertNotNull(retrievedSnapshot2);
+        assertTrue(retrievedSnapshot2.isLatest());
         LOGGER.info("Retrieved snapshot # 2 with version " + retrievedSnapshot2.getSnapshotMetadata().getVersion());
 
         // get snapshot without bucket
         final VersionedFlowSnapshot retrievedSnapshot1WithoutBucket = snapshotClient.get(snapshotFlow.getIdentifier(), 1);
-        Assert.assertNotNull(retrievedSnapshot1WithoutBucket);
-        Assert.assertFalse(retrievedSnapshot1WithoutBucket.isLatest());
-        Assert.assertEquals(snapshotFlow.getIdentifier(), retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getFlowIdentifier());
-        Assert.assertEquals(1, retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getVersion());
+        assertNotNull(retrievedSnapshot1WithoutBucket);
+        assertFalse(retrievedSnapshot1WithoutBucket.isLatest());
+        assertEquals(snapshotFlow.getIdentifier(), retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getFlowIdentifier());
+        assertEquals(1, retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getVersion());
         LOGGER.info("Retrieved snapshot # 1 without using bucket id, with version " + retrievedSnapshot1WithoutBucket.getSnapshotMetadata().getVersion());
 
         // get latest
         final VersionedFlowSnapshot retrievedSnapshotLatest = snapshotClient.getLatest(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
-        Assert.assertNotNull(retrievedSnapshotLatest);
-        Assert.assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
-        Assert.assertTrue(retrievedSnapshotLatest.isLatest());
+        assertNotNull(retrievedSnapshotLatest);
+        assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
+        assertTrue(retrievedSnapshotLatest.isLatest());
         LOGGER.info("Retrieved latest snapshot with version " + retrievedSnapshotLatest.getSnapshotMetadata().getVersion());
 
         // get latest without bucket
         final VersionedFlowSnapshot retrievedSnapshotLatestWithoutBucket = snapshotClient.getLatest(snapshotFlow.getIdentifier());
-        Assert.assertNotNull(retrievedSnapshotLatestWithoutBucket);
-        Assert.assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatestWithoutBucket.getSnapshotMetadata().getVersion());
-        Assert.assertTrue(retrievedSnapshotLatestWithoutBucket.isLatest());
+        assertNotNull(retrievedSnapshotLatestWithoutBucket);
+        assertEquals(snapshot2.getSnapshotMetadata().getVersion(), retrievedSnapshotLatestWithoutBucket.getSnapshotMetadata().getVersion());
+        assertTrue(retrievedSnapshotLatestWithoutBucket.isLatest());
         LOGGER.info("Retrieved latest snapshot without bucket, with version " + retrievedSnapshotLatestWithoutBucket.getSnapshotMetadata().getVersion());
 
         // get metadata
         final List<VersionedFlowSnapshotMetadata> retrievedMetadata = snapshotClient.getSnapshotMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
-        Assert.assertNotNull(retrievedMetadata);
-        Assert.assertEquals(2, retrievedMetadata.size());
-        Assert.assertEquals(2, retrievedMetadata.get(0).getVersion());
-        Assert.assertEquals(1, retrievedMetadata.get(1).getVersion());
+        assertNotNull(retrievedMetadata);
+        assertEquals(2, retrievedMetadata.size());
+        assertEquals(2, retrievedMetadata.get(0).getVersion());
+        assertEquals(1, retrievedMetadata.get(1).getVersion());
         retrievedMetadata.stream().forEach(s -> LOGGER.info("Retrieved snapshot metadata " + s.getVersion()));
 
         // get metadata without bucket
         final List<VersionedFlowSnapshotMetadata> retrievedMetadataWithoutBucket = snapshotClient.getSnapshotMetadata(snapshotFlow.getIdentifier());
-        Assert.assertNotNull(retrievedMetadataWithoutBucket);
-        Assert.assertEquals(2, retrievedMetadataWithoutBucket.size());
-        Assert.assertEquals(2, retrievedMetadataWithoutBucket.get(0).getVersion());
-        Assert.assertEquals(1, retrievedMetadataWithoutBucket.get(1).getVersion());
+        assertNotNull(retrievedMetadataWithoutBucket);
+        assertEquals(2, retrievedMetadataWithoutBucket.size());
+        assertEquals(2, retrievedMetadataWithoutBucket.get(0).getVersion());
+        assertEquals(1, retrievedMetadataWithoutBucket.get(1).getVersion());
         retrievedMetadataWithoutBucket.stream().forEach(s -> LOGGER.info("Retrieved snapshot metadata " + s.getVersion()));
 
         // get latest metadata
         final VersionedFlowSnapshotMetadata latestMetadata = snapshotClient.getLatestMetadata(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier());
-        Assert.assertNotNull(latestMetadata);
-        Assert.assertEquals(2, latestMetadata.getVersion());
+        assertNotNull(latestMetadata);
+        assertEquals(2, latestMetadata.getVersion());
 
         // get latest metadata that doesn't exist
         try {
             snapshotClient.getLatestMetadata(snapshotFlow.getBucketIdentifier(), "DOES-NOT-EXIST");
-            Assert.fail("Should have thrown exception");
+            fail("Should have thrown exception");
         } catch (NiFiRegistryException nfe) {
-            Assert.assertEquals("Error retrieving latest snapshot metadata: The specified flow ID does not exist in this bucket.", nfe.getMessage());
+            assertEquals("Error retrieving latest snapshot metadata: The specified flow ID does not exist in this bucket.", nfe.getMessage());
         }
 
         // get latest metadata without bucket
         final VersionedFlowSnapshotMetadata latestMetadataWithoutBucket = snapshotClient.getLatestMetadata(snapshotFlow.getIdentifier());
-        Assert.assertNotNull(latestMetadataWithoutBucket);
-        Assert.assertEquals(snapshotFlow.getIdentifier(), latestMetadataWithoutBucket.getFlowIdentifier());
-        Assert.assertEquals(2, latestMetadataWithoutBucket.getVersion());
+        assertNotNull(latestMetadataWithoutBucket);
+        assertEquals(snapshotFlow.getIdentifier(), latestMetadataWithoutBucket.getFlowIdentifier());
+        assertEquals(2, latestMetadataWithoutBucket.getVersion());
 
         // ---------------------- TEST EXTENSIONS ----------------------//
 
         // verify we have no bundles yet
         final ExtensionBundleClient bundleClient = client.getExtensionBundleClient();
         final List<ExtensionBundle> allBundles = bundleClient.getAll();
-        Assert.assertEquals(0, allBundles.size());
+        assertEquals(0, allBundles.size());
 
         final Bucket bundlesBucket = createdBuckets.get(1);
         final Bucket bundlesBucket2 = createdBuckets.get(2);
@@ -342,37 +349,43 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final ExtensionBundle testNarV1Bundle = createdTestNarV1.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{testNarV1Bundle.getIdentifier()});
 
-        Assert.assertEquals("org.apache.nifi", testNarV1Bundle.getGroupId());
-        Assert.assertEquals("nifi-test-nar", testNarV1Bundle.getArtifactId());
-        Assert.assertEquals(ExtensionBundleType.NIFI_NAR, testNarV1Bundle.getBundleType());
-        Assert.assertEquals(1, testNarV1Bundle.getVersionCount());
+        assertEquals("org.apache.nifi", testNarV1Bundle.getGroupId());
+        assertEquals("nifi-test-nar", testNarV1Bundle.getArtifactId());
+        assertEquals(ExtensionBundleType.NIFI_NAR, testNarV1Bundle.getBundleType());
+        assertEquals(1, testNarV1Bundle.getVersionCount());
 
-        Assert.assertEquals("org.apache.nifi:nifi-test-nar", testNarV1Bundle.getName());
-        Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Bundle.getBucketIdentifier());
-        Assert.assertEquals(bundlesBucket.getName(), testNarV1Bundle.getBucketName());
-        Assert.assertNotNull(testNarV1Bundle.getPermissions());
-        Assert.assertTrue(testNarV1Bundle.getCreatedTimestamp() > 0);
-        Assert.assertTrue(testNarV1Bundle.getModifiedTimestamp() > 0);
+        assertEquals("org.apache.nifi:nifi-test-nar", testNarV1Bundle.getName());
+        assertEquals(bundlesBucket.getIdentifier(), testNarV1Bundle.getBucketIdentifier());
+        assertEquals(bundlesBucket.getName(), testNarV1Bundle.getBucketName());
+        assertNotNull(testNarV1Bundle.getPermissions());
+        assertTrue(testNarV1Bundle.getCreatedTimestamp() > 0);
+        assertTrue(testNarV1Bundle.getModifiedTimestamp() > 0);
 
         final ExtensionBundleVersionMetadata testNarV1Metadata = createdTestNarV1.getVersionMetadata();
-        Assert.assertEquals("1.0.0", testNarV1Metadata.getVersion());
-        Assert.assertNotNull(testNarV1Metadata.getId());
-        Assert.assertNotNull(testNarV1Metadata.getSha256());
-        Assert.assertNotNull(testNarV1Metadata.getAuthor());
-        Assert.assertEquals(testNarV1Bundle.getIdentifier(), testNarV1Metadata.getExtensionBundleId());
-        Assert.assertEquals(bundlesBucket.getIdentifier(), testNarV1Metadata.getBucketId());
-        Assert.assertTrue(testNarV1Metadata.getTimestamp() > 0);
-        Assert.assertFalse(testNarV1Metadata.getSha256Supplied());
-        Assert.assertTrue(testNarV1Metadata.getContentSize() > 1);
+        assertEquals("1.0.0", testNarV1Metadata.getVersion());
+        assertNotNull(testNarV1Metadata.getId());
+        assertNotNull(testNarV1Metadata.getSha256());
+        assertNotNull(testNarV1Metadata.getAuthor());
+        assertEquals(testNarV1Bundle.getIdentifier(), testNarV1Metadata.getExtensionBundleId());
+        assertEquals(bundlesBucket.getIdentifier(), testNarV1Metadata.getBucketId());
+        assertTrue(testNarV1Metadata.getTimestamp() > 0);
+        assertFalse(testNarV1Metadata.getSha256Supplied());
+        assertTrue(testNarV1Metadata.getContentSize() > 1);
+
+        final BuildInfo testNarV1BuildInfo = testNarV1Metadata.getBuildInfo();
+        assertNotNull(testNarV1BuildInfo);
+        assertTrue(testNarV1BuildInfo.getBuilt() > 0);
+        assertNotNull(testNarV1BuildInfo.getBuildTool());
+        assertNotNull(testNarV1BuildInfo.getBuildRevision());
 
         final Set<ExtensionBundleVersionDependency> dependencies = createdTestNarV1.getDependencies();
-        Assert.assertNotNull(dependencies);
-        Assert.assertEquals(1, dependencies.size());
+        assertNotNull(dependencies);
+        assertEquals(1, dependencies.size());
 
         final ExtensionBundleVersionDependency testNarV1Dependency = dependencies.stream().findFirst().get();
-        Assert.assertEquals("org.apache.nifi", testNarV1Dependency.getGroupId());
-        Assert.assertEquals("nifi-test-api-nar", testNarV1Dependency.getArtifactId());
-        Assert.assertEquals("1.0.0", testNarV1Dependency.getVersion());
+        assertEquals("org.apache.nifi", testNarV1Dependency.getGroupId());
+        assertEquals("nifi-test-api-nar", testNarV1Dependency.getArtifactId());
+        assertEquals("1.0.0", testNarV1Dependency.getVersion());
 
         final String testNar2 = "src/test/resources/extensions/nars/nifi-test-nar-2.0.0.nar";
 
@@ -380,7 +393,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final String madeUpSha256 = "MADE-UP-SHA-256";
         try {
             createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar2, madeUpSha256);
-            Assert.fail("Should have thrown exception");
+            fail("Should have thrown exception");
         } catch (Exception e) {
             // should have thrown exception from mismatched SHA-256
         }
@@ -388,7 +401,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // create version 2.0.0 of nifi-test-nar using correct supplied SHA-256
         final String testNar2Sha256 = calculateSha256Hex(testNar2);
         final ExtensionBundleVersion createdTestNarV2 = createExtensionBundleVersionWithStream(bundlesBucket, bundleVersionClient, testNar2, testNar2Sha256);
-        Assert.assertTrue(createdTestNarV2.getVersionMetadata().getSha256Supplied());
+        assertTrue(createdTestNarV2.getVersionMetadata().getSha256Supplied());
 
         final ExtensionBundle testNarV2Bundle = createdTestNarV2.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{testNarV2Bundle.getIdentifier()});
@@ -396,18 +409,18 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // create version 1.0.0 of nifi-foo-nar, use the file variant
         final String fooNar = "src/test/resources/extensions/nars/nifi-foo-nar-1.0.0.nar";
         final ExtensionBundleVersion createdFooNarV1 = createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null);
-        Assert.assertFalse(createdFooNarV1.getVersionMetadata().getSha256Supplied());
+        assertFalse(createdFooNarV1.getVersionMetadata().getSha256Supplied());
 
         final ExtensionBundle fooNarV1Bundle = createdFooNarV1.getExtensionBundle();
         LOGGER.info("Created bundle with id {}", new Object[]{fooNarV1Bundle.getIdentifier()});
 
         // verify that bucket 1 currently does not allow redeploying non-snapshot artifacts
-        Assert.assertFalse(bundlesBucket.isAllowExtensionBundleRedeploy());
+        assertFalse(bundlesBucket.isAllowExtensionBundleRedeploy());
 
         // try to re-deploy version 1.0.0 of nifi-foo-nar, should fail
         try {
             createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null);
-            Assert.fail("Should have thrown exception when re-deploying foo nar");
+            fail("Should have thrown exception when re-deploying foo nar");
         } catch (Exception e) {
             // Should throw exception
         }
@@ -415,138 +428,145 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         // now update bucket 1 to allow redeploy
         bundlesBucket.setAllowExtensionBundleRedeploy(true);
         final Bucket updatedBundlesBucket = bucketClient.update(bundlesBucket);
-        Assert.assertTrue(updatedBundlesBucket.isAllowExtensionBundleRedeploy());
+        assertTrue(updatedBundlesBucket.isAllowExtensionBundleRedeploy());
 
         // try to re-deploy version 1.0.0 of nifi-foo-nar again, this time should work
-        Assert.assertNotNull(createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null));
+        assertNotNull(createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNar, null));
 
         // verify there are 2 bundles now
         final List<ExtensionBundle> allBundlesAfterCreate = bundleClient.getAll();
-        Assert.assertEquals(2, allBundlesAfterCreate.size());
+        assertEquals(2, allBundlesAfterCreate.size());
 
         // create version 2.0.0-SNAPSHOT (build 1 content) of nifi-foor-nar in the first bucket
         final String fooNarV2SnapshotB1 = "src/test/resources/extensions/nars/nifi-foo-nar-2.0.0-SNAPSHOT-BUILD1.nar";
         final ExtensionBundleVersion createdFooNarV2SnapshotB1 = createExtensionBundleVersionWithFile(bundlesBucket, bundleVersionClient, fooNarV2SnapshotB1, null);
-        Assert.assertFalse(createdFooNarV2SnapshotB1.getVersionMetadata().getSha256Supplied());
+        assertFalse(createdFooNarV2SnapshotB1.getVersionMetadata().getSha256Supplied());
 
         // create version 2.0.0-SNAPSHOT (build 2 content) of nifi-foor-nar in the second bucket
         // proves that snapshots can have different checksums across buckets, non-snapshots can't
         final String fooNarV2SnapshotB2 = "src/test/resources/extensions/nars/nifi-foo-nar-2.0.0-SNAPSHOT-BUILD2.nar";
         final ExtensionBundleVersion createdFooNarV2SnapshotB2 = createExtensionBundleVersionWithFile(bundlesBucket2, bundleVersionClient, fooNarV2SnapshotB2, null);
-        Assert.assertFalse(createdFooNarV2SnapshotB2.getVersionMetadata().getSha256Supplied());
+        assertFalse(createdFooNarV2SnapshotB2.getVersionMetadata().getSha256Supplied());
 
         // create version 2.0.0-SNAPSHOT (build 2 content) of nifi-foor-nar in the second bucket
         // proves that we can overwrite a snapshot in a given bucket
         final String fooNarV2SnapshotB3 = "src/test/resources/extensions/nars/nifi-foo-nar-2.0.0-SNAPSHOT-BUILD3.nar";
         final ExtensionBundleVersion createdFooNarV2SnapshotB3 = createExtensionBundleVersionWithFile(bundlesBucket2, bundleVersionClient, fooNarV2SnapshotB3, null);
-        Assert.assertFalse(createdFooNarV2SnapshotB3.getVersionMetadata().getSha256Supplied());
+        assertFalse(createdFooNarV2SnapshotB3.getVersionMetadata().getSha256Supplied());
 
         // verify retrieving nifi-foo-nar 2.0.0-SNAPSHOT from second bucket returns the build 3 content
         final ExtensionBundleVersion retrievedFooNarV2SnapshotB3 = bundleVersionClient.getBundleVersion(
                 createdFooNarV2SnapshotB3.getVersionMetadata().getExtensionBundleId(),
                 createdFooNarV2SnapshotB3.getVersionMetadata().getVersion());
-        Assert.assertEquals(calculateSha256Hex(fooNarV2SnapshotB3), retrievedFooNarV2SnapshotB3.getVersionMetadata().getSha256());
+        assertEquals(calculateSha256Hex(fooNarV2SnapshotB3), retrievedFooNarV2SnapshotB3.getVersionMetadata().getSha256());
+
+        final List<ExtensionMetadata> fooNarV2SnapshotB3Extensions = bundleVersionClient.getExtensions(
+                createdFooNarV2SnapshotB3.getVersionMetadata().getExtensionBundleId(),
+                createdFooNarV2SnapshotB3.getVersionMetadata().getVersion());
+        assertNotNull(fooNarV2SnapshotB3Extensions);
+        assertEquals(1, fooNarV2SnapshotB3Extensions.size());
 
         // verify getting bundles by bucket
-        Assert.assertEquals(2, bundleClient.getByBucket(bundlesBucket.getIdentifier()).size());
-        Assert.assertEquals(0, bundleClient.getByBucket(flowsBucket.getIdentifier()).size());
+        assertEquals(2, bundleClient.getByBucket(bundlesBucket.getIdentifier()).size());
+        assertEquals(0, bundleClient.getByBucket(flowsBucket.getIdentifier()).size());
 
         // verify getting bundles by id
         final ExtensionBundle retrievedBundle = bundleClient.get(testNarV1Bundle.getIdentifier());
-        Assert.assertNotNull(retrievedBundle);
-        Assert.assertEquals(testNarV1Bundle.getIdentifier(), retrievedBundle.getIdentifier());
-        Assert.assertEquals(testNarV1Bundle.getGroupId(), retrievedBundle.getGroupId());
-        Assert.assertEquals(testNarV1Bundle.getArtifactId(), retrievedBundle.getArtifactId());
+        assertNotNull(retrievedBundle);
+        assertEquals(testNarV1Bundle.getIdentifier(), retrievedBundle.getIdentifier());
+        assertEquals(testNarV1Bundle.getGroupId(), retrievedBundle.getGroupId());
+        assertEquals(testNarV1Bundle.getArtifactId(), retrievedBundle.getArtifactId());
 
         // verify getting list of version metadata for a bundle
         final List<ExtensionBundleVersionMetadata> bundleVersions = bundleVersionClient.getBundleVersions(testNarV1Bundle.getIdentifier());
-        Assert.assertNotNull(bundleVersions);
-        Assert.assertEquals(2, bundleVersions.size());
+        assertNotNull(bundleVersions);
+        assertEquals(2, bundleVersions.size());
 
         // verify getting a bundle version by the bundle id + version string
         final ExtensionBundleVersion bundleVersion1 = bundleVersionClient.getBundleVersion(testNarV1Bundle.getIdentifier(), "1.0.0");
-        Assert.assertNotNull(bundleVersion1);
-        Assert.assertEquals("1.0.0", bundleVersion1.getVersionMetadata().getVersion());
-        Assert.assertNotNull(bundleVersion1.getDependencies());
-        Assert.assertEquals(1, bundleVersion1.getDependencies().size());
+        assertNotNull(bundleVersion1);
+        assertEquals("1.0.0", bundleVersion1.getVersionMetadata().getVersion());
+        assertNotNull(bundleVersion1.getDependencies());
+        assertEquals(1, bundleVersion1.getDependencies().size());
 
         final ExtensionBundleVersion bundleVersion2 = bundleVersionClient.getBundleVersion(testNarV1Bundle.getIdentifier(), "2.0.0");
-        Assert.assertNotNull(bundleVersion2);
-        Assert.assertEquals("2.0.0", bundleVersion2.getVersionMetadata().getVersion());
+        assertNotNull(bundleVersion2);
+        assertEquals("2.0.0", bundleVersion2.getVersionMetadata().getVersion());
 
         // verify getting the input stream for a bundle version
         try (final InputStream bundleVersion1InputStream = bundleVersionClient.getBundleVersionContent(testNarV1Bundle.getIdentifier(), "1.0.0")) {
             final String sha256Hex = DigestUtils.sha256Hex(bundleVersion1InputStream);
-            Assert.assertEquals(testNarV1Metadata.getSha256(), sha256Hex);
+            assertEquals(testNarV1Metadata.getSha256(), sha256Hex);
         }
 
         // verify writing a bundle version to an output stream
         final File targetDir = new File("./target");
         final File bundleFile = bundleVersionClient.writeBundleVersionContent(testNarV1Bundle.getIdentifier(), "1.0.0", targetDir);
-        Assert.assertNotNull(bundleFile);
+        assertNotNull(bundleFile);
 
         try (final InputStream bundleInputStream = new FileInputStream(bundleFile)) {
             final String sha256Hex = DigestUtils.sha256Hex(bundleInputStream);
-            Assert.assertEquals(testNarV1Metadata.getSha256(), sha256Hex);
+            assertEquals(testNarV1Metadata.getSha256(), sha256Hex);
         }
 
         // Verify deleting a bundle version
         final ExtensionBundleVersion deletedBundleVersion2 = bundleVersionClient.delete(testNarV1Bundle.getIdentifier(), "2.0.0");
-        Assert.assertNotNull(deletedBundleVersion2);
-        Assert.assertEquals(testNarV1Bundle.getIdentifier(), deletedBundleVersion2.getExtensionBundle().getIdentifier());
-        Assert.assertEquals("2.0.0", deletedBundleVersion2.getVersionMetadata().getVersion());
+        assertNotNull(deletedBundleVersion2);
+        assertEquals(testNarV1Bundle.getIdentifier(), deletedBundleVersion2.getExtensionBundle().getIdentifier());
+        assertEquals("2.0.0", deletedBundleVersion2.getVersionMetadata().getVersion());
 
         try {
             bundleVersionClient.getBundleVersion(testNarV1Bundle.getIdentifier(), "2.0.0");
-            Assert.fail("Should have thrown exception");
+            fail("Should have thrown exception");
         } catch (Exception e) {
             // should catch exception
         }
 
         // Verify getting bundles with filter params
-        Assert.assertEquals(3, bundleClient.getAll(ExtensionBundleFilterParams.empty()).size());
+        assertEquals(3, bundleClient.getAll(ExtensionBundleFilterParams.empty()).size());
 
         final List<ExtensionBundle> filteredBundles = bundleClient.getAll(ExtensionBundleFilterParams.of("org.apache.nifi", "nifi-test-nar"));
-        Assert.assertEquals(1, filteredBundles.size());
+        assertEquals(1, filteredBundles.size());
 
         // Verify getting bundle versions with filter params
-        Assert.assertEquals(4, bundleVersionClient.getBundleVersions(ExtensionBundleVersionFilterParams.empty()).size());
+        assertEquals(4, bundleVersionClient.getBundleVersions(ExtensionBundleVersionFilterParams.empty()).size());
 
         final List<ExtensionBundleVersionMetadata> filteredVersions = bundleVersionClient.getBundleVersions(
                 ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-foo-nar", "1.0.0"));
-        Assert.assertEquals(1, filteredVersions.size());
+        assertEquals(1, filteredVersions.size());
 
         final List<ExtensionBundleVersionMetadata> filteredVersions2 = bundleVersionClient.getBundleVersions(
                 ExtensionBundleVersionFilterParams.of("org.apache.nifi", null, null));
-        Assert.assertEquals(4, filteredVersions2.size());
+        assertEquals(4, filteredVersions2.size());
 
         // ---------------------- TEST EXTENSION REPO ----------------------//
 
         final ExtensionRepoClient extensionRepoClient = client.getExtensionRepoClient();
 
         final List<ExtensionRepoBucket> repoBuckets = extensionRepoClient.getBuckets();
-        Assert.assertEquals(createdBuckets.size(), repoBuckets.size());
+        assertEquals(createdBuckets.size(), repoBuckets.size());
 
         final String bundlesBucketName = bundlesBucket.getName();
         final List<ExtensionRepoGroup> repoGroups = extensionRepoClient.getGroups(bundlesBucketName);
-        Assert.assertEquals(1, repoGroups.size());
+        assertEquals(1, repoGroups.size());
 
         final String repoGroupId = "org.apache.nifi";
         final ExtensionRepoGroup repoGroup = repoGroups.get(0);
-        Assert.assertEquals(repoGroupId, repoGroup.getGroupId());
+        assertEquals(repoGroupId, repoGroup.getGroupId());
 
         final List<ExtensionRepoArtifact> repoArtifacts = extensionRepoClient.getArtifacts(bundlesBucketName, repoGroupId);
-        Assert.assertEquals(2, repoArtifacts.size());
+        assertEquals(2, repoArtifacts.size());
 
         final String repoArtifactId = "nifi-test-nar";
         final List<ExtensionRepoVersionSummary> repoVersions = extensionRepoClient.getVersions(bundlesBucketName, repoGroupId, repoArtifactId);
-        Assert.assertEquals(1, repoVersions.size());
+        assertEquals(1, repoVersions.size());
 
         final String repoVersionString = "1.0.0";
         final ExtensionRepoVersion repoVersion = extensionRepoClient.getVersion(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString);
-        Assert.assertNotNull(repoVersion);
-        Assert.assertNotNull(repoVersion.getDownloadLink());
-        Assert.assertNotNull(repoVersion.getSha256Link());
+        assertNotNull(repoVersion);
+        assertNotNull(repoVersion.getDownloadLink());
+        assertNotNull(repoVersion.getSha256Link());
+        assertNotNull(repoVersion.getExtensionsLink());
 
         // verify the version links for content and sha256
         final Client jerseyClient = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
@@ -558,31 +578,42 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
             final WebTarget sha256LinkTarget = jerseyClient.target(repoVersion.getSha256Link().getUri());
             final String sha256LinkResult = sha256LinkTarget.request().get(String.class);
-            Assert.assertEquals(sha256DownloadResult, sha256LinkResult);
+            assertEquals(sha256DownloadResult, sha256LinkResult);
         }
 
-        // verify the client methods for content input stream and content sha256
+        // verify the version link for extension metadata works
+        final WebTarget extensionsLinkTarget = jerseyClient.target(repoVersion.getExtensionsLink().getUri());
+        final ExtensionMetadata[] extensionMetadata = extensionsLinkTarget.request()
+                .accept(MediaType.APPLICATION_JSON).get(ExtensionMetadata[].class);
+        assertNotNull(extensionMetadata);
+        assertTrue(extensionMetadata.length > 0);
+
+        // verify the client methods for content input stream, content sha256, and extensions
         try (final InputStream repoVersionInputStream = extensionRepoClient.getVersionContent(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString)) {
             final String sha256Hex = DigestUtils.sha256Hex(repoVersionInputStream);
 
             final String repoSha256Hex = extensionRepoClient.getVersionSha256(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString);
-            Assert.assertEquals(sha256Hex, repoSha256Hex);
+            assertEquals(sha256Hex, repoSha256Hex);
 
             final Optional<String> repoSha256HexOptional = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, repoVersionString);
-            Assert.assertTrue(repoSha256HexOptional.isPresent());
-            Assert.assertEquals(sha256Hex, repoSha256HexOptional.get());
+            assertTrue(repoSha256HexOptional.isPresent());
+            assertEquals(sha256Hex, repoSha256HexOptional.get());
+
+            final List<ExtensionMetadata> extensionMetadataList = extensionRepoClient.getVersionExtensions(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString);
+            assertNotNull(extensionMetadataList);
+            assertTrue(extensionMetadataList.size() > 0);
         }
 
         final Optional<String> repoSha256HexDoesNotExist = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, "DOES-NOT-EXIST");
-        Assert.assertFalse(repoSha256HexDoesNotExist.isPresent());
+        assertFalse(repoSha256HexDoesNotExist.isPresent());
 
         // since we uploaded two snapshot versions, make sure when we retrieve the sha that it's for the second snapshot that replaced the first
         final Optional<String> fooNarV2SnapshotLatestSha = extensionRepoClient.getVersionSha256(
                 createdFooNarV2SnapshotB3.getExtensionBundle().getGroupId(),
                 createdFooNarV2SnapshotB3.getExtensionBundle().getArtifactId(),
                 createdFooNarV2SnapshotB2.getVersionMetadata().getVersion());
-        Assert.assertTrue(fooNarV2SnapshotLatestSha.isPresent());
-        Assert.assertEquals(calculateSha256Hex(fooNarV2SnapshotB3), fooNarV2SnapshotLatestSha.get());
+        assertTrue(fooNarV2SnapshotLatestSha.isPresent());
+        assertEquals(calculateSha256Hex(fooNarV2SnapshotB3), fooNarV2SnapshotLatestSha.get());
 
         // ---------------------- TEST ITEMS -------------------------- //
 
@@ -590,15 +621,15 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // get fields
         final Fields itemFields = itemsClient.getFields();
-        Assert.assertNotNull(itemFields.getFields());
-        Assert.assertTrue(itemFields.getFields().size() > 0);
+        assertNotNull(itemFields.getFields());
+        assertTrue(itemFields.getFields().size() > 0);
 
         // get all items
         final List<BucketItem> allItems = itemsClient.getAll();
-        Assert.assertEquals(5, allItems.size());
+        assertEquals(5, allItems.size());
         allItems.stream().forEach(i -> {
-            Assert.assertNotNull(i.getBucketName());
-            Assert.assertNotNull(i.getLink());
+            assertNotNull(i.getBucketName());
+            assertNotNull(i.getLink());
         });
         allItems.stream().forEach(i -> LOGGER.info("All items, item " + i.getIdentifier()));
 
@@ -606,18 +637,18 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final List<BucketItem> flowItems = allItems.stream()
                 .filter(i -> i.getType() == BucketItemType.Flow)
                 .collect(Collectors.toList());
-        Assert.assertEquals(2, flowItems.size());
+        assertEquals(2, flowItems.size());
 
         // verify 3 bundle items
         final List<BucketItem> extensionBundleItems = allItems.stream()
                 .filter(i -> i.getType() == BucketItemType.Extension_Bundle)
                 .collect(Collectors.toList());
-        Assert.assertEquals(3, extensionBundleItems.size());
+        assertEquals(3, extensionBundleItems.size());
 
         // get items for bucket
         final List<BucketItem> bucketItems = itemsClient.getByBucket(flowsBucket.getIdentifier());
-        Assert.assertEquals(2, bucketItems.size());
-        allItems.stream().forEach(i -> Assert.assertNotNull(i.getBucketName()));
+        assertEquals(2, bucketItems.size());
+        allItems.stream().forEach(i -> assertNotNull(i.getBucketName()));
         bucketItems.stream().forEach(i -> LOGGER.info("Items in bucket, item " + i.getIdentifier()));
 
         // ----------------------- TEST DIFF ---------------------------//
@@ -630,34 +661,34 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         snapshotClient.create(snapshot3);
 
         VersionedFlowDifference diff = flowClient.diff(snapshotFlow.getBucketIdentifier(), snapshotFlow.getIdentifier(), 3, 2);
-        Assert.assertNotNull(diff);
-        Assert.assertEquals(1, diff.getComponentDifferenceGroups().size());
+        assertNotNull(diff);
+        assertEquals(1, diff.getComponentDifferenceGroups().size());
 
         // ---------------------- DELETE DATA --------------------------//
 
         final VersionedFlow deletedFlow1 = flowClient.delete(flowsBucket.getIdentifier(), flow1.getIdentifier());
-        Assert.assertNotNull(deletedFlow1);
+        assertNotNull(deletedFlow1);
         LOGGER.info("Deleted flow " + deletedFlow1.getIdentifier());
 
         final VersionedFlow deletedFlow2 = flowClient.delete(flowsBucket.getIdentifier(), flow2.getIdentifier());
-        Assert.assertNotNull(deletedFlow2);
+        assertNotNull(deletedFlow2);
         LOGGER.info("Deleted flow " + deletedFlow2.getIdentifier());
 
         final ExtensionBundle deletedBundle1 = bundleClient.delete(testNarV1Bundle.getIdentifier());
-        Assert.assertNotNull(deletedBundle1);
+        assertNotNull(deletedBundle1);
         LOGGER.info("Deleted extension bundle " + deletedBundle1.getIdentifier());
 
         final ExtensionBundle deletedBundle2 = bundleClient.delete(fooNarV1Bundle.getIdentifier());
-        Assert.assertNotNull(deletedBundle2);
+        assertNotNull(deletedBundle2);
         LOGGER.info("Deleted extension bundle " + deletedBundle2.getIdentifier());
 
         // delete each bucket
         for (final Bucket bucket : createdBuckets) {
             final Bucket deletedBucket = bucketClient.delete(bucket.getIdentifier());
-            Assert.assertNotNull(deletedBucket);
+            assertNotNull(deletedBucket);
             LOGGER.info("Deleted bucket " + deletedBucket.getIdentifier());
         }
-        Assert.assertEquals(0, bucketClient.getAll().size());
+        assertEquals(0, bucketClient.getAll().size());
 
         LOGGER.info("!!! SUCCESS !!!");
 
@@ -679,10 +710,10 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
             }
         }
 
-        Assert.assertNotNull(createdBundleVersion);
-        Assert.assertNotNull(createdBundleVersion.getBucket());
-        Assert.assertNotNull(createdBundleVersion.getExtensionBundle());
-        Assert.assertNotNull(createdBundleVersion.getVersionMetadata());
+        assertNotNull(createdBundleVersion);
+        assertNotNull(createdBundleVersion.getBucket());
+        assertNotNull(createdBundleVersion.getExtensionBundle());
+        assertNotNull(createdBundleVersion.getVersionMetadata());
 
         return createdBundleVersion;
     }
@@ -701,10 +732,10 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
                     bundlesBucket.getIdentifier(), ExtensionBundleType.NIFI_NAR, new File(narFile), sha256);
         }
 
-        Assert.assertNotNull(createdBundleVersion);
-        Assert.assertNotNull(createdBundleVersion.getBucket());
-        Assert.assertNotNull(createdBundleVersion.getExtensionBundle());
-        Assert.assertNotNull(createdBundleVersion.getVersionMetadata());
+        assertNotNull(createdBundleVersion);
+        assertNotNull(createdBundleVersion.getBucket());
+        assertNotNull(createdBundleVersion.getExtensionBundle());
+        assertNotNull(createdBundleVersion.getVersionMetadata());
 
         return createdBundleVersion;
     }

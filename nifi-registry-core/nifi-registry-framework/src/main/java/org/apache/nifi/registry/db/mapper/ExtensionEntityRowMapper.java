@@ -30,9 +30,9 @@ public class ExtensionEntityRowMapper implements RowMapper<ExtensionEntity> {
         final ExtensionEntity entity = new ExtensionEntity();
         entity.setId(rs.getString("ID"));
         entity.setExtensionBundleVersionId(rs.getString("EXTENSION_BUNDLE_VERSION_ID"));
-        entity.setType(rs.getString("TYPE"));
-        entity.setTypeDescription(rs.getString("TYPE_DESCRIPTION"));
-        entity.setRestricted(rs.getInt("IS_RESTRICTED") == 1);
+        entity.setName(rs.getString("NAME"));
+        entity.setDescription(rs.getString("DESCRIPTION"));
+        entity.setGeneralRestriction(rs.getString("GENERAL_RESTRICTION"));
         entity.setCategory(ExtensionEntityCategory.valueOf(rs.getString("CATEGORY")));
         entity.setTags(rs.getString("TAGS"));
         return entity;

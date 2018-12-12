@@ -23,12 +23,18 @@ public class ExtensionBundleFilterParams {
 
     private static final ExtensionBundleFilterParams EMPTY_PARAMS = new Builder().build();
 
+    private final String bucketName;
     private final String groupId;
     private final String artifactId;
 
     private ExtensionBundleFilterParams(final Builder builder) {
+        this.bucketName = builder.bucketName;
         this.groupId = builder.groupId;
         this.artifactId = builder.artifactId;
+    }
+
+    public String getBucketName() {
+        return bucketName;
     }
 
     public String getGroupId() {
@@ -37,6 +43,10 @@ public class ExtensionBundleFilterParams {
 
     public String getArtifactId() {
         return artifactId;
+    }
+
+    public static ExtensionBundleFilterParams of(final String bucketName, final String groupId, final String artifactId) {
+        return new Builder().bucket(bucketName).group(groupId).artifact(artifactId).build();
     }
 
     public static ExtensionBundleFilterParams of(final String groupId, final String artifactId) {
@@ -49,8 +59,14 @@ public class ExtensionBundleFilterParams {
 
     public static class Builder {
 
+        private String bucketName;
         private String groupId;
         private String artifactId;
+
+        public Builder bucket(final String bucketName) {
+            this.bucketName = bucketName;
+            return this;
+        }
 
         public Builder group(final String groupId) {
             this.groupId = groupId;

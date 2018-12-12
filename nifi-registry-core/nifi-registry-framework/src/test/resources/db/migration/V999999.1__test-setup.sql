@@ -267,21 +267,37 @@ insert into extension_bundle_version (
 -- test data for extensions
 
 insert into extension (
-  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags
+  id, extension_bundle_version_id, name, description, general_restriction, category, tags
 ) values (
-  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'This is Example Processor 1', 0, 'PROCESSOR', 'example, processor'
+  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'This is Example Processor 1', null, 'PROCESSOR', 'example, processor'
 );
 
 insert into extension (
-  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags)
+  id, extension_bundle_version_id, name, description, general_restriction, category, tags)
 values (
-  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'This is Example Processor Restricted', 1, 'PROCESSOR', 'example, processor, restricted'
+  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'This is Example Processor Restricted', 'This is restricted', 'PROCESSOR', 'example, processor, restricted'
 );
 
 insert into extension (
-  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags)
+  id, extension_bundle_version_id, name, description, general_restriction, category, tags)
 values (
-  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'This is Example Service', 0, 'CONTROLLER_SERVICE', 'example, service'
+  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'This is Example Service', null, 'CONTROLLER_SERVICE', 'example, service'
+);
+
+-- test data for extension restrictions
+
+insert into extension_restriction (
+  id, extension_id, required_permission, explanation
+) values (
+  'er1', 'e2', 'write filesystem', 'This writes to the filesystem'
+);
+
+-- test data for extension provided service apis
+
+insert into extension_provided_service_api (
+  id, extension_id, class_name, group_id, artifact_id, version
+) values (
+  'epapi1', 'e3', 'org.apache.nifi.ExampleServiceAPI', 'org.apache.nifi', 'nifi-example-service-api-nar', '2.0.0'
 );
 
 -- test data for extension tags

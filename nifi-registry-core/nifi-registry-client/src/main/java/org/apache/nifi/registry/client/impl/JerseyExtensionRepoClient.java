@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.ExtensionRepoClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -28,6 +29,8 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -143,6 +146,25 @@ public class JerseyExtensionRepoClient extends AbstractJerseyClient implements E
     }
 
     @Override
+    public List<ExtensionMetadata> getVersionExtensions(final String bucketName, final String groupId, final String artifactId, final String version)
+            throws IOException, NiFiRegistryException {
+
+        validate(bucketName, groupId, artifactId, version);
+
+        return executeAction("Error retrieving versions for extension repo", () -> {
+            final WebTarget target = extensionRepoTarget
+                    .path("{bucketName}/{groupId}/{artifactId}/{version}/extension-metadata")
+                    .resolveTemplate("bucketName", bucketName)
+                    .resolveTemplate("groupId", groupId)
+                    .resolveTemplate("artifactId", artifactId)
+                    .resolveTemplate("version", version);
+
+            final ExtensionMetadata[] extensions = getRequestBuilder(target).get(ExtensionMetadata[].class);
+            return  extensions == null ? Collections.emptyList() : Arrays.asList(extensions);
+        });
+    }
+
+    @Override
     public InputStream getVersionContent(final String bucketName, final String groupId, final String artifactId, final String version)
             throws IOException, NiFiRegistryException {
 
@@ -161,6 +183,33 @@ public class JerseyExtensionRepoClient extends AbstractJerseyClient implements E
                     .get()
                     .readEntity(InputStream.class);
         });
+    }
+
+    @Override
+    public File writeBundleVersionContent(final String bucketName, final String groupId, final String artifactId, final String version, final File directory)
+            throws IOException, NiFiRegistryException {
+
+        validate(bucketName, groupId, artifactId, version);
+
+        if (directory == null) {
+            throw new IllegalArgumentException("Directory cannot be null");
+        }
+
+        return executeAction("Error retrieving version content for extension repo", () -> {
+            final WebTarget target = extensionRepoTarget
+                    .path("{bucketName}/{groupId}/{artifactId}/{version}/content")
+                    .resolveTemplate("bucketName", bucketName)
+                    .resolveTemplate("groupId", groupId)
+                    .resolveTemplate("artifactId", artifactId)
+                    .resolveTemplate("version", version);
+
+            final Response response = getRequestBuilder(target)
+                    .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
+                    .get();
+
+            return ClientUtils.getExtensionBundleVersionContent(response, directory);
+        });
+
     }
 
     @Override

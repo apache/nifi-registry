@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.link.LinkableEntity;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -59,6 +60,13 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
     @NotNull
     @Min(0)
     private long contentSize;
+
+    @NotBlank
+    private String systemApiVersion;
+
+    @Valid
+    @NotNull
+    private BuildInfo buildInfo;
 
 
     @ApiModelProperty(value = "The id of this version of the extension bundle")
@@ -149,6 +157,24 @@ public class ExtensionBundleVersionMetadata extends LinkableEntity implements Co
 
     public void setContentSize(long contentSize) {
         this.contentSize = contentSize;
+    }
+
+    @ApiModelProperty(value = "The version of the system API that this bundle version was built against")
+    public String getSystemApiVersion() {
+        return systemApiVersion;
+    }
+
+    public void setSystemApiVersion(String systemApiVersion) {
+        this.systemApiVersion = systemApiVersion;
+    }
+
+    @ApiModelProperty(value = "The build information about this version")
+    public BuildInfo getBuildInfo() {
+        return buildInfo;
+    }
+
+    public void setBuildInfo(BuildInfo buildInfo) {
+        this.buildInfo = buildInfo;
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 
 import java.io.File;
@@ -128,6 +129,18 @@ public interface ExtensionBundleVersionClient {
      * @throws NiFiRegistryException if an non I/O error occurs
      */
     ExtensionBundleVersion getBundleVersion(String bundleId, String version) throws IOException, NiFiRegistryException;
+
+    /**
+     * Retrieves the metadata about the extensions in the given bundle version.
+     *
+     * @param bundleId the bundle id
+     * @param version the bundle version
+     * @return the list of metadata about the extensions
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    List<ExtensionMetadata> getExtensions(String bundleId, String version) throws IOException, NiFiRegistryException;
 
     /**
      * Obtains an InputStream for the binary content for the version of the given bundle.

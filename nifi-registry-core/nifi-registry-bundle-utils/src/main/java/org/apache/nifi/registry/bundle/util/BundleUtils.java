@@ -14,35 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension.nar;
+package org.apache.nifi.registry.bundle.util;
 
-/**
- * Enumeration of entries that will be in a NAR MANIFEST file.
- */
-public enum NarManifestEntry {
+public class BundleUtils {
 
-    NAR_GROUP("Nar-Group"),
-    NAR_ID("Nar-Id"),
-    NAR_VERSION("Nar-Version"),
-    NAR_DEPENDENCY_GROUP("Nar-Dependency-Group"),
-    NAR_DEPENDENCY_ID("Nar-Dependency-Id"),
-    NAR_DEPENDENCY_VERSION("Nar-Dependency-Version"),
-    BUILD_TAG("Build-Tag"),
-    BUILD_REVISION("Build-Revision"),
-    BUILD_BRANCH("Build-Branch"),
-    BUILD_TIMESTAMP("Build-Timestamp"),
-    BUILD_JDK("Build-Jdk"),
-    BUILT_BY("Built-By"),
-    ;
-
-    final String manifestName;
-
-    NarManifestEntry(String manifestName) {
-        this.manifestName = manifestName;
+    public static boolean isBlank(final String value) {
+        return (value == null || value.trim().isEmpty());
     }
 
-    public String getManifestName() {
-        return manifestName;
+    public static void validateNotNull(String fieldName, Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
+    }
+
+    public static void validateNotBlank(String fieldName, String value) {
+        if (isBlank(value)) {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
     }
 
 }

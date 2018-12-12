@@ -58,6 +58,9 @@ public class JerseyExtensionBundleClient extends AbstractJerseyClient implements
             WebTarget target = extensionBundlesTarget;
 
             if (filterParams != null) {
+                if (!StringUtils.isBlank(filterParams.getBucketName())) {
+                    target = target.queryParam("bucketName", filterParams.getBucketName());
+                }
                 if (!StringUtils.isBlank(filterParams.getGroupId())) {
                     target = target.queryParam("groupId", filterParams.getGroupId());
                 }

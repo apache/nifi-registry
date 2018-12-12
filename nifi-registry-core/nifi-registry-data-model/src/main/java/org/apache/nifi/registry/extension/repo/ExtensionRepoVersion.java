@@ -29,11 +29,24 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlRootElement
 public class ExtensionRepoVersion {
 
+    private Link extensionsLink;
+
     private Link downloadLink;
 
     private Link sha256Link;
 
     private Boolean sha256Supplied;
+
+    @XmlElement
+    @XmlJavaTypeAdapter(LinkAdapter.class)
+    @ApiModelProperty(value = "The WebLink to view the metadata about the extensions contained in the extension bundle.", readOnly = true)
+    public Link getExtensionsLink() {
+        return extensionsLink;
+    }
+
+    public void setExtensionsLink(Link extensionsLink) {
+        this.extensionsLink = extensionsLink;
+    }
 
     @XmlElement
     @XmlJavaTypeAdapter(LinkAdapter.class)

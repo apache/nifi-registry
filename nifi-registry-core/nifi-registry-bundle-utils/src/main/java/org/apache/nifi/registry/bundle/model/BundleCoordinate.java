@@ -14,7 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension;
+package org.apache.nifi.registry.bundle.model;
+
+import org.apache.nifi.registry.bundle.util.BundleUtils;
 
 /**
  * The coordinate of an extension bundle (i.e group + artifact + version).
@@ -32,16 +34,10 @@ public class BundleCoordinate {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
-
-        if (isBlank(this.groupId) || isBlank(this.artifactId) || isBlank(this.version)) {
-            throw new IllegalStateException("Group, Id, and Version are required for BundleCoordinate");
-        }
-
+        BundleUtils.validateNotBlank("Group Id", this.groupId);
+        BundleUtils.validateNotBlank("Artifact Id", this.artifactId);
+        BundleUtils.validateNotBlank("Version", this.version);
         this.coordinate = this.groupId + ":" + this.artifactId + ":" + this.version;
-    }
-
-    private boolean isBlank(String str) {
-        return str == null || str.trim().length() == 0;
     }
 
     public String getGroupId() {

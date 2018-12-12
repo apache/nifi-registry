@@ -46,6 +46,24 @@ public class ExtensionBundleVersionEntity {
     // The size of binary content in bytes
     private long contentSize;
 
+    // The version of the system API that the bundle was built against (i.e. nifi-api)
+    private String systemApiVersion;
+
+    // Build information
+    private String buildTool;
+    private String buildFlags;
+
+    private String buildBranch;
+    private String buildTag;
+    private String buildRevision;
+
+    private Date built;
+    private String builtBy;
+
+    // Populated during creation, but typically not populated on retrieval because we don't need to the entire XML doc
+    private String docsContent;
+
+
     public String getId() {
         return id;
     }
@@ -124,6 +142,78 @@ public class ExtensionBundleVersionEntity {
 
     public void setContentSize(long contentSize) {
         this.contentSize = contentSize;
+    }
+
+    public String getSystemApiVersion() {
+        return systemApiVersion;
+    }
+
+    public void setSystemApiVersion(String systemApiVersion) {
+        this.systemApiVersion = systemApiVersion;
+    }
+
+    public String getBuildTool() {
+        return buildTool;
+    }
+
+    public void setBuildTool(String buildTool) {
+        this.buildTool = buildTool;
+    }
+
+    public String getBuildFlags() {
+        return buildFlags;
+    }
+
+    public void setBuildFlags(String buildFlags) {
+        this.buildFlags = buildFlags;
+    }
+
+    public String getBuildBranch() {
+        return buildBranch;
+    }
+
+    public void setBuildBranch(String buildBranch) {
+        this.buildBranch = buildBranch;
+    }
+
+    public String getBuildTag() {
+        return buildTag;
+    }
+
+    public void setBuildTag(String buildTag) {
+        this.buildTag = buildTag;
+    }
+
+    public String getBuildRevision() {
+        return buildRevision;
+    }
+
+    public void setBuildRevision(String buildRevision) {
+        this.buildRevision = buildRevision;
+    }
+
+    public Date getBuilt() {
+        return built;
+    }
+
+    public void setBuilt(Date built) {
+        this.built = built;
+    }
+
+    public String getBuiltBy() {
+        return builtBy;
+    }
+
+    public void setBuiltBy(String builtBy) {
+        this.builtBy = builtBy;
+    }
+
+    public String getDocsContent() {
+        return docsContent;
+    }
+
+    public void setDocsContent(String docsContent) {
+        this.docsContent = docsContent;
     }
 
 }

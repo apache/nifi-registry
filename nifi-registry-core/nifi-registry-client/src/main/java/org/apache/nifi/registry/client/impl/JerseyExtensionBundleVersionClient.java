@@ -22,6 +22,7 @@ import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
@@ -34,8 +35,6 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -216,6 +215,29 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
     }
 
     @Override
+    public List<ExtensionMetadata> getExtensions(final String bundleId, final String version)
+            throws IOException, NiFiRegistryException {
+
+        if (StringUtils.isBlank(bundleId)) {
+            throw new IllegalArgumentException("Bundle id cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(version)) {
+            throw new IllegalArgumentException("Version cannot be null or blank");
+        }
+
+        return executeAction("Error getting extension bundle version", () -> {
+            final WebTarget target = extensionBundlesTarget
+                    .path("{bundleId}/versions/{version}/extension-metadata")
+                    .resolveTemplate("bundleId", bundleId)
+                    .resolveTemplate("version", version);
+
+            final ExtensionMetadata[] extensions = getRequestBuilder(target).get(ExtensionMetadata[].class);
+            return  extensions == null ? Collections.emptyList() : Arrays.asList(extensions);
+        });
+    }
+
+    @Override
     public InputStream getBundleVersionContent(final String bundleId, final String version)
             throws IOException, NiFiRegistryException {
 
@@ -266,21 +288,7 @@ public class JerseyExtensionBundleVersionClient extends AbstractJerseyClient imp
                     .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
                     .get();
 
-            final String contentDispositionHeader = response.getHeaderString("Content-Disposition");
-            if (StringUtils.isBlank(contentDispositionHeader)) {
-                throw new IllegalStateException("Content-Disposition header was blank or missing");
-            }
-
-            final int equalsIndex = contentDispositionHeader.lastIndexOf("=");
-            final String filename = contentDispositionHeader.substring(equalsIndex + 1).trim();
-            final File bundleFile = new File(directory, filename);
-
-            try (final InputStream responseInputStream = response.readEntity(InputStream.class)) {
-                Files.copy(responseInputStream, bundleFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                return bundleFile;
-            } catch (Exception e) {
-                throw new IllegalStateException("Unable to write bundle content due to: " + e.getMessage(), e);
-            }
+            return ClientUtils.getExtensionBundleVersionContent(response, directory);
         });
     }
 

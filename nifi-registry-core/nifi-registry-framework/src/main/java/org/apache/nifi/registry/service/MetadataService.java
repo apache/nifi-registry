@@ -436,6 +436,17 @@ public interface MetadataService {
     List<ExtensionEntity> getExtensionsByCategory(ExtensionEntityCategory category);
 
     /**
+     * Retrieves the extensions that provider the given service API.
+     *
+     * @param className the class name of the provided service api
+     * @param groupId the group id of the provided service api
+     * @param artifactId the artifact id of the provided service api
+     * @param version the version of the provided service api
+     * @return the extensions
+     */
+    List<ExtensionEntity> getExtensionsByProvidedServiceApi(String className, String groupId, String artifactId, String version);
+
+    /**
      * Retrieves the extensions with the given tag.
      *
      * @param tag the tag
@@ -456,6 +467,7 @@ public interface MetadataService {
      * @param extension the extension to delete
      */
     void deleteExtension(ExtensionEntity extension);
+
 
     // --------------------------------------------------------------------------------------------
 

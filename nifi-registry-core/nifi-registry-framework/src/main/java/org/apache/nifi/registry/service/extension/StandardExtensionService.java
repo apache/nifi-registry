@@ -22,15 +22,18 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.bundle.extract.BundleExtractor;
+import org.apache.nifi.registry.bundle.model.BuildDetails;
+import org.apache.nifi.registry.bundle.model.BundleCoordinate;
+import org.apache.nifi.registry.bundle.model.BundleDetails;
+import org.apache.nifi.registry.bundle.model.ExtensionDetails;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.extension.BundleCoordinate;
-import org.apache.nifi.registry.extension.BundleDetails;
-import org.apache.nifi.registry.extension.BundleExtractor;
 import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleContext;
 import org.apache.nifi.registry.extension.ExtensionBundlePersistenceProvider;
@@ -38,6 +41,7 @@ import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionDependency;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
@@ -47,8 +51,10 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.extension.StandardExtensionBundleContext;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.service.DataModelMapper;
 import org.apache.nifi.registry.service.MetadataService;
+import org.apache.nifi.registry.service.mapper.BucketMappings;
+import org.apache.nifi.registry.service.mapper.BundleDetailMappings;
+import org.apache.nifi.registry.service.mapper.ExtensionMappings;
 import org.apache.nifi.registry.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,11 +142,7 @@ public class StandardExtensionService implements ExtensionService {
         }
 
         // ensure the bucket exists
-        final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
-        if (existingBucket == null) {
-            LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-            throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
-        }
+        final BucketEntity existingBucket = getBucketEntity(bucketIdentifier);
 
         // ensure the extensions directory exists and we can read and write to it
         FileUtils.ensureDirectoryExistAndCanReadAndWrite(extensionsWorkingDir);
@@ -173,7 +175,7 @@ public class StandardExtensionService implements ExtensionService {
             }
 
             final BundleCoordinate bundleCoordinate = bundleDetails.getBundleCoordinate();
-            final Set<BundleCoordinate> dependencyCoordinates = bundleDetails.getDependencyBundleCoordinates();
+            final BuildDetails buildDetails = bundleDetails.getBuildDetails();
 
             final String groupId = bundleCoordinate.getGroupId();
             final String artifactId = bundleCoordinate.getArtifactId();
@@ -182,7 +184,7 @@ public class StandardExtensionService implements ExtensionService {
             final boolean isSnapshotVersion = version.endsWith(SNAPSHOT_VERSION_SUFFIX);
             final boolean overwriteBundleVersion = isSnapshotVersion || existingBucket.isAllowExtensionBundleRedeploy();
 
-            LOGGER.debug("Extracted bundle details - '{}' - '{}' - '{}'", new Object[]{groupId, artifactId, version});
+            LOGGER.debug("Extracted bundle details - '{}:{}:{}'", new Object[]{groupId, artifactId, version});
 
             // a bundle with the same group, artifact, and version can exist in multiple buckets, but only if it contains the same binary content, or if its a snapshot version
             // we can determine that by comparing the SHA-256 digest of the incoming bundle against existing bundles with the same group, artifact, version
@@ -195,7 +197,7 @@ public class StandardExtensionService implements ExtensionService {
 
             // get the existing extension bundle entity, or create a new one if one does not exist in the bucket with the group + artifact
             final long currentTime = System.currentTimeMillis();
-            final ExtensionBundleEntity extensionBundle = getOrCreateExtensionBundle(bucketIdentifier, groupId, artifactId, bundleType, currentTime);
+            final ExtensionBundleEntity bundleEntity = getOrCreateExtensionBundle(bucketIdentifier, groupId, artifactId, bundleType, currentTime);
 
             // check if the version of incoming bundle already exists in the bucket
             // if it exists and it is a snapshot version or the bucket allows redeploying, then first delete the row in the extension_bundle_version table so we can create a new one
@@ -203,9 +205,10 @@ public class StandardExtensionService implements ExtensionService {
             final ExtensionBundleVersionEntity existingVersion = metadataService.getExtensionBundleVersion(bucketIdentifier, groupId, artifactId, version);
             if (existingVersion != null) {
                 if (overwriteBundleVersion) {
+                    LOGGER.debug("Bundle overwriting allowed, deleting existing version...");
                     metadataService.deleteExtensionBundleVersion(existingVersion);
                 } else {
-                    LOGGER.warn("The specified version [{}] already exists for extension bundle [{}].", new Object[]{version, extensionBundle.getId()});
+                    LOGGER.warn("The specified version [{}] already exists for extension bundle [{}].", new Object[]{version, bundleEntity.getId()});
                     throw new IllegalStateException("The specified version already exists for the given extension bundle");
                 }
             }
@@ -214,7 +217,7 @@ public class StandardExtensionService implements ExtensionService {
             final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
             final ExtensionBundleVersionMetadata versionMetadata = new ExtensionBundleVersionMetadata();
             versionMetadata.setId(UUID.randomUUID().toString());
-            versionMetadata.setExtensionBundleId(extensionBundle.getId());
+            versionMetadata.setExtensionBundleId(bundleEntity.getId());
             versionMetadata.setBucketId(bucketIdentifier);
             versionMetadata.setVersion(version);
             versionMetadata.setTimestamp(currentTime);
@@ -222,51 +225,26 @@ public class StandardExtensionService implements ExtensionService {
             versionMetadata.setSha256(sha256Hex);
             versionMetadata.setSha256Supplied(sha256Supplied);
             versionMetadata.setContentSize(extensionWorkingFile.length());
+            versionMetadata.setSystemApiVersion(bundleDetails.getSystemApiVersion());
+            versionMetadata.setBuildInfo(BundleDetailMappings.map(buildDetails));
 
             validate(versionMetadata, "Cannot create extension bundle version");
 
-            // create the version dependency instances and validate they have the required fields
-            final Set<ExtensionBundleVersionDependency> versionDependencies = new HashSet<>();
-            for (final BundleCoordinate dependencyCoordinate : dependencyCoordinates) {
-                final ExtensionBundleVersionDependency versionDependency = new ExtensionBundleVersionDependency();
-                versionDependency.setGroupId(dependencyCoordinate.getGroupId());
-                versionDependency.setArtifactId(dependencyCoordinate.getArtifactId());
-                versionDependency.setVersion(dependencyCoordinate.getVersion());
-
-                validate(versionDependency, "Cannot create extension bundle version dependency");
-                versionDependencies.add(versionDependency);
-            }
-
             // create the bundle version in the metadata db
-            final ExtensionBundleVersionEntity versionEntity = DataModelMapper.map(versionMetadata);
+            final ExtensionBundleVersionEntity versionEntity = ExtensionMappings.map(versionMetadata);
+            versionEntity.setDocsContent(bundleDetails.getDocsContent());
             metadataService.createExtensionBundleVersion(versionEntity);
 
-            // create the bundle version dependencies in the metadata db
-            for (final ExtensionBundleVersionDependency versionDependency : versionDependencies) {
-                final ExtensionBundleVersionDependencyEntity versionDependencyEntity = DataModelMapper.map(versionDependency);
-                versionDependencyEntity.setId(UUID.randomUUID().toString());
-                versionDependencyEntity.setExtensionBundleVersionId(versionEntity.getId());
-                metadataService.createDependency(versionDependencyEntity);
-            }
+            // create and persist the version dependencies in the metadata db
+            final Set<ExtensionBundleVersionDependencyEntity> dependencyEntities = getDependencyEntities(versionEntity, bundleDetails);
+            dependencyEntities.forEach(d -> metadataService.createDependency(d));
+
+            // create and persist extensions in the metadata db
+            final Set<ExtensionEntity> extensionEntities = getExtensionEntities(versionEntity, bundleDetails);
+            extensionEntities.forEach(e -> metadataService.createExtension(e));
 
             // persist the content of the bundle to the persistence provider
-            final ExtensionBundleContext context = new StandardExtensionBundleContext.Builder()
-                    .bundleType(getProviderBundleType(bundleType))
-                    .bucketId(existingBucket.getId())
-                    .bucketName(existingBucket.getName())
-                    .bundleId(extensionBundle.getId())
-                    .bundleGroupId(extensionBundle.getGroupId())
-                    .bundleArtifactId(extensionBundle.getArtifactId())
-                    .bundleVersion(versionMetadata.getVersion())
-                    .author(versionMetadata.getAuthor())
-                    .timestamp(versionMetadata.getTimestamp())
-                    .build();
-
-            try (final InputStream in = new FileInputStream(extensionWorkingFile);
-                 final InputStream bufIn = new BufferedInputStream(in)) {
-                bundlePersistenceProvider.saveBundleVersion(context, bufIn, overwriteBundleVersion);
-                LOGGER.debug("Bundle saved to persistence provider - '{}' - '{}' - '{}'", new Object[]{groupId, artifactId, version});
-            }
+            persistBundleVersionContent(bundleType, existingBucket, bundleEntity, versionEntity, extensionWorkingFile, overwriteBundleVersion);
 
             // get the updated extension bundle so it contains the correct version count
             final ExtensionBundleEntity updatedBundle = metadataService.getExtensionBundle(bucketIdentifier, groupId, artifactId);
@@ -274,9 +252,14 @@ public class StandardExtensionService implements ExtensionService {
             // create the full ExtensionBundleVersion instance to return
             final ExtensionBundleVersion extensionBundleVersion = new ExtensionBundleVersion();
             extensionBundleVersion.setVersionMetadata(versionMetadata);
-            extensionBundleVersion.setExtensionBundle(DataModelMapper.map(existingBucket, updatedBundle));
-            extensionBundleVersion.setBucket(DataModelMapper.map(existingBucket));
-            extensionBundleVersion.setDependencies(versionDependencies);
+            extensionBundleVersion.setExtensionBundle(ExtensionMappings.map(existingBucket, updatedBundle));
+            extensionBundleVersion.setBucket(BucketMappings.map(existingBucket));
+
+            final Set<ExtensionBundleVersionDependency> dependencies = new HashSet<>();
+            dependencyEntities.forEach(d -> dependencies.add(ExtensionMappings.map(d)));
+            extensionBundleVersion.setDependencies(dependencies);
+
+            LOGGER.debug("Created bundle - '{}:{}:{}'", new Object[]{groupId, artifactId, version});
             return extensionBundleVersion;
 
         } finally {
@@ -291,9 +274,74 @@ public class StandardExtensionService implements ExtensionService {
         }
     }
 
-    private ExtensionBundleEntity getOrCreateExtensionBundle(final String bucketId, final String groupId,
-                                                             final String artifactId, final ExtensionBundleType bundleType,
-                                                             final long currentTime) {
+    private Set<ExtensionBundleVersionDependencyEntity> getDependencyEntities(final ExtensionBundleVersionEntity versionEntity, final BundleDetails bundleDetails) {
+        final Set<BundleCoordinate> dependencyCoordinates = bundleDetails.getDependencyBundleCoordinates();
+        if (dependencyCoordinates == null) {
+            return Collections.emptySet();
+        }
+
+        final Set<ExtensionBundleVersionDependencyEntity> versionDependencies = new HashSet<>();
+
+        for (final BundleCoordinate dependencyCoordinate : dependencyCoordinates) {
+            final ExtensionBundleVersionDependency versionDependency = BundleDetailMappings.map(dependencyCoordinate);
+            validate(versionDependency, "Cannot create extension bundle version dependency");
+
+            final ExtensionBundleVersionDependencyEntity versionDependencyEntity = ExtensionMappings.map(versionDependency);
+            versionDependencyEntity.setId(UUID.randomUUID().toString());
+            versionDependencyEntity.setExtensionBundleVersionId(versionEntity.getId());
+
+            versionDependencies.add(versionDependencyEntity);
+        }
+
+        return versionDependencies;
+    }
+
+    private Set<ExtensionEntity> getExtensionEntities(final ExtensionBundleVersionEntity versionEntity, final BundleDetails bundleDetails) {
+        final Set<ExtensionDetails> extensionDetails = bundleDetails.getExtensionDetails();
+        if (extensionDetails == null) {
+            return Collections.emptySet();
+        }
+
+        final Set<ExtensionEntity> extensionEntities = new HashSet<>();
+        final Map<String,String> additionalDetails = bundleDetails.getAdditionalDetails();
+
+        for (final ExtensionDetails extensionDetail :extensionDetails) {
+            // Convert ExtensionDetails to ExtensionMetadata and validate
+            final ExtensionMetadata extensionMetadata = BundleDetailMappings.map(extensionDetail);
+            extensionMetadata.setId(UUID.randomUUID().toString());
+            validate(extensionMetadata, "Cannot create ExtensionMetadata");
+
+            // Convert ExtensionMetadata to ExtensionEntity and populate ids
+            final ExtensionEntity extensionEntity = ExtensionMappings.map(extensionMetadata);
+            extensionEntity.setExtensionBundleVersionId(versionEntity.getId());
+
+            extensionEntity.getRestrictions().forEach(r -> {
+                r.setId(UUID.randomUUID().toString());
+                r.setExtensionId(extensionEntity.getId());
+            });
+
+            extensionEntity.getProvidedServiceApis().forEach(p -> {
+                p.setId(UUID.randomUUID().toString());
+                p.setExtensionId(extensionEntity.getId());
+            });
+
+            // Check the additionalDetails map to see if there is an entry, and if so populate it
+            final String additionalDetailsContent = additionalDetails.get(extensionEntity.getName());
+            if (StringUtils.isBlank(additionalDetailsContent)) {
+                LOGGER.debug("Found additional details documentation for extension '{}'", new Object[]{extensionEntity.getName()});
+                extensionEntity.setAdditionalDetails(additionalDetailsContent);
+            }
+
+            extensionEntities.add(extensionEntity);
+        }
+
+        return extensionEntities;
+    }
+
+
+    private ExtensionBundleEntity getOrCreateExtensionBundle(final String bucketId, final String groupId, final String artifactId,
+                                                             final ExtensionBundleType bundleType, final long currentTime) {
+
         ExtensionBundleEntity existingBundleEntity = metadataService.getExtensionBundle(bucketId, groupId, artifactId);
         if (existingBundleEntity == null) {
             final ExtensionBundle bundle = new ExtensionBundle();
@@ -307,15 +355,38 @@ public class StandardExtensionService implements ExtensionService {
             bundle.setModifiedTimestamp(currentTime);
 
             validate(bundle, "Cannot create extension bundle");
-            existingBundleEntity = metadataService.createExtensionBundle(DataModelMapper.map(bundle));
+            existingBundleEntity = metadataService.createExtensionBundle(ExtensionMappings.map(bundle));
         } else {
-            final ExtensionBundleEntityType bundleEntityType = DataModelMapper.map(bundleType);
+            final ExtensionBundleEntityType bundleEntityType = ExtensionMappings.map(bundleType);
             if (bundleEntityType != existingBundleEntity.getBundleType()) {
                 throw new IllegalStateException("A bundle already exists with the same group id and artifact id, but a different bundle type");
             }
         }
 
         return existingBundleEntity;
+    }
+
+    private void persistBundleVersionContent(final ExtensionBundleType bundleType, final BucketEntity bucket, final ExtensionBundleEntity bundle,
+                                             final ExtensionBundleVersionEntity bundleVersion, final File extensionWorkingFile,
+                                             final boolean overwriteBundleVersion) throws IOException {
+        final ExtensionBundleContext context = new StandardExtensionBundleContext.Builder()
+                .bundleType(getProviderBundleType(bundleType))
+                .bucketId(bucket.getId())
+                .bucketName(bucket.getName())
+                .bundleId(bundle.getId())
+                .bundleGroupId(bundle.getGroupId())
+                .bundleArtifactId(bundle.getArtifactId())
+                .bundleVersion(bundleVersion.getVersion())
+                .author(bundleVersion.getCreatedBy())
+                .timestamp(bundleVersion.getCreated().getTime())
+                .build();
+
+        try (final InputStream in = new FileInputStream(extensionWorkingFile);
+             final InputStream bufIn = new BufferedInputStream(in)) {
+            bundlePersistenceProvider.saveBundleVersion(context, bufIn, overwriteBundleVersion);
+            LOGGER.debug("Bundle saved to persistence provider - '{}' - '{}' - '{}'",
+                    new Object[]{context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion()});
+        }
     }
 
     private ExtensionBundleContext.BundleType getProviderBundleType(final ExtensionBundleType bundleType) {
@@ -337,7 +408,7 @@ public class StandardExtensionService implements ExtensionService {
 
         final List<ExtensionBundleEntity> bundleEntities = metadataService.getExtensionBundles(bucketIdentifiers,
                 filterParams == null ? ExtensionBundleFilterParams.empty() : filterParams);
-        return bundleEntities.stream().map(b -> DataModelMapper.map(null, b)).collect(Collectors.toList());
+        return bundleEntities.stream().map(b -> ExtensionMappings.map(null, b)).collect(Collectors.toList());
     }
 
     @Override
@@ -345,16 +416,10 @@ public class StandardExtensionService implements ExtensionService {
         if (StringUtils.isBlank(bucketIdentifier)) {
             throw new IllegalArgumentException("Bucket identifier cannot be null or blank");
         }
-
-        // ensure the bucket exists
-        final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
-        if (existingBucket == null) {
-            LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
-            throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
-        }
+        final BucketEntity existingBucket = getBucketEntity(bucketIdentifier);
 
         final List<ExtensionBundleEntity> bundleEntities = metadataService.getExtensionBundlesByBucket(bucketIdentifier);
-        return bundleEntities.stream().map(b -> DataModelMapper.map(existingBucket, b)).collect(Collectors.toList());
+        return bundleEntities.stream().map(b -> ExtensionMappings.map(existingBucket, b)).collect(Collectors.toList());
     }
 
     @Override
@@ -370,7 +435,7 @@ public class StandardExtensionService implements ExtensionService {
         }
 
         final BucketEntity existingBucket = metadataService.getBucketById(existingBundle.getBucketId());
-        return DataModelMapper.map(existingBucket, existingBundle);
+        return ExtensionMappings.map(existingBucket, existingBundle);
     }
 
     @Override
@@ -407,7 +472,7 @@ public class StandardExtensionService implements ExtensionService {
         final List<ExtensionBundleVersionEntity> bundleVersionEntities = metadataService.getExtensionBundleVersions(bucketIdentifiers,
                 filterParams == null ? ExtensionBundleVersionFilterParams.empty() : filterParams);
         if (bundleVersionEntities != null) {
-            bundleVersionEntities.forEach(bv -> sortedVersions.add(DataModelMapper.map(bv)));
+            bundleVersionEntities.forEach(bv -> sortedVersions.add(ExtensionMappings.map(bv)));
         }
         return sortedVersions;
     }
@@ -433,23 +498,19 @@ public class StandardExtensionService implements ExtensionService {
 
         final List<ExtensionBundleVersionEntity> existingVersions = metadataService.getExtensionBundleVersions(existingBundle.getId());
         if (existingVersions != null) {
-            existingVersions.stream().forEach(s -> sortedVersions.add(DataModelMapper.map(s)));
+            existingVersions.stream().forEach(s -> sortedVersions.add(ExtensionMappings.map(s)));
         }
         return sortedVersions;
     }
 
     @Override
-    public ExtensionBundleVersion getExtensionBundleVersion(ExtensionBundleVersionCoordinate versionCoordinate) {
+    public ExtensionBundleVersion getExtensionBundleVersion(final ExtensionBundleVersionCoordinate versionCoordinate) {
         if (versionCoordinate == null) {
             throw new IllegalArgumentException("Extension bundle version coordinate cannot be null");
         }
 
         // ensure the bucket exists
-        final BucketEntity existingBucket = metadataService.getBucketById(versionCoordinate.getBucketId());
-        if (existingBucket == null) {
-            LOGGER.warn("The specified bucket id [{}] does not exist.", versionCoordinate.getBucketId());
-            throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
-        }
+        final BucketEntity existingBucket = getBucketEntity(versionCoordinate.getBucketId());
 
         // ensure the bundle exists
         final ExtensionBundleEntity existingBundle = metadataService.getExtensionBundle(
@@ -480,14 +541,14 @@ public class StandardExtensionService implements ExtensionService {
 
         // convert the dependency db entities
         final Set<ExtensionBundleVersionDependency> dependencies = existingVersionDependencies.stream()
-                .map(d -> DataModelMapper.map(d))
+                .map(d -> ExtensionMappings.map(d))
                 .collect(Collectors.toSet());
 
         // create the full ExtensionBundleVersion instance to return
         final ExtensionBundleVersion extensionBundleVersion = new ExtensionBundleVersion();
-        extensionBundleVersion.setVersionMetadata(DataModelMapper.map(existingVersion));
-        extensionBundleVersion.setExtensionBundle(DataModelMapper.map(existingBucket, existingBundle));
-        extensionBundleVersion.setBucket(DataModelMapper.map(existingBucket));
+        extensionBundleVersion.setVersionMetadata(ExtensionMappings.map(existingVersion));
+        extensionBundleVersion.setExtensionBundle(ExtensionMappings.map(existingBucket, existingBundle));
+        extensionBundleVersion.setBucket(BucketMappings.map(existingBucket));
         extensionBundleVersion.setDependencies(dependencies);
         return extensionBundleVersion;
     }
@@ -526,6 +587,41 @@ public class StandardExtensionService implements ExtensionService {
 
         return bundleVersion;
     }
+
+    // ------ Extension Methods ----
+
+    @Override
+    public SortedSet<ExtensionMetadata> getExtensions(final ExtensionBundleVersion bundleVersion) {
+        if (bundleVersion == null) {
+            throw new IllegalArgumentException("Extension bundle version cannot be null");
+        }
+
+        // ensure the bundle version exists
+        final ExtensionBundleVersionEntity existingBundleVersion = metadataService.getExtensionBundleVersion(
+                bundleVersion.getVersionMetadata().getBucketId(),
+                bundleVersion.getExtensionBundle().getGroupId(),
+                bundleVersion.getExtensionBundle().getArtifactId(),
+                bundleVersion.getVersionMetadata().getVersion());
+
+        if (existingBundleVersion == null) {
+            LOGGER.warn("The specified extension bundle version does not exist for [{}] - [{}] - [{}] - [{}]",
+                    new Object[]{
+                            bundleVersion.getVersionMetadata().getBucketId(),
+                            bundleVersion.getExtensionBundle().getGroupId(),
+                            bundleVersion.getExtensionBundle().getArtifactId(),
+                            bundleVersion.getVersionMetadata().getVersion()});
+            throw new ResourceNotFoundException("The specified extension bundle version does not exist.");
+        }
+
+        // retrieve the extension entities
+        final List<ExtensionEntity> extensionEntities = metadataService.getExtensionsByBundleVersionId(existingBundleVersion.getId());
+
+        // map to extension metadata and sort by extension name
+        final SortedSet<ExtensionMetadata> extensions = new TreeSet<>(Comparator.comparing(ExtensionMetadata::getName));
+        extensionEntities.forEach(e -> extensions.add(ExtensionMappings.map(e)));
+        return extensions;
+    }
+
 
     // ------ Extension Repository Methods -------
 
@@ -624,6 +720,8 @@ public class StandardExtensionService implements ExtensionService {
                 repoVersion.setGroupId(bundleEntity.getGroupId());
                 repoVersion.setArtifactId(bundleEntity.getArtifactId());
                 repoVersion.setVersion(v.getVersion());
+                repoVersion.setAuthor(v.getCreatedBy());
+                repoVersion.setTimestamp(v.getCreated().getTime());
                 repoVersions.add(repoVersion);
             });
         }
@@ -651,4 +749,15 @@ public class StandardExtensionService implements ExtensionService {
                 .timestamp(bundleVersionMetadata.getTimestamp())
                 .build();
     }
+
+    private BucketEntity getBucketEntity(String bucketIdentifier) {
+        // ensure the bucket exists
+        final BucketEntity existingBucket = metadataService.getBucketById(bucketIdentifier);
+        if (existingBucket == null) {
+            LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
+            throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
+        }
+        return existingBucket;
+    }
+
 }

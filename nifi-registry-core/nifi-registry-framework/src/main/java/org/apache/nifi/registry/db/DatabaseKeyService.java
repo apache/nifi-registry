@@ -20,7 +20,7 @@ import org.apache.nifi.registry.db.entity.KeyEntity;
 import org.apache.nifi.registry.db.mapper.KeyEntityRowMapper;
 import org.apache.nifi.registry.security.key.Key;
 import org.apache.nifi.registry.security.key.KeyService;
-import org.apache.nifi.registry.service.DataModelMapper;
+import org.apache.nifi.registry.service.mapper.KeyMappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +67,7 @@ public class DatabaseKeyService implements KeyService {
             }
 
             if (keyEntity != null) {
-                key = DataModelMapper.map(keyEntity);
+                key = KeyMappings.map(keyEntity);
             } else {
                 logger.debug("No signing key found with id='" + id + "'");
             }
@@ -106,9 +106,9 @@ public class DatabaseKeyService implements KeyService {
                 final String insertSql = "INSERT INTO signing_key (ID, TENANT_IDENTITY, KEY_VALUE) VALUES (?, ?, ?)";
                 jdbcTemplate.update(insertSql, newKeyEntity.getId(), newKeyEntity.getTenantIdentity(), newKeyEntity.getKeyValue());
 
-                key = DataModelMapper.map(newKeyEntity);
+                key = KeyMappings.map(newKeyEntity);
             } else {
-                key = DataModelMapper.map(existingKeyEntity);
+                key = KeyMappings.map(existingKeyEntity);
             }
         } finally {
             writeLock.unlock();

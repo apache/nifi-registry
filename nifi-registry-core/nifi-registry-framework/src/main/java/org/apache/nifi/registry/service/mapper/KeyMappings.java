@@ -14,23 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.extension.minificpp;
+package org.apache.nifi.registry.service.mapper;
 
-import org.apache.nifi.registry.extension.BundleDetails;
-import org.apache.nifi.registry.extension.BundleExtractor;
-
-import java.io.IOException;
-import java.io.InputStream;
+import org.apache.nifi.registry.db.entity.KeyEntity;
+import org.apache.nifi.registry.security.key.Key;
 
 /**
- * ExtensionBundleExtractor for MiNiFi CPP extensions.
+ * Mappings between key DB entities and data model.
  */
-public class MiNiFiCppBundleExtractor implements BundleExtractor {
+public class KeyMappings {
 
-    @Override
-    public BundleDetails extract(final InputStream inputStream) throws IOException {
-        // TODO implement
-        throw new UnsupportedOperationException("Minifi CPP extensions are not yet supported");
+    public static Key map(final KeyEntity keyEntity) {
+        final Key key = new Key();
+        key.setId(keyEntity.getId());
+        key.setIdentity(keyEntity.getTenantIdentity());
+        key.setKey(keyEntity.getKeyValue());
+        return key;
+    }
+
+    public static KeyEntity map(final Key key) {
+        final KeyEntity keyEntity = new KeyEntity();
+        keyEntity.setId(key.getId());
+        keyEntity.setTenantIdentity(key.getIdentity());
+        keyEntity.setKeyValue(key.getKey());
+        return keyEntity;
     }
 
 }

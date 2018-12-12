@@ -21,6 +21,7 @@ import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleType;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
@@ -133,6 +134,17 @@ public interface ExtensionService {
      * @return the deleted extension bundle version
      */
     ExtensionBundleVersion deleteExtensionBundleVersion(ExtensionBundleVersion bundleVersion);
+
+    // ----- Extension Methods ------
+
+    /**
+     * Retrieves the set of extensions for the given bundle version.
+     *
+     * @param bundleVersion the bundle version to retrieve extensions for
+     * @return the set of extensions for the given bundle version
+     */
+    SortedSet<ExtensionMetadata> getExtensions(ExtensionBundleVersion bundleVersion);
+
 
     // ----- Extension Repo Methods -----
 

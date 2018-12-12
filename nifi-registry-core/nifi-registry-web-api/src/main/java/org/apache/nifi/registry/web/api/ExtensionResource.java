@@ -30,6 +30,7 @@ import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.extension.ExtensionBundle;
 import org.apache.nifi.registry.extension.ExtensionBundleVersion;
 import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.ExtensionMetadata;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
 import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
 import org.apache.nifi.registry.security.authorization.RequestAction;
@@ -98,6 +99,10 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     )
     @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getExtensionBundles(
+            @QueryParam("bucketName")
+            @ApiParam("Optional bucket name to filter results. The value may be an exact match, or a wildcard, " +
+                    "such as 'My Bucket%' to select all bundles where the bucket name starts with 'My Bucket'.")
+                final String bucketName,
             @QueryParam("groupId")
             @ApiParam("Optional groupId to filter results. The value may be an exact match, or a wildcard, " +
                     "such as 'com.%' to select all bundles where the groupId starts with 'com.'.")
@@ -113,7 +118,7 @@ public class ExtensionResource extends AuthorizableApplicationResource {
             return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
         }
 
-        final ExtensionBundleFilterParams filterParams = ExtensionBundleFilterParams.of(groupId, artifactId);
+        final ExtensionBundleFilterParams filterParams = ExtensionBundleFilterParams.of(bucketName, groupId, artifactId);
 
         List<ExtensionBundle> bundles = registryService.getExtensionBundles(authorizedBucketIds, filterParams);
         if (bundles == null) {
@@ -151,7 +156,6 @@ public class ExtensionResource extends AuthorizableApplicationResource {
                 final String bundleId) {
 
         final ExtensionBundle extensionBundle = getExtensionBundleWithBucketReadAuthorization(bundleId);
-
         permissionsService.populateItemPermissions(extensionBundle);
         linkService.populateLinks(extensionBundle);
 
@@ -299,12 +303,7 @@ public class ExtensionResource extends AuthorizableApplicationResource {
                 final String version) {
 
         final ExtensionBundle extensionBundle = getExtensionBundleWithBucketReadAuthorization(bundleId);
-
-        final ExtensionBundleVersionCoordinate versionCoordinate = new ExtensionBundleVersionCoordinate(
-                extensionBundle.getBucketIdentifier(),
-                extensionBundle.getGroupId(),
-                extensionBundle.getArtifactId(),
-                version);
+        final ExtensionBundleVersionCoordinate versionCoordinate = getExtensionBundleVersionCoordinate(extensionBundle, version);
 
         final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
         linkService.populateLinks(bundleVersion);
@@ -341,12 +340,7 @@ public class ExtensionResource extends AuthorizableApplicationResource {
                 final String version) {
 
         final ExtensionBundle extensionBundle = getExtensionBundleWithBucketReadAuthorization(bundleId);
-
-        final ExtensionBundleVersionCoordinate versionCoordinate = new ExtensionBundleVersionCoordinate(
-                extensionBundle.getBucketIdentifier(),
-                extensionBundle.getGroupId(),
-                extensionBundle.getArtifactId(),
-                version);
+        final ExtensionBundleVersionCoordinate versionCoordinate = getExtensionBundleVersionCoordinate(extensionBundle, version);
 
         final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
         final StreamingOutput streamingOutput = (output) -> registryService.writeExtensionBundleVersionContent(bundleVersion, output);
@@ -385,12 +379,7 @@ public class ExtensionResource extends AuthorizableApplicationResource {
                 final String version) {
 
         final ExtensionBundle extensionBundle = getExtensionBundleWithBucketReadAuthorization(bundleId);
-
-        final ExtensionBundleVersionCoordinate versionCoordinate = new ExtensionBundleVersionCoordinate(
-                extensionBundle.getBucketIdentifier(),
-                extensionBundle.getGroupId(),
-                extensionBundle.getArtifactId(),
-                version);
+        final ExtensionBundleVersionCoordinate versionCoordinate = getExtensionBundleVersionCoordinate(extensionBundle, version);
 
         final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
 
@@ -399,6 +388,51 @@ public class ExtensionResource extends AuthorizableApplicationResource {
         linkService.populateLinks(deletedBundleVersion);
 
         return Response.status(Response.Status.OK).entity(deletedBundleVersion).build();
+    }
+
+    @GET
+    @Path("bundles/{bundleId}/versions/{version}/extension-metadata")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Gets the metadata about the extensions in the given extension bundle version",
+            nickname = "globalGetExtensionBundleVersionExtensions",
+            response = ExtensionMetadata.class,
+            responseContainer = "List",
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getExtensionBundleVersionExtensions(
+            @PathParam("bundleId")
+            @ApiParam("The extension bundle identifier")
+                final String bundleId,
+            @PathParam("version")
+            @ApiParam("The version of the bundle")
+                final String version) {
+
+        final ExtensionBundle extensionBundle = getExtensionBundleWithBucketReadAuthorization(bundleId);
+        final ExtensionBundleVersionCoordinate versionCoordinate = getExtensionBundleVersionCoordinate(extensionBundle, version);
+
+        final ExtensionBundleVersion bundleVersion = registryService.getExtensionBundleVersion(versionCoordinate);
+        final SortedSet<ExtensionMetadata> extensions = registryService.getExtensions(bundleVersion);
+        return Response.ok(extensions).build();
+    }
+
+    private ExtensionBundleVersionCoordinate getExtensionBundleVersionCoordinate(final ExtensionBundle extensionBundle, final String version) {
+        return new ExtensionBundleVersionCoordinate(
+                extensionBundle.getBucketIdentifier(),
+                extensionBundle.getGroupId(),
+                extensionBundle.getArtifactId(),
+                version);
     }
 
     /**
