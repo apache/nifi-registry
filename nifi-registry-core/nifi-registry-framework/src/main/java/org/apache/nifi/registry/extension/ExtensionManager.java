@@ -58,7 +58,7 @@ public class ExtensionManager {
         classes.add(Authorizer.class);
         classes.add(IdentityProvider.class);
         classes.add(EventHookProvider.class);
-        classes.add(ExtensionBundlePersistenceProvider.class);
+        classes.add(BundlePersistenceProvider.class);
         EXTENSION_CLASSES = Collections.unmodifiableList(classes);
     }
 

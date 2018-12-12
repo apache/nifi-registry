@@ -17,12 +17,17 @@
 package org.apache.nifi.registry.service.extension;
 
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.extension.ExtensionBundle;
-import org.apache.nifi.registry.extension.ExtensionBundleType;
-import org.apache.nifi.registry.extension.ExtensionBundleVersion;
-import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.extension.bundle.Bundle;
+import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.bundle.BundleVersion;
+import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
+import org.apache.nifi.registry.extension.component.manifest.Extension;
+import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
+import org.apache.nifi.registry.extension.component.ExtensionMetadata;
+import org.apache.nifi.registry.extension.component.TagCount;
+import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -51,11 +56,11 @@ public interface ExtensionService {
      * @param bundleType the type of bundle
      * @param inputStream the binary content of the bundle
      * @param clientSha256 the SHA-256 hex supplied by the client
-     * @return the ExtensionBundleVersion representing all of the information about the bundle
+     * @return the BundleVersion representing all of the information about the bundle
      * @throws IOException if an error occurs processing the InputStream
      */
-    ExtensionBundleVersion createExtensionBundleVersion(String bucketIdentifier, ExtensionBundleType bundleType,
-                                                        InputStream inputStream, String clientSha256) throws IOException;
+    BundleVersion createBundleVersion(String bucketIdentifier, BundleType bundleType,
+                                      InputStream inputStream, String clientSha256) throws IOException;
 
     /**
      * Retrieves the extension bundles in the given buckets.
@@ -64,7 +69,7 @@ public interface ExtensionService {
      * @param filterParams the optional filter params
      * @return the bundles in the given buckets
      */
-    List<ExtensionBundle> getExtensionBundles(Set<String> bucketIdentifiers, ExtensionBundleFilterParams filterParams);
+    List<Bundle> getBundles(Set<String> bucketIdentifiers, BundleFilterParams filterParams);
 
     /**
      * Retrieves the extension bundles in the given bucket.
@@ -72,7 +77,7 @@ public interface ExtensionService {
      * @param bucketIdentifier the bucket identifier
      * @return the bundles in the given bucket
      */
-    List<ExtensionBundle> getExtensionBundlesByBucket(String bucketIdentifier);
+    List<Bundle> getBundlesByBucket(String bucketIdentifier);
 
     /**
      * Retrieve the extension bundle with the given id.
@@ -80,15 +85,15 @@ public interface ExtensionService {
      * @param extensionBundleIdentifier the extension bundle id
      * @return the bundle
      */
-    ExtensionBundle getExtensionBundle(String extensionBundleIdentifier);
+    Bundle getBundle(String extensionBundleIdentifier);
 
     /**
      * Deletes the given extension bundle and all it's versions.
      *
-     * @param extensionBundle the extension bundle to delete
+     * @param bundle the extension bundle to delete
      * @return the deleted bundle
      */
-    ExtensionBundle deleteExtensionBundle(ExtensionBundle extensionBundle);
+    Bundle deleteBundle(Bundle bundle);
 
     // ----- Extension Bundle Versions -----
 
@@ -99,8 +104,7 @@ public interface ExtensionService {
      * @param filterParams the optional filter params
      * @return the set of extension bundle versions
      */
-    SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(
-            Set<String> bucketIdentifiers, ExtensionBundleVersionFilterParams filterParams);
+    SortedSet<BundleVersionMetadata> getBundleVersions(Set<String> bucketIdentifiers, BundleVersionFilterParams filterParams);
 
     /**
      * Retrieves the versions of the given extension bundle.
@@ -108,23 +112,35 @@ public interface ExtensionService {
      * @param extensionBundleIdentifier the extension bundle id
      * @return the sorted set of versions for the given bundle
      */
-    SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(String extensionBundleIdentifier);
+    SortedSet<BundleVersionMetadata> getBundleVersions(String extensionBundleIdentifier);
 
     /**
-     * Retrieves the full ExtensionBundleVersion object, including version metadata, bundle metadata, and bucket metadata.
+     * Retrieves the full BundleVersion object, including version metadata, bundle metadata, and bucket metadata.
      *
-     * @param versionCoordinate the coordinate of the version
+     * @param bundleId the bundle id
+     * @param version the version
+     * @return the BundleVersion
+     */
+    BundleVersion getBundleVersion(String bucketId, String bundleId, String version);
+
+    /**
+     * Retrieves the full BundleVersion object, including version metadata, bundle metadata, and bucket metadata.
+     *
+     * @param bucketId the bucket id where the bundle is located
+     * @param groupId the group id of the bundle
+     * @param artifactId the artifact id of the bundle
+     * @param version the version of the bundle
      * @return the extension bundle version
      */
-    ExtensionBundleVersion getExtensionBundleVersion(ExtensionBundleVersionCoordinate versionCoordinate);
+    BundleVersion getBundleVersion(String bucketId, String groupId, String artifactId, String version);
 
     /**
      * Writes the binary content of the extension bundle version to the given OutputStream.
      *
-     * @param extensionBundleVersion the version to write the content for
+     * @param bundleVersion the version to write the content for
      * @param out the output stream to write to
      */
-    void writeExtensionBundleVersionContent(ExtensionBundleVersion extensionBundleVersion, OutputStream out);
+    void writeBundleVersionContent(BundleVersion bundleVersion, OutputStream out);
 
     /**
      * Deletes the given version of the extension bundle.
@@ -132,7 +148,51 @@ public interface ExtensionService {
      * @param bundleVersion the version to delete
      * @return the deleted extension bundle version
      */
-    ExtensionBundleVersion deleteExtensionBundleVersion(ExtensionBundleVersion bundleVersion);
+    BundleVersion deleteBundleVersion(BundleVersion bundleVersion);
+
+    // ----- Extension Methods ------
+
+    /**
+     * Retrieves all extensions in the given buckets, sorted by name.
+     *
+     * @param bucketIdentifiers the identifiers of the buckets
+     * @param filterParams the filter params
+     * @return extensions in the given buckets matching the filter params
+     */
+    SortedSet<ExtensionMetadata> getExtensionMetadata(Set<String> bucketIdentifiers, ExtensionFilterParams filterParams);
+
+    /**
+     * Retrieves the extensions in the given buckets that provided the given service API.
+     *
+     * This would be used when a processor has a property specifying a service API and we want to look up implementations.
+     *
+     * @param bucketIdentifiers the identifiers of the buckets
+     * @param providedServiceAPI the provided service API
+     * @return the extensions providing the given service
+     */
+    SortedSet<ExtensionMetadata> getExtensionMetadata(Set<String> bucketIdentifiers, ProvidedServiceAPI providedServiceAPI);
+
+    /**
+     * Retrieves the set of extensions for the given bundle version.
+     *
+     * @param bundleVersion the bundle version to retrieve extensions for
+     * @return the set of extensions for the given bundle version
+     */
+    SortedSet<ExtensionMetadata> getExtensionMetadata(BundleVersion bundleVersion);
+
+    /**
+     * Retrieves the extension with the given name in the given bundle version.
+     *
+     * @param bundleVersion the bundle version
+     * @param name the extension name
+     * @return the extension
+     */
+    Extension getExtension(BundleVersion bundleVersion, String name);
+
+    /**
+     * @return all know tags
+     */
+    SortedSet<TagCount> getExtensionTags();
 
     // ----- Extension Repo Methods -----
 

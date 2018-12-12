@@ -16,22 +16,40 @@
  */
 package org.apache.nifi.registry.db.entity;
 
+import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.component.manifest.ExtensionType;
+
+import java.util.Set;
+
 public class ExtensionEntity {
 
     private String id;
+    private String bundleVersionId;
+    private String name;
+    private String displayName;
+    private ExtensionType extensionType;
 
-    private String extensionBundleVersionId;
+    // serialized content of Extension
+    private String content;
 
-    private String type;
+    // populated during creation if provided, but typically won't be populated on retrieval
+    private String additionalDetails;
 
-    private String typeDescription;
+    // populated during creation to insert into child tables, but won't be populated on retrieval b/c the
+    // content field contains all of this info and will be deserialized into the full extension
+    private Set<String> tags;
+    private Set<ExtensionProvidedServiceApiEntity> providedServiceApis;
+    private Set<ExtensionRestrictionEntity> restrictions;
 
-    private boolean restricted;
+    // read-only - populated on retrieval only by joining with additional tables
+    private String bucketId;
+    private String bucketName;
+    private String bundleId;
+    private String groupId;
+    private String artifactId;
+    private String version;
+    private BundleType bundleType;
 
-    private ExtensionEntityCategory category;
-
-    // Comma separated list of tags so we don't have to query tag table for each extension
-    private String tags;
 
     public String getId() {
         return id;
@@ -41,52 +59,132 @@ public class ExtensionEntity {
         this.id = id;
     }
 
-    public String getExtensionBundleVersionId() {
-        return extensionBundleVersionId;
+    public String getBundleVersionId() {
+        return bundleVersionId;
     }
 
-    public void setExtensionBundleVersionId(String extensionBundleVersionId) {
-        this.extensionBundleVersionId = extensionBundleVersionId;
+    public void setBundleVersionId(String bundleVersionId) {
+        this.bundleVersionId = bundleVersionId;
     }
 
-    public String getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getTypeDescription() {
-        return typeDescription;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    public void setTypeDescription(String typeDescription) {
-        this.typeDescription = typeDescription;
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 
-    public boolean isRestricted() {
-        return restricted;
+    public ExtensionType getExtensionType() {
+        return extensionType;
     }
 
-    public void setRestricted(boolean restricted) {
-        this.restricted = restricted;
+    public void setExtensionType(ExtensionType extensionType) {
+        this.extensionType = extensionType;
     }
 
-    public ExtensionEntityCategory getCategory() {
-        return category;
+    public String getContent() {
+        return content;
     }
 
-    public void setCategory(ExtensionEntityCategory category) {
-        this.category = category;
+    public void setContent(String content) {
+        this.content = content;
     }
 
-    public String getTags() {
+    public String getAdditionalDetails() {
+        return additionalDetails;
+    }
+
+    public void setAdditionalDetails(String additionalDetails) {
+        this.additionalDetails = additionalDetails;
+    }
+
+    public Set<String> getTags() {
         return tags;
     }
 
-    public void setTags(String tags) {
+    public void setTags(Set<String> tags) {
         this.tags = tags;
     }
 
+    public Set<ExtensionProvidedServiceApiEntity> getProvidedServiceApis() {
+        return providedServiceApis;
+    }
+
+    public void setProvidedServiceApis(Set<ExtensionProvidedServiceApiEntity> providedServiceApis) {
+        this.providedServiceApis = providedServiceApis;
+    }
+
+    public Set<ExtensionRestrictionEntity> getRestrictions() {
+        return restrictions;
+    }
+
+    public void setRestrictions(Set<ExtensionRestrictionEntity> restrictions) {
+        this.restrictions = restrictions;
+    }
+
+
+    public String getBucketId() {
+        return bucketId;
+    }
+
+    public void setBucketId(String bucketId) {
+        this.bucketId = bucketId;
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    public String getBundleId() {
+        return bundleId;
+    }
+
+    public void setBundleId(String bundleId) {
+        this.bundleId = bundleId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public BundleType getBundleType() {
+        return bundleType;
+    }
+
+    public void setBundleType(BundleType bundleType) {
+        this.bundleType = bundleType;
+    }
 }

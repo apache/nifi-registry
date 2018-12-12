@@ -29,7 +29,6 @@ import java.util.Objects;
 public class ExtensionRepoGroup extends LinkableEntity implements Comparable<ExtensionRepoGroup> {
 
     private String bucketName;
-
     private String groupId;
 
     @ApiModelProperty(value = "The bucket name")

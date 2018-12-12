@@ -31,10 +31,11 @@ public class ExtensionRepoVersionSummary extends LinkableEntity implements Compa
     private String bucketName;
 
     private String groupId;
-
     private String artifactId;
-
     private String version;
+
+    private String author;
+    private Long timestamp;
 
     @ApiModelProperty(value = "The bucket name")
     public String getBucketName() {
@@ -72,6 +73,24 @@ public class ExtensionRepoVersionSummary extends LinkableEntity implements Compa
         this.version = version;
     }
 
+    @ApiModelProperty("The identity of the user that created this version")
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    @ApiModelProperty("The timestamp of when this version was created")
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public int compareTo(ExtensionRepoVersionSummary o) {
         return Comparator.comparing(ExtensionRepoVersionSummary::getVersion)
@@ -83,7 +102,7 @@ public class ExtensionRepoVersionSummary extends LinkableEntity implements Compa
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.bucketName, this.groupId, this.artifactId, this.version);
+        return Objects.hash(this.bucketName, this.groupId, this.artifactId, this.version, this.author, this.timestamp);
     }
 
     @Override
@@ -100,6 +119,8 @@ public class ExtensionRepoVersionSummary extends LinkableEntity implements Compa
         return Objects.equals(this.getBucketName(), other.getBucketName())
                 && Objects.equals(this.getGroupId(), other.getGroupId())
                 && Objects.equals(this.getArtifactId(), other.getArtifactId())
+                && Objects.equals(this.getVersion(), other.getVersion())
+                && Objects.equals(this.getAuthor(), other.getAuthor())
                 && Objects.equals(this.getVersion(), other.getVersion());
     }
 

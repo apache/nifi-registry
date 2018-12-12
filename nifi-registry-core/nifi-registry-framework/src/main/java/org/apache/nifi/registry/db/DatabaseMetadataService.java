@@ -20,32 +20,38 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
-import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
+import org.apache.nifi.registry.db.entity.BundleEntity;
+import org.apache.nifi.registry.db.entity.BundleVersionDependencyEntity;
+import org.apache.nifi.registry.db.entity.BundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
-import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
+import org.apache.nifi.registry.db.entity.ExtensionProvidedServiceApiEntity;
+import org.apache.nifi.registry.db.entity.ExtensionRestrictionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
+import org.apache.nifi.registry.db.entity.TagCountEntity;
 import org.apache.nifi.registry.db.mapper.BucketEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.BucketItemEntityRowMapper;
-import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityRowMapper;
-import org.apache.nifi.registry.db.mapper.ExtensionBundleEntityWithBucketNameRowMapper;
-import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionDependencyEntityRowMapper;
-import org.apache.nifi.registry.db.mapper.ExtensionBundleVersionEntityRowMapper;
+import org.apache.nifi.registry.db.mapper.BundleEntityRowMapper;
+import org.apache.nifi.registry.db.mapper.BundleVersionDependencyEntityRowMapper;
+import org.apache.nifi.registry.db.mapper.BundleVersionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.ExtensionEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowEntityRowMapper;
 import org.apache.nifi.registry.db.mapper.FlowSnapshotEntityRowMapper;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.db.mapper.TagCountEntityMapper;
+import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
+import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
+import org.apache.nifi.registry.extension.component.manifest.ExtensionType;
+import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.service.MetadataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -114,14 +120,8 @@ public class DatabaseMetadataService implements MetadataService {
             return Collections.emptyList();
         }
 
-        final StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bucket WHERE id IN (");
-        for (int i=0; i < bucketIds.size(); i++) {
-            if (i > 0) {
-                sqlBuilder.append(", ");
-            }
-            sqlBuilder.append("?");
-        }
-        sqlBuilder.append(") ");
+        final StringBuilder sqlBuilder = new StringBuilder("SELECT * FROM bucket WHERE ");
+        addIdentifiersInClause(sqlBuilder, "id", bucketIds);
         sqlBuilder.append("ORDER BY name ASC");
 
         return jdbcTemplate.query(sqlBuilder.toString(), bucketIds.toArray(), new BucketEntityRowMapper());
@@ -150,7 +150,7 @@ public class DatabaseMetadataService implements MetadataService {
                 "eb.artifact_id as BUNDLE_ARTIFACT_ID " +
             "FROM bucket_item item " +
             "INNER JOIN bucket b ON item.bucket_id = b.id " +
-            "LEFT JOIN extension_bundle eb ON item.id = eb.id ";
+            "LEFT JOIN bundle eb ON item.id = eb.id ";
 
     @Override
     public List<BucketItemEntity> getBucketItems(final String bucketIdentifier) {
@@ -193,8 +193,8 @@ public class DatabaseMetadataService implements MetadataService {
             } else if (item.getType() == BucketItemEntityType.EXTENSION_BUNDLE) {
                 final Long versionCount = extensionBundleVersionCounts.get(item.getId());
                 if (versionCount != null) {
-                    final ExtensionBundleEntity extensionBundleEntity = (ExtensionBundleEntity) item;
-                    extensionBundleEntity.setVersionCount(versionCount);
+                    final BundleEntity bundleEntity = (BundleEntity) item;
+                    bundleEntity.setVersionCount(versionCount);
                 }
             }
 
@@ -223,7 +223,7 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     private Map<String,Long> getExtensionBundleVersionCounts() {
-        final String sql = "SELECT extension_bundle_id, count(*) FROM extension_bundle_version GROUP BY extension_bundle_id";
+        final String sql = "SELECT bundle_id, count(*) FROM bundle_version GROUP BY bundle_id";
 
         final Map<String,Long> results = new HashMap<>();
         jdbcTemplate.query(sql, (rs) -> {
@@ -233,7 +233,7 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     private Long getExtensionBundleVersionCount(final String extensionBundleIdentifier) {
-        final String sql = "SELECT count(*) FROM extension_bundle_version WHERE extension_bundle_id = ?";
+        final String sql = "SELECT count(*) FROM bundle_version WHERE bundle_id = ?";
 
         return jdbcTemplate.queryForObject(sql, new Object[] {extensionBundleIdentifier}, (rs, num) -> {
             return rs.getLong(1);
@@ -416,7 +416,7 @@ public class DatabaseMetadataService implements MetadataService {
     //----------------- Extension Bundles ---------------------------------
 
     @Override
-    public ExtensionBundleEntity createExtensionBundle(final ExtensionBundleEntity extensionBundle) {
+    public BundleEntity createBundle(final BundleEntity extensionBundle) {
         final String itemSql =
                 "INSERT INTO bucket_item (" +
                     "ID, " +
@@ -434,11 +434,11 @@ public class DatabaseMetadataService implements MetadataService {
                 extensionBundle.getDescription(),
                 extensionBundle.getCreated(),
                 extensionBundle.getModified(),
-                extensionBundle.getType().toString(),
+                extensionBundle.getType().name(),
                 extensionBundle.getBucketId());
 
         final String bundleSql =
-                "INSERT INTO extension_bundle (" +
+                "INSERT INTO bundle (" +
                     "ID, " +
                     "BUCKET_ID, " +
                     "BUNDLE_TYPE, " +
@@ -449,21 +449,38 @@ public class DatabaseMetadataService implements MetadataService {
         jdbcTemplate.update(bundleSql,
                 extensionBundle.getId(),
                 extensionBundle.getBucketId(),
-                extensionBundle.getBundleType().toString(),
+                extensionBundle.getBundleType().name(),
                 extensionBundle.getGroupId(),
                 extensionBundle.getArtifactId());
 
         return extensionBundle;
     }
 
+    private static final String BASE_BUNDLE_SQL =
+            "SELECT " +
+                "item.id as ID," +
+                "item.name as NAME, " +
+                "item.description as DESCRIPTION, " +
+                "item.created as CREATED, " +
+                "item.modified as MODIFIED, " +
+                "eb.bundle_type as BUNDLE_TYPE, " +
+                "eb.group_id as GROUP_ID, " +
+                "eb.artifact_id as ARTIFACT_ID, " +
+                "b.id as BUCKET_ID, " +
+                "b.name as BUCKET_NAME " +
+            "FROM " +
+                "bundle eb, " +
+                "bucket_item item," +
+                "bucket b " +
+            "WHERE " +
+                "eb.id = item.id AND " +
+                "item.bucket_id = b.id";
+
     @Override
-    public ExtensionBundleEntity getExtensionBundle(final String extensionBundleId) {
-        final String sql =
-                "SELECT * " +
-                "FROM extension_bundle eb, bucket_item item " +
-                "WHERE eb.id = ? AND item.id = eb.id";
+    public BundleEntity getBundle(final String extensionBundleId) {
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_BUNDLE_SQL).append(" AND eb.id = ?");
         try {
-            final ExtensionBundleEntity entity = jdbcTemplate.queryForObject(sql, new ExtensionBundleEntityRowMapper(), extensionBundleId);
+            final BundleEntity entity = jdbcTemplate.queryForObject(sqlBuilder.toString(), new BundleEntityRowMapper(), extensionBundleId);
 
             final Long versionCount = getExtensionBundleVersionCount(extensionBundleId);
             if (versionCount != null) {
@@ -477,19 +494,14 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public ExtensionBundleEntity getExtensionBundle(final String bucketId, final String groupId, final String artifactId) {
-        final String sql =
-                "SELECT * " +
-                "FROM " +
-                        "extension_bundle eb, " +
-                        "bucket_item item " +
-                "WHERE " +
-                        "item.id = eb.id AND " +
-                        "eb.bucket_id = ? AND " +
-                        "eb.group_id = ? AND " +
-                        "eb.artifact_id = ?";
+    public BundleEntity getBundle(final String bucketId, final String groupId, final String artifactId) {
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_BUNDLE_SQL)
+                .append(" AND eb.bucket_id = ? ")
+                .append("AND eb.group_id = ? ")
+                .append("AND eb.artifact_id = ? ");
+
         try {
-            final ExtensionBundleEntity entity = jdbcTemplate.queryForObject(sql, new ExtensionBundleEntityRowMapper(), bucketId, groupId, artifactId);
+            final BundleEntity entity = jdbcTemplate.queryForObject(sqlBuilder.toString(), new BundleEntityRowMapper(), bucketId, groupId, artifactId);
 
             final Long versionCount = getExtensionBundleVersionCount(entity.getId());
             if (versionCount != null) {
@@ -503,7 +515,7 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<ExtensionBundleEntity> getExtensionBundles(final Set<String> bucketIds, final ExtensionBundleFilterParams filterParams) {
+    public List<BundleEntity> getBundles(final Set<String> bucketIds, final BundleFilterParams filterParams) {
         if (bucketIds == null || bucketIds.isEmpty()) {
             return Collections.emptyList();
         }
@@ -512,19 +524,19 @@ public class DatabaseMetadataService implements MetadataService {
 
         final StringBuilder sqlBuilder = new StringBuilder(
                 "SELECT " +
-                        "item.id as ID, " +
-                        "item.name as NAME, " +
-                        "item.description as DESCRIPTION, " +
-                        "item.created as CREATED, " +
-                        "item.modified as MODIFIED, " +
-                        "item.item_type as ITEM_TYPE, " +
-                        "b.id as BUCKET_ID, " +
-                        "b.name as BUCKET_NAME ," +
-                        "eb.bundle_type as BUNDLE_TYPE, " +
-                        "eb.group_id as BUNDLE_GROUP_ID, " +
-                        "eb.artifact_id as BUNDLE_ARTIFACT_ID " +
+                    "item.id as ID, " +
+                    "item.name as NAME, " +
+                    "item.description as DESCRIPTION, " +
+                    "item.created as CREATED, " +
+                    "item.modified as MODIFIED, " +
+                    "item.item_type as ITEM_TYPE, " +
+                    "b.id as BUCKET_ID, " +
+                    "b.name as BUCKET_NAME ," +
+                    "eb.bundle_type as BUNDLE_TYPE, " +
+                    "eb.group_id as BUNDLE_GROUP_ID, " +
+                    "eb.artifact_id as BUNDLE_ARTIFACT_ID " +
                 "FROM " +
-                    "extension_bundle eb, " +
+                    "bundle eb, " +
                     "bucket_item item, " +
                     "bucket b " +
                 "WHERE " +
@@ -532,6 +544,12 @@ public class DatabaseMetadataService implements MetadataService {
                     "b.id = item.bucket_id");
 
         if (filterParams != null) {
+            final String bucketName = filterParams.getBucketName();
+            if (!StringUtils.isBlank(bucketName)) {
+                sqlBuilder.append(" AND b.name LIKE ? ");
+                args.add(bucketName);
+            }
+
             final String groupId = filterParams.getGroupId();
             if (!StringUtils.isBlank(groupId)) {
                 sqlBuilder.append(" AND eb.group_id LIKE ? ");
@@ -545,52 +563,41 @@ public class DatabaseMetadataService implements MetadataService {
             }
         }
 
-        addBucketIdentifiersClause(sqlBuilder, "item.bucket_id", bucketIds);
+        sqlBuilder.append(" AND ");
+        addIdentifiersInClause(sqlBuilder, "item.bucket_id", bucketIds);
         sqlBuilder.append("ORDER BY eb.group_id ASC, eb.artifact_id ASC");
 
         args.addAll(bucketIds);
 
-        final List<ExtensionBundleEntity> bundleEntities = jdbcTemplate.query(sqlBuilder.toString(), args.toArray(), new ExtensionBundleEntityWithBucketNameRowMapper());
+        final List<BundleEntity> bundleEntities = jdbcTemplate.query(sqlBuilder.toString(), args.toArray(), new BundleEntityRowMapper());
         return populateVersionCounts(bundleEntities);
     }
 
     @Override
-    public List<ExtensionBundleEntity> getExtensionBundlesByBucket(final String bucketId) {
-        final String sql =
-                "SELECT * " +
-                "FROM " +
-                    "extension_bundle eb, " +
-                    "bucket_item item " +
-                "WHERE " +
-                    "item.id = eb.id AND " +
-                    "item.bucket_id = ? " +
-                    "ORDER BY eb.group_id ASC, eb.artifact_id ASC";
+    public List<BundleEntity> getBundlesByBucket(final String bucketId) {
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_BUNDLE_SQL)
+                .append(" AND b.id = ?")
+                .append(" ORDER BY eb.group_id ASC, eb.artifact_id ASC");
 
-        final List<ExtensionBundleEntity> bundles = jdbcTemplate.query(sql, new Object[]{bucketId}, new ExtensionBundleEntityRowMapper());
+        final List<BundleEntity> bundles = jdbcTemplate.query(sqlBuilder.toString(), new Object[]{bucketId}, new BundleEntityRowMapper());
         return populateVersionCounts(bundles);
     }
 
     @Override
-    public List<ExtensionBundleEntity> getExtensionBundlesByBucketAndGroup(String bucketId, String groupId) {
-        final String sql =
-                "SELECT * " +
-                    "FROM " +
-                        "extension_bundle eb, " +
-                        "bucket_item item " +
-                    "WHERE " +
-                        "item.id = eb.id AND " +
-                        "item.bucket_id = ? AND " +
-                        "eb.group_id = ?" +
-                    "ORDER BY eb.group_id ASC, eb.artifact_id ASC";
+    public List<BundleEntity> getBundlesByBucketAndGroup(String bucketId, String groupId) {
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_BUNDLE_SQL)
+                .append(" AND b.id = ?")
+                .append(" AND eb.group_id = ?")
+                .append(" ORDER BY eb.group_id ASC, eb.artifact_id ASC");
 
-        final List<ExtensionBundleEntity> bundles = jdbcTemplate.query(sql, new Object[]{bucketId, groupId}, new ExtensionBundleEntityRowMapper());
+        final List<BundleEntity> bundles = jdbcTemplate.query(sqlBuilder.toString(), new Object[]{bucketId, groupId}, new BundleEntityRowMapper());
         return populateVersionCounts(bundles);
     }
 
-    private List<ExtensionBundleEntity> populateVersionCounts(final List<ExtensionBundleEntity> bundles) {
+    private List<BundleEntity> populateVersionCounts(final List<BundleEntity> bundles) {
         if (!bundles.isEmpty()) {
             final Map<String, Long> versionCounts = getExtensionBundleVersionCounts();
-            for (final ExtensionBundleEntity entity : bundles) {
+            for (final BundleEntity entity : bundles) {
                 final Long versionCount = versionCounts.get(entity.getId());
                 if (versionCount != null) {
                     entity.setVersionCount(versionCount);
@@ -602,12 +609,12 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public void deleteExtensionBundle(final ExtensionBundleEntity extensionBundle) {
-        deleteExtensionBundle(extensionBundle.getId());
+    public void deleteBundle(final BundleEntity extensionBundle) {
+        deleteBundle(extensionBundle.getId());
     }
 
     @Override
-    public void deleteExtensionBundle(final String extensionBundleId) {
+    public void deleteBundle(final String extensionBundleId) {
         // NOTE: All of the foreign key constraints for extension related tables are set to cascade on delete
         final String itemDeleteSql = "DELETE FROM bucket_item WHERE id = ?";
         jdbcTemplate.update(itemDeleteSql, extensionBundleId);
@@ -616,30 +623,46 @@ public class DatabaseMetadataService implements MetadataService {
     //----------------- Extension Bundle Versions ---------------------------------
 
     @Override
-    public ExtensionBundleVersionEntity createExtensionBundleVersion(final ExtensionBundleVersionEntity extensionBundleVersion) {
+    public BundleVersionEntity createBundleVersion(final BundleVersionEntity extensionBundleVersion) {
         final String sql =
-                "INSERT INTO extension_bundle_version (" +
+                "INSERT INTO bundle_version (" +
                     "ID, " +
-                    "EXTENSION_BUNDLE_ID, " +
+                    "BUNDLE_ID, " +
                     "VERSION, " +
                     "CREATED, " +
                     "CREATED_BY, " +
                     "DESCRIPTION, " +
                     "SHA_256_HEX, " +
                     "SHA_256_SUPPLIED," +
-                    "CONTENT_SIZE " +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "CONTENT_SIZE, " +
+                    "SYSTEM_API_VERSION, " +
+                    "BUILD_TOOL, " +
+                    "BUILD_FLAGS, " +
+                    "BUILD_BRANCH, " +
+                    "BUILD_TAG, " +
+                    "BUILD_REVISION, " +
+                    "BUILT, " +
+                    "BUILT_BY" +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(sql,
                 extensionBundleVersion.getId(),
-                extensionBundleVersion.getExtensionBundleId(),
+                extensionBundleVersion.getBundleId(),
                 extensionBundleVersion.getVersion(),
                 extensionBundleVersion.getCreated(),
                 extensionBundleVersion.getCreatedBy(),
                 extensionBundleVersion.getDescription(),
                 extensionBundleVersion.getSha256Hex(),
                 extensionBundleVersion.getSha256Supplied() ? 1 : 0,
-                extensionBundleVersion.getContentSize());
+                extensionBundleVersion.getContentSize(),
+                extensionBundleVersion.getSystemApiVersion(),
+                extensionBundleVersion.getBuildTool(),
+                extensionBundleVersion.getBuildFlags(),
+                extensionBundleVersion.getBuildBranch(),
+                extensionBundleVersion.getBuildTag(),
+                extensionBundleVersion.getBuildRevision(),
+                extensionBundleVersion.getBuilt(),
+                extensionBundleVersion.getBuiltBy());
 
         return extensionBundleVersion;
     }
@@ -647,7 +670,7 @@ public class DatabaseMetadataService implements MetadataService {
     private static final String BASE_EXTENSION_BUNDLE_VERSION_SQL =
             "SELECT " +
                 "ebv.id AS ID," +
-                "ebv.extension_bundle_id AS EXTENSION_BUNDLE_ID, " +
+                "ebv.bundle_id AS BUNDLE_ID, " +
                 "ebv.version AS VERSION, " +
                 "ebv.created AS CREATED, " +
                 "ebv.created_by AS CREATED_BY, " +
@@ -655,23 +678,31 @@ public class DatabaseMetadataService implements MetadataService {
                 "ebv.sha_256_hex AS SHA_256_HEX, " +
                 "ebv.sha_256_supplied AS SHA_256_SUPPLIED ," +
                 "ebv.content_size AS CONTENT_SIZE, " +
+                "ebv.system_api_version AS SYSTEM_API_VERSION, " +
+                "ebv.build_tool AS BUILD_TOOL, " +
+                "ebv.build_flags AS BUILD_FLAGS, " +
+                "ebv.build_branch AS BUILD_BRANCH, " +
+                "ebv.build_tag AS BUILD_TAG, " +
+                "ebv.build_revision AS BUILD_REVISION, " +
+                "ebv.built AS BUILT, " +
+                "ebv.built_by AS BUILT_BY, " +
                 "eb.bucket_id AS BUCKET_ID " +
-            "FROM extension_bundle eb, extension_bundle_version ebv " +
-            "WHERE eb.id = ebv.extension_bundle_id ";
+            "FROM bundle eb, bundle_version ebv " +
+            "WHERE eb.id = ebv.bundle_id ";
 
     @Override
-    public ExtensionBundleVersionEntity getExtensionBundleVersion(final String extensionBundleId, final String version) {
+    public BundleVersionEntity getBundleVersion(final String extensionBundleId, final String version) {
         final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
-                " AND ebv.extension_bundle_id = ? AND ebv.version = ?";
+                " AND ebv.bundle_id = ? AND ebv.version = ?";
         try {
-            return jdbcTemplate.queryForObject(sql, new ExtensionBundleVersionEntityRowMapper(), extensionBundleId, version);
+            return jdbcTemplate.queryForObject(sql, new BundleVersionEntityRowMapper(), extensionBundleId, version);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
     @Override
-    public ExtensionBundleVersionEntity getExtensionBundleVersion(final String bucketId, final String groupId, final String artifactId, final String version) {
+    public BundleVersionEntity getBundleVersion(final String bucketId, final String groupId, final String artifactId, final String version) {
         final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
                     "AND eb.bucket_id = ? " +
                     "AND eb.group_id = ? " +
@@ -679,14 +710,14 @@ public class DatabaseMetadataService implements MetadataService {
                     "AND ebv.version = ?";
 
         try {
-            return jdbcTemplate.queryForObject(sql, new ExtensionBundleVersionEntityRowMapper(), bucketId, groupId, artifactId, version);
+            return jdbcTemplate.queryForObject(sql, new BundleVersionEntityRowMapper(), bucketId, groupId, artifactId, version);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
     @Override
-    public List<ExtensionBundleVersionEntity> getExtensionBundleVersions(final Set<String> bucketIdentifiers, final ExtensionBundleVersionFilterParams filterParams) {
+    public List<BundleVersionEntity> getBundleVersions(final Set<String> bucketIdentifiers, final BundleVersionFilterParams filterParams) {
         if (bucketIdentifiers == null || bucketIdentifiers.isEmpty()) {
             return Collections.emptyList();
         }
@@ -714,18 +745,19 @@ public class DatabaseMetadataService implements MetadataService {
             }
         }
 
-        addBucketIdentifiersClause(sqlBuilder, "eb.bucket_id", bucketIdentifiers);
+        sqlBuilder.append(" AND ");
+        addIdentifiersInClause(sqlBuilder, "eb.bucket_id", bucketIdentifiers);
         args.addAll(bucketIdentifiers);
 
-        final List<ExtensionBundleVersionEntity> bundleVersionEntities = jdbcTemplate.query(
-                sqlBuilder.toString(), args.toArray(), new ExtensionBundleVersionEntityRowMapper());
+        final List<BundleVersionEntity> bundleVersionEntities = jdbcTemplate.query(
+                sqlBuilder.toString(), args.toArray(), new BundleVersionEntityRowMapper());
 
         return bundleVersionEntities;
     }
 
-    private void addBucketIdentifiersClause(StringBuilder sqlBuilder, String bucketField, Set<String> bucketIdentifiers) {
-        sqlBuilder.append(" AND ").append(bucketField).append(" IN (");
-        for (int i = 0; i < bucketIdentifiers.size(); i++) {
+    private void addIdentifiersInClause(StringBuilder sqlBuilder, String idFieldName, Set<String> identifiers) {
+        sqlBuilder.append(idFieldName).append(" IN (");
+        for (int i = 0; i < identifiers.size(); i++) {
             if (i > 0) {
                 sqlBuilder.append(", ");
             }
@@ -735,53 +767,53 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<ExtensionBundleVersionEntity> getExtensionBundleVersions(final String extensionBundleId) {
-        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL + " AND ebv.extension_bundle_id = ?";
-        return jdbcTemplate.query(sql, new Object[]{extensionBundleId}, new ExtensionBundleVersionEntityRowMapper());
+    public List<BundleVersionEntity> getBundleVersions(final String extensionBundleId) {
+        final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL + " AND ebv.bundle_id = ?";
+        return jdbcTemplate.query(sql, new Object[]{extensionBundleId}, new BundleVersionEntityRowMapper());
     }
 
     @Override
-    public List<ExtensionBundleVersionEntity> getExtensionBundleVersions(final String bucketId, final String groupId, final String artifactId) {
+    public List<BundleVersionEntity> getBundleVersions(final String bucketId, final String groupId, final String artifactId) {
         final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
                     "AND eb.bucket_id = ? " +
                     "AND eb.group_id = ? " +
                     "AND eb.artifact_id = ? ";
 
         final Object[] args = {bucketId, groupId, artifactId};
-        return jdbcTemplate.query(sql, args, new ExtensionBundleVersionEntityRowMapper());
+        return jdbcTemplate.query(sql, args, new BundleVersionEntityRowMapper());
     }
 
     @Override
-    public List<ExtensionBundleVersionEntity> getExtensionBundleVersionsGlobal(final String groupId, final String artifactId, final String version) {
+    public List<BundleVersionEntity> getBundleVersionsGlobal(final String groupId, final String artifactId, final String version) {
         final String sql = BASE_EXTENSION_BUNDLE_VERSION_SQL +
                 "AND eb.group_id = ? " +
                 "AND eb.artifact_id = ? " +
                 "AND ebv.version = ?";
 
         final Object[] args = {groupId, artifactId, version};
-        return jdbcTemplate.query(sql, args, new ExtensionBundleVersionEntityRowMapper());
+        return jdbcTemplate.query(sql, args, new BundleVersionEntityRowMapper());
     }
 
     @Override
-    public void deleteExtensionBundleVersion(final ExtensionBundleVersionEntity extensionBundleVersion) {
-        deleteExtensionBundleVersion(extensionBundleVersion.getId());
+    public void deleteBundleVersion(final BundleVersionEntity extensionBundleVersion) {
+        deleteBundleVersion(extensionBundleVersion.getId());
     }
 
     @Override
-    public void deleteExtensionBundleVersion(final String extensionBundleVersionId) {
+    public void deleteBundleVersion(final String extensionBundleVersionId) {
         // NOTE: All of the foreign key constraints for extension related tables are set to cascade on delete
-        final String sql = "DELETE FROM extension_bundle_version WHERE id = ?";
+        final String sql = "DELETE FROM bundle_version WHERE id = ?";
         jdbcTemplate.update(sql, extensionBundleVersionId);
     }
 
     //------------ Extension Bundle Version Dependencies ------------
 
     @Override
-    public ExtensionBundleVersionDependencyEntity createDependency(final ExtensionBundleVersionDependencyEntity dependencyEntity) {
+    public BundleVersionDependencyEntity createDependency(final BundleVersionDependencyEntity dependencyEntity) {
         final String dependencySql =
-                "INSERT INTO extension_bundle_version_dependency (" +
+                "INSERT INTO bundle_version_dependency (" +
                     "ID, " +
-                    "EXTENSION_BUNDLE_VERSION_ID, " +
+                    "BUNDLE_VERSION_ID, " +
                     "GROUP_ID, " +
                     "ARTIFACT_ID, " +
                     "VERSION " +
@@ -798,47 +830,88 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<ExtensionBundleVersionDependencyEntity> getDependenciesForBundleVersion(final String extensionBundleVersionId) {
-        final String sql = "SELECT * FROM extension_bundle_version_dependency WHERE extension_bundle_version_id = ?";
+    public List<BundleVersionDependencyEntity> getDependenciesForBundleVersion(final String extensionBundleVersionId) {
+        final String sql = "SELECT * FROM bundle_version_dependency WHERE bundle_version_id = ?";
         final Object[] args = {extensionBundleVersionId};
-        return jdbcTemplate.query(sql, args, new ExtensionBundleVersionDependencyEntityRowMapper());
+        return jdbcTemplate.query(sql, args, new BundleVersionDependencyEntityRowMapper());
     }
 
 
     //----------------- Extensions ---------------------------------
+
+    private static String BASE_EXTENSION_SQL =
+            "SELECT " +
+                "e.id AS ID, " +
+                "e.bundle_version_id AS BUNDLE_VERSION_ID, " +
+                "e.name AS NAME, " +
+                "e.display_name AS DISPLAY_NAME, " +
+                "e.type AS TYPE, " +
+                "e.content AS CONTENT," +
+                "eb.id AS BUNDLE_ID, " +
+                "eb.group_id AS GROUP_ID, " +
+                "eb.artifact_id AS ARTIFACT_ID, " +
+                "eb.bundle_type AS BUNDLE_TYPE, " +
+                "ebv.version AS VERSION, " +
+                "b.id AS BUCKET_ID, " +
+                "b.name as BUCKET_NAME " +
+            "FROM " +
+                    "extension e, " +
+                    "bundle_version ebv, " +
+                    "bundle eb," +
+                    "bucket b " +
+            "WHERE " +
+                    "e.bundle_version_id = ebv.id AND " +
+                    "ebv.bundle_id = eb.id AND " +
+                    "eb.bucket_id = b.id ";
 
     @Override
     public ExtensionEntity createExtension(final ExtensionEntity extension) {
         final String insertExtensionSql =
                 "INSERT INTO extension (" +
                     "ID, " +
-                    "EXTENSION_BUNDLE_VERSION_ID, " +
+                    "BUNDLE_VERSION_ID, " +
+                    "NAME, " +
+                    "DISPLAY_NAME, " +
                     "TYPE, " +
-                    "TYPE_DESCRIPTION, " +
-                    "IS_RESTRICTED, " +
-                    "CATEGORY, " +
-                    "TAGS " +
+                    "CONTENT, " +
+                    "ADDITIONAL_DETAILS " +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(insertExtensionSql,
                 extension.getId(),
-                extension.getExtensionBundleVersionId(),
-                extension.getType(),
-                extension.getTypeDescription(),
-                extension.isRestricted() ? 1 : 0,
-                extension.getCategory().toString(),
-                extension.getTags()
+                extension.getBundleVersionId(),
+                extension.getName(),
+                extension.getDisplayName(),
+                extension.getExtensionType().name(),
+                extension.getContent(),
+                extension.getAdditionalDetails()
         );
 
+        // insert tags...
         final String insertTagSql = "INSERT INTO extension_tag (EXTENSION_ID, TAG) VALUES (?, ?);";
 
-        if (extension.getTags() != null) {
-            final String tags[] = extension.getTags().split("[,]");
+        final Set<String> tags = extension.getTags();
+        if (tags != null) {
             for (final String tag : tags) {
                 if (tag != null) {
-                    jdbcTemplate.update(insertTagSql, extension.getId(), tag.trim().toLowerCase());
+                    final String normalizedTag = tag.trim().toLowerCase();
+                    if (!normalizedTag.isEmpty()) {
+                        jdbcTemplate.update(insertTagSql, extension.getId(), normalizedTag);
+                    }
                 }
             }
+        }
+
+        // insert provided service APIs...
+        final Set<ExtensionProvidedServiceApiEntity> providedServiceApis = extension.getProvidedServiceApis();
+        if (providedServiceApis != null) {
+            providedServiceApis.forEach(p -> createProvidedServiceApi(p));
+        }
+
+        // insert restrictions...
+        final Set<ExtensionRestrictionEntity> restrictions = extension.getRestrictions();
+        if (restrictions != null) {
+            restrictions.forEach(r -> createRestriction(r));
         }
 
         return extension;
@@ -846,7 +919,7 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public ExtensionEntity getExtensionById(final String id) {
-        final String selectSql = "SELECT * FROM extension WHERE id = ?";
+        final String selectSql = BASE_EXTENSION_SQL + " AND e.id = ?";
         try {
             return jdbcTemplate.queryForObject(selectSql, new ExtensionEntityRowMapper(), id);
         } catch (EmptyResultDataAccessException e) {
@@ -855,64 +928,110 @@ public class DatabaseMetadataService implements MetadataService {
     }
 
     @Override
-    public List<ExtensionEntity> getAllExtensions() {
-        final String selectSql = "SELECT * FROM extension ORDER BY type ASC";
-        return jdbcTemplate.query(selectSql, new ExtensionEntityRowMapper());
+    public ExtensionEntity getExtensionByName(final String bundleVersionId, final String name) {
+        final String selectSql = BASE_EXTENSION_SQL + " AND e.bundle_version_id = ? AND e.name = ?";
+        try {
+            return jdbcTemplate.queryForObject(selectSql, new ExtensionEntityRowMapper(), bundleVersionId, name);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     @Override
-    public List<ExtensionEntity> getExtensionsByBundleVersionId(final String extensionBundleVersionId) {
+    public List<ExtensionEntity> getExtensions(final Set<String> bucketIdentifiers, final ExtensionFilterParams filterParams) {
+        if (bucketIdentifiers == null || bucketIdentifiers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<Object> args = new ArrayList<>();
+
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_EXTENSION_SQL);
+        sqlBuilder.append(" AND ");
+        addIdentifiersInClause(sqlBuilder, "eb.bucket_id", bucketIdentifiers);
+        args.addAll(bucketIdentifiers);
+
+        if (filterParams != null) {
+            final BundleType bundleType = filterParams.getBundleType();
+            if (bundleType != null) {
+                sqlBuilder.append(" AND eb.bundle_type = ?");
+                args.add(bundleType.name());
+            }
+
+            final ExtensionType extensionType = filterParams.getExtensionType();
+            if (extensionType != null) {
+                sqlBuilder.append(" AND e.type = ?");
+                args.add(extensionType.name());
+            }
+
+            final Collection<String> tags = filterParams.getTags();
+            if (tags != null && !tags.isEmpty()) {
+                sqlBuilder.append(" AND e.id IN (")
+                        .append(" SELECT et.extension_id FROM extension_tag et WHERE ");
+
+                boolean first = true;
+                for (final String tag : tags) {
+                    if (!first) {
+                        sqlBuilder.append(" OR ");
+                    }
+                    sqlBuilder.append(" et.tag = ? ");
+                    args.add(tag.trim().toLowerCase());
+                    first = false;
+                }
+
+                sqlBuilder.append(")");
+            }
+        }
+
+        sqlBuilder.append(" ORDER BY e.name ASC");
+        return jdbcTemplate.query(sqlBuilder.toString(), args.toArray(), new ExtensionEntityRowMapper());
+    }
+
+    @Override
+    public List<ExtensionEntity> getExtensionsByProvidedServiceApi(final Set<String> bucketIdentifiers, final ProvidedServiceAPI providedServiceAPI) {
+        if (bucketIdentifiers == null || bucketIdentifiers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final List<Object> args = new ArrayList<>();
+
+        final StringBuilder sqlBuilder = new StringBuilder(BASE_EXTENSION_SQL);
+        sqlBuilder.append(" AND ");
+        addIdentifiersInClause(sqlBuilder, "eb.bucket_id", bucketIdentifiers);
+        args.addAll(bucketIdentifiers);
+
+        sqlBuilder.append(" AND e.id IN (")
+                .append(" SELECT ep.extension_id FROM extension_provided_service_api ep")
+                .append(" WHERE ep.class_name = ? ")
+                .append(" AND ep.group_id = ? ")
+                .append(" AND ep.artifact_id = ? ")
+                .append(" AND ep.version = ?")
+                .append(")")
+                .toString();
+
+        args.add(providedServiceAPI.getClassName());
+        args.add(providedServiceAPI.getGroupId());
+        args.add(providedServiceAPI.getArtifactId());
+        args.add(providedServiceAPI.getVersion());
+
+        return jdbcTemplate.query(sqlBuilder.toString(), args.toArray(), new ExtensionEntityRowMapper());
+    }
+
+    @Override
+    public List<ExtensionEntity> getExtensionsByBundleVersionId(final String bundleVersionId) {
+        final String selectSql = BASE_EXTENSION_SQL + " AND e.bundle_version_id = ?";
+        final Object[] args = { bundleVersionId };
+        return jdbcTemplate.query(selectSql, args, new ExtensionEntityRowMapper());
+    }
+
+    @Override
+    public List<TagCountEntity> getAllExtensionTags() {
         final String selectSql =
-                "SELECT * " +
-                "FROM extension " +
-                "WHERE extension_bundle_version_id = ?";
+                "SELECT tag as TAG, count(*) as COUNT " +
+                "FROM extension_tag " +
+                "GROUP BY tag " +
+                "ORDER BY tag ASC";
 
-        final Object[] args = { extensionBundleVersionId };
-        return jdbcTemplate.query(selectSql, args, new ExtensionEntityRowMapper());
-    }
-
-    @Override
-    public List<ExtensionEntity> getExtensionsByBundleCoordinate(final String bucketId, final String groupId, final String artifactId, final String version) {
-        final String sql =
-                "SELECT * " +
-                "FROM extension_bundle eb, extension_bundle_version ebv, extension e " +
-                "WHERE eb.id = ebv.extension_bundle_id " +
-                    "AND ebv.id = e.extension_bundle_version_id " +
-                    "AND eb.bucket_id = ? " +
-                    "AND eb.group_id = ? " +
-                    "AND eb.artifact_id = ? " +
-                    "AND ebv.version = ?";
-
-        final Object[] args = { bucketId, groupId, artifactId, version };
-        return jdbcTemplate.query(sql, args, new ExtensionEntityRowMapper());
-    }
-
-    @Override
-    public List<ExtensionEntity> getExtensionsByCategory(final ExtensionEntityCategory category) {
-        final String selectSql = "SELECT * FROM extension WHERE category = ?";
-        final Object[] args = { category.toString() };
-        return jdbcTemplate.query(selectSql, args, new ExtensionEntityRowMapper());
-    }
-
-    @Override
-    public List<ExtensionEntity> getExtensionsByTag(final String tag) {
-        final String selectSql =
-                "SELECT * " +
-                "FROM extension e, extension_tag et " +
-                "WHERE e.id = et.extension_id AND et.tag = ?";
-
-        final Object[] args = { tag };
-        return jdbcTemplate.query(selectSql, args, new ExtensionEntityRowMapper());
-    }
-
-    @Override
-    public Set<String> getAllExtensionTags() {
-        final String selectSql = "SELECT DISTINCT tag FROM extension_tag ORDER BY tag ASC";
-
-        final Set<String> tags = new LinkedHashSet<>();
-        final RowCallbackHandler handler = (rs) -> tags.add(rs.getString(1));
-        jdbcTemplate.query(selectSql, handler);
-        return tags;
+        return jdbcTemplate.query(selectSql, new TagCountEntityMapper());
     }
 
     @Override
@@ -922,6 +1041,50 @@ public class DatabaseMetadataService implements MetadataService {
         jdbcTemplate.update(deleteSql, extension.getId());
     }
 
+    //----------------- Extension Provided Service APIs --------------------
+
+    private ExtensionProvidedServiceApiEntity createProvidedServiceApi(final ExtensionProvidedServiceApiEntity providedServiceApi) {
+        final String sql =
+                "INSERT INTO extension_provided_service_api (" +
+                    "ID, " +
+                    "EXTENSION_ID, " +
+                    "CLASS_NAME, " +
+                    "GROUP_ID, " +
+                    "ARTIFACT_ID, " +
+                    "VERSION) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+        jdbcTemplate.update(sql,
+                providedServiceApi.getId(),
+                providedServiceApi.getExtensionId(),
+                providedServiceApi.getClassName(),
+                providedServiceApi.getGroupId(),
+                providedServiceApi.getArtifactId(),
+                providedServiceApi.getVersion()
+        );
+
+        return providedServiceApi;
+    }
+
+    //----------------- Extension Restrictions --------------------
+
+    private ExtensionRestrictionEntity createRestriction(final ExtensionRestrictionEntity restriction) {
+        final String sql =
+                "INSERT INTO extension_restriction(" +
+                    "ID, " +
+                    "EXTENSION_ID, " +
+                    "REQUIRED_PERMISSION, " +
+                    "EXPLANATION) " +
+                "VALUES (?, ?, ?, ?)";
+
+        jdbcTemplate.update(sql,
+                restriction.getId(),
+                restriction.getExtensionId(),
+                restriction.getRequiredPermission(),
+                restriction.getExplanation());
+
+        return restriction;
+    }
 
     //----------------- Fields ---------------------------------
 

@@ -24,8 +24,9 @@ import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.client.BucketClient;
-import org.apache.nifi.registry.client.ExtensionBundleClient;
-import org.apache.nifi.registry.client.ExtensionBundleVersionClient;
+import org.apache.nifi.registry.client.BundleClient;
+import org.apache.nifi.registry.client.BundleVersionClient;
+import org.apache.nifi.registry.client.ExtensionClient;
 import org.apache.nifi.registry.client.ExtensionRepoClient;
 import org.apache.nifi.registry.client.FlowClient;
 import org.apache.nifi.registry.client.FlowSnapshotClient;
@@ -183,30 +184,41 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     }
 
     @Override
-    public ExtensionBundleClient getExtensionBundleClient() {
-        return new JerseyExtensionBundleClient(baseTarget);
+    public BundleClient getBundleClient() {
+        return new JerseyBundleClient(baseTarget);
     }
 
     @Override
-    public ExtensionBundleClient getExtensionBundleClient(String... proxiedEntity) {
+    public BundleClient getBundleClient(String... proxiedEntity) {
         final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyExtensionBundleClient(baseTarget, headers);
+        return new JerseyBundleClient(baseTarget, headers);
     }
 
     @Override
-    public ExtensionBundleVersionClient getExtensionBundleVersionClient() {
-        return new JerseyExtensionBundleVersionClient(baseTarget);
+    public BundleVersionClient getBundleVersionClient() {
+        return new JerseyBundleVersionClient(baseTarget);
     }
 
     @Override
-    public ExtensionBundleVersionClient getExtensionBundleVersionClient(String... proxiedEntity) {
+    public BundleVersionClient getBundleVersionClient(String... proxiedEntity) {
         final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyExtensionBundleVersionClient(baseTarget, headers);
+        return new JerseyBundleVersionClient(baseTarget, headers);
     }
 
     @Override
     public ExtensionRepoClient getExtensionRepoClient() {
         return new JerseyExtensionRepoClient(baseTarget);
+    }
+
+    @Override
+    public ExtensionClient getExtensionClient() {
+        return new JerseyExtensionClient(baseTarget);
+    }
+
+    @Override
+    public ExtensionClient getExtensionClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyExtensionClient(baseTarget, headers);
     }
 
     @Override

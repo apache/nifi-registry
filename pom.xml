@@ -137,16 +137,6 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
-        <repository>
-            <id>spring-milestones</id>
-            <url>http://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
     </repositories>
 
 
@@ -599,7 +589,8 @@
                         </exclude> <!-- Console banner text that does not have a mechanism of including comments -->
                         <exclude>src/main/resources/swagger/security-definitions.json
                         </exclude> <!-- A maven-swagger-plugin input file that does not have a mechanism of including comments -->
-			<exclude>.travis-output-filters</exclude> <!-- grep patterns to exclude from travis output -->
+			            <exclude>.travis-output-filters</exclude> <!-- grep patterns to exclude from travis output -->
+                        <exclude>src/test/resources/descriptors/*</exclude>
                     </excludes>
                 </configuration>
                 <dependencies>
@@ -701,7 +692,7 @@
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-javadoc-plugin</artifactId>
                             <configuration>
-                                <additionalparam>-Xdoclint:none</additionalparam>
+                                <doclint>none</doclint>
                             </configuration>
                         </plugin>
                     </plugins>

@@ -90,7 +90,7 @@ insert into bucket_item (
   '3'
 );
 
-insert into extension_bundle (
+insert into bundle (
   id,
   bucket_id,
   bundle_type,
@@ -104,9 +104,9 @@ insert into extension_bundle (
   'nifi-example-processors-nar'
 );
 
-insert into extension_bundle_version (
+insert into bundle_version (
   id,
-  extension_bundle_id,
+  bundle_id,
   version,
   created,
   created_by,
@@ -126,9 +126,9 @@ insert into extension_bundle_version (
   1024
 );
 
-insert into extension_bundle_version_dependency (
+insert into bundle_version_dependency (
   id,
-  extension_bundle_version_id,
+  bundle_version_id,
   group_id,
   artifact_id,
   version
@@ -159,7 +159,7 @@ insert into bucket_item (
   '3'
 );
 
-insert into extension_bundle (
+insert into bundle (
   id,
   bucket_id,
   bundle_type,
@@ -173,9 +173,9 @@ insert into extension_bundle (
   'nifi-example-services-nar'
 );
 
-insert into extension_bundle_version (
+insert into bundle_version (
   id,
-  extension_bundle_id,
+  bundle_id,
   version,
   created,
   created_by,
@@ -195,9 +195,9 @@ insert into extension_bundle_version (
   1024
 );
 
-insert into extension_bundle_version_dependency (
+insert into bundle_version_dependency (
   id,
-  extension_bundle_version_id,
+  bundle_version_id,
   group_id,
   artifact_id,
   version
@@ -228,7 +228,7 @@ insert into bucket_item (
   '3'
 );
 
-insert into extension_bundle (
+insert into bundle (
   id,
   bucket_id,
   bundle_type,
@@ -242,9 +242,9 @@ insert into extension_bundle (
   'nifi-example-service-api-nar'
 );
 
-insert into extension_bundle_version (
+insert into bundle_version (
   id,
-  extension_bundle_id,
+  bundle_id,
   version,
   created,
   created_by,
@@ -267,21 +267,37 @@ insert into extension_bundle_version (
 -- test data for extensions
 
 insert into extension (
-  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags
+  id, bundle_version_id, name, display_name, type, content
 ) values (
-  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'This is Example Processor 1', 0, 'PROCESSOR', 'example, processor'
+  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'ExampleProcessor', 'PROCESSOR', '{ "name" : "org.apache.nifi.ExampleProcessor", "type" : "PROCESSOR" }'
 );
 
 insert into extension (
-  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags)
-values (
-  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'This is Example Processor Restricted', 1, 'PROCESSOR', 'example, processor, restricted'
+  id, bundle_version_id, name, display_name, type, content
+) values (
+  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'ExampleProcessorRestricted', 'PROCESSOR', '{ "name" : "org.apache.nifi.ExampleProcessorRestricted", "type" : "PROCESSOR" }'
 );
 
 insert into extension (
-  id, extension_bundle_version_id, type, type_description, is_restricted, category, tags)
-values (
-  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'This is Example Service', 0, 'CONTROLLER_SERVICE', 'example, service'
+  id, bundle_version_id, name, display_name, type, content
+) values (
+  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'ExampleService', 'CONTROLLER_SERVICE', '{ "name" : "org.apache.nifi.ExampleService", "type" : "CONTROLLER_SERVICE" }'
+);
+
+-- test data for extension restrictions
+
+insert into extension_restriction (
+  id, extension_id, required_permission, explanation
+) values (
+  'er1', 'e2', 'write filesystem', 'This writes to the filesystem'
+);
+
+-- test data for extension provided service apis
+
+insert into extension_provided_service_api (
+  id, extension_id, class_name, group_id, artifact_id, version
+) values (
+  'epapi1', 'e3', 'org.apache.nifi.ExampleServiceAPI', 'org.apache.nifi', 'nifi-example-service-api-nar', '2.0.0'
 );
 
 -- test data for extension tags

@@ -17,11 +17,14 @@
 package org.apache.nifi.registry.web.link;
 
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.extension.ExtensionBundle;
-import org.apache.nifi.registry.extension.ExtensionBundleVersion;
-import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.bundle.Bundle;
+import org.apache.nifi.registry.extension.bundle.BundleInfo;
+import org.apache.nifi.registry.extension.bundle.BundleVersion;
+import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
+import org.apache.nifi.registry.extension.component.ExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.VersionedFlow;
@@ -44,14 +47,16 @@ public class LinkService {
     private static final String FLOW_PATH = "buckets/{bucketId}/flows/{flowId}";
     private static final String FLOW_SNAPSHOT_PATH = "buckets/{bucketId}/flows/{flowId}/versions/{versionNumber}";
 
-    private static final String EXTENSION_BUNDLE_PATH = "extensions/bundles/{bundleId}";
-    private static final String EXTENSION_BUNDLE_VERSION_PATH = "extensions/bundles/{bundleId}/versions/{version}";
-    private static final String EXTENSION_BUNDLE_VERSION_CONTENT_PATH = "extensions/bundles/{bundleId}/versions/{version}/content";
+    private static final String EXTENSION_BUNDLE_PATH = "bundles/{bundleId}";
+    private static final String EXTENSION_BUNDLE_VERSION_PATH = "bundles/{bundleId}/versions/{version}";
+    private static final String EXTENSION_BUNDLE_VERSION_CONTENT_PATH = "bundles/{bundleId}/versions/{version}/content";
+    private static final String EXTENSION_BUNDLE_VERSION_EXTENSION_PATH = "bundles/{bundleId}/versions/{version}/extensions/{name}";
 
-    private static final String EXTENSION_REPO_BUCKET_PATH = "extensions/repo/{bucketName}";
-    private static final String EXTENSION_REPO_GROUP_PATH = "extensions/repo/{bucketName}/{groupId}";
-    private static final String EXTENSION_REPO_ARTIFACT_PATH = "extensions/repo/{bucketName}/{groupId}/{artifactId}";
-    private static final String EXTENSION_REPO_VERSION_PATH = "extensions/repo/{bucketName}/{groupId}/{artifactId}/{version}";
+    private static final String EXTENSION_REPO_BUCKET_PATH = "extension-repository/{bucketName}";
+    private static final String EXTENSION_REPO_GROUP_PATH = "extension-repository/{bucketName}/{groupId}";
+    private static final String EXTENSION_REPO_ARTIFACT_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}";
+    private static final String EXTENSION_REPO_VERSION_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}/{version}";
+    private static final String EXTENSION_REPO_EXTENSION_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}/{version}/extensions/{name}";
 
 
     private static final LinkBuilder<Bucket> BUCKET_LINK_BUILDER = (bucket) -> {
@@ -65,6 +70,8 @@ public class LinkService {
 
         return Link.fromUri(uri).rel("self").build();
     };
+
+    // -- Flow LinkBuilders
 
     private static final LinkBuilder<VersionedFlow> FLOW_LINK_BUILDER = (versionedFlow -> {
         if (versionedFlow == null) {
@@ -93,7 +100,9 @@ public class LinkService {
         return Link.fromUri(uri).rel("content").build();
     };
 
-    private static final LinkBuilder<ExtensionBundle> EXTENSION_BUNDLE_LINK_BUILDER = (extensionBundle -> {
+    // -- Bundles & Extension LinkBuilders
+
+    private static final LinkBuilder<Bundle> EXTENSION_BUNDLE_LINK_BUILDER = (extensionBundle -> {
         if (extensionBundle == null) {
             return null;
         }
@@ -105,31 +114,47 @@ public class LinkService {
         return Link.fromUri(uri).rel("self").build();
     });
 
-    private static final LinkBuilder<ExtensionBundleVersionMetadata> EXTENSION_BUNDLE_VERSION_LINK_BUILDER = (bundleVersion -> {
+    private static final LinkBuilder<BundleVersionMetadata> EXTENSION_BUNDLE_VERSION_LINK_BUILDER = (bundleVersion -> {
         if (bundleVersion == null) {
             return null;
         }
 
         final URI uri = UriBuilder.fromPath(EXTENSION_BUNDLE_VERSION_PATH)
-                .resolveTemplate("bundleId", bundleVersion.getExtensionBundleId())
+                .resolveTemplate("bundleId", bundleVersion.getBundleId())
                 .resolveTemplate("version", bundleVersion.getVersion())
                 .build();
 
         return Link.fromUri(uri).rel("self").build();
     });
 
-    private static final LinkBuilder<ExtensionBundleVersion> EXTENSION_BUNDLE_VERSION_CONTENT_LINK_BUILDER = (bundleVersion -> {
+    private static final LinkBuilder<BundleVersion> EXTENSION_BUNDLE_VERSION_CONTENT_LINK_BUILDER = (bundleVersion -> {
         if (bundleVersion == null) {
             return null;
         }
 
         final URI uri = UriBuilder.fromPath(EXTENSION_BUNDLE_VERSION_CONTENT_PATH)
-                .resolveTemplate("bundleId", bundleVersion.getExtensionBundle().getIdentifier())
+                .resolveTemplate("bundleId", bundleVersion.getBundle().getIdentifier())
                 .resolveTemplate("version", bundleVersion.getVersionMetadata().getVersion())
                 .build();
 
         return Link.fromUri(uri).rel("self").build();
     });
+
+    private static final LinkBuilder<ExtensionMetadata> EXTENSION_METADATA_LINK_BUILDER = (extensionMetadata -> {
+        if (extensionMetadata == null) {
+            return null;
+        }
+
+        final URI uri = UriBuilder.fromPath(EXTENSION_BUNDLE_VERSION_EXTENSION_PATH)
+                .resolveTemplate("bundleId", extensionMetadata.getBundleInfo().getBundleId())
+                .resolveTemplate("version", extensionMetadata.getBundleInfo().getVersion())
+                .resolveTemplate("name", extensionMetadata.getName())
+                .build();
+
+        return Link.fromUri(uri).rel("self").build();
+    });
+
+    // -- Extension Repo LinkBuilders
 
     private static final LinkBuilder<ExtensionRepoBucket> EXTENSION_REPO_BUCKET_LINK_BUILDER = (extensionRepoBucket -> {
         if (extensionRepoBucket == null) {
@@ -185,20 +210,51 @@ public class LinkService {
         return Link.fromUri(uri).rel("self").build();
     });
 
+    private static final LinkBuilder<ExtensionRepoExtensionMetadata> EXTENSION_REPO_EXTENSION_METADATA_LINK_BUILDER = (extensionMetadata -> {
+        if (extensionMetadata == null
+                || extensionMetadata.getExtensionMetadata() == null
+                || extensionMetadata.getExtensionMetadata().getBundleInfo() == null) {
+            return null;
+        }
+
+        final ExtensionMetadata metadata = extensionMetadata.getExtensionMetadata();
+        final BundleInfo bundleInfo = metadata.getBundleInfo();
+
+        final URI uri = UriBuilder.fromPath(EXTENSION_REPO_EXTENSION_PATH)
+                .resolveTemplate("bucketName", bundleInfo.getBucketName())
+                .resolveTemplate("groupId", bundleInfo.getGroupId())
+                .resolveTemplate("artifactId", bundleInfo.getArtifactId())
+                .resolveTemplate("version", bundleInfo.getVersion())
+                .resolveTemplate("name", metadata.getName())
+                .build();
+
+        return Link.fromUri(uri).rel("self").build();
+    });
+
 
     private static final Map<Class,LinkBuilder> LINK_BUILDERS;
     static {
         final Map<Class,LinkBuilder> builderMap = new HashMap<>();
+        // -- buckets
         builderMap.put(Bucket.class, BUCKET_LINK_BUILDER);
+
+        // -- flows
         builderMap.put(VersionedFlow.class, FLOW_LINK_BUILDER);
         builderMap.put(VersionedFlowSnapshotMetadata.class, FLOW_SNAPSHOT_LINK_BUILDER);
-        builderMap.put(ExtensionBundle.class, EXTENSION_BUNDLE_LINK_BUILDER);
-        builderMap.put(ExtensionBundleVersionMetadata.class, EXTENSION_BUNDLE_VERSION_LINK_BUILDER);
-        builderMap.put(ExtensionBundleVersion.class, EXTENSION_BUNDLE_VERSION_CONTENT_LINK_BUILDER);
+
+        // -- bundles & extensions
+        builderMap.put(Bundle.class, EXTENSION_BUNDLE_LINK_BUILDER);
+        builderMap.put(BundleVersionMetadata.class, EXTENSION_BUNDLE_VERSION_LINK_BUILDER);
+        builderMap.put(BundleVersion.class, EXTENSION_BUNDLE_VERSION_CONTENT_LINK_BUILDER);
+        builderMap.put(ExtensionMetadata.class, EXTENSION_METADATA_LINK_BUILDER);
+
+        // -- extension repo
         builderMap.put(ExtensionRepoBucket.class, EXTENSION_REPO_BUCKET_LINK_BUILDER);
         builderMap.put(ExtensionRepoGroup.class, EXTENSION_REPO_GROUP_LINK_BUILDER);
         builderMap.put(ExtensionRepoArtifact.class, EXTENSION_REPO_ARTIFACT_LINK_BUILDER);
         builderMap.put(ExtensionRepoVersionSummary.class, EXTENSION_REPO_VERSION_LINK_BUILDER);
+        builderMap.put(ExtensionRepoExtensionMetadata.class, EXTENSION_REPO_EXTENSION_METADATA_LINK_BUILDER);
+
         LINK_BUILDERS = Collections.unmodifiableMap(builderMap);
     }
 

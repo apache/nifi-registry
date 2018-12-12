@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.bucket.BucketItemType;
-import org.apache.nifi.registry.extension.ExtensionBundle;
+import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.flow.VersionedFlow;
 
 import java.io.IOException;
@@ -67,8 +67,8 @@ public class BucketItemDeserializer extends StdDeserializer<BucketItem[]> {
                     bucketItems.add(versionedFlow);
                     break;
                 case Extension_Bundle:
-                    final ExtensionBundle extensionBundle = jsonParser.getCodec().treeToValue(node, ExtensionBundle.class);
-                    bucketItems.add(extensionBundle);
+                    final Bundle bundle = jsonParser.getCodec().treeToValue(node, Bundle.class);
+                    bucketItems.add(bundle);
                     break;
                 default:
                     throw new IllegalStateException("Unknown type for BucketItem: " + bucketItemType);

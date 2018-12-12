@@ -17,7 +17,8 @@
 package org.apache.nifi.registry.db.mapper;
 
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
-import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
+import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.component.manifest.ExtensionType;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -28,13 +29,24 @@ public class ExtensionEntityRowMapper implements RowMapper<ExtensionEntity> {
     @Override
     public ExtensionEntity mapRow(ResultSet rs, int i) throws SQLException {
         final ExtensionEntity entity = new ExtensionEntity();
+
+        // fields from extension table...
         entity.setId(rs.getString("ID"));
-        entity.setExtensionBundleVersionId(rs.getString("EXTENSION_BUNDLE_VERSION_ID"));
-        entity.setType(rs.getString("TYPE"));
-        entity.setTypeDescription(rs.getString("TYPE_DESCRIPTION"));
-        entity.setRestricted(rs.getInt("IS_RESTRICTED") == 1);
-        entity.setCategory(ExtensionEntityCategory.valueOf(rs.getString("CATEGORY")));
-        entity.setTags(rs.getString("TAGS"));
+        entity.setBundleVersionId(rs.getString("BUNDLE_VERSION_ID"));
+        entity.setName(rs.getString("NAME"));
+        entity.setDisplayName(rs.getString("DISPLAY_NAME"));
+        entity.setExtensionType(ExtensionType.valueOf(rs.getString("TYPE")));
+        entity.setContent(rs.getString("CONTENT"));
+
+        // fields from joined tables that we know will be there...
+        entity.setBucketId(rs.getString("BUCKET_ID"));
+        entity.setBucketName(rs.getString("BUCKET_NAME"));
+        entity.setBundleId(rs.getString("BUNDLE_ID"));
+        entity.setGroupId(rs.getString("GROUP_ID"));
+        entity.setArtifactId(rs.getString("ARTIFACT_ID"));
+        entity.setVersion(rs.getString("VERSION"));
+        entity.setBundleType(BundleType.valueOf(rs.getString("BUNDLE_TYPE")));
+
         return entity;
     }
 

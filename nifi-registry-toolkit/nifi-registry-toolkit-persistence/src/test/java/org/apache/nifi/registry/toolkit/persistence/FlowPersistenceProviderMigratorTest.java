@@ -21,8 +21,9 @@ import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
-import org.apache.nifi.registry.service.DataModelMapper;
 import org.apache.nifi.registry.service.MetadataService;
+import org.apache.nifi.registry.service.mapper.BucketMappings;
+import org.apache.nifi.registry.service.mapper.FlowMappings;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.AdditionalMatchers;
@@ -147,9 +148,9 @@ public class FlowPersistenceProviderMigratorTest {
         BucketEntity bucketEntity = flowBuckets.get(flowSnapshotEntity.getFlowId());
         FlowEntity flowEntity = bucketFlows.get(bucketEntity.getId()).get(flowSnapshotEntity.getFlowId());
         verify(toProvider).saveFlowContent(eq(new StandardFlowSnapshotContext.Builder(
-                DataModelMapper.map(bucketEntity),
-                DataModelMapper.map(bucketEntity, flowEntity),
-                DataModelMapper.map(bucketEntity, flowSnapshotEntity)).build()),
+                BucketMappings.map(bucketEntity),
+                FlowMappings.map(bucketEntity, flowEntity),
+                FlowMappings.map(bucketEntity, flowSnapshotEntity)).build()),
                 AdditionalMatchers.aryEq(getContent(bucketEntity.getId(), flowSnapshotEntity.getFlowId(), flowSnapshotEntity.getVersion())));
     }
 }

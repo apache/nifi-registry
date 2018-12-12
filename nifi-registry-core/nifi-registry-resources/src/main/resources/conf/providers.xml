@@ -15,6 +15,12 @@
 -->
 <providers>
 
+    <!-- NOTE: The providers in this file must be listed in the order defined in providers.xsd which is the following:
+            1) Flow Persistence Provider (Must occur once and only once)
+            2) Event Hook Providers (May occur 0 or more times)
+            3) Bundle Persistence Provider (Must occur once and only once)
+     -->
+
     <flowPersistenceProvider>
         <class>org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider</class>
         <property name="Flow Storage Directory">./flow_storage</property>
@@ -52,7 +58,7 @@
     -->
 
     <extensionBundlePersistenceProvider>
-        <class>org.apache.nifi.registry.provider.extension.FileSystemExtensionBundlePersistenceProvider</class>
+        <class>org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider</class>
         <property name="Extension Bundle Storage Directory">./extension_bundles</property>
     </extensionBundlePersistenceProvider>
 

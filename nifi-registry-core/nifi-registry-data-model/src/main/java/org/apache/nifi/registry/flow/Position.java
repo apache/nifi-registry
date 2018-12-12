@@ -17,11 +17,10 @@
 
 package org.apache.nifi.registry.flow;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Objects;
 
 @ApiModel(description = "The position of a component on the graph")
 public class Position {
@@ -61,27 +60,14 @@ public class Position {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
         Position position = (Position) o;
-
-        return new EqualsBuilder()
-                .append(x, position.x)
-                .append(y, position.y)
-                .isEquals();
+        return Double.compare(position.x, x) == 0 && Double.compare(position.y, y) == 0;
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(x)
-                .append(y)
-                .toHashCode();
+        return Objects.hash(x, y);
     }
 }

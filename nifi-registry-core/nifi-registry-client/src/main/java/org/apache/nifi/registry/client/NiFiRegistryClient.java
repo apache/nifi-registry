@@ -76,22 +76,22 @@ public interface NiFiRegistryClient extends Closeable {
     /**
      * @return the client for interacting with extension bundles
      */
-    ExtensionBundleClient getExtensionBundleClient();
+    BundleClient getBundleClient();
 
     /**
      * @return the client for interacting with extension bundles on behalf of the given proxied entities
      */
-    ExtensionBundleClient getExtensionBundleClient(String ... proxiedEntity);
+    BundleClient getBundleClient(String ... proxiedEntity);
 
     /**
      * @return the client for interacting with extension bundle versions
      */
-    ExtensionBundleVersionClient getExtensionBundleVersionClient();
+    BundleVersionClient getBundleVersionClient();
 
     /**
      * @return the client for interacting with extension bundle versions on behalf of the given proxied entities
      */
-    ExtensionBundleVersionClient getExtensionBundleVersionClient(String ... proxiedEntity);
+    BundleVersionClient getBundleVersionClient(String ... proxiedEntity);
 
     /**
      * @return the client for interacting with the extension repository
@@ -102,6 +102,16 @@ public interface NiFiRegistryClient extends Closeable {
      * @return the client for interacting with the extension repository on behalf of the given proxied entities
      */
     ExtensionRepoClient getExtensionRepoClient(String ... proxiedEntity);
+
+    /**
+     * @return the client for interacting with extensions
+     */
+    ExtensionClient getExtensionClient();
+
+    /**
+     * @return the client for interacting with extensions on behalf of the given proxied entities
+     */
+    ExtensionClient getExtensionClient(String ... proxiedEntity);
 
     /**
      * The builder interface that implementations should provide for obtaining the client.

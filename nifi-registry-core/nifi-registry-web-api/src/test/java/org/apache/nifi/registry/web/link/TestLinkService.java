@@ -19,10 +19,13 @@ package org.apache.nifi.registry.web.link;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.bucket.BucketItemType;
-import org.apache.nifi.registry.extension.ExtensionBundle;
-import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
+import org.apache.nifi.registry.extension.bundle.Bundle;
+import org.apache.nifi.registry.extension.bundle.BundleInfo;
+import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
+import org.apache.nifi.registry.extension.component.ExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.VersionedFlow;
@@ -48,13 +51,15 @@ public class TestLinkService {
     private List<VersionedFlowSnapshotMetadata> snapshots;
     private List<BucketItem> items;
 
-    private List<ExtensionBundle> extensionBundles;
-    private List<ExtensionBundleVersionMetadata> extensionBundleVersionMetadata;
+    private List<Bundle> bundles;
+    private List<BundleVersionMetadata> bundleVersionMetadata;
+    private List<ExtensionMetadata> extensionMetadata;
 
     private List<ExtensionRepoBucket> extensionRepoBuckets;
     private List<ExtensionRepoGroup> extensionRepoGroups;
     private List<ExtensionRepoArtifact> extensionRepoArtifacts;
     private List<ExtensionRepoVersionSummary> extensionRepoVersions;
+    private List<ExtensionRepoExtensionMetadata> extensionRepoExtensionMetadata;
 
     @Before
     public void setup() {
@@ -104,28 +109,49 @@ public class TestLinkService {
         snapshots.add(snapshotMetadata2);
 
         // setup extension bundles
-        final ExtensionBundle bundle1 = new ExtensionBundle();
+        final Bundle bundle1 = new Bundle();
         bundle1.setIdentifier("eb1");
 
-        final ExtensionBundle bundle2 = new ExtensionBundle();
+        final Bundle bundle2 = new Bundle();
         bundle2.setIdentifier("eb2");
 
-        extensionBundles = new ArrayList<>();
-        extensionBundles.add(bundle1);
-        extensionBundles.add(bundle2);
+        bundles = new ArrayList<>();
+        bundles.add(bundle1);
+        bundles.add(bundle2);
 
         // setup extension bundle versions
-        final ExtensionBundleVersionMetadata bundleVersion1 = new ExtensionBundleVersionMetadata();
-        bundleVersion1.setExtensionBundleId(bundle1.getIdentifier());
+        final BundleVersionMetadata bundleVersion1 = new BundleVersionMetadata();
+        bundleVersion1.setBundleId(bundle1.getIdentifier());
         bundleVersion1.setVersion("1.0.0");
 
-        final ExtensionBundleVersionMetadata bundleVersion2 = new ExtensionBundleVersionMetadata();
-        bundleVersion2.setExtensionBundleId(bundle1.getIdentifier());
+        final BundleVersionMetadata bundleVersion2 = new BundleVersionMetadata();
+        bundleVersion2.setBundleId(bundle1.getIdentifier());
         bundleVersion2.setVersion("2.0.0");
 
-        extensionBundleVersionMetadata = new ArrayList<>();
-        extensionBundleVersionMetadata.add(bundleVersion1);
-        extensionBundleVersionMetadata.add(bundleVersion2);
+        bundleVersionMetadata = new ArrayList<>();
+        bundleVersionMetadata.add(bundleVersion1);
+        bundleVersionMetadata.add(bundleVersion2);
+
+        // setup extension metadata
+        final BundleInfo bundleInfo1 = new BundleInfo();
+        bundleInfo1.setBucketName("Bucket1");
+        bundleInfo1.setBucketId("Bucket1");
+        bundleInfo1.setBundleId("bundle1");
+        bundleInfo1.setGroupId("Group1");
+        bundleInfo1.setArtifactId("Artifact1");
+        bundleInfo1.setVersion("1");
+
+        final ExtensionMetadata extensionMetadata1 = new ExtensionMetadata();
+        extensionMetadata1.setName("Extension1");
+        extensionMetadata1.setBundleInfo(bundleInfo1);
+
+        final ExtensionMetadata extensionMetadata2 = new ExtensionMetadata();
+        extensionMetadata2.setName("Extension2");
+        extensionMetadata2.setBundleInfo(bundleInfo1);
+
+        extensionMetadata = new ArrayList<>();
+        extensionMetadata.add(extensionMetadata1);
+        extensionMetadata.add(extensionMetadata2);
 
         // setup extension repo buckets
         final ExtensionRepoBucket rb1 = new ExtensionRepoBucket();
@@ -183,6 +209,11 @@ public class TestLinkService {
         extensionRepoVersions.add(rv1);
         extensionRepoVersions.add(rv2);
 
+        // setup extension repo extension metadata
+        extensionRepoExtensionMetadata = new ArrayList<>();
+        extensionRepoExtensionMetadata.add(new ExtensionRepoExtensionMetadata(extensionMetadata1));
+        extensionRepoExtensionMetadata.add(new ExtensionRepoExtensionMetadata(extensionMetadata2));
+
         // setup items
         items = new ArrayList<>();
         items.add(flow1);
@@ -223,24 +254,36 @@ public class TestLinkService {
             if (i.getType() == BucketItemType.Flow) {
                 Assert.assertEquals("buckets/" + i.getBucketIdentifier() + "/flows/" + i.getIdentifier(), i.getLink().getUri().toString());
             } else {
-                Assert.assertEquals("extensions/bundles/" + i.getIdentifier(), i.getLink().getUri().toString());
+                Assert.assertEquals("bundles/" + i.getIdentifier(), i.getLink().getUri().toString());
             }
         });
     }
 
     @Test
     public void testPopulateExtensionBundleLinks() {
-        extensionBundles.forEach(i -> Assert.assertNull(i.getLink()));
-        linkService.populateLinks(extensionBundles);
-        extensionBundles.forEach(eb -> Assert.assertEquals("extensions/bundles/" + eb.getIdentifier(), eb.getLink().getUri().toString()));
+        bundles.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(bundles);
+        bundles.forEach(eb -> Assert.assertEquals("bundles/" + eb.getIdentifier(), eb.getLink().getUri().toString()));
     }
 
     @Test
     public void testPopulateExtensionBundleVersionLinks() {
-        extensionBundleVersionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
-        linkService.populateLinks(extensionBundleVersionMetadata);
-        extensionBundleVersionMetadata.forEach(eb -> Assert.assertEquals(
-                "extensions/bundles/" + eb.getExtensionBundleId() + "/versions/" + eb.getVersion(), eb.getLink().getUri().toString()));
+        bundleVersionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(bundleVersionMetadata);
+        bundleVersionMetadata.forEach(eb -> Assert.assertEquals(
+                "bundles/" + eb.getBundleId() + "/versions/" + eb.getVersion(), eb.getLink().getUri().toString()));
+    }
+
+    @Test
+    public void testPopulateExtensionBundleVersionExtensionLinks() {
+        extensionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateLinks(extensionMetadata);
+        extensionMetadata.forEach(e -> Assert.assertEquals(
+                "bundles/" + e.getBundleInfo().getBundleId()
+                        + "/versions/" + e.getBundleInfo().getVersion()
+                        + "/extensions/" + e.getName(),
+                e.getLink().getUri().toString()));
+
     }
 
     @Test
@@ -248,7 +291,7 @@ public class TestLinkService {
         extensionRepoBuckets.forEach(i -> Assert.assertNull(i.getLink()));
         linkService.populateLinks(extensionRepoBuckets);
         extensionRepoBuckets.forEach(i -> Assert.assertEquals(
-                "extensions/repo/" + i.getBucketName(),
+                "extension-repository/" + i.getBucketName(),
                 i.getLink().getUri().toString())
         );
     }
@@ -259,7 +302,7 @@ public class TestLinkService {
         linkService.populateLinks(extensionRepoGroups);
         extensionRepoGroups.forEach(i -> {
             Assert.assertEquals(
-                    "extensions/repo/" + i.getBucketName() + "/" + i.getGroupId(),
+                    "extension-repository/" + i.getBucketName() + "/" + i.getGroupId(),
                     i.getLink().getUri().toString()); }
         );
     }
@@ -270,7 +313,7 @@ public class TestLinkService {
         linkService.populateLinks(extensionRepoArtifacts);
         extensionRepoArtifacts.forEach(i -> {
             Assert.assertEquals(
-                    "extensions/repo/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId(),
+                    "extension-repository/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId(),
                     i.getLink().getUri().toString()); }
         );
     }
@@ -281,7 +324,7 @@ public class TestLinkService {
         linkService.populateLinks(extensionRepoVersions);
         extensionRepoVersions.forEach(i -> {
             Assert.assertEquals(
-                    "extensions/repo/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId() + "/" + i.getVersion(),
+                    "extension-repository/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId() + "/" + i.getVersion(),
                     i.getLink().getUri().toString()); }
         );
     }
@@ -292,7 +335,20 @@ public class TestLinkService {
         linkService.populateFullLinks(extensionRepoVersions, baseUri);
         extensionRepoVersions.forEach(i -> {
             Assert.assertEquals(
-                    BASE_URI + "/extensions/repo/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId() + "/" + i.getVersion(),
+                    BASE_URI + "/extension-repository/" + i.getBucketName() + "/" + i.getGroupId() + "/" + i.getArtifactId() + "/" + i.getVersion(),
+                    i.getLink().getUri().toString()); }
+        );
+    }
+
+    @Test
+    public void testPopulateExtensionRepoExtensionMetdataFullLinks() {
+        extensionRepoExtensionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
+        linkService.populateFullLinks(extensionRepoExtensionMetadata, baseUri);
+        extensionRepoExtensionMetadata.forEach(i -> {
+            final BundleInfo bi = i.getExtensionMetadata().getBundleInfo();
+            Assert.assertEquals(
+                    BASE_URI + "/extension-repository/" + bi.getBucketName() + "/" + bi.getGroupId() + "/"
+                            + bi.getArtifactId() + "/" + bi.getVersion() + "/extensions/" + i.getExtensionMetadata().getName(),
                     i.getLink().getUri().toString()); }
         );
     }

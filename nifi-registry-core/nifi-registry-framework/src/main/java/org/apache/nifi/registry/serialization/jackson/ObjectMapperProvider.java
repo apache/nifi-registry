@@ -21,11 +21,15 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Provides a singleton ObjectMapper.
  */
-public abstract class ObjectMapperProvider {
+@Configuration
+public class ObjectMapperProvider {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -40,4 +44,11 @@ public abstract class ObjectMapperProvider {
     public static ObjectMapper getMapper() {
         return mapper;
     }
+
+    @Bean
+    @Primary
+    public ObjectMapper getObjectMapperBean() {
+        return getMapper();
+    }
+
 }

@@ -18,11 +18,12 @@ package org.apache.nifi.registry.web;
 
 import org.apache.nifi.registry.web.api.AccessPolicyResource;
 import org.apache.nifi.registry.web.api.AccessResource;
-import org.apache.nifi.registry.web.api.BucketExtensionResource;
+import org.apache.nifi.registry.web.api.BucketBundleResource;
 import org.apache.nifi.registry.web.api.BucketFlowResource;
 import org.apache.nifi.registry.web.api.BucketResource;
 import org.apache.nifi.registry.web.api.ConfigResource;
-import org.apache.nifi.registry.web.api.ExtensionRepositoryResource;
+import org.apache.nifi.registry.web.api.ExtensionRepoResource;
+import org.apache.nifi.registry.web.api.BundleResource;
 import org.apache.nifi.registry.web.api.ExtensionResource;
 import org.apache.nifi.registry.web.api.FlowResource;
 import org.apache.nifi.registry.web.api.ItemResource;
@@ -61,9 +62,10 @@ public class NiFiRegistryResourceConfig extends ResourceConfig {
         register(AccessResource.class);
         register(BucketResource.class);
         register(BucketFlowResource.class);
-        register(BucketExtensionResource.class);
+        register(BucketBundleResource.class);
+        register(BundleResource.class);
         register(ExtensionResource.class);
-        register(ExtensionRepositoryResource.class);
+        register(ExtensionRepoResource.class);
         register(FlowResource.class);
         register(ItemResource.class);
         register(TenantResource.class);
