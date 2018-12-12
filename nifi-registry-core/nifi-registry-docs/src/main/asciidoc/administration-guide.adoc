@@ -936,9 +936,9 @@ is configured via the following properties:
 |`nifi.registry.db.url`| The full JDBC connection string. The default value will specify a new H2 database in the same location as the previous one. For example, `jdbc:h2:./database/nifi-registry-primary;`.
 |`nifi.registry.db.driver.class`| The class name of the JDBC driver. The default value is `org.h2.Driver`.
 |`nifi.registry.db.driver.directory`| An optional directory containing one or more JARs to add to the classpath. If not specified, it is assumed that the driver JAR is already on the classpath by copying it to the `lib` directory. The H2 driver is bundled with Registry so it is not necessary to do anything for the default case.
-|`nifi.registry.db.driver.username`| The username for the database. The default value is `nifireg`.
-|`nifi.registry.db.driver.password`| The password for the database. The default value is `nifireg`.
-|`nifi.registry.db.driver.maxConnections`| The max number of connections for the connection pool. The default value is `5`.
+|`nifi.registry.db.username`| The username for the database. The default value is `nifireg`.
+|`nifi.registry.db.password`| The password for the database. The default value is `nifireg`.
+|`nifi.registry.db.maxConnections`| The max number of connections for the connection pool. The default value is `5`.
 |`nifi.registry.db.sql.debug`| Whether or not enable debug logging for SQL statements. The default value is `false`.
 |====
 
