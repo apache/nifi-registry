@@ -131,9 +131,9 @@ volume to provide certificates on the host system to the container instance.
 | nifi.registry.db.url                   | NIFI_REGISTRY_DB_URL       |
 | nifi.registry.db.driver.class          | NIFI_REGISTRY_DB_CLASS     |
 | nifi.registry.db.driver.directory      | NIFI_REGISTRY_DB_DIR       |
-| nifi.registry.db.driver.username       | NIFI_REGISTRY_DB_USER      |
-| nifi.registry.db.driver.password       | NIFI_REGISTRY_DB_PASS      |
-| nifi.registry.db.driver.maxConnections | NIFI_REGISTRY_DB_MAX_CONNS |
+| nifi.registry.db.username              | NIFI_REGISTRY_DB_USER      |
+| nifi.registry.db.password              | NIFI_REGISTRY_DB_PASS      |
+| nifi.registry.db.maxConnections        | NIFI_REGISTRY_DB_MAX_CONNS |
 | nifi.registry.db.sql.debug             | NIFI_REGISTRY_DB_DEBUG_SQL |
 
 #### The following, optional environment variables may be added to configure flow persistence provider.
