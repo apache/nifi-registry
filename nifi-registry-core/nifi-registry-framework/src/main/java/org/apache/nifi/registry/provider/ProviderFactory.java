@@ -18,7 +18,7 @@ package org.apache.nifi.registry.provider;
 
 import java.util.List;
 
-import org.apache.nifi.registry.extension.ExtensionBundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundlePersistenceProvider;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.hook.EventHookProvider;
 
@@ -45,8 +45,8 @@ public interface ProviderFactory {
     List<EventHookProvider> getEventHookProviders();
 
     /**
-     * @return the configured ExtensionBundlePersistenceProvider
+     * @return the configured BundlePersistenceProvider
      */
-    ExtensionBundlePersistenceProvider getExtensionBundlePersistenceProvider();
+    BundlePersistenceProvider getBundlePersistenceProvider();
 
 }

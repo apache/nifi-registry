@@ -18,15 +18,17 @@ package org.apache.nifi.registry.service;
 
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
+import org.apache.nifi.registry.db.entity.BundleEntity;
+import org.apache.nifi.registry.db.entity.BundleVersionDependencyEntity;
+import org.apache.nifi.registry.db.entity.BundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
-import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.db.entity.TagCountEntity;
+import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
+import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
+import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 
 import java.util.List;
 import java.util.Set;
@@ -227,7 +229,7 @@ public interface MetadataService {
      * @param extensionBundle the extension bundle to create
      * @return the created extension bundle
      */
-    ExtensionBundleEntity createExtensionBundle(ExtensionBundleEntity extensionBundle);
+    BundleEntity createBundle(BundleEntity extensionBundle);
 
     /**
      * Retrieves the extension bundle with the given id.
@@ -235,14 +237,14 @@ public interface MetadataService {
      * @param extensionBundleId the id of the extension bundle
      * @return the extension bundle with the id, or null if one does not exist
      */
-    ExtensionBundleEntity getExtensionBundle(String extensionBundleId);
+    BundleEntity getBundle(String extensionBundleId);
 
     /**
      * Retrieves the extension bundle in the given bucket with the given group and artifact id.
      *
      * @return the extension bundle, or null if one does not exist
      */
-    ExtensionBundleEntity getExtensionBundle(String bucketId, String groupId, String artifactId);
+    BundleEntity getBundle(String bucketId, String groupId, String artifactId);
 
     /**
      * Retrieves all extension bundles in the buckets with the given bucket ids.
@@ -251,7 +253,7 @@ public interface MetadataService {
      * @param filterParams the optional filter params
      * @return the list of all extension bundles in the given buckets
      */
-    List<ExtensionBundleEntity> getExtensionBundles(Set<String> bucketIds, ExtensionBundleFilterParams filterParams);
+    List<BundleEntity> getBundles(Set<String> bucketIds, BundleFilterParams filterParams);
 
     /**
      * Retrieves the extension bundles for the given bucket.
@@ -259,7 +261,7 @@ public interface MetadataService {
      * @param bucketId the bucket id
      * @return the list of extension bundles for the bucket
      */
-    List<ExtensionBundleEntity> getExtensionBundlesByBucket(String bucketId);
+    List<BundleEntity> getBundlesByBucket(String bucketId);
 
     /**
      * Retrieves the extension bundles for the given bucket and group.
@@ -268,21 +270,21 @@ public interface MetadataService {
      * @param groupId the group id
      * @return the list of extension bundles for the bucket and group
      */
-    List<ExtensionBundleEntity> getExtensionBundlesByBucketAndGroup(String bucketId, String groupId);
+    List<BundleEntity> getBundlesByBucketAndGroup(String bucketId, String groupId);
 
     /**
      * Deletes the given extension bundle.
      *
      * @param extensionBundle the extension bundle to delete
      */
-    void deleteExtensionBundle(ExtensionBundleEntity extensionBundle);
+    void deleteBundle(BundleEntity extensionBundle);
 
     /**
      * Deletes the extension bundle with the given id.
      *
      * @param extensionBundleId the id extension bundle to delete
      */
-    void deleteExtensionBundle(String extensionBundleId);
+    void deleteBundle(String extensionBundleId);
 
     // --------------------------------------------------------------------------------------------
 
@@ -292,7 +294,7 @@ public interface MetadataService {
      * @param extensionBundleVersion the bundle version to create
      * @return the created bundle version
      */
-    ExtensionBundleVersionEntity createExtensionBundleVersion(ExtensionBundleVersionEntity extensionBundleVersion);
+    BundleVersionEntity createBundleVersion(BundleVersionEntity extensionBundleVersion);
 
     /**
      * Retrieves the extension bundle version for the given bundle id and version.
@@ -301,7 +303,7 @@ public interface MetadataService {
      * @param version the version of the extension bundle
      * @return the extension bundle version, or null if does not exist
      */
-    ExtensionBundleVersionEntity getExtensionBundleVersion(String extensionBundleId, String version);
+    BundleVersionEntity getBundleVersion(String extensionBundleId, String version);
 
     /**
      * Retrieves the extension bundle version by bucket, group, artifact, version.
@@ -312,7 +314,7 @@ public interface MetadataService {
      * @param version the version
      * @return the extension bundle version, or null if does not exist
      */
-    ExtensionBundleVersionEntity getExtensionBundleVersion(String bucketId, String groupId, String artifactId, String version);
+    BundleVersionEntity getBundleVersion(String bucketId, String groupId, String artifactId, String version);
 
     /**
      * Retrieves the extension bundle versions in the given buckets, matching the optional filter parameters.
@@ -321,7 +323,7 @@ public interface MetadataService {
      * @param filterParams the optional filter params
      * @return the extension bundle versions
      */
-    List<ExtensionBundleVersionEntity> getExtensionBundleVersions(Set<String> bucketIdentifiers, ExtensionBundleVersionFilterParams filterParams);
+    List<BundleVersionEntity> getBundleVersions(Set<String> bucketIdentifiers, BundleVersionFilterParams filterParams);
 
     /**
      * Retrieves the extension bundle versions for the given extension bundle id.
@@ -329,7 +331,7 @@ public interface MetadataService {
      * @param extensionBundleId the extension bundle id
      * @return the list of extension bundle versions
      */
-    List<ExtensionBundleVersionEntity> getExtensionBundleVersions(String extensionBundleId);
+    List<BundleVersionEntity> getBundleVersions(String extensionBundleId);
 
     /**
      * Retrieves the extension bundle version with the given group id and artifact id in the given bucket.
@@ -339,7 +341,7 @@ public interface MetadataService {
      * @param artifactId the artifact id
      * @return the list of extension bundles
      */
-    List<ExtensionBundleVersionEntity> getExtensionBundleVersions(String bucketId, String groupId, String artifactId);
+    List<BundleVersionEntity> getBundleVersions(String bucketId, String groupId, String artifactId);
 
     /**
      * Retrieves the extension bundle versions with the given group id, artifact id, and version across all buckets.
@@ -349,21 +351,21 @@ public interface MetadataService {
      * @param version the versions
      * @return all bundle versions for the group id, artifact id, and version
      */
-    List<ExtensionBundleVersionEntity> getExtensionBundleVersionsGlobal(String groupId, String artifactId, String version);
+    List<BundleVersionEntity> getBundleVersionsGlobal(String groupId, String artifactId, String version);
 
     /**
      * Deletes the extension bundle version.
      *
      * @param extensionBundleVersion the extension bundle version to delete
      */
-    void deleteExtensionBundleVersion(ExtensionBundleVersionEntity extensionBundleVersion);
+    void deleteBundleVersion(BundleVersionEntity extensionBundleVersion);
 
     /**
      * Deletes the extension bundle version.
      *
      * @param extensionBundleVersionId the id of the extension bundle version
      */
-    void deleteExtensionBundleVersion(String extensionBundleVersionId);
+    void deleteBundleVersion(String extensionBundleVersionId);
 
     // --------------------------------------------------------------------------------------------
 
@@ -373,7 +375,7 @@ public interface MetadataService {
      * @param dependencyEntity the dependency entity
      * @return the created dependency
      */
-    ExtensionBundleVersionDependencyEntity createDependency(ExtensionBundleVersionDependencyEntity dependencyEntity);
+    BundleVersionDependencyEntity createDependency(BundleVersionDependencyEntity dependencyEntity);
 
     /**
      * Retrieves the bundle dependencies for the given bundle version.
@@ -381,7 +383,7 @@ public interface MetadataService {
      * @param extensionBundleVersionId the id of the extension bundle version
      * @return the list of dependencies
      */
-    List<ExtensionBundleVersionDependencyEntity> getDependenciesForBundleVersion(String extensionBundleVersionId);
+    List<BundleVersionDependencyEntity> getDependenciesForBundleVersion(String extensionBundleVersionId);
 
     // --------------------------------------------------------------------------------------------
 
@@ -402,11 +404,31 @@ public interface MetadataService {
     ExtensionEntity getExtensionById(String id);
 
     /**
-     * Retrieves all extensions.
+     * Retrieves the extension with the given name in the given bundle version.
      *
-     * @return the list of all extensions
+     * @param bundleVersionId the bundle version id
+     * @param name the name
+     * @return the extension
      */
-    List<ExtensionEntity> getAllExtensions();
+    ExtensionEntity getExtensionByName(String bundleVersionId, String name);
+
+    /**
+     * Retrieves all extensions in the given buckets.
+     *
+     * @param bucketIdentifiers the bucket identifiers to retrieve extensions from
+     * @param filterParams the filter params
+     * @return the list of all extensions in the given buckets
+     */
+    List<ExtensionEntity> getExtensions(Set<String> bucketIdentifiers, ExtensionFilterParams filterParams);
+
+    /**
+     * Retrieves the extensions in the given buckets that provide the given service API.
+     *
+     * @param bucketIdentifiers the identifiers of the buckets
+     * @param providedServiceAPI the provided service API
+     * @return the extensions that provided the service API
+     */
+    List<ExtensionEntity> getExtensionsByProvidedServiceApi(Set<String> bucketIdentifiers, ProvidedServiceAPI providedServiceAPI);
 
     /**
      * Retrieves the extensions for the given extension bundle version.
@@ -417,38 +439,11 @@ public interface MetadataService {
     List<ExtensionEntity> getExtensionsByBundleVersionId(String extensionBundleVersionId);
 
     /**
-     * Retrieves the extensions for the bundle in the given bucket with the given group, artifact, and version.
-     *
-     * @param bucketId the bucket of the bundle
-     * @param groupId the group of the bundle
-     * @param artifactId the artifact id of the bundle
-     * @param version the version of the bundle
-     * @return the extensions for the bundle
-     */
-    List<ExtensionEntity> getExtensionsByBundleCoordinate(String bucketId, String groupId, String artifactId, String version);
-
-    /**
-     * Retrieves the extensions for the given category (i.e. processor, controller service, reporting task).
-     *
-     * @param category the category
-     * @return the extensions for the given category
-     */
-    List<ExtensionEntity> getExtensionsByCategory(ExtensionEntityCategory category);
-
-    /**
-     * Retrieves the extensions with the given tag.
-     *
-     * @param tag the tag
-     * @return the extensions with the given tag
-     */
-    List<ExtensionEntity> getExtensionsByTag(String tag);
-
-    /**
      * Retrieves the set of all extension tags.
      *
      * @return the set of all extension tags
      */
-    Set<String> getAllExtensionTags();
+    List<TagCountEntity> getAllExtensionTags();
 
     /**
      * Deletes the given extension.
@@ -456,6 +451,7 @@ public interface MetadataService {
      * @param extension the extension to delete
      */
     void deleteExtension(ExtensionEntity extension);
+
 
     // --------------------------------------------------------------------------------------------
 

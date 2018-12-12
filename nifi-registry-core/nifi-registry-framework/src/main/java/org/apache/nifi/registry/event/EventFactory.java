@@ -17,8 +17,8 @@
 package org.apache.nifi.registry.event;
 
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.extension.ExtensionBundle;
-import org.apache.nifi.registry.extension.ExtensionBundleVersion;
+import org.apache.nifi.registry.extension.bundle.Bundle;
+import org.apache.nifi.registry.extension.bundle.BundleVersion;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.hook.Event;
@@ -96,7 +96,7 @@ public class EventFactory {
                 .build();
     }
 
-    public static Event extensionBundleCreated(final ExtensionBundle bundle) {
+    public static Event extensionBundleCreated(final Bundle bundle) {
         return new StandardEvent.Builder()
                 .eventType(EventType.CREATE_EXTENSION_BUNDLE)
                 .addField(EventFieldName.BUCKET_ID, bundle.getBucketIdentifier())
@@ -105,7 +105,7 @@ public class EventFactory {
                 .build();
     }
 
-    public static Event extensionBundleDeleted(final ExtensionBundle bundle) {
+    public static Event extensionBundleDeleted(final Bundle bundle) {
         return new StandardEvent.Builder()
                 .eventType(EventType.DELETE_EXTENSION_BUNDLE)
                 .addField(EventFieldName.BUCKET_ID, bundle.getBucketIdentifier())
@@ -114,21 +114,21 @@ public class EventFactory {
                 .build();
     }
 
-    public static Event extensionBundleVersionCreated(final ExtensionBundleVersion bundleVersion) {
+    public static Event extensionBundleVersionCreated(final BundleVersion bundleVersion) {
         return new StandardEvent.Builder()
                 .eventType(EventType.CREATE_EXTENSION_BUNDLE_VERSION)
                 .addField(EventFieldName.BUCKET_ID, bundleVersion.getVersionMetadata().getBucketId())
-                .addField(EventFieldName.EXTENSION_BUNDLE_ID, bundleVersion.getVersionMetadata().getExtensionBundleId())
+                .addField(EventFieldName.EXTENSION_BUNDLE_ID, bundleVersion.getVersionMetadata().getBundleId())
                 .addField(EventFieldName.VERSION, String.valueOf(bundleVersion.getVersionMetadata().getVersion()))
                 .addField(EventFieldName.USER, NiFiUserUtils.getNiFiUserIdentity())
                 .build();
     }
 
-    public static Event extensionBundleVersionDeleted(final ExtensionBundleVersion bundleVersion) {
+    public static Event extensionBundleVersionDeleted(final BundleVersion bundleVersion) {
         return new StandardEvent.Builder()
                 .eventType(EventType.DELETE_EXTENSION_BUNDLE_VERSION)
                 .addField(EventFieldName.BUCKET_ID, bundleVersion.getVersionMetadata().getBucketId())
-                .addField(EventFieldName.EXTENSION_BUNDLE_ID, bundleVersion.getVersionMetadata().getExtensionBundleId())
+                .addField(EventFieldName.EXTENSION_BUNDLE_ID, bundleVersion.getVersionMetadata().getBundleId())
                 .addField(EventFieldName.VERSION, String.valueOf(bundleVersion.getVersionMetadata().getVersion()))
                 .addField(EventFieldName.USER, NiFiUserUtils.getNiFiUserIdentity())
                 .build();

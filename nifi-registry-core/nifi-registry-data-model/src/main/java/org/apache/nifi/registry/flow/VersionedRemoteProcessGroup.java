@@ -18,7 +18,6 @@
 package org.apache.nifi.registry.flow;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Set;
 
@@ -47,10 +46,10 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
                     " Please migrate to using targetUris only.")
     public String getTargetUri() {
 
-        if (!StringUtils.isEmpty(targetUri)) {
+        if (!isEmpty(targetUri)) {
             return targetUri;
         }
-        return !StringUtils.isEmpty(targetUris) ? targetUris.split(",", 2)[0] : null;
+        return !isEmpty(targetUris) ? targetUris.split(",", 2)[0] : null;
 
     }
 
@@ -64,11 +63,15 @@ public class VersionedRemoteProcessGroup extends VersionedComponent {
                     " If neither target uris nor target uri is set, then returns null.")
     public String getTargetUris() {
 
-        if (!StringUtils.isEmpty(targetUris)) {
+        if (!isEmpty(targetUris)) {
             return targetUris;
         }
-        return !StringUtils.isEmpty(targetUri) ? targetUri : null;
+        return !isEmpty(targetUri) ? targetUri : null;
 
+    }
+
+    private boolean isEmpty(final String value) {
+        return (value == null || value.isEmpty());
     }
 
     public void setTargetUris(String targetUris) {

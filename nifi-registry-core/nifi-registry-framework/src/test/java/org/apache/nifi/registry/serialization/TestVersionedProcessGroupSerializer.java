@@ -72,7 +72,7 @@ public class TestVersionedProcessGroupSerializer {
                 serializer.deserialize(is);
                 fail("Should fail");
             } catch (SerializationException e) {
-                assertEquals("Unable to find a process group serializer compatible with the input.", e.getMessage());
+                assertEquals("Unable to find a serializer compatible with the input.", e.getMessage());
             }
         }
     }
@@ -86,7 +86,7 @@ public class TestVersionedProcessGroupSerializer {
                 serializer.deserialize(is);
                 fail("Should fail");
             } catch (SerializationException e) {
-                assertEquals("Unable to find a process group serializer compatible with the input.", e.getMessage());
+                assertEquals("Unable to find a serializer compatible with the input.", e.getMessage());
             }
         }
     }
@@ -122,7 +122,7 @@ public class TestVersionedProcessGroupSerializer {
                 serializer.deserialize(is);
                 fail("Should fail");
             } catch (SerializationException e) {
-                assertEquals("Unable to find a process group serializer compatible with the input.", e.getMessage());
+                assertEquals("Unable to find a serializer compatible with the input.", e.getMessage());
             }
         }
     }

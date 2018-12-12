@@ -23,18 +23,23 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
+import org.apache.nifi.registry.db.entity.BundleEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.extension.ExtensionBundle;
-import org.apache.nifi.registry.extension.ExtensionBundleType;
-import org.apache.nifi.registry.extension.ExtensionBundleVersion;
-import org.apache.nifi.registry.extension.ExtensionBundleVersionMetadata;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.extension.bundle.Bundle;
+import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.bundle.BundleVersion;
+import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
+import org.apache.nifi.registry.extension.component.manifest.Extension;
+import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
+import org.apache.nifi.registry.extension.component.ExtensionMetadata;
+import org.apache.nifi.registry.extension.component.TagCount;
+import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
@@ -55,8 +60,10 @@ import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
-import org.apache.nifi.registry.service.extension.ExtensionBundleVersionCoordinate;
 import org.apache.nifi.registry.service.extension.ExtensionService;
+import org.apache.nifi.registry.service.mapper.BucketMappings;
+import org.apache.nifi.registry.service.mapper.ExtensionMappings;
+import org.apache.nifi.registry.service.mapper.FlowMappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,8 +163,8 @@ public class RegistryService {
                 throw new IllegalStateException("A bucket with the same name already exists");
             }
 
-            final BucketEntity createdBucket = metadataService.createBucket(DataModelMapper.map(bucket));
-            return DataModelMapper.map(createdBucket);
+            final BucketEntity createdBucket = metadataService.createBucket(BucketMappings.map(bucket));
+            return BucketMappings.map(createdBucket);
         } finally {
             writeLock.unlock();
         }
@@ -176,7 +183,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
             }
 
-            return DataModelMapper.map(bucket);
+            return BucketMappings.map(bucket);
         } finally {
             readLock.unlock();
         }
@@ -195,7 +202,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("The specified bucket name does not exist in this registry.");
             }
 
-            return DataModelMapper.map(buckets.get(0));
+            return BucketMappings.map(buckets.get(0));
         } finally {
             readLock.unlock();
         }
@@ -205,7 +212,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getAllBuckets();
-            return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -215,7 +222,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getBuckets(bucketIds);
-            return buckets.stream().map(b -> DataModelMapper.map(b)).collect(Collectors.toList());
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -271,7 +278,7 @@ public class RegistryService {
 
             // perform the actual update
             final BucketEntity updatedBucket = metadataService.updateBucket(existingBucketById);
-            return DataModelMapper.map(updatedBucket);
+            return BucketMappings.map(updatedBucket);
         } finally {
             writeLock.unlock();
         }
@@ -299,7 +306,7 @@ public class RegistryService {
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
             metadataService.deleteBucket(existingBucket);
 
-            return DataModelMapper.map(existingBucket);
+            return BucketMappings.map(existingBucket);
         } finally {
             writeLock.unlock();
         }
@@ -347,10 +354,10 @@ public class RegistryService {
         // Currently we don't populate the bucket name for items so we pass in null in the map methods
         if (itemEntity instanceof FlowEntity) {
             final FlowEntity flowEntity = (FlowEntity) itemEntity;
-            bucketItems.add(DataModelMapper.map(null, flowEntity));
-        } else if (itemEntity instanceof ExtensionBundleEntity) {
-            final ExtensionBundleEntity bundleEntity = (ExtensionBundleEntity) itemEntity;
-            bucketItems.add(DataModelMapper.map(null, bundleEntity));
+            bucketItems.add(FlowMappings.map(null, flowEntity));
+        } else if (itemEntity instanceof BundleEntity) {
+            final BundleEntity bundleEntity = (BundleEntity) itemEntity;
+            bucketItems.add(ExtensionMappings.map(null, bundleEntity));
         } else {
             LOGGER.error("Unknown type of BucketItemEntity: " + itemEntity.getClass().getCanonicalName());
         }
@@ -399,12 +406,12 @@ public class RegistryService {
             }
 
             // convert from dto to entity and set the bucket relationship
-            final FlowEntity flowEntity = DataModelMapper.map(versionedFlow);
+            final FlowEntity flowEntity = FlowMappings.map(versionedFlow);
             flowEntity.setBucketId(existingBucket.getId());
 
             // persist the flow and return the created entity
             final FlowEntity createdFlow = metadataService.createFlow(flowEntity);
-            return DataModelMapper.map(existingBucket, createdFlow);
+            return FlowMappings.map(existingBucket, createdFlow);
         } finally {
             writeLock.unlock();
         }
@@ -438,7 +445,7 @@ public class RegistryService {
                 throw new IllegalStateException("The requested flow is not located in the given bucket");
             }
 
-            return DataModelMapper.map(existingBucket, existingFlow);
+            return FlowMappings.map(existingBucket, existingFlow);
         } finally {
             readLock.unlock();
         }
@@ -458,7 +465,7 @@ public class RegistryService {
             }
 
             final BucketEntity existingBucket = metadataService.getBucketById(existingFlow.getBucketId());
-            return DataModelMapper.map(existingBucket, existingFlow);
+            return FlowMappings.map(existingBucket, existingFlow);
         } finally {
             readLock.unlock();
         }
@@ -479,7 +486,7 @@ public class RegistryService {
 
             // return non-verbose set of flows for the given bucket
             final List<FlowEntity> flows = metadataService.getFlowsByBucket(existingBucket.getId());
-            return flows.stream().map(f -> DataModelMapper.map(existingBucket, f)).collect(Collectors.toList());
+            return flows.stream().map(f -> FlowMappings.map(existingBucket, f)).collect(Collectors.toList());
         } finally {
             readLock.unlock();
         }
@@ -545,7 +552,7 @@ public class RegistryService {
 
             // perform the actual update
             final FlowEntity updatedFlow = metadataService.updateFlow(existingFlow);
-            return DataModelMapper.map(existingBucket, updatedFlow);
+            return FlowMappings.map(existingBucket, updatedFlow);
         } finally {
             writeLock.unlock();
         }
@@ -585,7 +592,7 @@ public class RegistryService {
             // now delete the flow from the metadata provider
             metadataService.deleteFlow(existingFlow);
 
-            return DataModelMapper.map(existingBucket, existingFlow);
+            return FlowMappings.map(existingBucket, existingFlow);
         } finally {
             writeLock.unlock();
         }
@@ -635,7 +642,7 @@ public class RegistryService {
             final SortedSet<VersionedFlowSnapshotMetadata> sortedSnapshots = new TreeSet<>();
             final List<FlowSnapshotEntity> existingFlowSnapshots = metadataService.getSnapshots(existingFlow.getId());
             if (existingFlowSnapshots != null) {
-                existingFlowSnapshots.stream().forEach(s -> sortedSnapshots.add(DataModelMapper.map(existingBucket, s)));
+                existingFlowSnapshots.stream().forEach(s -> sortedSnapshots.add(FlowMappings.map(existingBucket, s)));
             }
 
             // if we already have snapshots we need to verify the new one has the correct version
@@ -660,13 +667,13 @@ public class RegistryService {
             processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
 
             // save the serialized snapshot to the persistence provider
-            final Bucket bucket = DataModelMapper.map(existingBucket);
-            final VersionedFlow versionedFlow = DataModelMapper.map(existingBucket, existingFlow);
+            final Bucket bucket = BucketMappings.map(existingBucket);
+            final VersionedFlow versionedFlow = FlowMappings.map(existingBucket, existingFlow);
             final FlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(bucket, versionedFlow, snapshotMetadata).build();
             flowPersistenceProvider.saveFlowContent(context, out.toByteArray());
 
             // create snapshot in the metadata provider
-            metadataService.createFlowSnapshot(DataModelMapper.map(snapshotMetadata));
+            metadataService.createFlowSnapshot(FlowMappings.map(snapshotMetadata));
 
             // update the modified date on the flow
             metadataService.updateFlow(existingFlow);
@@ -676,7 +683,7 @@ public class RegistryService {
             if (updatedFlow == null) {
                 throw new ResourceNotFoundException("Versioned flow does not exist for identifier " + snapshotMetadata.getFlowIdentifier());
             }
-            final VersionedFlow updatedVersionedFlow = DataModelMapper.map(existingBucket, updatedFlow);
+            final VersionedFlow updatedVersionedFlow = FlowMappings.map(existingBucket, updatedFlow);
 
             flowSnapshot.setBucket(bucket);
             flowSnapshot.setFlow(updatedVersionedFlow);
@@ -745,9 +752,9 @@ public class RegistryService {
         final VersionedProcessGroup flowContents = processGroupSerializer.deserialize(input);
 
         // map entities to data model
-        final Bucket bucket = DataModelMapper.map(bucketEntity);
-        final VersionedFlow versionedFlow = DataModelMapper.map(bucketEntity, flowEntity);
-        final VersionedFlowSnapshotMetadata snapshotMetadata = DataModelMapper.map(bucketEntity, snapshotEntity);
+        final Bucket bucket = BucketMappings.map(bucketEntity);
+        final VersionedFlow versionedFlow = FlowMappings.map(bucketEntity, flowEntity);
+        final VersionedFlowSnapshotMetadata snapshotMetadata = FlowMappings.map(bucketEntity, snapshotEntity);
 
         // create the snapshot to return
         final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
@@ -798,7 +805,7 @@ public class RegistryService {
             final SortedSet<VersionedFlowSnapshotMetadata> sortedSnapshots = new TreeSet<>(Collections.reverseOrder());
             final List<FlowSnapshotEntity> existingFlowSnapshots = metadataService.getSnapshots(existingFlow.getId());
             if (existingFlowSnapshots != null) {
-                existingFlowSnapshots.stream().forEach(s -> sortedSnapshots.add(DataModelMapper.map(existingBucket, s)));
+                existingFlowSnapshots.stream().forEach(s -> sortedSnapshots.add(FlowMappings.map(existingBucket, s)));
             }
 
             return sortedSnapshots;
@@ -843,7 +850,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("The specified flow ID has no versions");
             }
 
-            return DataModelMapper.map(existingBucket, latestSnapshot);
+            return FlowMappings.map(existingBucket, latestSnapshot);
         } finally {
             readLock.unlock();
         }
@@ -876,7 +883,7 @@ public class RegistryService {
                 throw new ResourceNotFoundException("The specified flow ID has no versions");
             }
 
-            return DataModelMapper.map(existingBucket, latestSnapshot);
+            return FlowMappings.map(existingBucket, latestSnapshot);
         } finally {
             readLock.unlock();
         }
@@ -927,7 +934,7 @@ public class RegistryService {
 
             // delete the snapshot itself
             metadataService.deleteFlowSnapshot(snapshotEntity);
-            return DataModelMapper.map(existingBucket, snapshotEntity);
+            return FlowMappings.map(existingBucket, snapshotEntity);
         } finally {
             writeLock.unlock();
         }
@@ -1017,106 +1024,161 @@ public class RegistryService {
             if(differenceGroups.containsKey(component.getIdentifier())){
                 group = differenceGroups.get(component.getIdentifier());
             }else{
-                group = DataModelMapper.map(component);
+                group = FlowMappings.map(component);
                 differenceGroups.put(component.getIdentifier(), group);
             }
-            group.getDifferences().add(DataModelMapper.map(diff));
+            group.getDifferences().add(FlowMappings.map(diff));
         }
         return differenceGroups.values().stream().collect(Collectors.toSet());
     }
 
-    // ---------------------- ExtensionBundle methods ---------------------------------------------
+    // ---------------------- Bundle methods ---------------------------------------------
 
-    public ExtensionBundleVersion createExtensionBundleVersion(final String bucketIdentifier, final ExtensionBundleType bundleType,
-                                                               final InputStream inputStream, final String clientSha256) throws IOException {
+    public BundleVersion createBundleVersion(final String bucketIdentifier, final BundleType bundleType,
+                                             final InputStream inputStream, final String clientSha256) throws IOException {
         writeLock.lock();
         try {
-            return extensionService.createExtensionBundleVersion(bucketIdentifier, bundleType, inputStream, clientSha256);
+            return extensionService.createBundleVersion(bucketIdentifier, bundleType, inputStream, clientSha256);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public List<ExtensionBundle> getExtensionBundles(final Set<String> bucketIdentifiers, final ExtensionBundleFilterParams filterParams) {
+    public List<Bundle> getBundles(final Set<String> bucketIdentifiers, final BundleFilterParams filterParams) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundles(bucketIdentifiers, filterParams);
+            return extensionService.getBundles(bucketIdentifiers, filterParams);
         } finally {
             readLock.unlock();
         }
     }
 
-    public List<ExtensionBundle> getExtensionBundlesByBucket(final String bucketIdentifier) {
+    public List<Bundle> getBundlesByBucket(final String bucketIdentifier) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundlesByBucket(bucketIdentifier);
+            return extensionService.getBundlesByBucket(bucketIdentifier);
         } finally {
             readLock.unlock();
         }
     }
 
-    public ExtensionBundle getExtensionBundle(final String extensionBundleId) {
+    public Bundle getBundle(final String extensionBundleId) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundle(extensionBundleId);
+            return extensionService.getBundle(extensionBundleId);
         } finally {
             readLock.unlock();
         }
     }
 
-    public ExtensionBundle deleteExtensionBundle(final ExtensionBundle extensionBundle) {
+    public Bundle deleteBundle(final Bundle bundle) {
         writeLock.lock();
         try {
-            return extensionService.deleteExtensionBundle(extensionBundle);
+            return extensionService.deleteBundle(bundle);
         } finally {
             writeLock.unlock();
         }
     }
 
-    public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final Set<String> bucketIdentifiers,
-                                                                                final ExtensionBundleVersionFilterParams filterParams) {
+    public SortedSet<BundleVersionMetadata> getBundleVersions(final Set<String> bucketIdentifiers, final BundleVersionFilterParams filterParams) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundleVersions(bucketIdentifiers, filterParams);
+            return extensionService.getBundleVersions(bucketIdentifiers, filterParams);
         } finally {
             readLock.unlock();
         }
     }
 
 
-    public SortedSet<ExtensionBundleVersionMetadata> getExtensionBundleVersions(final String extensionBundleIdentifier) {
+    public SortedSet<BundleVersionMetadata> getBundleVersions(final String extensionBundleIdentifier) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundleVersions(extensionBundleIdentifier);
+            return extensionService.getBundleVersions(extensionBundleIdentifier);
         } finally {
             readLock.unlock();
         }
     }
 
-    public ExtensionBundleVersion getExtensionBundleVersion(final ExtensionBundleVersionCoordinate versionCoordinate) {
+    public BundleVersion getBundleVersion(final String bucketId, final String bundleId, final String version) {
         readLock.lock();
         try {
-            return extensionService.getExtensionBundleVersion(versionCoordinate);
+            return extensionService.getBundleVersion(bucketId, bundleId, version);
         } finally {
             readLock.unlock();
         }
     }
 
-    public void writeExtensionBundleVersionContent(final ExtensionBundleVersion bundleVersion, final OutputStream out) {
+    public BundleVersion getBundleVersion(final String bucketId, final String groupId, final String artifactId, final String version) {
         readLock.lock();
         try {
-            extensionService.writeExtensionBundleVersionContent(bundleVersion, out);
+            return extensionService.getBundleVersion(bucketId, groupId, artifactId, version);
         } finally {
             readLock.unlock();
         }
     }
 
-    public ExtensionBundleVersion deleteExtensionBundleVersion(final ExtensionBundleVersion bundleVersion) {
+    public void writeBundleVersionContent(final BundleVersion bundleVersion, final OutputStream out) {
+        readLock.lock();
+        try {
+            extensionService.writeBundleVersionContent(bundleVersion, out);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public BundleVersion deleteBundleVersion(final BundleVersion bundleVersion) {
         writeLock.lock();
         try {
-            return extensionService.deleteExtensionBundleVersion(bundleVersion);
+            return extensionService.deleteBundleVersion(bundleVersion);
         } finally {
             writeLock.unlock();
+        }
+    }
+
+    // ---------------------- Extension methods ---------------------------------------------
+
+    public SortedSet<ExtensionMetadata> getExtensionMetadata(final Set<String> bucketIdentifiers, final ExtensionFilterParams filterParams) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionMetadata(bucketIdentifiers, filterParams);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<ExtensionMetadata> getExtensionMetadata(final Set<String> bucketIdentifiers, final ProvidedServiceAPI serviceAPI) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionMetadata(bucketIdentifiers, serviceAPI);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<ExtensionMetadata> getExtensionMetadata(final BundleVersion bundleVersion) {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionMetadata(bundleVersion);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public Extension getExtension(final BundleVersion bundleVersion, final String name) {
+        readLock.lock();
+        try {
+            return extensionService.getExtension(bundleVersion, name);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public SortedSet<TagCount> getExtensionTags() {
+        readLock.lock();
+        try {
+            return extensionService.getExtensionTags();
+        } finally {
+            readLock.unlock();
         }
     }
 

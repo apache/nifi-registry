@@ -36,12 +36,6 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
     @Override
     public Response toResponse(ConstraintViolationException exception) {
-        logger.info(String.format("%s. Returning %s response.", exception, Response.Status.BAD_REQUEST));
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(StringUtils.EMPTY, exception);
-        }
-
         // start with the overall message which will be something like "Cannot create xyz"
         final StringBuilder errorMessage = new StringBuilder(exception.getMessage()).append(" - ");
 
@@ -60,6 +54,11 @@ public class ConstraintViolationExceptionMapper implements ExceptionMapper<Const
 
             // append something like "xyz must not be..."
             errorMessage.append(lastNode.getName()).append(" ").append(violation.getMessage());
+        }
+
+        logger.info(String.format("%s. Returning %s response.", errorMessage, Response.Status.BAD_REQUEST));
+        if (logger.isDebugEnabled()) {
+            logger.debug(StringUtils.EMPTY, exception);
         }
 
         return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage.toString()).type("text/plain").build();

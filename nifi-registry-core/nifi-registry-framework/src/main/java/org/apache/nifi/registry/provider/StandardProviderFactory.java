@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.provider;
 
-import org.apache.nifi.registry.extension.ExtensionBundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundlePersistenceProvider;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.hook.EventHookProvider;
@@ -76,7 +76,7 @@ public class StandardProviderFactory implements ProviderFactory {
 
     private FlowPersistenceProvider flowPersistenceProvider;
     private List<EventHookProvider> eventHookProviders;
-    private ExtensionBundlePersistenceProvider extensionBundlePersistenceProvider;
+    private BundlePersistenceProvider bundlePersistenceProvider;
 
     @Autowired
     public StandardProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
@@ -208,8 +208,8 @@ public class StandardProviderFactory implements ProviderFactory {
 
     @Bean
     @Override
-    public synchronized ExtensionBundlePersistenceProvider getExtensionBundlePersistenceProvider() {
-        if (extensionBundlePersistenceProvider == null) {
+    public synchronized BundlePersistenceProvider getBundlePersistenceProvider() {
+        if (bundlePersistenceProvider == null) {
             if (providersHolder.get() == null) {
                 throw new ProviderFactoryException("ProviderFactory must be initialized before obtaining a Provider");
             }
@@ -226,23 +226,23 @@ public class StandardProviderFactory implements ProviderFactory {
 
                 final Class<?> rawProviderClass = Class.forName(extensionBundleProviderClassName, true, classLoader);
 
-                final Class<? extends ExtensionBundlePersistenceProvider> extensionBundleProviderClass =
-                        rawProviderClass.asSubclass(ExtensionBundlePersistenceProvider.class);
+                final Class<? extends BundlePersistenceProvider> extensionBundleProviderClass =
+                        rawProviderClass.asSubclass(BundlePersistenceProvider.class);
 
                 final Constructor constructor = extensionBundleProviderClass.getConstructor();
-                extensionBundlePersistenceProvider = (ExtensionBundlePersistenceProvider) constructor.newInstance();
+                bundlePersistenceProvider = (BundlePersistenceProvider) constructor.newInstance();
 
-                LOGGER.info("Instantiated ExtensionBundlePersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
+                LOGGER.info("Instantiated BundlePersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
             } catch (Exception e) {
-                throw new ProviderFactoryException("Error creating ExtensionBundlePersistenceProvider with class name: " + extensionBundleProviderClassName, e);
+                throw new ProviderFactoryException("Error creating BundlePersistenceProvider with class name: " + extensionBundleProviderClassName, e);
             }
 
             final ProviderConfigurationContext configurationContext = createConfigurationContext(jaxbExtensionBundleProvider.getProperty());
-            extensionBundlePersistenceProvider.onConfigured(configurationContext);
+            bundlePersistenceProvider.onConfigured(configurationContext);
             LOGGER.info("Configured FlowPersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
         }
 
-        return extensionBundlePersistenceProvider;
+        return bundlePersistenceProvider;
     }
 
     private ProviderConfigurationContext createConfigurationContext(final List<Property> configProperties) {

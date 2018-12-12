@@ -19,16 +19,21 @@ package org.apache.nifi.registry.db;
 import org.apache.nifi.registry.db.entity.BucketEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BucketItemEntityType;
-import org.apache.nifi.registry.db.entity.ExtensionBundleEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleEntityType;
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionDependencyEntity;
-import org.apache.nifi.registry.db.entity.ExtensionBundleVersionEntity;
+import org.apache.nifi.registry.db.entity.BundleEntity;
+import org.apache.nifi.registry.db.entity.BundleVersionDependencyEntity;
+import org.apache.nifi.registry.db.entity.BundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
-import org.apache.nifi.registry.db.entity.ExtensionEntityCategory;
+import org.apache.nifi.registry.db.entity.ExtensionProvidedServiceApiEntity;
+import org.apache.nifi.registry.db.entity.ExtensionRestrictionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleFilterParams;
-import org.apache.nifi.registry.extension.filter.ExtensionBundleVersionFilterParams;
+import org.apache.nifi.registry.db.entity.TagCountEntity;
+import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
+import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
+import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
+import org.apache.nifi.registry.extension.component.manifest.ExtensionType;
+import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.service.MetadataService;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -401,7 +406,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testGetExtensionBundleById() {
-        final ExtensionBundleEntity entity = metadataService.getExtensionBundle("eb1");
+        final BundleEntity entity = metadataService.getBundle("eb1");
         assertNotNull(entity);
 
         assertEquals("eb1", entity.getId());
@@ -412,7 +417,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(BucketItemEntityType.EXTENSION_BUNDLE, entity.getType());
         assertEquals("3", entity.getBucketId());
 
-        assertEquals(ExtensionBundleEntityType.NIFI_NAR, entity.getBundleType());
+        assertEquals(BundleType.NIFI_NAR, entity.getBundleType());
 
         assertEquals("org.apache.nifi", entity.getGroupId());
         assertEquals("nifi-example-processors-nar", entity.getArtifactId());
@@ -420,7 +425,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testGetExtensionBundleDoesNotExist() {
-        final ExtensionBundleEntity entity = metadataService.getExtensionBundle("does-not-exist");
+        final BundleEntity entity = metadataService.getBundle("does-not-exist");
         assertNull(entity);
     }
 
@@ -430,7 +435,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String group = "org.apache.nifi";
         final String artifact = "nifi-example-service-api-nar";
 
-        final ExtensionBundleEntity entity = metadataService.getExtensionBundle(bucketId, group, artifact);
+        final BundleEntity entity = metadataService.getBundle(bucketId, group, artifact);
         assertNotNull(entity);
         assertEquals(bucketId, entity.getBucketId());
 
@@ -444,7 +449,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String group = "org.apache.nifi";
         final String artifact = "does-not-exist";
 
-        final ExtensionBundleEntity entity = metadataService.getExtensionBundle(bucketId, group, artifact);
+        final BundleEntity entity = metadataService.getBundle(bucketId, group, artifact);
         assertNull(entity);
     }
 
@@ -455,7 +460,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bucketIds.add("2");
         bucketIds.add("3");
 
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundles(bucketIds, ExtensionBundleFilterParams.empty());
+        final List<BundleEntity> bundles = metadataService.getBundles(bucketIds, BundleFilterParams.empty());
         assertNotNull(bundles);
         assertEquals(3, bundles.size());
 
@@ -472,62 +477,67 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bucketIds.add("2");
         bucketIds.add("3");
 
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundles(bucketIds,
-                ExtensionBundleFilterParams.empty());
+        final List<BundleEntity> bundles = metadataService.getBundles(bucketIds,
+                BundleFilterParams.empty());
         assertNotNull(bundles);
         assertEquals(3, bundles.size());
 
-        final List<ExtensionBundleEntity> bundles2 = metadataService.getExtensionBundles(bucketIds,
-                ExtensionBundleFilterParams.of("org.apache.nifi", null));
+        final List<BundleEntity> bundles2 = metadataService.getBundles(bucketIds,
+                BundleFilterParams.of("org.apache.nifi", null));
         assertNotNull(bundles2);
         assertEquals(2, bundles2.size());
 
-        final List<ExtensionBundleEntity> bundles3 = metadataService.getExtensionBundles(bucketIds,
-                ExtensionBundleFilterParams.of("org.apache.%", null));
+        final List<BundleEntity> bundles3 = metadataService.getBundles(bucketIds,
+                BundleFilterParams.of("org.apache.%", null));
         assertNotNull(bundles3);
         assertEquals(2, bundles3.size());
 
-        final List<ExtensionBundleEntity> bundles4 = metadataService.getExtensionBundles(bucketIds,
-                ExtensionBundleFilterParams.of("org.apache.nifi", "nifi-example-processors-nar"));
+        final List<BundleEntity> bundles4 = metadataService.getBundles(bucketIds,
+                BundleFilterParams.of("org.apache.nifi", "nifi-example-processors-nar"));
         assertNotNull(bundles4);
         assertEquals(1, bundles4.size());
 
-        final List<ExtensionBundleEntity> bundles5 = metadataService.getExtensionBundles(bucketIds,
-                ExtensionBundleFilterParams.of("org.apache.nifi", "nifi-example-processors-%"));
+        final List<BundleEntity> bundles5 = metadataService.getBundles(bucketIds,
+                BundleFilterParams.of("org.apache.nifi", "nifi-example-processors-%"));
         assertNotNull(bundles5);
         assertEquals(1, bundles5.size());
 
-        final List<ExtensionBundleEntity> bundles6 = metadataService.getExtensionBundles(bucketIds,
-                ExtensionBundleFilterParams.of(null, "nifi-example-processors-%"));
+        final List<BundleEntity> bundles6 = metadataService.getBundles(bucketIds,
+                BundleFilterParams.of(null, "nifi-example-processors-%"));
         assertNotNull(bundles6);
         assertEquals(1, bundles6.size());
+
+        final List<BundleEntity> bundles7 = metadataService.getBundles(bucketIds,
+                BundleFilterParams.of("Bucket %", null, "nifi-example-processors-%"));
+        assertNotNull(bundles7);
+        assertEquals(1, bundles7.size());
     }
 
     @Test
     public void testGetExtensionBundlesByBucket() {
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundlesByBucket("3");
+        final List<BundleEntity> bundles = metadataService.getBundlesByBucket("3");
         assertNotNull(bundles);
         assertEquals(3, bundles.size());
 
-        final List<ExtensionBundleEntity> bundles2 = metadataService.getExtensionBundlesByBucket("6");
+        final List<BundleEntity> bundles2 = metadataService.getBundlesByBucket("6");
         assertNotNull(bundles2);
         assertEquals(0, bundles2.size());
     }
 
     @Test
     public void testGetExtensionBundlesByBucketAndGroup() {
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundlesByBucketAndGroup("3", "org.apache.nifi");
+        final List<BundleEntity> bundles = metadataService.getBundlesByBucketAndGroup("3", "org.apache.nifi");
         assertNotNull(bundles);
         assertEquals(2, bundles.size());
 
-        final List<ExtensionBundleEntity> bundles2 = metadataService.getExtensionBundlesByBucketAndGroup("3", "does-not-exist");
+        final List<BundleEntity> bundles2 = metadataService.getBundlesByBucketAndGroup("3", "does-not-exist");
         assertNotNull(bundles2);
         assertEquals(0, bundles2.size());
     }
 
     @Test
     public void testCreateExtensionBundle() {
-        final ExtensionBundleEntity entity = new ExtensionBundleEntity();
+        final BundleEntity entity = new BundleEntity();
         entity.setId(UUID.randomUUID().toString());
         entity.setBucketId("3");
         entity.setName("nifi-foo-nar");
@@ -536,36 +546,36 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         entity.setModified(new Date());
         entity.setGroupId("org.apache.nifi");
         entity.setArtifactId("nifi-foo-nar");
-        entity.setBundleType(ExtensionBundleEntityType.NIFI_NAR);
+        entity.setBundleType(BundleType.NIFI_NAR);
 
-        final ExtensionBundleEntity createdEntity = metadataService.createExtensionBundle(entity);
+        final BundleEntity createdEntity = metadataService.createBundle(entity);
         assertNotNull(createdEntity);
 
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundlesByBucket("3");
+        final List<BundleEntity> bundles = metadataService.getBundlesByBucket("3");
         assertNotNull(bundles);
         assertEquals(4, bundles.size());
     }
 
     @Test
     public void testDeleteExtensionBundle() {
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundlesByBucket("3");
+        final List<BundleEntity> bundles = metadataService.getBundlesByBucket("3");
         assertNotNull(bundles);
         assertEquals(3, bundles.size());
 
-        final ExtensionBundleEntity existingBundle = bundles.get(0);
-        metadataService.deleteExtensionBundle(existingBundle);
+        final BundleEntity existingBundle = bundles.get(0);
+        metadataService.deleteBundle(existingBundle);
 
-        final ExtensionBundleEntity deletedBundle = metadataService.getExtensionBundle(existingBundle.getId());
+        final BundleEntity deletedBundle = metadataService.getBundle(existingBundle.getId());
         assertNull(deletedBundle);
 
-        final List<ExtensionBundleEntity> bundlesAfterDelete = metadataService.getExtensionBundlesByBucket("3");
+        final List<BundleEntity> bundlesAfterDelete = metadataService.getBundlesByBucket("3");
         assertNotNull(bundlesAfterDelete);
         assertEquals(2, bundlesAfterDelete.size());
     }
 
     @Test
     public void testDeleteBucketWithExtensionBundles() {
-        final List<ExtensionBundleEntity> bundles = metadataService.getExtensionBundlesByBucket("3");
+        final List<BundleEntity> bundles = metadataService.getBundlesByBucket("3");
         assertNotNull(bundles);
         assertEquals(3, bundles.size());
 
@@ -573,7 +583,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertNotNull(bucket);
         metadataService.deleteBucket(bucket);
 
-        final List<ExtensionBundleEntity> bundlesAfterDelete = metadataService.getExtensionBundlesByBucket("3");
+        final List<BundleEntity> bundlesAfterDelete = metadataService.getBundlesByBucket("3");
         assertNotNull(bundlesAfterDelete);
         assertEquals(0, bundlesAfterDelete.size());
     }
@@ -582,9 +592,9 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testCreateExtensionBundleVersion() {
-        final ExtensionBundleVersionEntity bundleVersion = new ExtensionBundleVersionEntity();
+        final BundleVersionEntity bundleVersion = new BundleVersionEntity();
         bundleVersion.setId(UUID.randomUUID().toString());
-        bundleVersion.setExtensionBundleId("eb1");
+        bundleVersion.setBundleId("eb1");
         bundleVersion.setVersion("1.1.0");
         bundleVersion.setCreated(new Date());
         bundleVersion.setCreatedBy("user2");
@@ -592,19 +602,37 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bundleVersion.setSha256Hex("123456789");
         bundleVersion.setSha256Supplied(false);
         bundleVersion.setContentSize(2048);
+        bundleVersion.setSystemApiVersion("2.0.0");
 
-        metadataService.createExtensionBundleVersion(bundleVersion);
+        bundleVersion.setBuildTool("JDK");
+        bundleVersion.setBuildFlags("N/A");
+        bundleVersion.setBuildBranch("master");
+        bundleVersion.setBuildTag("HEAD");
+        bundleVersion.setBuildRevision("123456");
+        bundleVersion.setBuiltBy("jsmith");
+        bundleVersion.setBuilt(new Date());
 
-        final ExtensionBundleVersionEntity createdBundleVersion = metadataService.getExtensionBundleVersion("eb1", "1.1.0");
+        metadataService.createBundleVersion(bundleVersion);
+
+        final BundleVersionEntity createdBundleVersion = metadataService.getBundleVersion("eb1", "1.1.0");
         assertNotNull(createdBundleVersion);
         assertEquals(bundleVersion.getId(), createdBundleVersion.getId());
         assertFalse(bundleVersion.getSha256Supplied());
+
+        assertEquals(bundleVersion.getSystemApiVersion(), createdBundleVersion.getSystemApiVersion());
+        assertEquals(bundleVersion.getBuildTool(), createdBundleVersion.getBuildTool());
+        assertEquals(bundleVersion.getBuildFlags(), createdBundleVersion.getBuildFlags());
+        assertEquals(bundleVersion.getBuildBranch(), createdBundleVersion.getBuildBranch());
+        assertEquals(bundleVersion.getBuildTag(), createdBundleVersion.getBuildTag());
+        assertEquals(bundleVersion.getBuildRevision(), createdBundleVersion.getBuildRevision());
+        assertEquals(bundleVersion.getBuiltBy(), createdBundleVersion.getBuiltBy());
+        assertEquals(bundleVersion.getBuilt(), createdBundleVersion.getBuilt());
     }
 
     @Test
     public void testGetExtensionBundleVersionsWithEmptyBucketIdsAndEmptyFilterParams() {
-        final List<ExtensionBundleVersionEntity> versionEntities = metadataService.getExtensionBundleVersions(
-                Collections.emptySet(), ExtensionBundleVersionFilterParams.empty());
+        final List<BundleVersionEntity> versionEntities = metadataService.getBundleVersions(
+                Collections.emptySet(), BundleVersionFilterParams.empty());
         assertEquals(0, versionEntities.size());
     }
 
@@ -615,8 +643,8 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bucketIds.add("2");
         bucketIds.add("3");
 
-        final List<ExtensionBundleVersionEntity> versionEntities = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.empty());
+        final List<BundleVersionEntity> versionEntities = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.empty());
         assertEquals(3, versionEntities.size());
     }
 
@@ -627,41 +655,41 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bucketIds.add("2");
         bucketIds.add("3");
 
-        final List<ExtensionBundleVersionEntity> versionEntities = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", null, null));
+        final List<BundleVersionEntity> versionEntities = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.nifi", null, null));
         assertEquals(2, versionEntities.size());
 
-        final List<ExtensionBundleVersionEntity> versionEntities2 = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.%", null, null));
+        final List<BundleVersionEntity> versionEntities2 = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.%", null, null));
         assertEquals(2, versionEntities2.size());
 
-        final List<ExtensionBundleVersionEntity> versionEntities3 = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", null));
+        final List<BundleVersionEntity> versionEntities3 = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", null));
         assertEquals(1, versionEntities3.size());
 
-        final List<ExtensionBundleVersionEntity> versionEntities4 = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-%", null));
+        final List<BundleVersionEntity> versionEntities4 = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-%", null));
         assertEquals(1, versionEntities4.size());
 
-        final List<ExtensionBundleVersionEntity> versionEntities5 = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "1.0.0"));
+        final List<BundleVersionEntity> versionEntities5 = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "1.0.0"));
         assertEquals(1, versionEntities5.size());
 
-        final List<ExtensionBundleVersionEntity> versionEntities6 = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "1.0.%"));
+        final List<BundleVersionEntity> versionEntities6 = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "1.0.%"));
         assertEquals(1, versionEntities6.size());
 
-        final List<ExtensionBundleVersionEntity> versionEntities7 = metadataService.getExtensionBundleVersions(
-                bucketIds, ExtensionBundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "NOT-FOUND"));
+        final List<BundleVersionEntity> versionEntities7 = metadataService.getBundleVersions(
+                bucketIds, BundleVersionFilterParams.of("org.apache.nifi", "nifi-example-processors-nar", "NOT-FOUND"));
         assertEquals(0, versionEntities7.size());
     }
 
     @Test
     public void testGetExtensionBundleVersionByBundleIdAndVersion() {
-        final ExtensionBundleVersionEntity bundleVersion = metadataService.getExtensionBundleVersion("eb1", "1.0.0");
+        final BundleVersionEntity bundleVersion = metadataService.getBundleVersion("eb1", "1.0.0");
         assertNotNull(bundleVersion);
         assertEquals("eb1-v1", bundleVersion.getId());
-        assertEquals("eb1", bundleVersion.getExtensionBundleId());
+        assertEquals("eb1", bundleVersion.getBundleId());
         assertEquals("1.0.0", bundleVersion.getVersion());
         assertNotNull(bundleVersion.getCreated());
         assertEquals("user1", bundleVersion.getCreatedBy());
@@ -672,7 +700,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testGetExtensionBundleVersionByBundleIdAndVersionDoesNotExist() {
-        final ExtensionBundleVersionEntity bundleVersion = metadataService.getExtensionBundleVersion("does-not-exist", "1.0.0");
+        final BundleVersionEntity bundleVersion = metadataService.getBundleVersion("does-not-exist", "1.0.0");
         assertNull(bundleVersion);
     }
 
@@ -683,7 +711,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String artifactId = "nifi-example-processors-nar";
         final String version = "1.0.0";
 
-        final ExtensionBundleVersionEntity bundleVersion = metadataService.getExtensionBundleVersion(bucketId, groupId, artifactId, version);
+        final BundleVersionEntity bundleVersion = metadataService.getBundleVersion(bucketId, groupId, artifactId, version);
         assertNotNull(bundleVersion);
         assertEquals("eb1-v1", bundleVersion.getId());
         assertTrue(bundleVersion.getSha256Supplied());
@@ -696,23 +724,23 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String artifactId = "nifi-example-processors-nar";
         final String version = "FOO";
 
-        final ExtensionBundleVersionEntity bundleVersion = metadataService.getExtensionBundleVersion(bucketId, groupId, artifactId, version);
+        final BundleVersionEntity bundleVersion = metadataService.getBundleVersion(bucketId, groupId, artifactId, version);
         assertNull(bundleVersion);
     }
 
     @Test
     public void testGetExtensionBundleVersionsByBundleId() {
-        final List<ExtensionBundleVersionEntity> bundleVersions = metadataService.getExtensionBundleVersions("eb1");
+        final List<BundleVersionEntity> bundleVersions = metadataService.getBundleVersions("eb1");
         assertNotNull(bundleVersions);
         assertEquals(1, bundleVersions.size());
 
-        final ExtensionBundleVersionEntity bundleVersion = bundleVersions.get(0);
-        assertEquals("eb1", bundleVersion.getExtensionBundleId());
+        final BundleVersionEntity bundleVersion = bundleVersions.get(0);
+        assertEquals("eb1", bundleVersion.getBundleId());
     }
 
     @Test
     public void testGetExtensionBundleVersionsByBundleIdWhenDoesNotExist() {
-        final List<ExtensionBundleVersionEntity> bundleVersions = metadataService.getExtensionBundleVersions("does-not-exist");
+        final List<BundleVersionEntity> bundleVersions = metadataService.getBundleVersions("does-not-exist");
         assertNotNull(bundleVersions);
         assertEquals(0, bundleVersions.size());
     }
@@ -723,11 +751,11 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String groupId = "org.apache.nifi";
         final String artifactId = "nifi-example-processors-nar";
 
-        final List<ExtensionBundleVersionEntity> bundleVersions = metadataService.getExtensionBundleVersions(bucketId, groupId, artifactId);
+        final List<BundleVersionEntity> bundleVersions = metadataService.getBundleVersions(bucketId, groupId, artifactId);
         assertNotNull(bundleVersions);
         assertEquals(1, bundleVersions.size());
 
-        final ExtensionBundleVersionEntity bundleVersion = bundleVersions.get(0);
+        final BundleVersionEntity bundleVersion = bundleVersions.get(0);
         assertEquals("eb1-v1", bundleVersion.getId());
     }
 
@@ -737,7 +765,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String groupId = "org.apache.nifi";
         final String artifactId = "does-not-exist";
 
-        final List<ExtensionBundleVersionEntity> bundleVersions = metadataService.getExtensionBundleVersions(bucketId, groupId, artifactId);
+        final List<BundleVersionEntity> bundleVersions = metadataService.getBundleVersions(bucketId, groupId, artifactId);
         assertNotNull(bundleVersions);
         assertEquals(0, bundleVersions.size());
     }
@@ -748,22 +776,22 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final String artifactId = "nifi-example-processors-nar";
         final String version = "1.0.0";
 
-        final List<ExtensionBundleVersionEntity> bundleVersions = metadataService.getExtensionBundleVersionsGlobal(groupId, artifactId, version);
+        final List<BundleVersionEntity> bundleVersions = metadataService.getBundleVersionsGlobal(groupId, artifactId, version);
         assertNotNull(bundleVersions);
         assertEquals(1, bundleVersions.size());
 
-        final ExtensionBundleVersionEntity bundleVersion = bundleVersions.get(0);
+        final BundleVersionEntity bundleVersion = bundleVersions.get(0);
         assertEquals("eb1-v1", bundleVersion.getId());
     }
 
     @Test
     public void testDeleteExtensionBundleVersion() {
-        final ExtensionBundleVersionEntity bundleVersion = metadataService.getExtensionBundleVersion("eb1", "1.0.0");
+        final BundleVersionEntity bundleVersion = metadataService.getBundleVersion("eb1", "1.0.0");
         assertNotNull(bundleVersion);
 
-        metadataService.deleteExtensionBundleVersion(bundleVersion);
+        metadataService.deleteBundleVersion(bundleVersion);
 
-        final ExtensionBundleVersionEntity deletedBundleVersion = metadataService.getExtensionBundleVersion("eb1", "1.0.0");
+        final BundleVersionEntity deletedBundleVersion = metadataService.getBundleVersion("eb1", "1.0.0");
         assertNull(deletedBundleVersion);
     }
 
@@ -771,14 +799,14 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testCreateExtensionBundleVersionDependency() {
-        final ExtensionBundleVersionEntity versionEntity = metadataService.getExtensionBundleVersion("eb1", "1.0.0");
+        final BundleVersionEntity versionEntity = metadataService.getBundleVersion("eb1", "1.0.0");
         assertNotNull(versionEntity);
 
-        final List<ExtensionBundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion(versionEntity.getId());
+        final List<BundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion(versionEntity.getId());
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
 
-        final ExtensionBundleVersionDependencyEntity dependencyEntity = new ExtensionBundleVersionDependencyEntity();
+        final BundleVersionDependencyEntity dependencyEntity = new BundleVersionDependencyEntity();
         dependencyEntity.setId(UUID.randomUUID().toString());
         dependencyEntity.setExtensionBundleVersionId(versionEntity.getId());
         dependencyEntity.setGroupId("com.foo");
@@ -787,18 +815,18 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
         metadataService.createDependency(dependencyEntity);
 
-        final List<ExtensionBundleVersionDependencyEntity> dependencies2 = metadataService.getDependenciesForBundleVersion(versionEntity.getId());
+        final List<BundleVersionDependencyEntity> dependencies2 = metadataService.getDependenciesForBundleVersion(versionEntity.getId());
         assertNotNull(dependencies2);
         assertEquals(2, dependencies2.size());
     }
 
     @Test
     public void testGetExtensionBundleVersionDependencies() {
-        final List<ExtensionBundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion("eb1-v1");
+        final List<BundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion("eb1-v1");
         assertNotNull(dependencies);
         assertEquals(1, dependencies.size());
 
-        final ExtensionBundleVersionDependencyEntity dependency = dependencies.get(0);
+        final BundleVersionDependencyEntity dependency = dependencies.get(0);
         assertEquals("eb1-v1-dep1", dependency.getId());
         assertEquals("eb1-v1", dependency.getExtensionBundleVersionId());
         assertEquals("org.apache.nifi", dependency.getGroupId());
@@ -808,7 +836,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testGetExtensionBundleVersionDependenciesWhenNoneExist() {
-        final List<ExtensionBundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion("DOES-NOT-EXIST");
+        final List<BundleVersionDependencyEntity> dependencies = metadataService.getDependenciesForBundleVersion("DOES-NOT-EXIST");
         assertNotNull(dependencies);
         assertEquals(0, dependencies.size());
     }
@@ -817,35 +845,43 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
     @Test
     public void testCreateExtension() {
+        final String extensionId = "4";
+
+        final ExtensionRestrictionEntity restrictionEntity = new ExtensionRestrictionEntity();
+        restrictionEntity.setId(UUID.randomUUID().toString());
+        restrictionEntity.setExtensionId(extensionId);
+        restrictionEntity.setRequiredPermission("read filesystem");
+        restrictionEntity.setExplanation("Reads filesystem");
+
+        final ExtensionProvidedServiceApiEntity serviceApiEntity = new ExtensionProvidedServiceApiEntity();
+        serviceApiEntity.setId(UUID.randomUUID().toString());
+        serviceApiEntity.setExtensionId(extensionId);
+        serviceApiEntity.setClassName("com.foo.FooService");
+        serviceApiEntity.setGroupId("com.foo");
+        serviceApiEntity.setArtifactId("foo-nar");
+        serviceApiEntity.setVersion("1.0.0");
+
         final ExtensionEntity extension = new ExtensionEntity();
-        extension.setId("4");
-        extension.setExtensionBundleVersionId("eb1-v1");
-        extension.setType("com.example.FooBarProcessor");
-        extension.setTypeDescription("This the FoorBarProcessor");
-        extension.setCategory(ExtensionEntityCategory.PROCESSOR);
-        extension.setRestricted(false);
-        extension.setTags("tag1, tag2");
+        extension.setId(extensionId);
+        extension.setBundleVersionId("eb1-v1");
+        extension.setName("com.example.FooBarProcessor");
+        extension.setDisplayName("FooBarProcessor");
+        extension.setExtensionType(ExtensionType.PROCESSOR);
+        extension.setTags(new HashSet<>(Arrays.asList("tag1", "tag2")));
+        extension.setProvidedServiceApis(Collections.singleton(serviceApiEntity));
+        extension.setRestrictions(Collections.singleton(restrictionEntity));
+        extension.setContent("{ \"name\" : \"org.apache.nifi.ExampleProcessor\", \"type\" : \"PROCESSOR\" }");
+        extension.setAdditionalDetails("DETAILS");
 
         metadataService.createExtension(extension);
 
         final ExtensionEntity retrievedExtension = metadataService.getExtensionById(extension.getId());
         assertEquals(extension.getId(), retrievedExtension.getId());
-        assertEquals(extension.getExtensionBundleVersionId(), retrievedExtension.getExtensionBundleVersionId());
-        assertEquals(extension.getType(), retrievedExtension.getType());
-        assertEquals(extension.getTypeDescription(), retrievedExtension.getTypeDescription());
-        assertEquals(extension.getCategory(), retrievedExtension.getCategory());
-        assertEquals(extension.isRestricted(), retrievedExtension.isRestricted());
-        assertEquals(extension.getTags(), retrievedExtension.getTags());
-
-        final List<ExtensionEntity> tag1Extensions = metadataService.getExtensionsByTag("tag1");
-        assertNotNull(tag1Extensions);
-        assertEquals(1, tag1Extensions.size());
-        assertEquals(extension.getId(), tag1Extensions.get(0).getId());
-
-        final List<ExtensionEntity> tag2Extensions = metadataService.getExtensionsByTag("tag2");
-        assertNotNull(tag2Extensions);
-        assertEquals(1, tag2Extensions.size());
-        assertEquals(extension.getId(), tag2Extensions.get(0).getId());
+        assertEquals(extension.getBundleVersionId(), retrievedExtension.getBundleVersionId());
+        assertEquals(extension.getName(), retrievedExtension.getName());
+        assertEquals(extension.getDisplayName(), retrievedExtension.getDisplayName());
+        assertEquals(extension.getExtensionType(), retrievedExtension.getExtensionType());
+        assertEquals(extension.getContent(), retrievedExtension.getContent());
     }
 
     @Test
@@ -853,7 +889,26 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final ExtensionEntity extension = metadataService.getExtensionById("e1");
         assertNotNull(extension);
         assertEquals("e1", extension.getId());
-        assertEquals("org.apache.nifi.ExampleProcessor", extension.getType());
+        assertEquals("org.apache.nifi.ExampleProcessor", extension.getName());
+        assertEquals("{ \"name\" : \"org.apache.nifi.ExampleProcessor\", \"type\" : \"PROCESSOR\" }", extension.getContent());
+    }
+
+    @Test
+    public void testGetExtensionByIdWithServiceApi() {
+        final ExtensionEntity extension = metadataService.getExtensionById("e3");
+        assertNotNull(extension);
+        assertEquals("e3", extension.getId());
+        assertEquals("org.apache.nifi.ExampleService", extension.getName());
+        assertEquals("{ \"name\" : \"org.apache.nifi.ExampleService\", \"type\" : \"CONTROLLER_SERVICE\" }", extension.getContent());
+    }
+
+    @Test
+    public void testGetExtensionByIdWithRestriction() {
+        final ExtensionEntity extension = metadataService.getExtensionById("e2");
+        assertNotNull(extension);
+        assertEquals("e2", extension.getId());
+        assertEquals("org.apache.nifi.ExampleProcessorRestricted", extension.getName());
+        assertEquals("{ \"name\" : \"org.apache.nifi.ExampleProcessorRestricted\", \"type\" : \"PROCESSOR\" }", extension.getContent());
     }
 
     @Test
@@ -863,10 +918,84 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     }
 
     @Test
+    public void testGetExtensionByName() {
+        final ExtensionEntity entity = metadataService.getExtensionByName("eb1-v1", "org.apache.nifi.ExampleProcessor");
+        assertNotNull(entity);
+        assertEquals("org.apache.nifi.ExampleProcessor", entity.getName());
+        assertEquals("eb1-v1", entity.getBundleVersionId());
+    }
+
+    @Test
+    public void testGetExtensionByNameDoesNotExist() {
+        final ExtensionEntity entity = metadataService.getExtensionByName("eb1-v1", "org.apache.nifi.DOESNOTEXIST");
+        assertNull(entity);
+    }
+
+    @Test
     public void testGetAllExtensions() {
-        final List<ExtensionEntity> extensions = metadataService.getAllExtensions();
+        final Set<String> bucketIds = new HashSet<>();
+        bucketIds.add("1");
+        bucketIds.add("2");
+        bucketIds.add("3");
+
+        final List<ExtensionEntity> extensions = metadataService.getExtensions(bucketIds, null);
         assertNotNull(extensions);
         assertEquals(3, extensions.size());
+    }
+
+    @Test
+    public void testGetAllExtensionsFilteredWithResult() {
+        final Set<String> bucketIds = new HashSet<>();
+        bucketIds.add("1");
+        bucketIds.add("2");
+        bucketIds.add("3");
+
+        final ExtensionFilterParams filterParams = new ExtensionFilterParams.Builder()
+                .extensionType(ExtensionType.CONTROLLER_SERVICE)
+                .bundleType(BundleType.NIFI_NAR)
+                .tag("SERVICE")
+                .tag("example")
+                .build();
+
+        final List<ExtensionEntity> extensions = metadataService.getExtensions(bucketIds, filterParams);
+        assertNotNull(extensions);
+        assertEquals(1, extensions.size());
+
+        final ExtensionEntity entity = extensions.get(0);
+        assertEquals(ExtensionType.CONTROLLER_SERVICE.toString(), entity.getExtensionType().toString());
+        assertEquals(BundleType.NIFI_NAR, entity.getBundleType());
+    }
+
+    @Test
+    public void testGetAllExtensionsFilteredWithNoResult() {
+        final Set<String> bucketIds = new HashSet<>();
+        bucketIds.add("1");
+        bucketIds.add("2");
+        bucketIds.add("3");
+
+        final ExtensionFilterParams filterParams = new ExtensionFilterParams.Builder()
+                .tag("DOES NOT EXIST")
+                .build();
+
+        final List<ExtensionEntity> extensions = metadataService.getExtensions(bucketIds, filterParams);
+        assertNotNull(extensions);
+        assertEquals(0, extensions.size());
+    }
+
+    @Test
+    public void testGetAllExtensionsFilteredWithNoBuckets() {
+        final Set<String> bucketIds = new HashSet<>();
+
+        final ExtensionFilterParams filterParams = new ExtensionFilterParams.Builder()
+                .extensionType(ExtensionType.CONTROLLER_SERVICE)
+                .bundleType(BundleType.NIFI_NAR)
+                .tag("SERVICE")
+                .tag("example")
+                .build();
+
+        final List<ExtensionEntity> extensions = metadataService.getExtensions(bucketIds, filterParams);
+        assertNotNull(extensions);
+        assertEquals(0, extensions.size());
     }
 
     @Test
@@ -884,45 +1013,15 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     }
 
     @Test
-    public void testGetExtensionsByBundleCoordinate() {
-        final String bucketId = "3";
-        final String groupId = "org.apache.nifi";
-        final String artifactId = "nifi-example-processors-nar";
-        final String version = "1.0.0";
-
-        final List<ExtensionEntity> extensions = metadataService.getExtensionsByBundleCoordinate(bucketId, groupId, artifactId, version);
-        assertNotNull(extensions);
-        assertEquals(2, extensions.size());
-    }
-
-    @Test
-    public void testGetExtensionsByBundleCoordinateDoesNotExist() {
-        final String bucketId = "3";
-        final String groupId = "org.apache.nifi";
-        final String artifactId = "does-not-exist";
-        final String version = "1.0.0";
-
-        final List<ExtensionEntity> extensions = metadataService.getExtensionsByBundleCoordinate(bucketId, groupId, artifactId, version);
-        assertNotNull(extensions);
-        assertEquals(0, extensions.size());
-    }
-
-    @Test
-    public void testGetExtensionsByCategory() {
-        final List<ExtensionEntity> services = metadataService.getExtensionsByCategory(ExtensionEntityCategory.CONTROLLER_SERVICE);
-        assertNotNull(services);
-        assertEquals(1, services.size());
-
-        final List<ExtensionEntity> processors = metadataService.getExtensionsByCategory(ExtensionEntityCategory.PROCESSOR);
-        assertNotNull(processors);
-        assertEquals(2, processors.size());
-    }
-
-    @Test
     public void testGetExtensionTags() {
-        final Set<String> tags = metadataService.getAllExtensionTags();
+        final List<TagCountEntity> tags = metadataService.getAllExtensionTags();
         assertNotNull(tags);
         assertEquals(4, tags.size());
+
+        tags.forEach(t -> {
+            assertNotNull(t.getTag());
+            assertTrue(t.getCount() > 0);
+        });
     }
 
     @Test
@@ -934,6 +1033,38 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
 
         final ExtensionEntity deletedExtension = metadataService.getExtensionById("e1");
         assertNull(deletedExtension);
+    }
+
+    @Test
+    public void testGetExtensionsByProvidedServiceApi() {
+        final Set<String> bucketIds = new HashSet<>();
+        bucketIds.add("1");
+        bucketIds.add("2");
+        bucketIds.add("3");
+
+        final ProvidedServiceAPI serviceAPI = new ProvidedServiceAPI();
+        serviceAPI.setClassName("org.apache.nifi.ExampleServiceAPI");
+        serviceAPI.setGroupId("org.apache.nifi");
+        serviceAPI.setArtifactId("nifi-example-service-api-nar");
+        serviceAPI.setVersion("2.0.0");
+
+        final List<ExtensionEntity> extensions = metadataService.getExtensionsByProvidedServiceApi(bucketIds, serviceAPI);
+        assertEquals(1, extensions.size());
+        assertEquals("e3", extensions.get(0).getId());
+    }
+
+    @Test
+    public void testGetExtensionsByProvidedServiceApiWithNoBuckets() {
+        final Set<String> bucketIds = new HashSet<>();
+
+        final ProvidedServiceAPI serviceAPI = new ProvidedServiceAPI();
+        serviceAPI.setClassName("org.apache.nifi.ExampleServiceAPI");
+        serviceAPI.setGroupId("org.apache.nifi");
+        serviceAPI.setArtifactId("nifi-example-service-api-nar");
+        serviceAPI.setVersion("2.0.0");
+
+        final List<ExtensionEntity> extensions = metadataService.getExtensionsByProvidedServiceApi(bucketIds, serviceAPI);
+        assertEquals(0, extensions.size());
     }
 
 }

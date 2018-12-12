@@ -16,12 +16,15 @@
  */
 package org.apache.nifi.registry.client;
 
+import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
+import org.apache.nifi.registry.extension.repo.ExtensionRepoExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersion;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -95,6 +98,37 @@ public interface ExtensionRepoClient {
             throws IOException, NiFiRegistryException;
 
     /**
+     * Gets the metadata about the extensions for the given bucket, group, artifact, and version.
+     *
+     * @param bucketName the bucket name
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the version
+     * @return the list of extension metadata
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    List<ExtensionRepoExtensionMetadata> getVersionExtensions(String bucketName, String groupId, String artifactId, String version)
+            throws IOException, NiFiRegistryException;
+
+    /**
+     * Gets the metadata about the extension with the given name in the given bucket, group, artifact, and version.
+     *
+     * @param bucketName the bucket name
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the version
+     * @param extensionName the extension name
+     * @return the extension info
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    Extension getVersionExtension(String bucketName, String groupId, String artifactId, String version, String extensionName)
+            throws IOException, NiFiRegistryException;
+
+    /**
      * Gets an InputStream for the binary content of the specified version.
      *
      * @param bucketName the bucket name
@@ -107,6 +141,22 @@ public interface ExtensionRepoClient {
      * @throws NiFiRegistryException if an non I/O error occurs
      */
     InputStream getVersionContent(String bucketName, String groupId, String artifactId, String version)
+            throws IOException, NiFiRegistryException;
+
+    /**
+     * Writes the binary content for the version of the given the bundle to the specified directory.
+     *
+     * @param bucketName the bucket name
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the version
+     * @param directory the directory to write to
+     * @return the File object for the bundle that was written
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    File writeBundleVersionContent(String bucketName, String groupId, String artifactId, String version, File directory)
             throws IOException, NiFiRegistryException;
 
     /**

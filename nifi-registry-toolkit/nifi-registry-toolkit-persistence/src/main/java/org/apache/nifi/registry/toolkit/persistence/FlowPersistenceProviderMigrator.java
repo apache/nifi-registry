@@ -33,8 +33,9 @@ import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
-import org.apache.nifi.registry.service.DataModelMapper;
 import org.apache.nifi.registry.service.MetadataService;
+import org.apache.nifi.registry.service.mapper.BucketMappings;
+import org.apache.nifi.registry.service.mapper.FlowMappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -48,9 +49,9 @@ public class FlowPersistenceProviderMigrator {
             for (FlowEntity flow : fromMetadata.getFlowsByBucket(bucket.getId())) {
                 for (FlowSnapshotEntity flowSnapshot : fromMetadata.getSnapshots(flow.getId())) {
                     StandardFlowSnapshotContext context = new StandardFlowSnapshotContext.Builder(
-                            DataModelMapper.map(bucket),
-                            DataModelMapper.map(bucket, flow),
-                            DataModelMapper.map(bucket, flowSnapshot)).build();
+                            BucketMappings.map(bucket),
+                            FlowMappings.map(bucket, flow),
+                            FlowMappings.map(bucket, flowSnapshot)).build();
 
                     int version = flowSnapshot.getVersion();
 

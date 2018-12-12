@@ -29,9 +29,7 @@ import java.util.Objects;
 public class ExtensionRepoArtifact extends LinkableEntity implements Comparable<ExtensionRepoArtifact> {
 
     private String bucketName;
-
     private String groupId;
-
     private String artifactId;
 
     @ApiModelProperty(value = "The bucket name")

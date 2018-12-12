@@ -28,7 +28,7 @@
     </eventHookProvider>
 
     <extensionBundlePersistenceProvider>
-        <class>org.apache.nifi.registry.provider.MockExtensionBundlePersistenceProvider</class>
+        <class>org.apache.nifi.registry.provider.MockBundlePersistenceProvider</class>
         <property name="Extension Property 1">extension foo</property>
         <property name="Extension Property 2">extension bar</property>
     </extensionBundlePersistenceProvider>
