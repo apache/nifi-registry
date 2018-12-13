@@ -99,11 +99,11 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getExtensionBundles(
             @QueryParam("groupId")
-            @ApiParam("Optional groupId to filter results. The value may be an exact match, or a trailing wildcard, " +
+            @ApiParam("Optional groupId to filter results. The value may be an exact match, or a wildcard, " +
                     "such as 'com.%' to select all bundles where the groupId starts with 'com.'.")
                 final String groupId,
             @QueryParam("artifactId")
-            @ApiParam("Optional artifactId to filter results. The value may be an exact match, or a trailing wildcard, " +
+            @ApiParam("Optional artifactId to filter results. The value may be an exact match, or a wildcard, " +
                     "such as 'nifi-%' to select all bundles where the artifactId starts with 'nifi-'.")
                 final String artifactId) {
 
@@ -210,15 +210,15 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getExtensionBundleVersions(
             @QueryParam("groupId")
-            @ApiParam("Optional groupId to filter results. The value may be an exact match, or a trailing wildcard, " +
+            @ApiParam("Optional groupId to filter results. The value may be an exact match, or a wildcard, " +
                     "such as 'com.%' to select all bundle versions where the groupId starts with 'com.'.")
                 final String groupId,
             @QueryParam("artifactId")
-            @ApiParam("Optional artifactId to filter results. The value may be an exact match, or a trailing wildcard, " +
+            @ApiParam("Optional artifactId to filter results. The value may be an exact match, or a wildcard, " +
                     "such as 'nifi-%' to select all bundle versions where the artifactId starts with 'nifi-'.")
                 final String artifactId,
             @QueryParam("version")
-            @ApiParam("Optional version to filter results. The value maye be an exact match, or a trailing wildcard, " +
+            @ApiParam("Optional version to filter results. The value maye be an exact match, or a wildcard, " +
                     "such as '1.0.%' to select all bundle versions where the version starts with '1.0.'.")
                 final String version
             ) {
