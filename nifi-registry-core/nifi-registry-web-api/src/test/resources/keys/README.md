@@ -48,7 +48,7 @@ The CA and private keys (including their protection passwords) have been publish
 
 ## Generating Additional Test Keys/Certs
 
-If we need to add a service to our test environment that requires a cert signed by the same CA, here are the steps for generating additional keys for thsi directory that are signed by the same CA key.
+If we need to add a service or user to our test environment that requires a cert signed by the same CA, here are the steps for generating additional keys for this directory that are signed by the same CA key.
 
 Requirements:
 
@@ -56,11 +56,11 @@ Requirements:
 - keytool (included with Java)
 - openssl (included/available on most platforms)
 
-If you do not have docker, you can alternatively use the nifi-toolkit binary which has a dependency on Java 1.8 and is available for download from http://nifi.apache.org. 
+If you do not have docker, you can substitute the nifi-toolkit binary, which is available for download from https://nifi.apache.org and should run on any platform with Java 1.8. 
 
 ### New Service Keys
 
-The steps for generating a new *service* key/cert pair are (using `proxy` as the example service):
+The steps for generating a new service key/cert pair are (using `proxy` as the example service):
 
 ```
 # make working directory
@@ -107,7 +107,7 @@ If you are satisfied with the results, you can copy the files from `/tmp/test-ke
 
 ### New Client or User Keys
 
-The steps for generating a new *user* key/cert pair are (using `user2` as the example user):
+The steps for generating a new user key/cert pair are (using `user2` as the example user):
 
 ```
 # make working directory
@@ -152,7 +152,8 @@ If you are satisfied with the results, you can copy the files from `/tmp/test-ke
 
 ## Regenerating All Test Keys/Certs
 
-In case you need to regenerate this entire directory, here are the steps that were used to first create it. Follow these steps in order to recreate it.
+In case you need to regenerate this entire directory, here are the steps that were used to first create it. 
+Follow these steps in order to recreate it.
 
 Requirements:
 
@@ -160,7 +161,7 @@ Requirements:
 - keytool (included with Java)
 - openssl (included/available on most platforms)
 
-If you do not have docker, you can substitute the nifi-toolkit binary, which is available for download from http://nifi.apache.org and should run on any platform with Java 1.8. 
+If you do not have docker, you can substitute the nifi-toolkit binary, which is available for download from https://nifi.apache.org and should run on any platform with Java 1.8. 
 
 The steps for regenerating these test keys are:
 
