@@ -64,16 +64,16 @@ The steps for generating a new service key/cert pair are (using `proxy` as the e
 
 ```
 # make working directory
-rm -rf /tmp/test-keys
-mkdir /tmp/test-keys
-cd /tmp/test-keys
+WD="/tmp/test-keys-$(date +"%Y%m%d-%H%M%S")"
+mkdir "$WD"
+cd "$WD"
 
 # copy existing CA key/cert pair to working directory, rename to default tls-toolkit names
 cp /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/ca-key.pem ./nifi-key.key
 cp /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/ca-cert.pem ./nifi-cert.pem
 
 # use NiFi Toolkit Docker image to generate new keys/certs
-docker run -v /tmp/test-keys:/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit standalone \
+docker run -v "$WD":/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit standalone \
       --hostnames proxy \
       --subjectAlternativeNames localhost \
       --nifiDnSuffix ", OU=nifi" \
@@ -83,7 +83,7 @@ docker run -v /tmp/test-keys:/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit
       -O
 
 # switch to output directory, create final output directory
-cd /tmp/test-keys
+cd "$WD"
 mkdir keys
 
 # copy new service key/cert to final output dir in all formats
@@ -95,15 +95,20 @@ keytool -importkeystore \
       -destkeystore keys/proxy-ks.p12 -deststoretype pkcs12 -deststorepass password
 openssl pkcs12 -in keys/proxy-ks.p12 -passin pass:password -out keys/proxy-key.pem -passout pass:password
 openssl pkcs12 -in keys/proxy-ks.p12 -passin pass:password -out keys/proxy-cert.pem -nokeys
+
+echo
+echo "New keys written to ${WD}/keys"
+echo "Copy to NiFi Registry test keys dir by running: "
+echo "    cp \"$WD/keys/*\" /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/"
 ```
 
 You can verify the contents of the new keystore (and that the signature is done by the correct CA) using the following command:
 
-    keytool -list -v -keystore /tmp/test-keys/keys/proxy-ks.jks -storepass password
+    keytool -list -v -keystore "$WD/keys/proxy-ks.jks" -storepass password
 
-If you are satisfied with the results, you can copy the files from `/tmp/test-keys/keys` to this directory:
+If you are satisfied with the results, you can copy the files from `/tmp/test-keys-YYYYMMDD-HHMMSS/keys` to this directory:
  
-    cp /tmp/test-keys/keys/* /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/
+    cp "$WD/keys/*" /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/
 
 ### New Client or User Keys
 
@@ -111,23 +116,23 @@ The steps for generating a new user key/cert pair are (using `user2` as the exam
 
 ```
 # make working directory
-rm -rf /tmp/test-keys
-mkdir /tmp/test-keys
-cd /tmp/test-keys
+WD="/tmp/test-keys-$(date +"%Y%m%d-%H%M%S")"
+mkdir "$WD"
+cd "$WD"
 
 # copy existing CA key/cert pair to working directory, rename to default tls-toolkit names
 cp /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/ca-key.pem ./nifi-key.key
 cp /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/ca-cert.pem ./nifi-cert.pem
 
 # use NiFi Toolkit Docker image to generate new keys/certs
-docker run -v /tmp/test-keys:/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit standalone \
+docker run -v "$WD":/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit standalone \
       --clientCertDn "CN=user2, OU=nifi" \
       --clientCertPassword password \
       --days 9999 \
       -O
 
 # switch to output directory, create final output directory
-cd /tmp/test-keys
+cd "$WD"
 mkdir keys
 
 # transform tls-toolkit output to final output
@@ -139,15 +144,20 @@ keytool -importkeystore \
       -destkeystore keys/user2-ks.p12 -deststoretype pkcs12 -deststorepass password
 openssl pkcs12 -in keys/user2-ks.p12 -passin pass:password -out keys/user2-key.pem -passout pass:password
 openssl pkcs12 -in keys/user2-ks.p12 -passin pass:password -out keys/user2-cert.pem -nokeys
+
+echo
+echo "New keys written to ${WD}/keys"
+echo "Copy to NiFi Registry test keys dir by running: "
+echo "    cp \"$WD/keys/*\" /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/"
 ```
 
 You can verify the contents of the new keystore (and that the signature is done by the correct CA) using the following command:
 
-    keytool -list -v -keystore /tmp/test-keys/keys/user2-ks.jks -storepass password
+    keytool -list -v -keystore "$WD/keys/user2-ks.jks" -storepass password
 
-If you are satisfied with the results, you can copy the files from `/tmp/test-keys/keys` to this directory:
+If you are satisfied with the results, you can copy the files from `/tmp/test-keys-YYYYMMDD-HHMMSS/keys` to this directory:
  
-    cp /tmp/test-keys/keys/* /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/
+    cp "$WD/keys/*" /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/
 
 
 ## Regenerating All Test Keys/Certs
@@ -167,11 +177,12 @@ The steps for regenerating these test keys are:
 
 ```
 # make working directory
-rm -rf /tmp/test-keys
-mkdir /tmp/test-keys
+WD="/tmp/test-keys-$(date +"%Y%m%d-%H%M%S")"
+mkdir "$WD"
+cd "$WD"
 
 # use NiFi Toolkit Docker image to generate new keys/certs
-docker run -v /tmp/test-keys:/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit standalone \
+docker run -v "$WD":/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit standalone \
       --certificateAuthorityHostname "Test CA (Do Not Trust)" \
       --hostnames registry \
       --subjectAlternativeNames localhost \
@@ -184,7 +195,7 @@ docker run -v /tmp/test-keys:/tmp -w /tmp apache/nifi-toolkit:latest tls-toolkit
       -O
 
 # switch to output directory, create final output directory
-cd /tmp/test-keys
+cd "$WD"
 mkdir keys
 
 # copy CA key/cert to final output dir in all formats
@@ -216,14 +227,19 @@ keytool -importkeystore \
       -destkeystore keys/user1-ks.p12 -deststoretype pkcs12 -deststorepass password
 openssl pkcs12 -in keys/user1-ks.p12 -passin pass:password -out keys/user1-key.pem -passout pass:password
 openssl pkcs12 -in keys/user1-ks.p12 -passin pass:password -out keys/user1-cert.pem -nokeys
+
+echo
+echo "New keys written to ${WD}/keys"
+echo "Copy to NiFi Registry test keys dir by running: "
+echo "    cp -f \"$WD/keys/*\" /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/"
 ```
 
-You should now have a `/tmp/test-keys/keys` directory with all the necessary keys for testing with various tools.
+You should now have a `/tmp/test-keys-YYYYMMDD-HHMMSS/keys` directory with all the necessary keys for testing with various tools.
 
 You can verify the contents of a keystore using the following command:
 
-    keytool -list -v -keystore /tmp/test-keys/keys/registry-ks.jks -storepass password
+    keytool -list -v -keystore "$WD/keys/registry-ks.jks" -storepass password
 
-If you are satisfied with the results, you can copy the files from `/tmp/test-keys/keys` to this directory:
+If you are satisfied with the results, you can copy the files from `/tmp/test-keys-YYYYMMDD-HHMMSS/keys` to this directory:
 
-    cp -f /tmp/test-keys/keys/* /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/
+    cp -f "$WD/keys/*" /path/to/nifi-registry/nifi-registry-core/nifi-registry-web-api/src/test/resources/keys/
