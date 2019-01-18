@@ -25,6 +25,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
+import org.apache.nifi.registry.provider.ProviderSynchronization;
 import org.apache.nifi.registry.service.MetadataService;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -35,6 +36,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.*;
@@ -43,7 +45,7 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.nifi.registry.util.FileUtils.sanitizeFilename;
 
-public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceProvider {
+public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceProvider, ProviderSynchronization {
 
     private static final Logger logger = LoggerFactory.getLogger(GitFlowMetaData.class);
     static final String FLOW_STORAGE_DIR_PROP = "Flow Storage Directory";
@@ -54,6 +56,8 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
     private File flowStorageDir;
     private GitFlowMetaData flowMetaData;
+
+
 
     @Override
     public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
@@ -399,5 +403,30 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
         }
 
         return flowSnapshotMetadataList;
+    }
+
+
+
+    @Override
+    public void synchronizeBuckets() {
+
+    }
+
+    @Override
+    public void synchronizeRepositoryRemotely() throws IOException {
+        try {
+            this.flowMetaData.pullChanges(flowStorageDir);
+        }catch(GitAPIException apiException){
+            throw new IOException(apiException);
+        }
+    }
+
+    @Override
+    public void resetRepository(URI repositoryURI) throws IOException {
+        try {
+            this.flowMetaData.resetGitRepository(flowStorageDir, repositoryURI);
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        }
     }
 }

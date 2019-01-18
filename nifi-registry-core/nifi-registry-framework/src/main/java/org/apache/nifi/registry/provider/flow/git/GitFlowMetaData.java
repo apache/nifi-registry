@@ -16,8 +16,10 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -36,20 +38,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -128,6 +121,45 @@ class GitFlowMetaData {
         return builder.build();
     }
 
+    public void resetGitRepository(File gitProjectRootDir, URI gitRepositoryUrl) throws IOException, GitAPIException {
+        gitRepo = openRepository(gitProjectRootDir);
+
+        try (final Git git = new Git(gitRepo)) {
+            TerminateWhenRemotePathDoesNotExist(git);
+
+            if (!git.status().call().isClean()){
+                throw new IOException("Directory '%s' contains changes. " +
+                        "Therefore a complete reset of the repository is not possible.\n"+
+                        "Please commit your changes and push to remote repository.");
+            }
+        }
+
+        FileUtils.deleteDirectory(gitProjectRootDir);
+        FileUtils.forceMkdir(gitProjectRootDir);
+        Git.cloneRepository().setURI(gitRepositoryUrl.toString()).setDirectory(gitProjectRootDir).call();
+    }
+
+    public void pullChanges(File gitProjectRootDir) throws IOException, GitAPIException {
+        gitRepo = openRepository(gitProjectRootDir);
+
+        try (final Git git = new Git(gitRepo)) {
+            TerminateWhenRemotePathDoesNotExist(git);
+
+            if (!git.status().call().isClean()){
+                throw new IOException("Directory '%s' contains changes. " +
+                        "Therefore a complete reset of the repository is not possible.\n"+
+                        "Please commit your changes and push to remote repository.");
+            }
+
+            final PullResult pullResult = git.pull().setRemote(this.remoteToPush)
+                                        .setRemoteBranchName(gitRepo.getFullBranch()).call();
+            if (pullResult.isSuccessful()){
+                throw new IOException(
+                        format("The pull command was not successful because '%s'.", pullResult.toString()));
+            }
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public void loadGitRepository(File gitProjectRootDir) throws IOException, GitAPIException {
         gitRepo = openRepository(gitProjectRootDir);
@@ -135,15 +167,7 @@ class GitFlowMetaData {
         try (final Git git = new Git(gitRepo)) {
 
             // Check if remote exists.
-            if (!isEmpty(remoteToPush)) {
-                final List<RemoteConfig> remotes = git.remoteList().call();
-                final boolean isRemoteExist = remotes.stream().anyMatch(remote -> remote.getName().equals(remoteToPush));
-                if (!isRemoteExist) {
-                    final List<String> remoteNames = remotes.stream().map(RemoteConfig::getName).collect(Collectors.toList());
-                    throw new IllegalArgumentException(
-                            format("The configured remote '%s' to push does not exist. Available remotes are %s", remoteToPush, remoteNames));
-                }
-            }
+            TerminateWhenRemotePathDoesNotExist(git);
 
             boolean isLatestCommit = true;
             try {
@@ -186,6 +210,18 @@ class GitFlowMetaData {
                 logger.debug("'{}' does not have any commit yet. Starting with empty buckets.", gitProjectRootDir);
             }
 
+        }
+    }
+
+    private void TerminateWhenRemotePathDoesNotExist(Git git) throws GitAPIException {
+        if (!isEmpty(remoteToPush)) {
+            final List<RemoteConfig> remotes = git.remoteList().call();
+            final boolean isRemoteExist = remotes.stream().anyMatch(remote -> remote.getName().equals(remoteToPush));
+            if (!isRemoteExist) {
+                final List<String> remoteNames = remotes.stream().map(RemoteConfig::getName).collect(Collectors.toList());
+                throw new IllegalArgumentException(
+                        format("The configured remote '%s' to push does not exist. Available remotes are %s", remoteToPush, remoteNames));
+            }
         }
     }
 

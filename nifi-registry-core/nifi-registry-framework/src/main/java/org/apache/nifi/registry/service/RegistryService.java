@@ -56,6 +56,7 @@ import org.apache.nifi.registry.flow.diff.FlowComparison;
 import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
+import org.apache.nifi.registry.provider.ProviderSynchronization;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.serialization.Serializer;
@@ -77,6 +78,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -1274,6 +1276,28 @@ public class RegistryService {
         }
 
         return new ArrayList<>();
+    }
+
+    public void resetProviderRepository(URI repositoryURI) throws IOException {
+        if (this.flowPersistenceProvider instanceof ProviderSynchronization){
+            final ProviderSynchronization syncProvider = (ProviderSynchronization)this.flowPersistenceProvider;
+            syncProvider.resetRepository(repositoryURI);
+            return;
+        }
+
+        throw new IOException("Cannot reset provider repositoy "+
+                "because the current provider does not support synchronization tasks.");
+    }
+
+    public void synchronizeRepositoryRemotely() throws IOException {
+        if (this.flowPersistenceProvider instanceof ProviderSynchronization){
+            final ProviderSynchronization syncProvider = (ProviderSynchronization)this.flowPersistenceProvider;
+            syncProvider.synchronizeRepositoryRemotely();
+            return;
+        }
+
+        throw new IOException("Cannot reset provider repositoy "+
+                "because the current provider does not support synchronization tasks.");
     }
 
 }

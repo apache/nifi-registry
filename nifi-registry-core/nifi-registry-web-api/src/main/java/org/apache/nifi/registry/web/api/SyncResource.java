@@ -32,14 +32,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 
 @Component
@@ -100,11 +100,81 @@ public class SyncResource extends AuthorizableApplicationResource {
         for (Bucket bucket : buckets){
             publish(EventFactory.bucketCreated(bucket));
             permissionsService.populateBucketPermissions(bucket);
-            linkService.populateBucketLinks(bucket);
+            linkService.populateLinks(bucket);
         }
 
         return Response.status(Response.Status.OK).entity(buckets).build();
     }
+
+    @PUT
+    @Path("{repositoryURI}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "reset provider repository",
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/sync") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
+    public Response resetProviderRepository(
+            @PathParam("repositoryURI")
+            @ApiParam("reset repository to repositoryURI.")
+            String repositoryURL
+    ) throws URISyntaxException, IOException {
+        authorizeAccess(RequestAction.WRITE);
+
+        URI uri = new URI(repositoryURL);
+        registryService.resetProviderRepository(uri);
+
+        Collection<Bucket> buckets = registryService.syncBuckets();
+        for (Bucket bucket : buckets){
+            publish(EventFactory.bucketCreated(bucket));
+            permissionsService.populateBucketPermissions(bucket);
+            linkService.populateLinks(bucket);
+        }
+
+        return Response.status(Response.Status.OK).entity(buckets).build();
+    }
+
+    @POST
+    @Path("remote")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "reset provider repository",
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/sync") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
+    public Response synchronizeRepositoryRemotely() throws IOException {
+        authorizeAccess(RequestAction.WRITE);
+
+        registryService.synchronizeRepositoryRemotely();
+
+        Collection<Bucket> buckets = registryService.syncBuckets();
+        for (Bucket bucket : buckets){
+            publish(EventFactory.bucketCreated(bucket));
+            permissionsService.populateBucketPermissions(bucket);
+            linkService.populateLinks(bucket);
+        }
+
+        return Response.status(Response.Status.OK).entity(buckets).build();
+    }
+
 
     private void authorizeAccess(RequestAction actionType) throws AccessDeniedException {
         final Authorizable bucketsAuthorizable = authorizableLookup.getBucketsAuthorizable();
