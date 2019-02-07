@@ -18,19 +18,33 @@ package org.apache.nifi.registry.properties.util;
 
 import java.util.regex.Pattern;
 
+import static org.apache.nifi.registry.properties.util.IdentityMapping.Transform.NONE;
+
 /**
  * Holder to pass around the key, pattern, and replacement from an identity mapping in NiFiProperties.
  */
 public class IdentityMapping {
 
+    public enum Transform {
+        NONE,
+        UPPER,
+        LOWER
+    }
+
     private final String key;
     private final Pattern pattern;
     private final String replacementValue;
+    private final Transform transform;
 
     public IdentityMapping(String key, Pattern pattern, String replacementValue) {
+        this(key, pattern, replacementValue, NONE);
+    }
+
+    public IdentityMapping(String key, Pattern pattern, String replacementValue, Transform transform) {
         this.key = key;
         this.pattern = pattern;
         this.replacementValue = replacementValue;
+        this.transform = transform;
     }
 
     public String getKey() {
@@ -45,4 +59,7 @@ public class IdentityMapping {
         return replacementValue;
     }
 
+    public Transform getTransform() {
+        return transform;
+    }
 }

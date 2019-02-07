@@ -117,6 +117,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     public static final String PROP_SYNC_INTERVAL = "Sync Interval";
 
     private List<IdentityMapping> identityMappings;
+    private List<IdentityMapping> groupMappings;
     private NiFiRegistryProperties properties;
 
     private ScheduledExecutorService ldapSync;
@@ -350,6 +351,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
         // extract the identity mappings from nifi-registry.properties if any are provided
         identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
+        groupMappings = Collections.unmodifiableList(IdentityMappingUtil.getGroupMappings(properties));
 
         // set the base environment is necessary
         if (!baseEnvironment.isEmpty()) {
@@ -704,7 +706,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             }
         }
 
-        return name;
+        return IdentityMappingUtil.mapIdentity(name, groupMappings);
     }
 
     private String getReferencedGroupValue(final DirContextOperations ctx) {

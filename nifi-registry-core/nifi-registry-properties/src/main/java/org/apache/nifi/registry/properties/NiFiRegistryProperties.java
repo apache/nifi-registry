@@ -53,6 +53,10 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_IDENTITY_PROVIDER = "nifi.registry.security.identity.provider";
     public static final String SECURITY_IDENTITY_MAPPING_PATTERN_PREFIX = "nifi.registry.security.identity.mapping.pattern.";
     public static final String SECURITY_IDENTITY_MAPPING_VALUE_PREFIX = "nifi.registry.security.identity.mapping.value.";
+    public static final String SECURITY_IDENTITY_MAPPING_TRANSFORM_PREFIX = "nifi.registry.security.identity.mapping.transform.";
+    public static final String SECURITY_GROUP_MAPPING_PATTERN_PREFIX = "nifi.registry.security.group.mapping.pattern.";
+    public static final String SECURITY_GROUP_MAPPING_VALUE_PREFIX = "nifi.registry.security.group.mapping.value.";
+    public static final String SECURITY_GROUP_MAPPING_TRANSFORM_PREFIX = "nifi.registry.security.group.mapping.transform.";
 
     public static final String EXTENSION_DIR_PREFIX = "nifi.registry.extension.dir.";
 
