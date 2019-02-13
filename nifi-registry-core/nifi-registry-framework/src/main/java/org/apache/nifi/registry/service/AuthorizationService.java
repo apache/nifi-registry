@@ -361,7 +361,15 @@ public class AuthorizationService {
         readLock.lock();
         try {
             return accessPolicyProvider.getAccessPolicies().stream()
-                    .filter(accessPolicy -> accessPolicy.getUsers().contains(userIdentifier))
+                    .filter(accessPolicy -> {
+                        if (accessPolicy.getUsers().contains(userIdentifier)) {
+                            return true;
+                        }
+                        return accessPolicy.getGroups().stream().anyMatch(g -> {
+                            final Group group = userGroupProvider.getGroup(g);
+                            return group != null && group.getUsers().contains(userIdentifier);
+                        });
+                    })
                     .map(this::accessPolicyToSummaryDTO)
                     .collect(Collectors.toList());
         } finally {
@@ -572,7 +580,7 @@ public class AuthorizationService {
         }
 
         Collection<Tenant> userTenants = userGroup.getUsers() != null
-                ? userGroup.getUsers().stream().map(this::tenantIdToDTO).collect(Collectors.toSet()) : null;
+                ? userGroup.getUsers().stream().map(this::tenantIdToDTO).filter(Objects::nonNull).collect(Collectors.toSet()) : null;
         Collection<AccessPolicySummary> accessPolicySummaries = getAccessPolicySummariesForUserGroup(userGroup.getIdentifier());
 
         UserGroup userGroupDTO = new UserGroup(userGroup.getIdentifier(), userGroup.getName());

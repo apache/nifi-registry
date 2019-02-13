@@ -106,25 +106,36 @@ class AuthorizationServiceSpec extends Specification {
     def "get user"() {
 
         setup:
-        userGroupProvider.getGroups() >> new HashSet<Group>()
-        accessPolicyProvider.getAccessPolicies() >> new HashSet<AccessPolicy>()
+        def user1 = new AuthUser.Builder().identifier("user-id-1").identity("user1").build()
+        def group1 = new Group.Builder().identifier("group-id-1").name("group1").addUser("user-id-1").build()
+        def apBuilder = new org.apache.nifi.registry.security.authorization.AccessPolicy.Builder().resource("/fake-resource").action(RequestAction.READ)
+        def ap1 = apBuilder.identifier("policy-1").addUser("user-id-1").build()
+        def ap2 = apBuilder.identifier("policy-2").clearUsers().addGroup("group-id-1").build()
+        def ap3 = apBuilder.identifier("policy-3").clearGroups().addGroup("does-not-exist").build()
+        userGroupProvider.getUser("does-not-exist") >> null
+        userGroupProvider.getUser("user-id-1") >> user1
+        userGroupProvider.getGroup("group-id-1") >> group1
+        userGroupProvider.getGroup("does-not-exist") >> null
+        userGroupProvider.getGroups() >> new HashSet<Group>([group1])
+        accessPolicyProvider.getAccessPolicies() >> new HashSet<>([ap1, ap2, ap3])
 
 
         when: "get user for existing user identifier"
-        userGroupProvider.getUser("userId") >> new AuthUser.Builder().identifier("userId").identity("username").build()
-        def user1 = authorizationService.getUser("userId")
+        def userDto1 = authorizationService.getUser("user-id-1")
 
         then: "user is returned converted to DTO"
-        with(user1) {
-            identifier == "userId"
-            identity == "username"
+        with(userDto1) {
+            identifier == "user-id-1"
+            identity == "user1"
+            userGroups.size() == 1
+            userGroups[0].identifier == "group-id-1"
+            accessPolicies.size() == 2
+            accessPolicies.stream().noneMatch({it.identifier == "policy-3"})
         }
 
 
-        when: "get user for non-existent user identifier"
-        userGroupProvider.getUser("nonExistentUserId") >> null
-        userGroupProvider.getGroup("nonExistentUserId") >> null
-        def user2 = authorizationService.getUser("nonExistentUserId")
+        when: "get user for non-existent tenant identifier"
+        def user2 = authorizationService.getUser("does-not-exist")
 
         then: "no user is returned"
         user2 == null
@@ -374,7 +385,6 @@ class AuthorizationServiceSpec extends Specification {
         p2 == null
 
     }
-
 
     def "update access policy"() {
 
