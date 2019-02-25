@@ -388,7 +388,16 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             }
 
             // schedule the background thread to load the users/groups
-            ldapSync.scheduleWithFixedDelay(() -> load(context), syncInterval, syncInterval, TimeUnit.MILLISECONDS);
+            ldapSync.scheduleWithFixedDelay(() -> {
+                try {
+                    load(context);
+                } catch (final Throwable t) {
+                    logger.error("Failed to sync User/Groups from LDAP due to {}. Will try again in {} millis.", new Object[] {t.toString(), syncInterval});
+                    if (logger.isDebugEnabled()) {
+                        logger.error("", t);
+                    }
+                }
+            }, syncInterval, syncInterval, TimeUnit.MILLISECONDS);
         } catch (final AuthorizationAccessException e) {
             throw new SecurityProviderCreationException(e);
         }
@@ -493,7 +502,9 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                                 final Attribute attributeGroups = ctx.getAttributes().get(userGroupNameAttribute);
 
                                 if (attributeGroups == null) {
-                                    logger.warn("User group name attribute [" + userGroupNameAttribute + "] does not exist. Ignoring group membership.");
+                                    logger.debug("User group name attribute [{}] does not exist for {}. " +
+                                            "This may be due to misconfiguration or this user record may not have any group membership attributes defined. " +
+                                            "Ignoring group membership. ", userGroupNameAttribute, identity);
                                 } else {
                                     try {
                                         final NamingEnumeration<String> groupValues = (NamingEnumeration<String>) attributeGroups.getAll();
@@ -549,7 +560,9 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                             if (!StringUtils.isBlank(groupMemberAttribute)) {
                                 Attribute attributeUsers = ctx.getAttributes().get(groupMemberAttribute);
                                 if (attributeUsers == null) {
-                                    logger.warn("Group member attribute [" + groupMemberAttribute + "] does not exist. Ignoring group membership.");
+                                    logger.debug("Group member attribute [{}] does not exist for {}. " +
+                                            "This may be due to misconfiguration or this group record may not have any user attributes defined. " +
+                                            "Ignoring group membership.", groupMemberAttribute, name);
                                 } else {
                                     try {
                                         final NamingEnumeration<String> userValues = (NamingEnumeration<String>) attributeUsers.getAll();
@@ -564,7 +577,9 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                                                 if (user != null) {
                                                     groupToUserIdentifierMappings.computeIfAbsent(referencedGroupValue, g -> new HashSet<>()).add(user.getIdentifier());
                                                 } else {
-                                                    logger.warn(String.format("%s contains member %s but that user was not found while searching users. Ignoring group membership.", name, userValue));
+                                                    logger.debug(String.format("%s contains member %s but that user was not found while searching users. " +
+                                                            "This may be due to misconfiguration or because that user is not a NiFi Registry user as defined by the User Search Base and Filter. " +
+                                                            "Ignoring group membership.", name, userValue));
                                                 }
                                             } else {
                                                 // since performUserSearch is false, then the referenced group attribute must be blank... the user value must be the dn
@@ -608,8 +623,9 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
                 // any remaining groupDn's were referenced by a user but not found while searching groups
                 groupToUserIdentifierMappings.forEach((referencedGroupValue, userIdentifiers) -> {
-                    logger.warn(String.format("[%s] are members of %s but that group was not found while searching users. Ignoring group membership.",
-                            StringUtils.join(userIdentifiers, ", "), referencedGroupValue));
+                    logger.debug(String.format("[%s] are members of %s but that group was not found while searching groups. " +
+                                    "This may be due to misconfiguration or because that group is not a NiFi Registry group as defined by the Group Search Base and Filter. " +
+                                    "Ignoring group membership.", StringUtils.join(userIdentifiers, ", "), referencedGroupValue));
                 });
             } else {
                 // since performGroupSearch is false, then the referenced user attribute must be blank... the group value must be the dn
@@ -633,6 +649,16 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                     // build the group
                     groupList.add(groupBuilder.build());
                 });
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("-------------------------------------");
+                logger.debug("Loaded the following users from LDAP:");
+                userList.forEach((user) -> logger.debug(" - " + user));
+                logger.debug("--------------------------------------");
+                logger.debug("Loaded the following groups from LDAP:");
+                groupList.forEach((group) -> logger.debug(" - " + group));
+                logger.debug("--------------------------------------");
             }
 
             // record the updated tenants

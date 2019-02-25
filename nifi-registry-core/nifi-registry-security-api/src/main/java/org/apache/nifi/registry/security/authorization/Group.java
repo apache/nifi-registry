@@ -89,7 +89,7 @@ public class Group {
 
     @Override
     public String toString() {
-        return String.format("identifier[%s], name[%s]", getIdentifier(), getName());
+        return String.format("identifier[%s], name[%s], users[%s]", getIdentifier(), getName(), String.join(", ", users));
     }
 
 
