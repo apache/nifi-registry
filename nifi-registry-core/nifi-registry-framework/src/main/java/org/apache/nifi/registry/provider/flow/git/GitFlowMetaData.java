@@ -18,13 +18,11 @@ package org.apache.nifi.registry.provider.flow.git;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -151,11 +149,20 @@ class GitFlowMetaData {
                         "Please commit your changes and push to remote repository.");
             }
 
-            final PullResult pullResult = git.pull().setRemote(this.remoteToPush)
-                                        .setRemoteBranchName(gitRepo.getFullBranch()).call();
-            if (pullResult.isSuccessful()){
+            final PullCommand pullCommand = git.pull().setRemote(this.remoteToPush)
+                    .setRemoteBranchName(gitRepo.getFullBranch());
+
+            if (credentialsProvider != null) {
+                pullCommand.setCredentialsProvider(credentialsProvider);
+            }
+
+            final PullResult pullResult = pullCommand.call();
+            if (!pullResult.isSuccessful()) {
                 throw new IOException(
                         format("The pull command was not successful because '%s'.", pullResult.toString()));
+            } else {
+                final Ref ref = git.reset().setMode(ResetCommand.ResetType.HARD).call();
+                logger.info("reset git repository to {}, because pull request was not successful.", ref.toString());
             }
         }
     }
@@ -348,7 +355,7 @@ class GitFlowMetaData {
             if (!flow.hasVersion(version)) {
                 final Flow.FlowPointer pointer = new Flow.FlowPointer(flowSnapshotFilename);
                 final File flowSnapshotFile = new File(new File(backetFilePath).getParent(), flowSnapshotFilename);
-                final ObjectId objectId = flowSnapshotObjectIds.get(flowSnapshotFile.getPath());
+                final ObjectId objectId = flowSnapshotObjectIds.get(flowSnapshotFile.getPath().replaceAll("\\\\", "/"));
                 if (objectId == null) {
                     logger.warn("Git object id for Flow {} version {} with path {} in bucket {}:{} was not found. Ignoring this entry.",
                             flowId, version, flowSnapshotFile.getPath(), bucket.getBucketDirName(), bucket.getBucketId());
