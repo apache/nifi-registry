@@ -26,7 +26,7 @@ The Docker image can be built using the following command:
     # user @ puter in ~/path/to/apache/nifi-registry/nifi-registry-docker/dockerhub    
     $ docker build -t apache/nifi-registry:latest .
 
-This will result in an image tagged apache/nifi:latest
+This will result in an image tagged apache/nifi-registry:latest
 
     $ docker images
     > REPOSITORY               TAG           IMAGE ID            CREATED                  SIZE
