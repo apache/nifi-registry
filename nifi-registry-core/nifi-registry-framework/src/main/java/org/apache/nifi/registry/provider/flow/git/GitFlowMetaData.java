@@ -189,6 +189,8 @@ class GitFlowMetaData {
                 logger.info("reset git repository to {}, because pull request was not successful.", ref.toString());
                 throw new IOException(
                         format("The pull command was not successful because '%s'.", pullResult.toString()));
+            } else {
+                this.loadGitRepository(gitProjectRootDir);
             }
         }
     }
