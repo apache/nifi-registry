@@ -16,8 +16,6 @@
  */
 package org.apache.nifi.registry.service;
 
-import com.fasterxml.jackson.core.Versioned;
-import io.swagger.annotations.OAuth2Definition;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -42,20 +40,8 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.flow.FlowSnapshotContext;
-import org.apache.nifi.registry.flow.VersionedComponent;
-import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
-import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.flow.diff.ComparableDataFlow;
-import org.apache.nifi.registry.flow.diff.ConciseEvolvingDifferenceDescriptor;
-import org.apache.nifi.registry.flow.diff.FlowComparator;
-import org.apache.nifi.registry.flow.diff.FlowComparison;
-import org.apache.nifi.registry.flow.diff.FlowDifference;
-import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
-import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
+import org.apache.nifi.registry.flow.*;
+import org.apache.nifi.registry.flow.diff.*;
 import org.apache.nifi.registry.provider.ProviderSynchronization;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
@@ -73,11 +59,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -1289,10 +1271,10 @@ public class RegistryService {
                 "because the current provider does not support synchronization tasks.");
     }
 
-    public void synchronizeRepositoryRemotely() throws IOException {
+    public void getLatestChangesOfRemoteRepository() throws IOException {
         if (this.flowPersistenceProvider instanceof ProviderSynchronization){
             final ProviderSynchronization syncProvider = (ProviderSynchronization)this.flowPersistenceProvider;
-            syncProvider.synchronizeRepositoryRemotely();
+            syncProvider.getLatestChangesOfRemoteRepository();
             return;
         }
 

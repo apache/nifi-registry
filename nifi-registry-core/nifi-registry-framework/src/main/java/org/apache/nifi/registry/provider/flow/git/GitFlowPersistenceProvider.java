@@ -416,7 +416,7 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
     }
 
     @Override
-    public void synchronizeRepositoryRemotely() throws IOException {
+    public void getLatestChangesOfRemoteRepository() throws IOException {
         try {
             this.flowMetaData.pullChanges(flowStorageDir);
         }catch(GitAPIException apiException){

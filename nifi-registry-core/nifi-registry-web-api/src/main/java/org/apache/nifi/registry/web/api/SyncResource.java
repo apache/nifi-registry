@@ -146,10 +146,10 @@ public class SyncResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
-    public Response synchronizeRepositoryRemotely() throws IOException {
+    public Response getLatestChangesOfRemoteRepository() throws IOException {
         authorizeAccess(RequestAction.WRITE);
 
-        registryService.synchronizeRepositoryRemotely();
+        registryService.getLatestChangesOfRemoteRepository();
         Collection<Bucket> buckets = syncRegistryMetadata();
         return Response.status(Response.Status.OK).entity(buckets).build();
     }

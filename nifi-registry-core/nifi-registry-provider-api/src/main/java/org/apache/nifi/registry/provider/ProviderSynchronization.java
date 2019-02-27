@@ -12,7 +12,7 @@ public interface ProviderSynchronization {
     /**
      * synchronizes the repository with the remote repository (pulling changes)
      */
-    void synchronizeRepositoryRemotely() throws IOException;
+    void getLatestChangesOfRemoteRepository() throws IOException;
 
     /**
      * reset repository completely and re-synchronize with the remote repository
