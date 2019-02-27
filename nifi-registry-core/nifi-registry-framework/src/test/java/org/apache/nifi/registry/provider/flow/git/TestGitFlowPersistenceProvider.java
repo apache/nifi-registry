@@ -70,7 +70,7 @@ public class TestGitFlowPersistenceProvider {
         final Map<String, String> properties = new HashMap<>();
         properties.put(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP, "target/non-existing");
         assertCreationFailure(properties,
-                e -> assertEquals("'target/non-existing' is not a directory or does not exist.", e.getCause().getMessage()));
+                e -> assertEquals("'target" + File.separator + "non-existing' is not a directory or does not exist.", e.getCause().getMessage()));
     }
 
     @Test
