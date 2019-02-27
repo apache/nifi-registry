@@ -81,7 +81,7 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "enforce sync of buckets with persistence provider",
+            value = "enforce sync of metadata (buckets, etc.) with the data of the underlying persistence provider",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -93,21 +93,15 @@ public class SyncResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
-    public Response syncBuckets() {
+    public Response syncMetaDataWithProviderData() {
         authorizeAccess(RequestAction.WRITE);
 
-        Collection<Bucket> buckets = registryService.syncBuckets();
-        for (Bucket bucket : buckets){
-            publish(EventFactory.bucketCreated(bucket));
-            permissionsService.populateBucketPermissions(bucket);
-            linkService.populateLinks(bucket);
-        }
+        Collection<Bucket> buckets = syncRegistryMetadata();
 
         return Response.status(Response.Status.OK).entity(buckets).build();
     }
 
     @PUT
-    @Path("{repositoryURI}")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
@@ -124,21 +118,13 @@ public class SyncResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
     public Response resetProviderRepository(
-            @PathParam("repositoryURI")
-            @ApiParam("reset repository to repositoryURI.")
             String repositoryURL
     ) throws URISyntaxException, IOException {
         authorizeAccess(RequestAction.WRITE);
 
         URI uri = new URI(repositoryURL);
         registryService.resetProviderRepository(uri);
-
-        Collection<Bucket> buckets = registryService.syncBuckets();
-        for (Bucket bucket : buckets){
-            publish(EventFactory.bucketCreated(bucket));
-            permissionsService.populateBucketPermissions(bucket);
-            linkService.populateLinks(bucket);
-        }
+        Collection<Bucket> buckets = syncRegistryMetadata();
 
         return Response.status(Response.Status.OK).entity(buckets).build();
     }
@@ -148,7 +134,7 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "reset provider repository",
+            value = "get latest changes of remote provider repository and rebuild nifi-registry metadata.",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -164,17 +150,19 @@ public class SyncResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.WRITE);
 
         registryService.synchronizeRepositoryRemotely();
+        Collection<Bucket> buckets = syncRegistryMetadata();
+        return Response.status(Response.Status.OK).entity(buckets).build();
+    }
 
+    private Collection<Bucket> syncRegistryMetadata() {
         Collection<Bucket> buckets = registryService.syncBuckets();
-        for (Bucket bucket : buckets){
+        for (Bucket bucket : buckets) {
             publish(EventFactory.bucketCreated(bucket));
             permissionsService.populateBucketPermissions(bucket);
             linkService.populateLinks(bucket);
         }
-
-        return Response.status(Response.Status.OK).entity(buckets).build();
+        return buckets;
     }
-
 
     private void authorizeAccess(RequestAction actionType) throws AccessDeniedException {
         final Authorizable bucketsAuthorizable = authorizableLookup.getBucketsAuthorizable();

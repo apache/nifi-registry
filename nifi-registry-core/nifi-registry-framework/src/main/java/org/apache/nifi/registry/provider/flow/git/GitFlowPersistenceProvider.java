@@ -23,10 +23,10 @@ import org.apache.nifi.registry.metadata.BucketMetadata;
 import org.apache.nifi.registry.metadata.FlowMetadata;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
+import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.provider.ProviderSynchronization;
-import org.apache.nifi.registry.service.MetadataService;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -39,7 +39,10 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.sql.Date;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -91,7 +94,7 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
             flowMetaData.loadGitRepository(flowStorageDir);
             flowMetaData.startPushThread();
             logger.info("Configured GitFlowPersistenceProvider with Flow Storage Directory {}",
-                    new Object[] {flowStorageDir.getAbsolutePath()});
+                    new Object[]{flowStorageDir.getAbsolutePath()});
         } catch (IOException|GitAPIException e) {
             throw new ProviderCreationException("Failed to load a git repository " + flowStorageDir, e);
         }
@@ -426,6 +429,8 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
         try {
             this.flowMetaData.resetGitRepository(flowStorageDir, repositoryURI);
         } catch (GitAPIException e) {
+            throw new IOException(e);
+        } catch (InterruptedException e) {
             throw new IOException(e);
         }
     }
