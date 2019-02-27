@@ -1278,7 +1278,7 @@ public class RegistryService {
             return;
         }
 
-        throw new IOException("Cannot reset provider repositoy "+
+        throw new IOException("Cannot get latest changes of remote repositoy " +
                 "because the current provider does not support synchronization tasks.");
     }
 
