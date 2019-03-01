@@ -33,6 +33,7 @@
         <module>nifi-registry-core</module>
         <module>nifi-registry-extensions</module>
         <module>nifi-registry-assembly</module>
+        <module>nifi-registry-toolkit</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
