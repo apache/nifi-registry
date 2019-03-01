@@ -26,7 +26,6 @@ import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
-import org.apache.nifi.registry.provider.ProviderSynchronization;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -411,8 +410,8 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
 
     @Override
-    public void synchronizeBuckets() {
-
+    public Boolean canBeSynchronized() {
+        return true;
     }
 
     @Override

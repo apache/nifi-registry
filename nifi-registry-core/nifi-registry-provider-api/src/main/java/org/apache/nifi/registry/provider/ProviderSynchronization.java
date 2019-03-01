@@ -4,11 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 
 public interface ProviderSynchronization {
-    /**
-     * synchronizes the buckets with the repository content
-     */
-    void synchronizeBuckets();
-
+    Boolean canBeSynchronized();
     /**
      * synchronizes the repository with the remote repository (pulling changes)
      */

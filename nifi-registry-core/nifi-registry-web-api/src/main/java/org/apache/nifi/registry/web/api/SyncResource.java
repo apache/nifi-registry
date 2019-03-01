@@ -78,6 +78,7 @@ public class SyncResource extends AuthorizableApplicationResource {
 
 
     @POST
+    @Path("local")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(

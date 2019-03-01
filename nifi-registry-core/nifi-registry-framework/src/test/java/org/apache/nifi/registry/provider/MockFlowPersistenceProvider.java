@@ -16,10 +16,12 @@
  */
 package org.apache.nifi.registry.provider;
 
+import org.apache.nifi.registry.flow.FlowPersistenceException;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
-import org.apache.nifi.registry.flow.FlowPersistenceException;
 
+import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 
 public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
@@ -53,5 +55,20 @@ public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
 
     public Map<String,String> getProperties() {
         return properties;
+    }
+
+    @Override
+    public Boolean canBeSynchronized() {
+        return false;
+    }
+
+    @Override
+    public void getLatestChangesOfRemoteRepository() throws IOException {
+
+    }
+
+    @Override
+    public void resetRepository(URI repositoryURI) throws IOException {
+
     }
 }

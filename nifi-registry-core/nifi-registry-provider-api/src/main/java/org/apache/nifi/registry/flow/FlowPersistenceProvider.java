@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.flow;
 
 import org.apache.nifi.registry.provider.Provider;
+import org.apache.nifi.registry.provider.ProviderSynchronization;
 
 /**
  * A service that can store and retrieve flow contents.
@@ -27,7 +28,7 @@ import org.apache.nifi.registry.provider.Provider;
  * NOTE: Although this interface is intended to be an extension point, it is not yet considered stable and thus may
  * change across releases until the registry matures.
  */
-public interface FlowPersistenceProvider extends Provider {
+public interface FlowPersistenceProvider extends Provider, ProviderSynchronization {
 
     /**
      * Persists the serialized content.

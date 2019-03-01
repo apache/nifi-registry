@@ -27,12 +27,8 @@ import org.apache.nifi.registry.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -183,4 +179,18 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
         return new File(flowStorageDir, snapshotFilename);
     }
 
+    @Override
+    public Boolean canBeSynchronized() {
+        return false;
+    }
+
+    @Override
+    public void getLatestChangesOfRemoteRepository() throws IOException {
+
+    }
+
+    @Override
+    public void resetRepository(URI repositoryURI) throws IOException {
+
+    }
 }

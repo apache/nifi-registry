@@ -24,12 +24,7 @@ import org.apache.nifi.registry.diff.ComponentDifference;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.flow.VersionedFlow;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
-import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.flow.VersionedProcessor;
+import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
 import org.apache.nifi.registry.service.extension.ExtensionService;
@@ -46,29 +41,11 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class TestRegistryService {
 
@@ -1237,4 +1214,35 @@ public class TestRegistryService {
             return flowEntity;
         };
     }
+
+    // -----------------Test Buckets Sync Service Method---------------------
+
+    @Test
+    public void testSyncBucketsMetadata() {
+        when(flowPersistenceProvider.getFlowContent(
+                anyString(), anyString(), anyInt()
+        )).thenReturn(new byte[10], new byte[10]);
+
+        final VersionedProcessGroup pgA = createVersionedProcessGroupA();
+        final VersionedProcessGroup pgB = createVersionedProcessGroupB();
+        when(snapshotSerializer.deserialize(any())).thenReturn(pgA, pgB);
+
+        // getFlowDiff orders the changes in ascending order of version number regardless of param order
+        final VersionedFlowDifference diff = registryService.getFlowDiff(
+                "bucketIdentifier", "flowIdentifier", 2, 1);
+
+        assertNotNull(diff);
+        Optional<ComponentDifferenceGroup> nameChangedComponent = diff.getComponentDifferenceGroups().stream()
+                .filter(p -> p.getComponentId().equals("ProcessorFirstV1")).findFirst();
+
+        assertTrue(nameChangedComponent.isPresent());
+
+        ComponentDifference nameChangeDifference = nameChangedComponent.get().getDifferences().stream()
+                .filter(d -> d.getDifferenceType().equals("NAME_CHANGED")).findFirst().get();
+
+        assertEquals("ProcessorFirstV1", nameChangeDifference.getValueA());
+        assertEquals("ProcessorFirstV2", nameChangeDifference.getValueB());
+    }
+
+    // -------------------------------------------------------------------
 }
