@@ -26,6 +26,6 @@ public enum EventFieldName {
     EXTENSION_BUNDLE_ID,
     VERSION,
     USER,
-    COMMENT;
-
+    USER_GROUP,
+    COMMENT
 }

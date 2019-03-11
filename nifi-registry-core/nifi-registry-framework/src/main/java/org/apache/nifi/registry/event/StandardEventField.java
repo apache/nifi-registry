@@ -20,6 +20,8 @@ import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.hook.EventField;
 import org.apache.nifi.registry.hook.EventFieldName;
 
+import java.util.Objects;
+
 /**
  * Standard implementation of EventField.
  */
@@ -46,4 +48,25 @@ public class StandardEventField implements EventField {
         return value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        StandardEventField that = (StandardEventField) o;
+        return name == that.name && Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, value);
+    }
+
+    @Override
+    public String toString() {
+        return "StandardEventField{name=" + name + ", value='" + value + '\'' + '}';
+    }
 }

@@ -27,6 +27,7 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
+import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.Authorizer;
@@ -127,6 +128,7 @@ public class TenantResource extends AuthorizableApplicationResource {
         authorizeAccess(RequestAction.WRITE);
 
         User createdUser = authorizationService.createUser(requestUser);
+        publish(EventFactory.userCreated(createdUser));
 
         String locationUri = generateUserUri(createdUser);
         return generateCreatedResponse(URI.create(locationUri), createdUser).build();
@@ -264,6 +266,7 @@ public class TenantResource extends AuthorizableApplicationResource {
 
             throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
+        publish(EventFactory.userUpdated(updatedUser));
 
         return generateOkResponse(updatedUser).build();
     }
@@ -311,6 +314,8 @@ public class TenantResource extends AuthorizableApplicationResource {
 
             throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
+        publish(EventFactory.userDeleted(user));
+
         return generateOkResponse(user).build();
     }
 
@@ -364,6 +369,7 @@ public class TenantResource extends AuthorizableApplicationResource {
         }
 
         UserGroup createdGroup = authorizationService.createUserGroup(requestUserGroup);
+        publish(EventFactory.userGroupCreated(createdGroup));
 
         String locationUri = generateUserGroupUri(createdGroup);
         return generateCreatedResponse(URI.create(locationUri), createdGroup).build();
@@ -500,6 +506,7 @@ public class TenantResource extends AuthorizableApplicationResource {
 
             throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
+        publish(EventFactory.userGroupUpdated(updatedUserGroup));
 
         return generateOkResponse(updatedUserGroup).build();
     }
@@ -546,6 +553,7 @@ public class TenantResource extends AuthorizableApplicationResource {
 
             throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
+        publish(EventFactory.userGroupDeleted(userGroup));
 
         return generateOkResponse(userGroup).build();
     }

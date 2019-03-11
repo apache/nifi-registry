@@ -77,6 +77,24 @@ public enum EventType {
             EventFieldName.EXTENSION_BUNDLE_ID,
             EventFieldName.VERSION,
             EventFieldName.USER
+    ),
+    CREATE_USER(
+            EventFieldName.USER
+    ),
+    UPDATE_USER(
+            EventFieldName.USER
+    ),
+    DELETE_USER(
+            EventFieldName.USER
+    ),
+    CREATE_USER_GROUP(
+            EventFieldName.USER_GROUP
+    ),
+    UPDATE_USER_GROUP(
+            EventFieldName.USER_GROUP
+    ),
+    DELETE_USER_GROUP(
+            EventFieldName.USER_GROUP
     )
     ;
 
