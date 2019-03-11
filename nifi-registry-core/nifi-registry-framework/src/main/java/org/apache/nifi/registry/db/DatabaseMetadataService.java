@@ -23,6 +23,7 @@ import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.BundleEntity;
 import org.apache.nifi.registry.db.entity.BundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.BundleVersionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionAdditionalDetailsEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionProvidedServiceApiEntity;
 import org.apache.nifi.registry.db.entity.ExtensionRestrictionEntity;
@@ -58,6 +59,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -847,11 +849,13 @@ public class DatabaseMetadataService implements MetadataService {
                 "e.display_name AS DISPLAY_NAME, " +
                 "e.type AS TYPE, " +
                 "e.content AS CONTENT," +
+                "e.has_additional_details AS HAS_ADDITIONAL_DETAILS, " +
                 "eb.id AS BUNDLE_ID, " +
                 "eb.group_id AS GROUP_ID, " +
                 "eb.artifact_id AS ARTIFACT_ID, " +
                 "eb.bundle_type AS BUNDLE_TYPE, " +
                 "ebv.version AS VERSION, " +
+                "ebv.system_api_version AS SYSTEM_API_VERSION, " +
                 "b.id AS BUCKET_ID, " +
                 "b.name as BUCKET_NAME " +
             "FROM " +
@@ -874,8 +878,9 @@ public class DatabaseMetadataService implements MetadataService {
                     "DISPLAY_NAME, " +
                     "TYPE, " +
                     "CONTENT, " +
-                    "ADDITIONAL_DETAILS " +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "ADDITIONAL_DETAILS, " +
+                    "HAS_ADDITIONAL_DETAILS " +
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         jdbcTemplate.update(insertExtensionSql,
                 extension.getId(),
@@ -884,7 +889,8 @@ public class DatabaseMetadataService implements MetadataService {
                 extension.getDisplayName(),
                 extension.getExtensionType().name(),
                 extension.getContent(),
-                extension.getAdditionalDetails()
+                extension.getAdditionalDetails(),
+                extension.getAdditionalDetails() != null ? 1 : 0
         );
 
         // insert tags...
@@ -932,6 +938,22 @@ public class DatabaseMetadataService implements MetadataService {
         final String selectSql = BASE_EXTENSION_SQL + " AND e.bundle_version_id = ? AND e.name = ?";
         try {
             return jdbcTemplate.queryForObject(selectSql, new ExtensionEntityRowMapper(), bundleVersionId, name);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public ExtensionAdditionalDetailsEntity getExtensionAdditionalDetails(final String bundleVersionId, final String name) {
+        final String selectSql = "SELECT id, additional_details FROM extension WHERE bundle_version_id = ? AND name = ?";
+        try {
+            final Object[] args = {bundleVersionId, name};
+            return jdbcTemplate.queryForObject(selectSql, args, (rs, i) -> {
+                final ExtensionAdditionalDetailsEntity entity = new ExtensionAdditionalDetailsEntity();
+                entity.setExtensionId(rs.getString("ID"));
+                entity.setAdditionalDetails(Optional.ofNullable(rs.getString("ADDITIONAL_DETAILS")));
+                return entity;
+            });
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

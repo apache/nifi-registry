@@ -343,7 +343,6 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @ApiOperation(
             value = "Gets the information about the extension in the extension bundle specified by the given bucket, group, artifact, and version",
             response = org.apache.nifi.registry.extension.component.manifest.Extension.class,
-            responseContainer = "List",
             extensions = {
                     @Extension(name = "access-policy", properties = {
                             @ExtensionProperty(name = "action", value = "read"),
@@ -379,6 +378,94 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
         final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
         final org.apache.nifi.registry.extension.component.manifest.Extension extension = registryService.getExtension(bundleVersion, name);
         return Response.ok(extension).build();
+    }
+
+    @GET
+    @Path("{bucketName}/{groupId}/{artifactId}/{version}/extensions/{name}/docs")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    @ApiOperation(
+            value = "Gets the documentation for the given extension",
+            response = String.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getExtensionRepoVersionExtensionDocs(
+            @PathParam("bucketName")
+            @ApiParam("The bucket name")
+                final String bucketName,
+            @PathParam("groupId")
+            @ApiParam("The group identifier")
+                final String groupId,
+            @PathParam("artifactId")
+            @ApiParam("The artifact identifier")
+                final String artifactId,
+            @PathParam("version")
+            @ApiParam("The version")
+                final String version,
+            @PathParam("name")
+            @ApiParam("The fully qualified name of the extension")
+                final String name
+    ) {
+        final Bucket bucket = registryService.getBucketByName(bucketName);
+        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
+
+        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
+        final StreamingOutput streamingOutput = (output) -> registryService.writeExtensionDocs(bundleVersion, name, output);
+        return Response.ok(streamingOutput).build();
+    }
+
+    @GET
+    @Path("{bucketName}/{groupId}/{artifactId}/{version}/extensions/{name}/docs/additional-details")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    @ApiOperation(
+            value = "Gets the additional details documentation for the given extension",
+            response = String.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getExtensionRepoVersionExtensionAdditionalDetailsDocs(
+            @PathParam("bucketName")
+            @ApiParam("The bucket name")
+                final String bucketName,
+            @PathParam("groupId")
+            @ApiParam("The group identifier")
+                final String groupId,
+            @PathParam("artifactId")
+            @ApiParam("The artifact identifier")
+                final String artifactId,
+            @PathParam("version")
+            @ApiParam("The version")
+                final String version,
+            @PathParam("name")
+            @ApiParam("The fully qualified name of the extension")
+                final String name
+    ) {
+        final Bucket bucket = registryService.getBucketByName(bucketName);
+        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
+
+        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
+        final StreamingOutput streamingOutput = (output) -> registryService.writeAdditionalDetailsDocs(bundleVersion, name, output);
+        return Response.ok(streamingOutput).build();
     }
 
     @GET

@@ -21,6 +21,7 @@ import org.apache.nifi.registry.db.entity.BucketItemEntity;
 import org.apache.nifi.registry.db.entity.BundleEntity;
 import org.apache.nifi.registry.db.entity.BundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.BundleVersionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionAdditionalDetailsEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.FlowEntity;
 import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
@@ -411,6 +412,15 @@ public interface MetadataService {
      * @return the extension
      */
     ExtensionEntity getExtensionByName(String bundleVersionId, String name);
+
+    /**
+     * Retrieves the additional details documentation for the given extension.
+     *
+     * @param bundleVersionId the bundle version id
+     * @param name the name of the extension
+     * @return the additional details content, or an empty optional
+     */
+    ExtensionAdditionalDetailsEntity getExtensionAdditionalDetails(String bundleVersionId, String name);
 
     /**
      * Retrieves all extensions in the given buckets.

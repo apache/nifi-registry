@@ -26,6 +26,7 @@ body {
     margin: 0 auto;
     display: block;
     font-family: "Open Sans","DejaVu Sans",sans-serif;
+	padding-left: 20px;
 }
 
 .title {
@@ -113,12 +114,20 @@ table tr:last-child td:last-child {
 	border-bottom-right-radius:3px;
 }
 
-td#allowable-values, td#default-value, td#name, td#value {
+td#default-value, td#name, td#value {
 	max-width: 200px;
+}
+
+td#allowable-values {
+	max-width: 300px;
 }
 
 td#description {
 	vertical-align: middle;
+}
+
+td#bundle-info {
+    max-width: 50px;
 }
 
 /* links */

@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.authorization.Permissions;
@@ -82,6 +83,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -487,6 +489,17 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         assertNotNull(fooNarV2SnapshotB3Extension);
         assertEquals(fooNarV2SnapshotB3ExtensionName, fooNarV2SnapshotB3Extension.getName());
 
+        // verify getting the docs for an extension for a specific bundle version
+        try (final InputStream docsInput = bundleVersionClient.getExtensionDocs(
+                createdFooNarV2SnapshotB3.getVersionMetadata().getBundleId(),
+                createdFooNarV2SnapshotB3.getVersionMetadata().getVersion(),
+                fooNarV2SnapshotB3ExtensionName
+        )) {
+            final String docsContent = IOUtils.toString(docsInput, StandardCharsets.UTF_8);
+            assertNotNull(docsContent);
+            assertTrue(docsContent.startsWith("<!DOCTYPE html>"));
+        }
+
         // verify getting bundles by bucket
         assertEquals(2, bundleClient.getByBucket(bundlesBucket.getIdentifier()).size());
         assertEquals(0, bundleClient.getByBucket(flowsBucket.getIdentifier()).size());
@@ -610,6 +623,10 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         assertNotNull(extensions);
         assertTrue(extensions.length > 0);
         checkExtensionMetadata(Stream.of(extensions).map(e -> e.getExtensionMetadata()).collect(Collectors.toSet()));
+        Stream.of(extensions).forEach(e -> {
+            assertNotNull(e.getLink());
+            assertNotNull(e.getLinkDocs());
+        });
 
         // verify the client methods for content input stream, content sha256, and extensions
         try (final InputStream repoVersionInputStream = extensionRepoClient.getVersionContent(bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString)) {
@@ -628,6 +645,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
             extensionList.forEach(em -> {
                 assertNotNull(em.getExtensionMetadata());
                 assertNotNull(em.getLink());
+                assertNotNull(em.getLinkDocs());
             });
 
             final String extensionName = extensionList.get(0).getExtensionMetadata().getName();
@@ -635,6 +653,15 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
                     bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString, extensionName);
             assertNotNull(extension);
             assertEquals(extensionName, extension.getName());
+
+            // verify getting the docs for an extension from extension repo
+            try (final InputStream docsInput = extensionRepoClient.getVersionExtensionDocs(
+                    bundlesBucketName, repoGroupId, repoArtifactId, repoVersionString, extensionName)
+            ) {
+                final String docsContent = IOUtils.toString(docsInput, StandardCharsets.UTF_8);
+                assertNotNull(docsContent);
+                assertTrue(docsContent.startsWith("<!DOCTYPE html>"));
+            }
         }
 
         final Optional<String> repoSha256HexDoesNotExist = extensionRepoClient.getVersionSha256(repoGroupId, repoArtifactId, "DOES-NOT-EXIST");
@@ -668,6 +695,8 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         allExtensions.getExtensions().forEach(e -> {
             assertNotNull(e.getName());
             assertNotNull(e.getDisplayName());
+            assertNotNull(e.getLink());
+            assertNotNull(e.getLinkDocs());
         });
 
         final ExtensionMetadataContainer processorExtensions = extensionClient.findExtensions(
