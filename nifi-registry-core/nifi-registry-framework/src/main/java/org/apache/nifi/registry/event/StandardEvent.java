@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Standard implementation of Event.
@@ -120,5 +121,27 @@ public class StandardEvent implements Event {
         public Event build() {
             return new StandardEvent(this);
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        StandardEvent that = (StandardEvent) o;
+        return eventType == that.eventType && Objects.equals(eventFields, that.eventFields);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventType, eventFields);
+    }
+
+    @Override
+    public String toString() {
+        return "StandardEvent{eventType=" + eventType + ", eventFields=" + eventFields + '}';
     }
 }

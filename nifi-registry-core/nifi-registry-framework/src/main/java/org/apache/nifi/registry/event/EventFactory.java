@@ -16,6 +16,8 @@
  */
 package org.apache.nifi.registry.event;
 
+import org.apache.nifi.registry.authorization.User;
+import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleVersion;
@@ -131,6 +133,54 @@ public class EventFactory {
                 .addField(EventFieldName.EXTENSION_BUNDLE_ID, bundleVersion.getVersionMetadata().getBundleId())
                 .addField(EventFieldName.VERSION, String.valueOf(bundleVersion.getVersionMetadata().getVersion()))
                 .addField(EventFieldName.USER, NiFiUserUtils.getNiFiUserIdentity())
+                .build();
+    }
+
+    public static Event userCreated(final User user) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.CREATE_USER)
+                .addField(EventFieldName.USER_ID, user.getIdentifier())
+                .addField(EventFieldName.USER_IDENTITY, user.getIdentity())
+                .build();
+    }
+
+    public static Event userUpdated(final User user) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.UPDATE_USER)
+                .addField(EventFieldName.USER_ID, user.getIdentifier())
+                .addField(EventFieldName.USER_IDENTITY, user.getIdentity())
+                .build();
+    }
+
+    public static Event userDeleted(final User user) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.DELETE_USER)
+                .addField(EventFieldName.USER_ID, user.getIdentifier())
+                .addField(EventFieldName.USER_IDENTITY, user.getIdentity())
+                .build();
+    }
+
+    public static Event userGroupCreated(final UserGroup userGroup) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.CREATE_USER_GROUP)
+                .addField(EventFieldName.USER_GROUP_ID, userGroup.getIdentifier())
+                .addField(EventFieldName.USER_GROUP_IDENTITY, userGroup.getIdentity())
+                .build();
+    }
+
+    public static Event userGroupUpdated(final UserGroup userGroup) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.UPDATE_USER_GROUP)
+                .addField(EventFieldName.USER_GROUP_ID, userGroup.getIdentifier())
+                .addField(EventFieldName.USER_GROUP_IDENTITY, userGroup.getIdentity())
+                .build();
+    }
+
+    public static Event userGroupDeleted(final UserGroup userGroup) {
+        return new StandardEvent.Builder()
+                .eventType(EventType.DELETE_USER_GROUP)
+                .addField(EventFieldName.USER_GROUP_ID, userGroup.getIdentifier())
+                .addField(EventFieldName.USER_GROUP_IDENTITY, userGroup.getIdentity())
                 .build();
     }
 }
