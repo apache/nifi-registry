@@ -32,6 +32,8 @@ public class BundleInfo {
     private String artifactId;
     private String version;
 
+    private String systemApiVersion;
+
     @ApiModelProperty(value = "The id of the bucket where the bundle is located")
     public String getBucketId() {
         return bucketId;
@@ -93,5 +95,14 @@ public class BundleInfo {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    @ApiModelProperty(value = "The version of the system API the bundle was built against")
+    public String getSystemApiVersion() {
+        return systemApiVersion;
+    }
+
+    public void setSystemApiVersion(String systemApiVersion) {
+        this.systemApiVersion = systemApiVersion;
     }
 }

@@ -275,15 +275,19 @@ public class TestLinkService {
     }
 
     @Test
-    public void testPopulateExtensionBundleVersionExtensionLinks() {
+    public void testPopulateExtensionBundleVersionExtensionMetadataLinks() {
         extensionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
-        linkService.populateLinks(extensionMetadata);
-        extensionMetadata.forEach(e -> Assert.assertEquals(
-                "bundles/" + e.getBundleInfo().getBundleId()
-                        + "/versions/" + e.getBundleInfo().getVersion()
-                        + "/extensions/" + e.getName(),
-                e.getLink().getUri().toString()));
+        extensionMetadata.forEach(i -> Assert.assertNull(i.getLinkDocs()));
 
+        linkService.populateLinks(extensionMetadata);
+
+        extensionMetadata.forEach(e -> {
+            final String extensionUri = "bundles/" + e.getBundleInfo().getBundleId()
+                    + "/versions/" + e.getBundleInfo().getVersion()
+                    + "/extensions/" + e.getName();
+            Assert.assertEquals(extensionUri, e.getLink().getUri().toString());
+            Assert.assertEquals(extensionUri + "/docs", e.getLinkDocs().getUri().toString());
+        });
     }
 
     @Test
@@ -343,13 +347,15 @@ public class TestLinkService {
     @Test
     public void testPopulateExtensionRepoExtensionMetdataFullLinks() {
         extensionRepoExtensionMetadata.forEach(i -> Assert.assertNull(i.getLink()));
+        extensionRepoExtensionMetadata.forEach(i -> Assert.assertNull(i.getLinkDocs()));
+
         linkService.populateFullLinks(extensionRepoExtensionMetadata, baseUri);
         extensionRepoExtensionMetadata.forEach(i -> {
             final BundleInfo bi = i.getExtensionMetadata().getBundleInfo();
-            Assert.assertEquals(
-                    BASE_URI + "/extension-repository/" + bi.getBucketName() + "/" + bi.getGroupId() + "/"
-                            + bi.getArtifactId() + "/" + bi.getVersion() + "/extensions/" + i.getExtensionMetadata().getName(),
-                    i.getLink().getUri().toString()); }
-        );
+            final String extensionUri = BASE_URI + "/extension-repository/" + bi.getBucketName() + "/" + bi.getGroupId() + "/"
+                    + bi.getArtifactId() + "/" + bi.getVersion() + "/extensions/" + i.getExtensionMetadata().getName();
+            Assert.assertEquals(extensionUri, i.getLink().getUri().toString());
+            Assert.assertEquals(extensionUri + "/docs", i.getLinkDocs().getUri().toString());
+        });
     }
 }

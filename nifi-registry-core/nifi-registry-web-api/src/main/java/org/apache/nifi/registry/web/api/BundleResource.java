@@ -459,6 +459,79 @@ public class BundleResource extends AuthorizableApplicationResource {
         return Response.ok(extension).build();
     }
 
+    @GET
+    @Path("{bundleId}/versions/{version}/extensions/{name}/docs")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    @ApiOperation(
+            value = "Gets the documentation for the given extension in the given extension bundle version",
+            response = String.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getBundleVersionExtensionDocs(
+            @PathParam("bundleId")
+            @ApiParam("The extension bundle identifier")
+                final String bundleId,
+            @PathParam("version")
+            @ApiParam("The version of the bundle")
+                final String version,
+            @PathParam("name")
+            @ApiParam("The fully qualified name of the extension")
+                final String name
+    ) {
+        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
+        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
+
+        final StreamingOutput streamingOutput = (output) -> registryService.writeExtensionDocs(bundleVersion, name, output);
+        return Response.ok(streamingOutput).build();
+    }
+
+    @GET
+    @Path("{bundleId}/versions/{version}/extensions/{name}/docs/additional-details")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.TEXT_HTML)
+    @ApiOperation(
+            value = "Gets the additional details documentation for the given extension in the given extension bundle version",
+            response = String.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response getBundleVersionExtensionAdditionalDetailsDocs(
+            @PathParam("bundleId")
+            @ApiParam("The extension bundle identifier")
+                final String bundleId,
+            @PathParam("version")
+            @ApiParam("The version of the bundle")
+                final String version,
+            @PathParam("name")
+            @ApiParam("The fully qualified name of the extension")
+                final String name
+    ) {
+        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
+        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
+
+        final StreamingOutput streamingOutput = (output) -> registryService.writeAdditionalDetailsDocs(bundleVersion, name, output);
+        return Response.ok(streamingOutput).build();
+    }
 
     /**
      * Retrieves the extension bundle with the given id and ensures the current user has authorization to read the bucket it belongs to.

@@ -243,6 +243,7 @@ public class ExtensionMappings {
         bundleInfo.setArtifactId(entity.getArtifactId());
         bundleInfo.setVersion(entity.getVersion());
         bundleInfo.setBundleType(entity.getBundleType());
+        bundleInfo.setSystemApiVersion(entity.getSystemApiVersion());
 
         final ExtensionMetadata metadata = new ExtensionMetadata();
         metadata.setName(extension.getName());
@@ -254,6 +255,7 @@ public class ExtensionMappings {
         metadata.setProvidedServiceAPIs(extension.getProvidedServiceAPIs());
         metadata.setTags(extension.getTags());
         metadata.setBundleInfo(bundleInfo);
+        metadata.setHasAdditionalDetails(entity.getHasAdditionalDetails());
         return metadata;
     }
 

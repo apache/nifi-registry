@@ -22,6 +22,7 @@ import org.apache.nifi.registry.db.entity.BucketItemEntityType;
 import org.apache.nifi.registry.db.entity.BundleEntity;
 import org.apache.nifi.registry.db.entity.BundleVersionDependencyEntity;
 import org.apache.nifi.registry.db.entity.BundleVersionEntity;
+import org.apache.nifi.registry.db.entity.ExtensionAdditionalDetailsEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionProvidedServiceApiEntity;
 import org.apache.nifi.registry.db.entity.ExtensionRestrictionEntity;
@@ -891,6 +892,15 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals("e1", extension.getId());
         assertEquals("org.apache.nifi.ExampleProcessor", extension.getName());
         assertEquals("{ \"name\" : \"org.apache.nifi.ExampleProcessor\", \"type\" : \"PROCESSOR\" }", extension.getContent());
+        assertFalse(extension.getHasAdditionalDetails());
+    }
+
+    @Test
+    public void testGetExtensionByIdWhenHasAdditionalDetails() {
+        final ExtensionEntity extension = metadataService.getExtensionById("e3");
+        assertNotNull(extension);
+        assertEquals("e3", extension.getId());
+        assertTrue(extension.getHasAdditionalDetails());
     }
 
     @Test
@@ -928,6 +938,28 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
     @Test
     public void testGetExtensionByNameDoesNotExist() {
         final ExtensionEntity entity = metadataService.getExtensionByName("eb1-v1", "org.apache.nifi.DOESNOTEXIST");
+        assertNull(entity);
+    }
+
+    @Test
+    public void testGetExtensionAdditionalDetailsWhenPresent() {
+        final ExtensionAdditionalDetailsEntity entity = metadataService.getExtensionAdditionalDetails("eb2-v1", "org.apache.nifi.ExampleService");
+        assertNotNull(entity);
+        assertEquals("e3", entity.getExtensionId());
+        assertTrue(entity.getAdditionalDetails().isPresent());
+    }
+
+    @Test
+    public void testGetExtensionAdditionalDetailsWhenNotPresent() {
+        final ExtensionAdditionalDetailsEntity entity = metadataService.getExtensionAdditionalDetails("eb1-v1", "org.apache.nifi.ExampleProcessor");
+        assertNotNull(entity);
+        assertEquals("e1", entity.getExtensionId());
+        assertFalse(entity.getAdditionalDetails().isPresent());
+    }
+
+    @Test
+    public void testGetExtensionAdditionalDetailsWhenExtensionDoesNotExist() {
+        final ExtensionAdditionalDetailsEntity entity = metadataService.getExtensionAdditionalDetails("eb1-v1", "org.apache.nifi.DOESNOTEXIST");
         assertNull(entity);
     }
 

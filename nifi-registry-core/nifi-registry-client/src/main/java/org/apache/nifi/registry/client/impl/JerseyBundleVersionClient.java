@@ -265,6 +265,34 @@ public class JerseyBundleVersionClient extends AbstractJerseyClient implements B
     }
 
     @Override
+    public InputStream getExtensionDocs(final String bundleId, final String version, final String name) throws IOException, NiFiRegistryException {
+        if (StringUtils.isBlank(bundleId)) {
+            throw new IllegalArgumentException("Bundle id cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(version)) {
+            throw new IllegalArgumentException("Version cannot be null or blank");
+        }
+
+        if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("Extension name cannot be null or blank");
+        }
+
+        return executeAction("Error getting extension", () -> {
+            final WebTarget target = extensionBundlesTarget
+                    .path("{bundleId}/versions/{version}/extensions/{name}/docs")
+                    .resolveTemplate("bundleId", bundleId)
+                    .resolveTemplate("version", version)
+                    .resolveTemplate("name", name);
+
+            return getRequestBuilder(target)
+                    .accept(MediaType.TEXT_HTML)
+                    .get()
+                    .readEntity(InputStream.class);
+        });
+    }
+
+    @Override
     public InputStream getBundleVersionContent(final String bundleId, final String version)
             throws IOException, NiFiRegistryException {
 

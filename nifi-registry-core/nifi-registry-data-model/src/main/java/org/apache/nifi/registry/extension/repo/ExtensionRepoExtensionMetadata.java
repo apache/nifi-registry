@@ -19,14 +19,20 @@ package org.apache.nifi.registry.extension.repo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
+import org.apache.nifi.registry.link.LinkAdapter;
+import org.apache.nifi.registry.link.LinkableDocs;
 import org.apache.nifi.registry.link.LinkableEntity;
 
+import javax.ws.rs.core.Link;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Comparator;
 
 @ApiModel
-public class ExtensionRepoExtensionMetadata extends LinkableEntity implements Comparable<ExtensionRepoExtensionMetadata> {
+public class ExtensionRepoExtensionMetadata extends LinkableEntity implements LinkableDocs, Comparable<ExtensionRepoExtensionMetadata> {
 
     private ExtensionMetadata extensionMetadata;
+    private Link linkDocs;
 
     public ExtensionRepoExtensionMetadata() {
     }
@@ -42,6 +48,19 @@ public class ExtensionRepoExtensionMetadata extends LinkableEntity implements Co
 
     public void setExtensionMetadata(ExtensionMetadata extensionMetadata) {
         this.extensionMetadata = extensionMetadata;
+    }
+
+    @Override
+    @XmlElement
+    @XmlJavaTypeAdapter(LinkAdapter.class)
+    @ApiModelProperty(value = "A WebLink to the documentation for this extension.", readOnly = true)
+    public Link getLinkDocs() {
+        return linkDocs;
+    }
+
+    @Override
+    public void setLinkDocs(Link link) {
+        this.linkDocs = link;
     }
 
     @Override

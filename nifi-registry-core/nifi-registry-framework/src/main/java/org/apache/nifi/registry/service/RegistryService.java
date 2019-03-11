@@ -1173,6 +1173,26 @@ public class RegistryService {
         }
     }
 
+    public void writeExtensionDocs(final BundleVersion bundleVersion, final String name, final OutputStream outputStream)
+            throws IOException {
+        readLock.lock();
+        try {
+            extensionService.writeExtensionDocs(bundleVersion, name, outputStream);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public void writeAdditionalDetailsDocs(final BundleVersion bundleVersion, final String name, final OutputStream outputStream)
+            throws IOException {
+        readLock.lock();
+        try {
+            extensionService.writeAdditionalDetailsDocs(bundleVersion, name, outputStream);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
     public SortedSet<TagCount> getExtensionTags() {
         readLock.lock();
         try {

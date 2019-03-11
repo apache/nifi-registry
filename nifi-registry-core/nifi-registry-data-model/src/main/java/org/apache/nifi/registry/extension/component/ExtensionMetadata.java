@@ -23,14 +23,19 @@ import org.apache.nifi.registry.extension.component.manifest.DeprecationNotice;
 import org.apache.nifi.registry.extension.component.manifest.ExtensionType;
 import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.extension.component.manifest.Restricted;
+import org.apache.nifi.registry.link.LinkAdapter;
+import org.apache.nifi.registry.link.LinkableDocs;
 import org.apache.nifi.registry.link.LinkableEntity;
 
+import javax.ws.rs.core.Link;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
 @ApiModel
-public class ExtensionMetadata extends LinkableEntity implements Comparable<ExtensionMetadata> {
+public class ExtensionMetadata extends LinkableEntity implements LinkableDocs, Comparable<ExtensionMetadata> {
 
     private String name;
     private String displayName;
@@ -41,6 +46,8 @@ public class ExtensionMetadata extends LinkableEntity implements Comparable<Exte
     private Restricted restricted;
     private List<ProvidedServiceAPI> providedServiceAPIs;
     private BundleInfo bundleInfo;
+    private boolean hasAdditionalDetails;
+    private Link linkDocs;
 
     @ApiModelProperty(value = "The name of the extension")
     public String getName() {
@@ -121,6 +128,28 @@ public class ExtensionMetadata extends LinkableEntity implements Comparable<Exte
 
     public void setBundleInfo(BundleInfo bundleInfo) {
         this.bundleInfo = bundleInfo;
+    }
+
+    @ApiModelProperty(value = "Whether or not the extension has additional detail documentation")
+    public boolean getHasAdditionalDetails() {
+        return hasAdditionalDetails;
+    }
+
+    public void setHasAdditionalDetails(boolean hasAdditionalDetails) {
+        this.hasAdditionalDetails = hasAdditionalDetails;
+    }
+
+    @Override
+    @XmlElement
+    @XmlJavaTypeAdapter(LinkAdapter.class)
+    @ApiModelProperty(value = "A WebLink to the documentation for this extension.", readOnly = true)
+    public Link getLinkDocs() {
+        return linkDocs;
+    }
+
+    @Override
+    public void setLinkDocs(Link link) {
+        this.linkDocs = link;
     }
 
     @Override
