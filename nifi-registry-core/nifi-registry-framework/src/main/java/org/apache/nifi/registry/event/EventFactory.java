@@ -139,42 +139,48 @@ public class EventFactory {
     public static Event userCreated(final User user) {
         return new StandardEvent.Builder()
                 .eventType(EventType.CREATE_USER)
-                .addField(EventFieldName.USER, user.getIdentity())
+                .addField(EventFieldName.USER_ID, user.getIdentifier())
+                .addField(EventFieldName.USER_IDENTITY, user.getIdentity())
                 .build();
     }
 
     public static Event userUpdated(final User user) {
         return new StandardEvent.Builder()
                 .eventType(EventType.UPDATE_USER)
-                .addField(EventFieldName.USER, user.getIdentity())
+                .addField(EventFieldName.USER_ID, user.getIdentifier())
+                .addField(EventFieldName.USER_IDENTITY, user.getIdentity())
                 .build();
     }
 
     public static Event userDeleted(final User user) {
         return new StandardEvent.Builder()
                 .eventType(EventType.DELETE_USER)
-                .addField(EventFieldName.USER, user.getIdentity())
+                .addField(EventFieldName.USER_ID, user.getIdentifier())
+                .addField(EventFieldName.USER_IDENTITY, user.getIdentity())
                 .build();
     }
 
     public static Event userGroupCreated(final UserGroup userGroup) {
         return new StandardEvent.Builder()
                 .eventType(EventType.CREATE_USER_GROUP)
-                .addField(EventFieldName.USER_GROUP, userGroup.getIdentity())
+                .addField(EventFieldName.USER_GROUP_ID, userGroup.getIdentifier())
+                .addField(EventFieldName.USER_GROUP_IDENTITY, userGroup.getIdentity())
                 .build();
     }
 
     public static Event userGroupUpdated(final UserGroup userGroup) {
         return new StandardEvent.Builder()
                 .eventType(EventType.UPDATE_USER_GROUP)
-                .addField(EventFieldName.USER_GROUP, userGroup.getIdentity())
+                .addField(EventFieldName.USER_GROUP_ID, userGroup.getIdentifier())
+                .addField(EventFieldName.USER_GROUP_IDENTITY, userGroup.getIdentity())
                 .build();
     }
 
     public static Event userGroupDeleted(final UserGroup userGroup) {
         return new StandardEvent.Builder()
                 .eventType(EventType.DELETE_USER_GROUP)
-                .addField(EventFieldName.USER_GROUP, userGroup.getIdentity())
+                .addField(EventFieldName.USER_GROUP_ID, userGroup.getIdentifier())
+                .addField(EventFieldName.USER_GROUP_IDENTITY, userGroup.getIdentity())
                 .build();
     }
 }

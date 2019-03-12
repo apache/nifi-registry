@@ -79,22 +79,28 @@ public enum EventType {
             EventFieldName.USER
     ),
     CREATE_USER(
-            EventFieldName.USER
+            EventFieldName.USER_ID,
+            EventFieldName.USER_IDENTITY
     ),
     UPDATE_USER(
-            EventFieldName.USER
+            EventFieldName.USER_ID,
+            EventFieldName.USER_IDENTITY
     ),
     DELETE_USER(
-            EventFieldName.USER
+            EventFieldName.USER_ID,
+            EventFieldName.USER_IDENTITY
     ),
     CREATE_USER_GROUP(
-            EventFieldName.USER_GROUP
+            EventFieldName.USER_GROUP_ID,
+            EventFieldName.USER_GROUP_IDENTITY
     ),
     UPDATE_USER_GROUP(
-            EventFieldName.USER_GROUP
+            EventFieldName.USER_GROUP_ID,
+            EventFieldName.USER_GROUP_IDENTITY
     ),
     DELETE_USER_GROUP(
-            EventFieldName.USER_GROUP
+            EventFieldName.USER_GROUP_ID,
+            EventFieldName.USER_GROUP_IDENTITY
     )
     ;
 

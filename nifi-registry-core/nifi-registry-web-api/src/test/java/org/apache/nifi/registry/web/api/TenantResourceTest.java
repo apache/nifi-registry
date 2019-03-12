@@ -80,13 +80,14 @@ public class TenantResourceTest {
     public void testCreateUser() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         User user = new User(null, "identity");
+        User result = new User("identifier", user.getIdentity());
 
-        when(authorizationService.createUser(user)).thenReturn(new User("identifier", user.getIdentity()));
+        when(authorizationService.createUser(user)).thenReturn(result);
 
         tenantResource.createUser(request, user);
 
         verify(authorizationService).createUser(user);
-        verify(eventService).publish(eq(EventFactory.userCreated(user)));
+        verify(eventService).publish(eq(EventFactory.userCreated(result)));
     }
 
     @Test
@@ -119,13 +120,14 @@ public class TenantResourceTest {
     public void testCreateUserGroup() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         UserGroup userGroup = new UserGroup(null, "identity");
+        UserGroup result = new UserGroup("identifier", userGroup.getIdentity());
 
-        when(authorizationService.createUserGroup(userGroup)).thenReturn(new UserGroup("identifier", userGroup.getIdentity()));
+        when(authorizationService.createUserGroup(userGroup)).thenReturn(result);
 
         tenantResource.createUserGroup(request, userGroup);
 
         verify(authorizationService).createUserGroup(userGroup);
-        verify(eventService).publish(eq(EventFactory.userGroupCreated(userGroup)));
+        verify(eventService).publish(eq(EventFactory.userGroupCreated(result)));
     }
 
     @Test
