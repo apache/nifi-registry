@@ -150,9 +150,7 @@ public class NiFiRegistry {
         final CryptoKeyProvider masterKeyProvider;
         final NiFiRegistryProperties properties;
         try {
-            final String bootstrapConfigFilePath = System.getProperty(NIFI_REGISTRY_BOOTSTRAP_FILE_PATH_PROPERTY, RELATIVE_BOOTSTRAP_FILE_LOCATION);
-            masterKeyProvider = new BootstrapFileCryptoKeyProvider(bootstrapConfigFilePath);
-            LOGGER.info("Read property protection key from {}", bootstrapConfigFilePath);
+            masterKeyProvider = getMasterKeyProvider();
             properties = initializeProperties(masterKeyProvider);
         } catch (final IllegalArgumentException iae) {
             throw new RuntimeException("Unable to load properties: " + iae, iae);
@@ -165,8 +163,14 @@ public class NiFiRegistry {
         }
     }
 
-    private static NiFiRegistryProperties initializeProperties(CryptoKeyProvider masterKeyProvider) {
+    public static CryptoKeyProvider getMasterKeyProvider() {
+        final String bootstrapConfigFilePath = System.getProperty(NIFI_REGISTRY_BOOTSTRAP_FILE_PATH_PROPERTY, RELATIVE_BOOTSTRAP_FILE_LOCATION);
+        CryptoKeyProvider masterKeyProvider = new BootstrapFileCryptoKeyProvider(bootstrapConfigFilePath);
+        LOGGER.info("Read property protection key from {}", bootstrapConfigFilePath);
+        return masterKeyProvider;
+    }
 
+    public static NiFiRegistryProperties initializeProperties(CryptoKeyProvider masterKeyProvider) {
         String key = CryptoKeyProvider.EMPTY_KEY;
         try {
             key = masterKeyProvider.getKey();

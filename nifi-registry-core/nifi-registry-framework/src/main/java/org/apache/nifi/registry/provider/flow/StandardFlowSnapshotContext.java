@@ -22,6 +22,8 @@ import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 
+import java.util.Objects;
+
 /**
  * Standard implementation of FlowSnapshotContext.
  */
@@ -99,6 +101,29 @@ public class StandardFlowSnapshotContext implements FlowSnapshotContext {
     @Override
     public String getAuthor() {
         return author;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        StandardFlowSnapshotContext that = (StandardFlowSnapshotContext) o;
+        return version == that.version && snapshotTimestamp == that.snapshotTimestamp
+                && Objects.equals(bucketId, that.bucketId)
+                && Objects.equals(bucketName, that.bucketName)
+                && Objects.equals(flowId, that.flowId)
+                && Objects.equals(flowName, that.flowName)
+                && Objects.equals(comments, that.comments)
+                && Objects.equals(author, that.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bucketId, bucketName, flowId, flowName, version, comments, author, snapshotTimestamp);
     }
 
     /**
