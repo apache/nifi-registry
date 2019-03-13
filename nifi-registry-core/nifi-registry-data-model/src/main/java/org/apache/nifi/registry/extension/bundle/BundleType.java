@@ -27,9 +27,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 @XmlJavaTypeAdapter(BundleTypeAdapter.class)
 public enum BundleType {
 
-    NIFI_NAR("nifi-nar"),
+    NIFI_NAR(BundleTypeValues.NIFI_NAR_VALUE),
 
-    MINIFI_CPP("minifi-cpp");
+    MINIFI_CPP(BundleTypeValues.MINIFI_CPP_VALUE);
 
     private final String displayName;
 

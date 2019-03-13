@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.bundle.BundleTypeValues;
 import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
 import org.apache.nifi.registry.extension.component.ExtensionMetadataContainer;
@@ -85,10 +86,10 @@ public class ExtensionResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getExtensions(
             @QueryParam("bundleType")
-            @ApiParam(value = "The type of bundles to return (i.e. NAR, CPP, etc.)")
+            @ApiParam(value = "The type of bundles to return", allowableValues = BundleTypeValues.ALL_VALUES)
                 final BundleType bundleType,
             @QueryParam("extensionType")
-            @ApiParam(value = "The type of extensions to return (i.e. processor, service, reporting task)")
+            @ApiParam(value = "The type of extensions to return")
                 final ExtensionType extensionType,
             @QueryParam("tag")
             @ApiParam(value = "The tags to filter on, will be used in an OR statement")
@@ -135,16 +136,16 @@ public class ExtensionResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getExtensionsProvidingServiceAPI(
             @QueryParam("className")
-            @ApiParam(value = "The name of the service API class")
+            @ApiParam(value = "The name of the service API class", required = true)
                 final String className,
             @QueryParam("groupId")
-            @ApiParam(value = "The groupId of the bundle containing the service API class")
+            @ApiParam(value = "The groupId of the bundle containing the service API class", required = true)
                 final String groupId,
             @QueryParam("artifactId")
-            @ApiParam(value = "The artifactId of the bundle containing the service API class")
+            @ApiParam(value = "The artifactId of the bundle containing the service API class", required = true)
                 final String artifactId,
             @QueryParam("version")
-            @ApiParam(value = "The version of the bundle containing the service API class")
+            @ApiParam(value = "The version of the bundle containing the service API class", required = true)
                 final String version
     ) {
 
@@ -176,7 +177,7 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "Gets all the extension tags known to this NiFi Registry instance.",
-            response = String.class,
+            response = TagCount.class,
             responseContainer = "List"
     )
     @ApiResponses({

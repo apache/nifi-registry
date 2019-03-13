@@ -28,6 +28,7 @@ import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleType;
+import org.apache.nifi.registry.extension.bundle.BundleTypeValues;
 import org.apache.nifi.registry.extension.bundle.BundleVersion;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -110,11 +111,11 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createExtensionBundleVersion(
             @PathParam("bucketId")
-            @ApiParam("The bucket identifier")
+            @ApiParam(value = "The bucket identifier", required = true)
                 final String bucketId,
             @PathParam("bundleType")
-            @ApiParam("The type of the bundle")
-                final String bundleType,
+            @ApiParam(value = "The type of the bundle", required = true, allowableValues = BundleTypeValues.ALL_VALUES)
+                final BundleType bundleType,
             @FormDataParam("file")
                 final InputStream fileInputStream,
             @FormDataParam("file")
@@ -124,11 +125,10 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
 
         authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
-        final BundleType extensionBundleType = BundleType.fromString(bundleType);
-        LOGGER.debug("Creating extension bundle version for bundle type {}", new Object[]{extensionBundleType});
+        LOGGER.debug("Creating extension bundle version for bundle type {}", new Object[]{bundleType});
 
         final BundleVersion createdBundleVersion = registryService.createBundleVersion(
-                bucketId, extensionBundleType, fileInputStream, clientSha256);
+                bucketId, bundleType, fileInputStream, clientSha256);
 
         publish(EventFactory.extensionBundleCreated(createdBundleVersion.getBundle()));
         publish(EventFactory.extensionBundleVersionCreated(createdBundleVersion));
@@ -163,7 +163,7 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getExtensionBundles(
             @PathParam("bucketId")
-            @ApiParam("The bucket identifier")
+            @ApiParam(value = "The bucket identifier", required = true)
                 final String bucketId
     ) {
         authorizeBucketAccess(RequestAction.READ, bucketId);
