@@ -61,6 +61,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String EXTENSION_DIR_PREFIX = "nifi.registry.extension.dir.";
 
     public static final String PROVIDERS_CONFIGURATION_FILE = "nifi.registry.providers.configuration.file";
+    public static final String REGISTRY_ALIAS_CONFIGURATION_FILE = "nifi.registry.registry.alias.configuration.file";
 
     public static final String EXTENSIONS_WORKING_DIR = "nifi.registry.extensions.working.directory";
 
@@ -89,6 +90,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
     public static final String DEFAULT_WAR_DIR = "./lib";
     public static final String DEFAULT_PROVIDERS_CONFIGURATION_FILE = "./conf/providers.xml";
+    public static final String DEFAULT_REGISTRY_ALIAS_CONFIGURATION_FILE = "./conf/registry-aliases.xml";
     public static final String DEFAULT_SECURITY_AUTHORIZERS_CONFIGURATION_FILE = "./conf/authorizers.xml";
     public static final String DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE = "./conf/identity-providers.xml";
     public static final String DEFAULT_AUTHENTICATION_EXPIRATION = "12 hours";
@@ -171,6 +173,10 @@ public class NiFiRegistryProperties extends Properties {
 
     public File getProvidersConfigurationFile() {
         return getPropertyAsFile(PROVIDERS_CONFIGURATION_FILE, DEFAULT_PROVIDERS_CONFIGURATION_FILE);
+    }
+
+    public File getRegistryAliasConfigurationFile() {
+        return getPropertyAsFile(REGISTRY_ALIAS_CONFIGURATION_FILE, DEFAULT_REGISTRY_ALIAS_CONFIGURATION_FILE);
     }
 
     public String getLegacyDatabaseDirectory() {

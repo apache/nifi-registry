@@ -32,6 +32,7 @@ import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
+import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.extension.StandardExtensionService;
 import org.junit.Assert;
@@ -77,6 +78,7 @@ public class TestRegistryService {
     private Serializer<VersionedProcessGroup> snapshotSerializer;
     private ExtensionService extensionService;
     private Validator validator;
+    private RegistryUrlAliasService registryUrlAliasService;
 
     private RegistryService registryService;
 
@@ -86,11 +88,12 @@ public class TestRegistryService {
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
         snapshotSerializer = mock(VersionedProcessGroupSerializer.class);
         extensionService = mock(StandardExtensionService.class);
+        registryUrlAliasService = mock(RegistryUrlAliasService.class);
 
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
 
-        registryService = new RegistryService(metadataService, flowPersistenceProvider, snapshotSerializer, extensionService, validator);
+        registryService = new RegistryService(metadataService, flowPersistenceProvider, snapshotSerializer, extensionService, validator, registryUrlAliasService);
     }
 
     // ---------------------- Test Bucket methods ---------------------------------------------
