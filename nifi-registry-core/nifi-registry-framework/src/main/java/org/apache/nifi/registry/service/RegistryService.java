@@ -60,6 +60,7 @@ import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
+import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
 import org.apache.nifi.registry.service.mapper.ExtensionMappings;
@@ -109,6 +110,7 @@ public class RegistryService {
     private final Serializer<VersionedProcessGroup> processGroupSerializer;
     private final ExtensionService extensionService;
     private final Validator validator;
+    private final RegistryUrlAliasService registryUrlAliasService;
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock readLock = lock.readLock();
@@ -119,17 +121,14 @@ public class RegistryService {
                            final FlowPersistenceProvider flowPersistenceProvider,
                            final Serializer<VersionedProcessGroup> processGroupSerializer,
                            final ExtensionService extensionService,
-                           final Validator validator) {
-        this.metadataService = metadataService;
-        this.flowPersistenceProvider = flowPersistenceProvider;
-        this.processGroupSerializer = processGroupSerializer;
-        this.extensionService = extensionService;
-        this.validator = validator;
-        Validate.notNull(this.metadataService);
-        Validate.notNull(this.flowPersistenceProvider);
-        Validate.notNull(this.processGroupSerializer);
-        Validate.notNull(this.extensionService);
-        Validate.notNull(this.validator);
+                           final Validator validator,
+                           final RegistryUrlAliasService registryUrlAliasService) {
+        this.metadataService = Validate.notNull(metadataService);
+        this.flowPersistenceProvider = Validate.notNull(flowPersistenceProvider);
+        this.processGroupSerializer = Validate.notNull(processGroupSerializer);
+        this.extensionService = Validate.notNull(extensionService);
+        this.validator = Validate.notNull(validator);
+        this.registryUrlAliasService = Validate.notNull(registryUrlAliasService);
     }
 
     private <T>  void validate(T t, String invalidMessage) {
@@ -672,6 +671,7 @@ public class RegistryService {
 
             // serialize the snapshot
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            registryUrlAliasService.setInternal(flowSnapshot.getFlowContents());
             processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
 
             // save the serialized snapshot to the persistence provider
@@ -695,6 +695,7 @@ public class RegistryService {
 
             flowSnapshot.setBucket(bucket);
             flowSnapshot.setFlow(updatedVersionedFlow);
+            registryUrlAliasService.setExternal(flowSnapshot.getFlowContents());
             return flowSnapshot;
         } finally {
             writeLock.unlock();
@@ -766,6 +767,7 @@ public class RegistryService {
 
         // create the snapshot to return
         final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
+        registryUrlAliasService.setExternal(flowContents);
         snapshot.setFlowContents(flowContents);
         snapshot.setSnapshotMetadata(snapshotMetadata);
         snapshot.setFlow(versionedFlow);

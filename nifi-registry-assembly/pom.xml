@@ -160,6 +160,9 @@
         <!-- nifi-registry.properties: provider properties -->
         <nifi.registry.providers.configuration.file>./conf/providers.xml</nifi.registry.providers.configuration.file>
 
+        <!-- nifi-registry.properties: registry alias properties -->
+        <nifi.registry.registry.alias.configuration.file>./conf/registry-aliases.xml</nifi.registry.registry.alias.configuration.file>
+
         <!-- nifi-registry.properties: extension properties -->
         <nifi.registry.extensions.working.directory>./work/extensions</nifi.registry.extensions.working.directory>
 
