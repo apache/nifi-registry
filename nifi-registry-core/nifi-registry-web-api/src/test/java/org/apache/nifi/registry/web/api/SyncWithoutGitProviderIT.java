@@ -17,14 +17,7 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.junit.Test;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.ws.rs.client.Entity;
@@ -32,28 +25,15 @@ import javax.ws.rs.core.MediaType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 
-@ActiveProfiles("WithGitProvider")
-public class SyncIT extends UnsecuredITBase {
-
-    @Configuration
-    @Profile({"WithGitProvider"})
-    public static class MockFlowPersistenceProvider {
-
-        @Primary
-        @Bean
-        public FlowPersistenceProvider getGitFlowPersistenceProvider() {
-            return mock(GitFlowPersistenceProvider.class);
-        }
-    }
+public class SyncWithoutGitProviderIT extends UnsecuredITBase {
 
     @Test
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
             "classpath:db/clearDB.sql",
             "classpath:db/BucketsIT.sql"
     })
-    public void testSyncDeletesExistingBucketsWhenGitRepositoryIsEmpty() {
+    public void testSyncReturnsExistingBucketsWhenGitFlowRepositoryIsNotActive() {
         final Bucket[] buckets = client
                 .target(createURL("sync"))
                 .path("metadata")
@@ -61,6 +41,9 @@ public class SyncIT extends UnsecuredITBase {
                 .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
         assertNotNull(buckets);
-        assertEquals(0, buckets.length);
+        assertEquals(3, buckets.length);
+        for (int i = 0; i < buckets.length; i++) {
+            assertEquals(String.valueOf(i + 1), buckets[i].getIdentifier());
+        }
     }
 }
