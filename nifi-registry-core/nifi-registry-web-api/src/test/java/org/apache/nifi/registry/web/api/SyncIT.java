@@ -16,46 +16,52 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import org.apache.nifi.registry.NiFiRegistryTestApiApplication;
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(
-        classes = NiFiRegistryTestApiApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SyncIT extends UnsecuredITBase {
-    @MockBean
-    private FlowPersistenceProvider flowPersistenceProvider = new GitFlowPersistenceProvider();
+//    @MockBean
+//    private FlowPersistenceProvider flowPersistenceProvider = new GitFlowPersistenceProvider();
 
     @Test
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
             "classpath:db/clearDB.sql",
-            "classpath:db/FlowsIT.sql",
             "classpath:db/BucketsIT.sql"
     })
-    public void testSyncDeletesAllExistingBuckets() {
-        final Response response = client
+    public void testSyncReturnsExistingBucketsWhenGitFlowRepositoryIsNotActive() {
+        final Bucket[] buckets = client
                 .target(createURL("sync"))
+                .path("metadata")
                 .request()
-                .post(Entity.entity("", MediaType.WILDCARD_TYPE));
+                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
-        Bucket[] buckets = (Bucket[]) response.getEntity();
+        assertNotNull(buckets);
+        assertEquals(3, buckets.length);
+        for (int i = 0; i < buckets.length; i++) {
+            assertEquals(String.valueOf(i + 1), buckets[i].getIdentifier());
+        }
+    }
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
+            "classpath:db/clearDB.sql",
+            "classpath:db/BucketsIT.sql"
+    })
+    public void testSyncDeletesExistingBucketsWhenGitRepositoryIsEmpty() {
+        final Bucket[] buckets = client
+                .target(createURL("sync"))
+                .path("metadata")
+                .request()
+                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
+
         assertNotNull(buckets);
         assertEquals(0, buckets.length);
     }

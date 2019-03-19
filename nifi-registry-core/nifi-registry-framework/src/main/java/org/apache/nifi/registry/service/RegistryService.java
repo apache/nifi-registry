@@ -1217,7 +1217,9 @@ public class RegistryService {
             return createdBuckets;
         }
 
-        return new ArrayList<>();
+        return this.metadataService.getAllBuckets()
+                .stream().map(bucketEntity -> DataModelMapper.map(bucketEntity))
+                .collect(Collectors.toList());
     }
 
     private void deleteAllBucketsInMetaDatabase() {
