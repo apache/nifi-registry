@@ -20,6 +20,7 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.junit.Test;
 import org.springframework.test.context.jdbc.Sql;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
@@ -45,5 +46,18 @@ public class SyncWithoutGitProviderIT extends UnsecuredITBase {
         for (int i = 0; i < buckets.length; i++) {
             assertEquals(String.valueOf(i + 1), buckets[i].getIdentifier());
         }
+    }
+
+    @Test(expected = InternalServerErrorException.class)
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
+            "classpath:db/clearDB.sql",
+            "classpath:db/BucketsIT.sql"
+    })
+    public void testSyncBucketsByResettingGitRepositoryThrowsIOExceptionWhenSyncIsNotImplemented() {
+        client
+                .target(createURL("sync"))
+                .path("remote")
+                .request()
+                .put(Entity.entity("https://gitrepository.com/fancy", MediaType.WILDCARD_TYPE), Bucket[].class);
     }
 }
