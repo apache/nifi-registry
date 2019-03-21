@@ -16,9 +16,12 @@
  */
 package org.apache.nifi.registry.web.api;
 
+
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
+import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
+import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceTestDataFactory;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,13 +32,18 @@ import org.springframework.test.context.jdbc.Sql;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles("WithGitProvider")
 public class SyncIT extends UnsecuredITBase {
+    //TODO thread safety with parallel test execution?
+    private static GitFlowPersistenceProvider gitFlowPersistenceProviderMock;
+
 
     @Configuration
     @Profile({"WithGitProvider"})
@@ -44,7 +52,9 @@ public class SyncIT extends UnsecuredITBase {
         @Primary
         @Bean
         public FlowPersistenceProvider getGitFlowPersistenceProvider() {
-            return mock(GitFlowPersistenceProvider.class);
+            if (gitFlowPersistenceProviderMock == null)
+                gitFlowPersistenceProviderMock = mock(GitFlowPersistenceProvider.class);
+            return gitFlowPersistenceProviderMock;
         }
     }
 
@@ -62,5 +72,35 @@ public class SyncIT extends UnsecuredITBase {
 
         assertNotNull(buckets);
         assertEquals(0, buckets.length);
+    }
+
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
+            "classpath:db/clearDB.sql",
+            "classpath:db/BucketsIT.sql"
+    })
+    public void testSyncBucketsWithFilledGitRepository() {
+        Collection<VersionedFlowSnapshot> snapshots = GitFlowPersistenceTestDataFactory.createSampleFlowSnapshots();
+        when(gitFlowPersistenceProviderMock.getFlowSnapshots()).thenReturn(snapshots);
+
+        final Bucket[] buckets = client
+                .target(createURL("sync"))
+                .path("metadata")
+                .request()
+                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
+
+        assertNotNull(buckets);
+        assertEquals(10, buckets.length);
+        assertBuckets(
+                GitFlowPersistenceTestDataFactory.createExpectedBuckets(buckets.length),
+                buckets);
+    }
+
+    private void assertBuckets(Bucket[] expectedBuckets, Bucket[] actual) {
+        for (int i = 0; i < expectedBuckets.length; i++) {
+            assertEquals(expectedBuckets[i].getIdentifier(), actual[i].getIdentifier());
+            assertEquals(expectedBuckets[i].getName(), actual[i].getName());
+        }
     }
 }
