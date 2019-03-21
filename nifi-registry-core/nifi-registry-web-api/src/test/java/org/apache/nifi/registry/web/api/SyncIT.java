@@ -32,12 +32,14 @@ import org.springframework.test.context.jdbc.Sql;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles("WithGitProvider")
 public class SyncIT extends UnsecuredITBase {
@@ -90,6 +92,31 @@ public class SyncIT extends UnsecuredITBase {
                 .request()
                 .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
+        assertNotNull(buckets);
+        assertEquals(10, buckets.length);
+        assertBuckets(
+                GitFlowPersistenceTestDataFactory.createExpectedBuckets(buckets.length),
+                buckets);
+    }
+
+
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
+            "classpath:db/clearDB.sql",
+            "classpath:db/BucketsIT.sql"
+    })
+    public void testSyncBucketsByResettingGitRepository() throws URISyntaxException, IOException {
+        Collection<VersionedFlowSnapshot> snapshots = GitFlowPersistenceTestDataFactory.createSampleFlowSnapshots();
+        when(gitFlowPersistenceProviderMock.getFlowSnapshots()).thenReturn(snapshots);
+        when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
+
+        final Bucket[] buckets = client
+                .target(createURL("sync"))
+                .path("remote")
+                .request()
+                .put(Entity.entity("https://gitrepository.com/fancy", MediaType.WILDCARD_TYPE), Bucket[].class);
+
+        verify(gitFlowPersistenceProviderMock).resetRepository(new URI("https://gitrepository.com/fancy"));
         assertNotNull(buckets);
         assertEquals(10, buckets.length);
         assertBuckets(

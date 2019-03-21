@@ -46,7 +46,7 @@ import java.util.Collection;
 @Path("/sync")
 @Api(
         value = "sync",
-        description = "Provides methods to sync metadata with persistance provider",
+        description = "Provides methods to sync bucket metadata with persistence providers",
         authorizations = { @Authorization("Authorization") }
 )
 public class SyncResource extends AuthorizableApplicationResource {
@@ -103,10 +103,13 @@ public class SyncResource extends AuthorizableApplicationResource {
     }
 
     @PUT
+    @Path("remote")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "reset provider repository",
+            value = "reset provider repository to a initial state (whatever intial state means depends on the " +
+                    "underlying provider, in case of a GitFlowPersistenceProvider an 'initial state' invokes " +
+                    "a clone command) and re-sync metadata",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
