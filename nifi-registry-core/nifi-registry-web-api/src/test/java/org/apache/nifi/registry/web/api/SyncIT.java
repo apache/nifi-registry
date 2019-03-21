@@ -124,6 +124,30 @@ public class SyncIT extends UnsecuredITBase {
                 buckets);
     }
 
+    @Test
+    @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
+            "classpath:db/clearDB.sql",
+            "classpath:db/BucketsIT.sql"
+    })
+    public void testSyncBucketsByGettingLatestChangesRepository() throws URISyntaxException, IOException {
+        Collection<VersionedFlowSnapshot> snapshots = GitFlowPersistenceTestDataFactory.createSampleFlowSnapshots();
+        when(gitFlowPersistenceProviderMock.getFlowSnapshots()).thenReturn(snapshots);
+        when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
+
+        final Bucket[] buckets = client
+                .target(createURL("sync"))
+                .path("remote")
+                .request()
+                .post(Entity.entity("https://gitrepository.com/fancy", MediaType.WILDCARD_TYPE), Bucket[].class);
+
+        verify(gitFlowPersistenceProviderMock).getLatestChangesOfRemoteRepository();
+        assertNotNull(buckets);
+        assertEquals(10, buckets.length);
+        assertBuckets(
+                GitFlowPersistenceTestDataFactory.createExpectedBuckets(buckets.length),
+                buckets);
+    }
+
     private void assertBuckets(Bucket[] expectedBuckets, Bucket[] actual) {
         for (int i = 0; i < expectedBuckets.length; i++) {
             assertEquals(expectedBuckets[i].getIdentifier(), actual[i].getIdentifier());
