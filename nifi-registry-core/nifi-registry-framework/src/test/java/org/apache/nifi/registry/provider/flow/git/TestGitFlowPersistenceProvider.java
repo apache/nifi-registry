@@ -441,6 +441,12 @@ public class TestGitFlowPersistenceProvider {
         }
     }
 
+
+    @Test
+    public void testGetSyncStatus() {
+        fail("TODO: implement test");
+    }
+
     private void waitUntilPushHasBeenFinished() {
         try {
             Thread.sleep(20000);

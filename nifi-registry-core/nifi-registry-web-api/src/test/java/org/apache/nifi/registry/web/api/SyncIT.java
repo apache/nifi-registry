@@ -37,8 +37,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("WithGitProvider")
@@ -146,6 +145,11 @@ public class SyncIT extends UnsecuredITBase {
         assertBuckets(
                 GitFlowPersistenceTestDataFactory.createExpectedBuckets(buckets.length),
                 buckets);
+    }
+
+    @Test
+    public void testGetSyncStatus() {
+        fail("TODO: implement test");
     }
 
     private void assertBuckets(Bucket[] expectedBuckets, Bucket[] actual) {

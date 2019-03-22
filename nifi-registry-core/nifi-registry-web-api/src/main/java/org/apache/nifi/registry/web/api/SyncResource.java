@@ -75,6 +75,29 @@ public class SyncResource extends AuthorizableApplicationResource {
         this.permissionsService = permissionsService;
     }
 
+    @GET
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "get current sync status",
+            response = Bucket.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/sync")})
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403)})
+    public Response getSyncStatus() {
+        authorizeAccess(RequestAction.READ);
+
+        boolean currentStatus = false;
+
+        return Response.status(Response.Status.OK).entity(currentStatus).build();
+    }
 
 
     @POST
