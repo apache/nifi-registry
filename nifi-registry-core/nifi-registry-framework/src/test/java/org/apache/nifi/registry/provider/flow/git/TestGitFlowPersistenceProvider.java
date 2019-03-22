@@ -106,10 +106,7 @@ public class TestGitFlowPersistenceProvider {
                 gitConsumer.accept(git);
             }
 
-            final GitFlowPersistenceProvider persistenceProvider = new GitFlowPersistenceProvider();
-
-            final ProviderConfigurationContext configurationContext = new StandardProviderConfigurationContext(properties);
-            persistenceProvider.onConfigured(configurationContext);
+            final GitFlowPersistenceProvider persistenceProvider = configureGitFlowPersistenceProvider(properties);
             assertion.accept(persistenceProvider);
 
         } finally {
@@ -119,56 +116,45 @@ public class TestGitFlowPersistenceProvider {
         }
     }
 
-    private void assertRemoteProvider(final Map<String, String> properties,
-                                      final GitConsumer gitConsumer,
-                                      final Consumer<GitFlowPersistenceProvider> assertion,
-                                      boolean deleteDir)
-            throws IOException, GitAPIException, InterruptedException {
+    private void cleanupGitRepository(File gitDir) throws IOException {
+        deleteGitRepository(gitDir);
+        FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
+    }
 
-        final File gitDir = new File(properties.get(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP));
-        final File remoteGitDir = new File(properties.get(REMOTE_REPO_DIR_PROP));
-        try {
-            deleteGitRepositories(gitDir, remoteGitDir);
-            FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
-            FileUtils.ensureDirectoryExistAndCanReadAndWrite(remoteGitDir);
+    private GitFlowPersistenceProvider configureGitFlowPersistenceProvider(Map<String, String> properties) {
+        final GitFlowPersistenceProvider persistenceProvider = new GitFlowPersistenceProvider();
+        final ProviderConfigurationContext configurationContext = new StandardProviderConfigurationContext(properties);
+        persistenceProvider.onConfigured(configurationContext);
+        return persistenceProvider;
+    }
 
-            Git.init().setBare(true).setDirectory(remoteGitDir).setGitDir(remoteGitDir).call().close();
-
-            logger.info("initialized remote git repository at " + remoteGitDir.getAbsolutePath());
-
-            try (final Git git = Git.cloneRepository()
-                    .setURI(remoteGitDir.getAbsolutePath())
-                    .setDirectory(gitDir).call()) {
-                logger.debug("Initiated a git repository {}", git);
-                final StoredConfig config = git.getRepository().getConfig();
-                config.setString("user", null, "name", "git-user");
-                config.setString("user", null, "email", "git-user@example.com");
-                config.save();
-                gitConsumer.accept(git);
-            }
-
-            final GitFlowPersistenceProvider persistenceProvider = new GitFlowPersistenceProvider();
-
-            final ProviderConfigurationContext configurationContext = new StandardProviderConfigurationContext(properties);
-            persistenceProvider.onConfigured(configurationContext);
-            assertion.accept(persistenceProvider);
-
-            // free all handles
-            persistenceProvider.flowMetaData.closeRepository();
-        } finally {
-            if (deleteDir) {
-                deleteGitRepositories(gitDir, remoteGitDir);
-            }
+    private void cloneIntoLocalRepository(GitConsumer gitConsumer, File gitDir, File remoteGitDir) throws IOException, GitAPIException {
+        try (final Git git = Git.cloneRepository()
+                .setURI(remoteGitDir.getAbsolutePath())
+                .setDirectory(gitDir).call()) {
+            logger.debug("Initiated a git repository {}", git);
+            final StoredConfig config = git.getRepository().getConfig();
+            config.setString("user", null, "name", "git-user");
+            config.setString("user", null, "email", "git-user@example.com");
+            config.save();
+            gitConsumer.accept(git);
         }
     }
 
-    private void deleteGitRepositories(File gitDir, File remoteGitDir) throws IOException {
-        if (gitDir.exists()) {
-            org.apache.commons.io.FileUtils.deleteDirectory(gitDir);
+    private void createGitRemoteRepository(File remoteGitDir) throws GitAPIException, IOException {
+        boolean gitRepoExists = remoteGitDir.exists() &&
+                org.apache.commons.io.FileUtils.directoryContains(remoteGitDir, new File(remoteGitDir, "HEAD"));
+        if (gitRepoExists) {
+            return;
         }
 
-        if (remoteGitDir.exists()) {
-            org.apache.commons.io.FileUtils.deleteDirectory(remoteGitDir);
+        Git.init().setBare(true).setDirectory(remoteGitDir).setGitDir(remoteGitDir).call().close();
+        logger.info("initialized remote git repository at " + remoteGitDir.getAbsolutePath());
+    }
+
+    private void deleteGitRepository(File gitDir) throws IOException {
+        if (gitDir.exists()) {
+            org.apache.commons.io.FileUtils.deleteDirectory(gitDir);
         }
     }
 
@@ -177,7 +163,8 @@ public class TestGitFlowPersistenceProvider {
         final Map<String, String> properties = new HashMap<>();
         properties.put(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP, "target/empty-git");
 
-        assertProvider(properties, g -> {}, p -> {
+        assertProvider(properties, g -> {
+        }, p -> {
             try {
                 p.getFlowContent("bucket-id-A", "flow-id-1", 1);
             } catch (FlowPersistenceException e) {
@@ -350,42 +337,115 @@ public class TestGitFlowPersistenceProvider {
         properties.put(REMOTE_TO_PUSH, "origin");
         //inject variable which exists in the test env only
         properties.put(REMOTE_REPO_DIR_PROP, "target/remote-repo");
-        File remoteRepoDir = new File(properties.get(REMOTE_REPO_DIR_PROP));
+        final File gitDir = new File(properties.get(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP));
+        final File remoteGitDir = new File(properties.get(REMOTE_REPO_DIR_PROP));
 
-        assertRemoteProvider(properties, g -> {
-        }, p -> {
-            // do some stuff
-            final StandardFlowSnapshotContext.Builder contextBuilder = new StandardFlowSnapshotContext.Builder()
-                    .bucketId("bucket-id-A")
-                    .bucketName("C'est/Bucket A/です。")
-                    .flowId("flow-id-1")
-                    .flowName("テスト_用/フロー#1\\[contains invalid chars]")
-                    .author("unit-test-user")
-                    .comments("Initial commit.")
-                    .snapshotTimestamp(new Date().getTime())
-                    .version(1);
+        try {
+            cleanupGitRepository(gitDir);
+            cleanupGitRepository(remoteGitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(remoteGitDir);
 
-            final byte[] flow1Ver1 = "Flow1 ver.1".getBytes(StandardCharsets.UTF_8);
-            p.saveFlowContent(contextBuilder.build(), flow1Ver1);
+            createGitRemoteRepository(remoteGitDir);
 
-            contextBuilder.comments("2nd commit.").version(2);
-            final byte[] flow1Ver2 = "Flow1 ver.2".getBytes(StandardCharsets.UTF_8);
-            p.saveFlowContent(contextBuilder.build(), flow1Ver2);
+            cloneIntoLocalRepository(g -> {
+            }, gitDir, remoteGitDir);
+            final GitFlowPersistenceProvider sut = configureGitFlowPersistenceProvider(properties);
+            commitInitialSampleChanges(sut, builder -> {
+            });
+            waitUntilPushHasBeenFinished();
 
-            try {
-                Thread.sleep(20000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            sut.resetRepository(remoteGitDir.toURI());
 
-            try {
-                p.resetRepository(remoteRepoDir.toURI());
-                final byte[] flowVersion = p.getFlowContent("bucket-id-A", "flow-id-1", 2);
-                assertEquals("Flow1 ver.2", new String(flowVersion, StandardCharsets.UTF_8));
+            final byte[] flowVersion = sut.getFlowContent("bucket-id-A", "flow-id-1", 2);
+            assertEquals("Flow1 ver.2", new String(flowVersion, StandardCharsets.UTF_8));
+            // free all handles
+            sut.flowMetaData.closeRepository();
+        } finally {
+            deleteGitRepository(gitDir);
+            deleteGitRepository(remoteGitDir);
+        }
+    }
 
-            } catch (IOException e) {
-                fail();
-            }
-        }, true);
+    private void commitInitialSampleChanges(GitFlowPersistenceProvider p,
+                                            Consumer<StandardFlowSnapshotContext.Builder> postInitialChangesLambda) {
+        final StandardFlowSnapshotContext.Builder contextBuilder = new StandardFlowSnapshotContext.Builder()
+                .bucketId("bucket-id-A")
+                .bucketName("C'est/Bucket A/です。")
+                .flowId("flow-id-1")
+                .flowName("テスト_用/フロー#1\\[contains invalid chars]")
+                .author("unit-test-user")
+                .comments("Initial commit.")
+                .snapshotTimestamp(new Date().getTime())
+                .version(1);
+
+        final byte[] flow1Ver1 = "Flow1 ver.1".getBytes(StandardCharsets.UTF_8);
+        p.saveFlowContent(contextBuilder.build(), flow1Ver1);
+
+        contextBuilder.comments("2nd commit.").version(2);
+        final byte[] flow1Ver2 = "Flow1 ver.2".getBytes(StandardCharsets.UTF_8);
+        p.saveFlowContent(contextBuilder.build(), flow1Ver2);
+
+        postInitialChangesLambda.accept(contextBuilder);
+    }
+
+    @Test
+    public void testPullChanges() throws InterruptedException, GitAPIException, IOException {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP, "target/local-repo");
+        properties.put(REMOTE_TO_PUSH, "origin");
+        //inject variable which exists in the test env only
+        properties.put(REMOTE_REPO_DIR_PROP, "target/remote-repo");
+        final File gitDir = new File(properties.get(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP));
+        final File secondGitDir = new File("target/second-local-repo");
+        final File remoteGitDir = new File(properties.get(REMOTE_REPO_DIR_PROP));
+
+
+        try {
+            cleanupGitRepository(gitDir);
+            cleanupGitRepository(secondGitDir);
+            cleanupGitRepository(remoteGitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(remoteGitDir);
+
+            createGitRemoteRepository(remoteGitDir);
+            cloneIntoLocalRepository(g -> {
+            }, gitDir, remoteGitDir);
+            final GitFlowPersistenceProvider sut = configureGitFlowPersistenceProvider(properties);
+            commitInitialSampleChanges(sut, builder -> {
+            });
+            waitUntilPushHasBeenFinished();
+
+            cloneIntoLocalRepository(g -> {
+            }, secondGitDir, remoteGitDir);
+            properties.put(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP, "target/second-local-repo");
+            final GitFlowPersistenceProvider secondRepo = configureGitFlowPersistenceProvider(properties);
+            commitInitialSampleChanges(secondRepo, builder -> {
+                builder.comments("3rd commit made in the remote repository only.").version(3);
+                final byte[] flow1Ver3 = "Flow1 ver.3".getBytes(StandardCharsets.UTF_8);
+                secondRepo.saveFlowContent(builder.build(), flow1Ver3);
+            });
+            waitUntilPushHasBeenFinished();
+
+            sut.getLatestChangesOfRemoteRepository();
+            final byte[] flowVersion = sut.getFlowContent("bucket-id-A", "flow-id-1", 3);
+            assertEquals("Flow1 ver.3", new String(flowVersion, StandardCharsets.UTF_8));
+
+            // free all handles
+            sut.flowMetaData.closeRepository();
+            secondRepo.flowMetaData.closeRepository();
+        } finally {
+            deleteGitRepository(gitDir);
+            deleteGitRepository(secondGitDir);
+            deleteGitRepository(remoteGitDir);
+        }
+    }
+
+    private void waitUntilPushHasBeenFinished() {
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
