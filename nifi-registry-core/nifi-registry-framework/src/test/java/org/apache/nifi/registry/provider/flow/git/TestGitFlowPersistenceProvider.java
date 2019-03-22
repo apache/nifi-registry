@@ -39,12 +39,14 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider.REMOTE_TO_PUSH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 public class TestGitFlowPersistenceProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(TestGitFlowPersistenceProvider.class);
+    private String REMOTE_REPO_DIR_PROP = "REMOTE_REPO_DIR_PROP";
 
     private void assertCreationFailure(final Map<String, String> properties, final Consumer<ProviderCreationException> assertion) {
         final GitFlowPersistenceProvider persistenceProvider = new GitFlowPersistenceProvider();
@@ -114,6 +116,59 @@ public class TestGitFlowPersistenceProvider {
             if (deleteDir) {
                 FileUtils.deleteFile(gitDir, true);
             }
+        }
+    }
+
+    private void assertRemoteProvider(final Map<String, String> properties,
+                                      final GitConsumer gitConsumer,
+                                      final Consumer<GitFlowPersistenceProvider> assertion,
+                                      boolean deleteDir)
+            throws IOException, GitAPIException, InterruptedException {
+
+        final File gitDir = new File(properties.get(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP));
+        final File remoteGitDir = new File(properties.get(REMOTE_REPO_DIR_PROP));
+        try {
+            deleteGitRepositories(gitDir, remoteGitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(remoteGitDir);
+
+            Git.init().setBare(true).setDirectory(remoteGitDir).setGitDir(remoteGitDir).call().close();
+
+            logger.info("initialized remote git repository at " + remoteGitDir.getAbsolutePath());
+
+            try (final Git git = Git.cloneRepository()
+                    .setURI(remoteGitDir.getAbsolutePath())
+                    .setDirectory(gitDir).call()) {
+                logger.debug("Initiated a git repository {}", git);
+                final StoredConfig config = git.getRepository().getConfig();
+                config.setString("user", null, "name", "git-user");
+                config.setString("user", null, "email", "git-user@example.com");
+                config.save();
+                gitConsumer.accept(git);
+            }
+
+            final GitFlowPersistenceProvider persistenceProvider = new GitFlowPersistenceProvider();
+
+            final ProviderConfigurationContext configurationContext = new StandardProviderConfigurationContext(properties);
+            persistenceProvider.onConfigured(configurationContext);
+            assertion.accept(persistenceProvider);
+
+            // free all handles
+            persistenceProvider.flowMetaData.closeRepository();
+        } finally {
+            if (deleteDir) {
+                deleteGitRepositories(gitDir, remoteGitDir);
+            }
+        }
+    }
+
+    private void deleteGitRepositories(File gitDir, File remoteGitDir) throws IOException {
+        if (gitDir.exists()) {
+            org.apache.commons.io.FileUtils.deleteDirectory(gitDir);
+        }
+
+        if (remoteGitDir.exists()) {
+            org.apache.commons.io.FileUtils.deleteDirectory(remoteGitDir);
         }
     }
 
@@ -284,6 +339,52 @@ public class TestGitFlowPersistenceProvider {
                 p.getFlowContent("bucket-id-A", "flow-id-1", 1);
             } catch (FlowPersistenceException e) {
                 assertEquals("Bucket ID bucket-id-A was not found.", e.getMessage());
+            }
+        }, true);
+    }
+
+    @Test
+    public void testResetGitRepository() throws IOException, GitAPIException, InterruptedException {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP, "target/local-repo");
+        properties.put(REMOTE_TO_PUSH, "origin");
+        //inject variable which exists in the test env only
+        properties.put(REMOTE_REPO_DIR_PROP, "target/remote-repo");
+        File remoteRepoDir = new File(properties.get(REMOTE_REPO_DIR_PROP));
+
+        assertRemoteProvider(properties, g -> {
+        }, p -> {
+            // do some stuff
+            final StandardFlowSnapshotContext.Builder contextBuilder = new StandardFlowSnapshotContext.Builder()
+                    .bucketId("bucket-id-A")
+                    .bucketName("C'est/Bucket A/です。")
+                    .flowId("flow-id-1")
+                    .flowName("テスト_用/フロー#1\\[contains invalid chars]")
+                    .author("unit-test-user")
+                    .comments("Initial commit.")
+                    .snapshotTimestamp(new Date().getTime())
+                    .version(1);
+
+            final byte[] flow1Ver1 = "Flow1 ver.1".getBytes(StandardCharsets.UTF_8);
+            p.saveFlowContent(contextBuilder.build(), flow1Ver1);
+
+            contextBuilder.comments("2nd commit.").version(2);
+            final byte[] flow1Ver2 = "Flow1 ver.2".getBytes(StandardCharsets.UTF_8);
+            p.saveFlowContent(contextBuilder.build(), flow1Ver2);
+
+            try {
+                Thread.sleep(20000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                p.resetRepository(remoteRepoDir.toURI());
+                final byte[] flowVersion = p.getFlowContent("bucket-id-A", "flow-id-1", 2);
+                assertEquals("Flow1 ver.2", new String(flowVersion, StandardCharsets.UTF_8));
+
+            } catch (IOException e) {
+                fail();
             }
         }, true);
     }

@@ -144,22 +144,27 @@ class GitFlowMetaData {
             }
         }
 
-        this.stopPushThread();
-        gitRepo.close();
+        closeRepository();
+        cloneRepository(gitProjectRootDir, gitRepositoryUrl);
+    }
 
-
+    private void cloneRepository(File gitProjectRootDir, URI gitRepositoryUrl) throws IOException, GitAPIException {
         FileUtils.deleteDirectory(gitProjectRootDir);
-        //FileUtils.forceMkdir(gitProjectRootDir);
-        final CloneCommand command = Git.cloneRepository()
+        CloneCommand command = Git.cloneRepository()
                 .setURI(gitRepositoryUrl.toString())
                 .setDirectory(gitProjectRootDir);
         if (credentialsProvider != null) {
             command.setCredentialsProvider(credentialsProvider);
         }
-        command.call().close();
 
-        this.gitRepo = openRepository(gitProjectRootDir, true);
-        this.loadGitRepository(gitProjectRootDir);
+        command.call().close();
+    }
+
+    public void closeRepository() throws InterruptedException {
+        this.stopPushThread();
+        if (gitRepo != null) {
+            gitRepo.close();
+        }
     }
 
     public void pullChanges(File gitProjectRootDir) throws IOException, GitAPIException {

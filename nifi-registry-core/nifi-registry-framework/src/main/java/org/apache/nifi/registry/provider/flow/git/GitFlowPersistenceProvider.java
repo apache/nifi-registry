@@ -26,6 +26,7 @@ import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
+import org.apache.nifi.registry.provider.StandardProviderConfigurationContext;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -51,13 +52,14 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
     private static final Logger logger = LoggerFactory.getLogger(GitFlowMetaData.class);
     static final String FLOW_STORAGE_DIR_PROP = "Flow Storage Directory";
-    private static final String REMOTE_TO_PUSH = "Remote To Push";
+    protected static final String REMOTE_TO_PUSH = "Remote To Push";
     private static final String REMOTE_ACCESS_USER = "Remote Access User";
     private static final String REMOTE_ACCESS_PASSWORD = "Remote Access Password";
     static final String SNAPSHOT_EXTENSION = ".snapshot";
 
     private File flowStorageDir;
-    private GitFlowMetaData flowMetaData;
+    protected GitFlowMetaData flowMetaData;
+    private Map<String, String> props;
 
 
 
@@ -65,7 +67,7 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
     public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
         flowMetaData = new GitFlowMetaData();
 
-        final Map<String,String> props = configurationContext.getProperties();
+        this.props = configurationContext.getProperties();
         if (!props.containsKey(FLOW_STORAGE_DIR_PROP)) {
             throw new ProviderCreationException("The property " + FLOW_STORAGE_DIR_PROP + " must be provided");
         }
@@ -427,6 +429,7 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
     public void resetRepository(URI repositoryURI) throws IOException {
         try {
             this.flowMetaData.resetGitRepository(flowStorageDir, repositoryURI);
+            this.onConfigured(new StandardProviderConfigurationContext(this.props));
         } catch (GitAPIException e) {
             throw new IOException(e);
         } catch (InterruptedException e) {
