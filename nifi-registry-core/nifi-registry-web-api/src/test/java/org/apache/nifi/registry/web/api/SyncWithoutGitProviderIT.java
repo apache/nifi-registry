@@ -60,4 +60,16 @@ public class SyncWithoutGitProviderIT extends UnsecuredITBase {
                 .request()
                 .put(Entity.entity("https://gitrepository.com/fancy", MediaType.WILDCARD_TYPE), Bucket[].class);
     }
+
+    @Test
+    public void testGetStatusReturnsValidSyncState() {
+        final org.apache.nifi.registry.sync.RepositorySyncStatus statusDto = client
+                .target(createURL("sync"))
+                .request()
+                .get(org.apache.nifi.registry.sync.RepositorySyncStatus.class);
+
+        assertEquals(statusDto.getIsClean(), true);
+        assertEquals(statusDto.getHasChanges(), false);
+        assertEquals(statusDto.getChanges().isEmpty(), true);
+    }
 }

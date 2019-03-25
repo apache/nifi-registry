@@ -25,6 +25,7 @@ import org.apache.nifi.registry.security.authorization.exception.AccessDeniedExc
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.service.RegistryService;
+import org.apache.nifi.registry.sync.RepositorySyncStatus;
 import org.apache.nifi.registry.web.link.LinkService;
 import org.apache.nifi.registry.web.security.PermissionsService;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
             value = "get current sync status",
-            response = Bucket.class,
+            response = RepositorySyncStatus.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
                             @ExtensionProperty(name = "action", value = "read"),
@@ -91,10 +92,10 @@ public class SyncResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403)})
-    public Response getSyncStatus() {
+    public Response getSyncStatus() throws IOException {
         authorizeAccess(RequestAction.READ);
 
-        boolean currentStatus = false;
+        RepositorySyncStatus currentStatus = this.registryService.getStatus();
 
         return Response.status(Response.Status.OK).entity(currentStatus).build();
     }

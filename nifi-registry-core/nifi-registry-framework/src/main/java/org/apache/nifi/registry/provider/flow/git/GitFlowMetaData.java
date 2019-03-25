@@ -307,6 +307,9 @@ class GitFlowMetaData {
     }
 
     void stopPushThread() throws InterruptedException {
+        if(this.executorService == null)
+            return;
+
         this.executorService.shutdown();
         // push latest changes
         this.pushQueue.offer(System.currentTimeMillis());
@@ -535,4 +538,11 @@ class GitFlowMetaData {
         return gitRepo.newObjectReader().open(flowSnapshotObjectId).getBytes();
     }
 
+    public SyncStatus getStatus() throws GitAPIException {
+        final Status status = new Git(this.gitRepo).status().call();
+        return new SyncStatus(
+                status.isClean(),
+                status.hasUncommittedChanges(),
+                status.getConflictingStageState().keySet()) ;
+    }
 }

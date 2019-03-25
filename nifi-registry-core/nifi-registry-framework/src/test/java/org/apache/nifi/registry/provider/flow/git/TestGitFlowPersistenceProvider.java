@@ -21,6 +21,7 @@ import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.provider.StandardProviderConfigurationContext;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -33,15 +34,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static org.hamcrest.CoreMatchers.*;
+
 import static org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider.REMOTE_TO_PUSH;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class TestGitFlowPersistenceProvider {
 
@@ -97,14 +97,7 @@ public class TestGitFlowPersistenceProvider {
         try {
             FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
 
-            try (final Git git = Git.init().setDirectory(gitDir).call()) {
-                logger.debug("Initiated a git repository {}", git);
-                final StoredConfig config = git.getRepository().getConfig();
-                config.setString("user", null, "name", "git-user");
-                config.setString("user", null, "email", "git-user@example.com");
-                config.save();
-                gitConsumer.accept(git);
-            }
+            initializeLocalRepository(gitConsumer, gitDir);
 
             final GitFlowPersistenceProvider persistenceProvider = configureGitFlowPersistenceProvider(properties);
             assertion.accept(persistenceProvider);
@@ -113,6 +106,17 @@ public class TestGitFlowPersistenceProvider {
             if (deleteDir) {
                 FileUtils.deleteFile(gitDir, true);
             }
+        }
+    }
+
+    private void initializeLocalRepository(GitConsumer gitConsumer, File gitDir) throws IOException, GitAPIException {
+        try (final Git git = Git.init().setDirectory(gitDir).call()) {
+            logger.debug("Initiated a git repository {}", git);
+            final StoredConfig config = git.getRepository().getConfig();
+            config.setString("user", null, "name", "git-user");
+            config.setString("user", null, "email", "git-user@example.com");
+            config.save();
+            gitConsumer.accept(git);
         }
     }
 
@@ -441,10 +445,33 @@ public class TestGitFlowPersistenceProvider {
         }
     }
 
-
+    /*
+    just testing the happy path
+     */
     @Test
-    public void testGetSyncStatus() {
-        fail("TODO: implement test");
+    public void testGetSyncStatus() throws IOException, GitAPIException, InterruptedException {
+        final Map<String, String> properties = new HashMap<>();
+        properties.put(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP, "target/local-repo");
+        final File gitDir = new File(properties.get(GitFlowPersistenceProvider.FLOW_STORAGE_DIR_PROP));
+
+        try {
+            cleanupGitRepository(gitDir);
+            FileUtils.ensureDirectoryExistAndCanReadAndWrite(gitDir);
+
+            initializeLocalRepository(g -> {}, gitDir);
+            final GitFlowPersistenceProvider sut = configureGitFlowPersistenceProvider(properties);
+            final RepositorySyncStatus actualSyncStatus = sut.getStatus();
+            final RepositorySyncStatus expectedSyncStatus = RepositorySyncStatus.SuccessfulSynchronizedRepository();
+
+            assertEquals(expectedSyncStatus.isClean(), actualSyncStatus.isClean());
+            assertEquals(expectedSyncStatus.hasChanges(), actualSyncStatus.hasChanges());
+            assertEquals(expectedSyncStatus.changes().isEmpty(), actualSyncStatus.changes().isEmpty());
+
+            // free all handles
+            sut.flowMetaData.closeRepository();
+        } finally {
+            deleteGitRepository(gitDir);
+        }
     }
 
     private void waitUntilPushHasBeenFinished() {

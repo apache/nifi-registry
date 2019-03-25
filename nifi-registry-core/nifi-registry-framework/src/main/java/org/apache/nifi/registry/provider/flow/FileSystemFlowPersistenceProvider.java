@@ -23,6 +23,7 @@ import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.apache.nifi.registry.util.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -185,12 +186,17 @@ public class FileSystemFlowPersistenceProvider implements FlowPersistenceProvide
     }
 
     @Override
-    public void getLatestChangesOfRemoteRepository() throws IOException {
+    public void getLatestChangesOfRemoteRepository() {
 
     }
 
     @Override
-    public void resetRepository(URI repositoryURI) throws IOException {
+    public void resetRepository(URI repositoryURI) {
 
+    }
+
+    @Override
+    public RepositorySyncStatus getStatus() {
+        return RepositorySyncStatus.SuccessfulSynchronizedRepository();
     }
 }

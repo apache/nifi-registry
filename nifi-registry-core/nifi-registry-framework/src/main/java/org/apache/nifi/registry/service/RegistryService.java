@@ -49,6 +49,7 @@ import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
 import org.apache.nifi.registry.service.mapper.ExtensionMappings;
 import org.apache.nifi.registry.service.mapper.FlowMappings;
+import org.apache.nifi.registry.sync.RepositorySyncStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1305,4 +1306,9 @@ public class RegistryService {
                 "because the current provider does not support synchronization tasks.");
     }
 
+    public RepositorySyncStatus getStatus() throws IOException {
+        org.apache.nifi.registry.provider.sync.RepositorySyncStatus status = this.flowPersistenceProvider.getStatus();
+        RepositorySyncStatus dto = new RepositorySyncStatus(status.isClean(), status.hasChanges(), status.changes());
+        return dto;
+    }
 }

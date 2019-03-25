@@ -1,5 +1,7 @@
 package org.apache.nifi.registry.provider;
 
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
+
 import java.io.IOException;
 import java.net.URI;
 
@@ -14,4 +16,6 @@ public interface ProviderSynchronization {
      * reset repository completely and re-synchronize with the remote repository
      */
     void resetRepository(URI repositoryURI) throws IOException;
+
+    RepositorySyncStatus getStatus() throws IOException;
 }

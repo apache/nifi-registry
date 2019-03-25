@@ -19,6 +19,7 @@ package org.apache.nifi.registry.provider;
 import org.apache.nifi.registry.flow.FlowPersistenceException;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 
 import java.io.IOException;
 import java.net.URI;
@@ -63,12 +64,17 @@ public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
     }
 
     @Override
-    public void getLatestChangesOfRemoteRepository() throws IOException {
+    public void getLatestChangesOfRemoteRepository() {
 
     }
 
     @Override
-    public void resetRepository(URI repositoryURI) throws IOException {
+    public void resetRepository(URI repositoryURI) {
 
+    }
+
+    @Override
+    public RepositorySyncStatus getStatus() {
+        return RepositorySyncStatus.SuccessfulSynchronizedRepository();
     }
 }

@@ -27,6 +27,7 @@ import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.provider.StandardProviderConfigurationContext;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -435,5 +436,19 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
         } catch (InterruptedException e) {
             throw new IOException(e);
         }
+    }
+
+    @Override
+    public RepositorySyncStatus getStatus() throws IOException {
+        try{
+            SyncStatus status = this.flowMetaData.getStatus();
+            return new RepositorySyncStatus(
+                    status.isClean(),
+                    status.hasUncommittedChanges(),
+                    status.getConflictingChanges());
+        }catch(GitAPIException e){
+            throw new IOException(e);
+        }
+
     }
 }

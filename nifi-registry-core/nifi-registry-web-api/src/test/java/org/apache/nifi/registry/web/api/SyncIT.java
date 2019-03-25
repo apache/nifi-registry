@@ -22,6 +22,7 @@ import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceTestDataFactory;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,7 +36,9 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -148,8 +151,18 @@ public class SyncIT extends UnsecuredITBase {
     }
 
     @Test
-    public void testGetSyncStatus() {
-        fail("TODO: implement test");
+    public void testGetSyncStatus() throws IOException {
+        when(gitFlowPersistenceProviderMock.getStatus()).thenReturn(RepositorySyncStatus.SuccessfulSynchronizedRepository());
+
+        final org.apache.nifi.registry.sync.RepositorySyncStatus statusDto = client
+                .target(createURL("sync"))
+                .request()
+                .get(org.apache.nifi.registry.sync.RepositorySyncStatus.class);
+
+        verify(gitFlowPersistenceProviderMock).getStatus();
+        assertEquals(statusDto.getIsClean(), true);
+        assertEquals(statusDto.getHasChanges(), false);
+        assertEquals(statusDto.getChanges().isEmpty(), true);
     }
 
     private void assertBuckets(Bucket[] expectedBuckets, Bucket[] actual) {
