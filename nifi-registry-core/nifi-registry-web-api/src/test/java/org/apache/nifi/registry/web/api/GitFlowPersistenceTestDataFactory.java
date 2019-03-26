@@ -25,19 +25,19 @@ public class GitFlowPersistenceTestDataFactory {
         return bucket;
     }
 
-    private static Collection<Bucket> createSampleBuckets() {
+    private static Collection<Bucket> createSampleGitBuckets() {
         ArrayList<Bucket> buckets = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             Bucket b = new Bucket("bucket" + i);
             b.setBucketDirName("bucket" + i);
             Flow flow = b.getFlowOrCreate(b.getBucketId() + "_flowpointer_" + i);
-            createSampleFlow(flow);
+            createSampleGitFlow(flow);
             buckets.add(b);
         }
         return buckets;
     }
 
-    private static Flow createSampleFlow(Flow flow) {
+    private static Flow createSampleGitFlow(Flow flow) {
         Flow.FlowPointer pointer = new Flow.FlowPointer(flow.getFlowId() + 1);
         Calendar calendar = Calendar.getInstance();
         calendar.set(2018, 12, 12, 4, 2);
@@ -51,7 +51,7 @@ public class GitFlowPersistenceTestDataFactory {
     public static List<BucketMetadata> createSampleFlowMetadata() {
 
         List<BucketMetadata> bucketMetadata = new ArrayList<>();
-        Collection<org.apache.nifi.registry.provider.flow.git.Bucket> gitBuckets = createSampleBuckets();
+        Collection<org.apache.nifi.registry.provider.flow.git.Bucket> gitBuckets = createSampleGitBuckets();
         for (org.apache.nifi.registry.provider.flow.git.Bucket existingGitBucket : gitBuckets) {
             BucketMetadata bucket = new BucketMetadata();
             bucket.setName(existingGitBucket.getBucketDirName());
