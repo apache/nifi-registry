@@ -19,7 +19,7 @@ package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
-import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
+import org.apache.nifi.registry.metadata.BucketMetadata;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceTestDataFactory;
 import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
@@ -36,11 +36,10 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ActiveProfiles("WithGitProvider")
@@ -85,8 +84,8 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/BucketsIT.sql"
     })
     public void testSyncBucketsWithFilledGitRepository() {
-        Collection<VersionedFlowSnapshot> snapshots = GitFlowPersistenceTestDataFactory.createSampleFlowSnapshots();
-        when(gitFlowPersistenceProviderMock.getFlowSnapshots()).thenReturn(snapshots);
+        List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
+        when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
 
         final Bucket[] buckets = client
                 .target(createURL("sync"))
@@ -108,8 +107,8 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/BucketsIT.sql"
     })
     public void testSyncBucketsByResettingGitRepository() throws URISyntaxException, IOException {
-        Collection<VersionedFlowSnapshot> snapshots = GitFlowPersistenceTestDataFactory.createSampleFlowSnapshots();
-        when(gitFlowPersistenceProviderMock.getFlowSnapshots()).thenReturn(snapshots);
+        List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
+        when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
         when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
 
         final Bucket[] buckets = client
@@ -132,8 +131,8 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/BucketsIT.sql"
     })
     public void testSyncBucketsByGettingLatestChangesRepository() throws URISyntaxException, IOException {
-        Collection<VersionedFlowSnapshot> snapshots = GitFlowPersistenceTestDataFactory.createSampleFlowSnapshots();
-        when(gitFlowPersistenceProviderMock.getFlowSnapshots()).thenReturn(snapshots);
+        List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
+        when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
         when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
 
         final Bucket[] buckets = client
