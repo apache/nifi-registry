@@ -22,6 +22,7 @@ import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.ProviderFactoryException;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
+import org.apache.nifi.registry.security.util.XmlUtils;
 import org.apache.nifi.registry.url.aliaser.generated.Aliases;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -82,9 +84,9 @@ public class RegistryUrlAliasService {
                 unmarshaller.setSchema(schema);
 
                 // set the holder for later use
-                final JAXBElement<Aliases> element = unmarshaller.unmarshal(new StreamSource(configurationFile), Aliases.class);
+                final JAXBElement<Aliases> element = unmarshaller.unmarshal(XmlUtils.createSafeReader(new StreamSource(configurationFile)), Aliases.class);
                 return element.getValue().getAlias().stream().map(a -> Pair.of(a.getInternal(), a.getExternal())).collect(Collectors.toList());
-            } catch (SAXException | JAXBException e) {
+            } catch (SAXException | JAXBException | XMLStreamException e) {
                 throw new ProviderFactoryException("Unable to load the registry alias configuration file at: " + configurationFile.getAbsolutePath(), e);
             }
         } else {

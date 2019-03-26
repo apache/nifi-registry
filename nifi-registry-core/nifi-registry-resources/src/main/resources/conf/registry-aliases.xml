@@ -17,7 +17,7 @@
     <!--
     <alias>
         <internal>LOCAL_NIFI_REGISTRY</internal>
-        <external>http://localhost:18080</external>
+        <external>http://registry.nifi.apache.org:18080</external>
     </alias>
     -->
 </aliases>
