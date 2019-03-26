@@ -48,6 +48,7 @@ public class SyncWithoutGitProviderIT extends UnsecuredITBase {
         }
     }
 
+    // TODO: return more expressive return code (not implemented?)
     @Test(expected = InternalServerErrorException.class)
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {
             "classpath:db/clearDB.sql",

@@ -6,6 +6,11 @@ import java.io.IOException;
 import java.net.URI;
 
 public interface ProviderSynchronization {
+    /**
+     * define that the instance is capable of making a synchronization
+     *
+     * @return true, if the instance can synchronize the repository otherwise false
+     */
     Boolean canBeSynchronized();
     /**
      * synchronizes the repository with the remote repository (pulling changes)
@@ -17,5 +22,11 @@ public interface ProviderSynchronization {
      */
     void resetRepository(URI repositoryURI) throws IOException;
 
+    /**
+     * get the current status of the repository synchronization
+     *
+     * @return RepositorySyncStatus assembling the information about the status
+     * @throws IOException
+     */
     RepositorySyncStatus getStatus() throws IOException;
 }

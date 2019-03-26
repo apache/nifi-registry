@@ -26,15 +26,11 @@ import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.extension.bundle.Bundle;
-import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
-import org.apache.nifi.registry.extension.bundle.BundleType;
-import org.apache.nifi.registry.extension.bundle.BundleVersion;
-import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
-import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
-import org.apache.nifi.registry.extension.component.manifest.Extension;
+import org.apache.nifi.registry.extension.bundle.*;
 import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
 import org.apache.nifi.registry.extension.component.TagCount;
+import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
@@ -42,6 +38,7 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.flow.diff.*;
+import org.apache.nifi.registry.provider.flow.FlowMetadataSynchronizer;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.serialization.Serializer;
@@ -65,6 +62,8 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Main service for all back-end operations, REST resources should only interact with this service.
@@ -187,7 +186,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getAllBuckets();
-            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(toList());
         } finally {
             readLock.unlock();
         }
@@ -197,7 +196,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getBuckets(bucketIds);
-            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(toList());
         } finally {
             readLock.unlock();
         }
@@ -461,7 +460,7 @@ public class RegistryService {
 
             // return non-verbose set of flows for the given bucket
             final List<FlowEntity> flows = metadataService.getFlowsByBucket(existingBucket.getId());
-            return flows.stream().map(f -> FlowMappings.map(existingBucket, f)).collect(Collectors.toList());
+            return flows.stream().map(f -> FlowMappings.map(existingBucket, f)).collect(toList());
         } finally {
             readLock.unlock();
         }
@@ -1212,15 +1211,13 @@ public class RegistryService {
 
     public Collection<Bucket> syncBuckets(){
         if (this.flowPersistenceProvider instanceof GitFlowPersistenceProvider){
-            GitFlowPersistenceProvider gitProvider = (GitFlowPersistenceProvider)this.flowPersistenceProvider;
             deleteAllBucketsInMetaDatabase();
-            Collection<Bucket> createdBuckets = createBucketsFromGitProvider(gitProvider);
-            return createdBuckets;
+            return createBucketsFromGitProvider();
         }
 
         return this.metadataService.getAllBuckets()
-                .stream().map(bucketEntity -> DataModelMapper.map(bucketEntity))
-                .collect(Collectors.toList());
+                .stream().map(BucketMappings::map)
+                .collect(toList());
     }
 
     private void deleteAllBucketsInMetaDatabase() {
@@ -1229,61 +1226,12 @@ public class RegistryService {
         }
     }
 
-    private Collection<Bucket> createBucketsFromGitProvider(GitFlowPersistenceProvider gitProvider) {
-        Collection<Bucket> createdBuckets = new ArrayList<>();
-        for (VersionedFlowSnapshot snapshot : gitProvider.getFlowSnapshots()) {
-            Bucket snapshotBucket = createBucketEntityIfNotExists(snapshot);
+    private Collection<Bucket> createBucketsFromGitProvider() {
+        FlowMetadataSynchronizer metadataSynchronizer =
+                new FlowMetadataSynchronizer(this.metadataService, this.flowPersistenceProvider);
+        metadataSynchronizer.synchronize();
 
-            if (snapshotBucket != null) {
-                createdBuckets.add(snapshotBucket);
-            }
-            VersionedFlow bucketFlow = snapshot.getFlow();
-            createFlowEntityIfNotExists(bucketFlow);
-            createFlowSnapshotEntity(snapshot, bucketFlow);
-        }
-
-        return createdBuckets;
-    }
-
-    private void createFlowSnapshotEntity(VersionedFlowSnapshot snapshot, VersionedFlow bucketFlow) {
-        FlowSnapshotEntity flowSnapshot = new FlowSnapshotEntity();
-        VersionedFlowSnapshotMetadata snapshotMetadata = snapshot.getSnapshotMetadata();
-        flowSnapshot.setFlowId(bucketFlow.getIdentifier());
-        flowSnapshot.setCreated(new Date(snapshotMetadata.getTimestamp()));
-        flowSnapshot.setCreatedBy(snapshotMetadata.getAuthor());
-        flowSnapshot.setComments(snapshotMetadata.getComments());
-        flowSnapshot.setVersion(snapshotMetadata.getVersion());
-        this.metadataService.createFlowSnapshot(flowSnapshot);
-    }
-
-    private void createFlowEntityIfNotExists(VersionedFlow bucketFlow) {
-        if (this.metadataService.getFlowById(bucketFlow.getIdentifier()) == null) {
-            FlowEntity flowEntity = new FlowEntity();
-            flowEntity.setBucketId(bucketFlow.getBucketIdentifier());
-            flowEntity.setBucketName(bucketFlow.getBucketName());
-            flowEntity.setId(bucketFlow.getIdentifier());
-            flowEntity.setName(bucketFlow.getName());
-            flowEntity.setCreated(new Date(bucketFlow.getCreatedTimestamp()));
-            flowEntity.setModified(new Date(bucketFlow.getModifiedTimestamp()));
-            flowEntity.setType(BucketItemEntityType.FLOW);
-            flowEntity.setSnapshotCount(bucketFlow.getVersionCount());
-            this.metadataService.createFlow(flowEntity);
-        }
-    }
-
-    private Bucket createBucketEntityIfNotExists(VersionedFlowSnapshot snapshot) {
-        BucketEntity entity = new BucketEntity();
-        Bucket snapshotBucket = snapshot.getBucket();
-        entity.setDescription(snapshotBucket.getDescription());
-        entity.setId(snapshotBucket.getIdentifier());
-        entity.setName(snapshotBucket.getName());
-        entity.setCreated(new Date(snapshotBucket.getCreatedTimestamp()));
-        if (this.metadataService.getBucketById(entity.getId()) == null) {
-            this.metadataService.createBucket(entity);
-            return snapshotBucket;
-        }
-
-        return null;
+        return this.metadataService.getAllBuckets().stream().map(BucketMappings::map).collect(toList());
     }
 
     public void resetProviderRepository(URI repositoryURI) throws IOException {
@@ -1292,7 +1240,7 @@ public class RegistryService {
             return;
         }
 
-        throw new IOException("Cannot reset provider repositoy "+
+        throw new IOException("Cannot reset provider repository "+
                 "because the current provider does not support synchronization tasks.");
     }
 
@@ -1302,13 +1250,13 @@ public class RegistryService {
             return;
         }
 
-        throw new IOException("Cannot get latest changes of remote repositoy " +
+        throw new IOException("Cannot get latest changes of remote repository " +
                 "because the current provider does not support synchronization tasks.");
     }
 
     public RepositorySyncStatus getStatus() throws IOException {
         org.apache.nifi.registry.provider.sync.RepositorySyncStatus status = this.flowPersistenceProvider.getStatus();
-        RepositorySyncStatus dto = new RepositorySyncStatus(status.isClean(), status.hasChanges(), status.changes());
-        return dto;
+        RepositorySyncStatus dataTransferObject = new RepositorySyncStatus(status.isClean(), status.hasChanges(), status.changes());
+        return dataTransferObject;
     }
 }
