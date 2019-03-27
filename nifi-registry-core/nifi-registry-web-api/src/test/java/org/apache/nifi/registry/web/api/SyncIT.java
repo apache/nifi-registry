@@ -24,6 +24,7 @@ import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceTestDataFactory;
 import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -45,7 +46,8 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("WithGitProvider")
 public class SyncIT extends UnsecuredITBase {
     //TODO thread safety with parallel test execution?
-    private static GitFlowPersistenceProvider gitFlowPersistenceProviderMock;
+    @Autowired
+    private GitFlowPersistenceProvider gitFlowPersistenceProviderMock;
 
 
     @Configuration
@@ -55,9 +57,7 @@ public class SyncIT extends UnsecuredITBase {
         @Primary
         @Bean
         public FlowPersistenceProvider getGitFlowPersistenceProvider() {
-            if (gitFlowPersistenceProviderMock == null)
-                gitFlowPersistenceProviderMock = mock(GitFlowPersistenceProvider.class);
-            return gitFlowPersistenceProviderMock;
+            return mock(GitFlowPersistenceProvider.class);
         }
     }
 
