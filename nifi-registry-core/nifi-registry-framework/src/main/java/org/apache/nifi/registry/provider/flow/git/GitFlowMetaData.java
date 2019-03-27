@@ -39,7 +39,10 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -145,11 +148,41 @@ class GitFlowMetaData {
         }
 
         closeRepository();
-        cloneRepository(gitProjectRootDir, gitRepositoryUrl);
+
+        File backupDir = deriveBackupDir(gitProjectRootDir);
+        try {
+            backupProjectDir(gitProjectRootDir, backupDir);
+            FileUtils.deleteDirectory(gitProjectRootDir);
+            cloneRepository(gitProjectRootDir, gitRepositoryUrl);
+        } catch (Exception ex) {
+            restoreProjectDir(gitProjectRootDir, backupDir);
+            throw ex;
+        } finally {
+            safeDeleteDir(backupDir);
+        }
     }
 
-    private void cloneRepository(File gitProjectRootDir, URI gitRepositoryUrl) throws IOException, GitAPIException {
-        FileUtils.deleteDirectory(gitProjectRootDir);
+    private void safeDeleteDir(File dir) throws IOException {
+        if (dir.exists()) {
+            FileUtils.deleteDirectory(dir);
+        }
+    }
+
+    private void restoreProjectDir(File gitProjectRootDir, File backupDir) throws IOException {
+        safeDeleteDir(gitProjectRootDir);
+        FileUtils.copyDirectory(backupDir, gitProjectRootDir);
+    }
+
+    private void backupProjectDir(File gitProjectRootDir, File backupDir) throws IOException {
+        safeDeleteDir(backupDir);
+        FileUtils.copyDirectory(gitProjectRootDir, backupDir);
+    }
+
+    private File deriveBackupDir(File gitProjectRootDir) {
+        return new File(gitProjectRootDir.getParentFile(), "backup");
+    }
+
+    private void cloneRepository(File gitProjectRootDir, URI gitRepositoryUrl) throws GitAPIException {
         CloneCommand command = Git.cloneRepository()
                 .setURI(gitRepositoryUrl.toString())
                 .setDirectory(gitProjectRootDir);
