@@ -131,7 +131,7 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Reset provider repository to an initial state and re-syncs metadata (same as in POST /sync/metadata). " +
+            value = "Reset provider repository to an initial state and re-syncs metadata (same as /sync/metadata). " +
                     "What initial state means depends on the underlying provider, in case of a GitFlowPersistenceProvider" +
                     " an 'initial state' invokes a clone command to synchronize the remote repository with the local repository.",
             response = Bucket.class,
@@ -146,11 +146,16 @@ public class SyncResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
     public Response resetProviderRepository(
-            String repositoryURL
+            @ApiParam(value = "An URI identifying a remote repository.", required = true)
+            @QueryParam("repositoryUri")
+                    String repositoryURI
     ) throws URISyntaxException, IOException {
         authorizeAccess(RequestAction.WRITE);
 
-        URI uri = new URI(repositoryURL);
+        if (repositoryURI == null || repositoryURI.isEmpty())
+            return Response.status(Response.Status.BAD_REQUEST).build();
+
+        URI uri = new URI(repositoryURI);
         registryService.resetProviderRepository(uri);
         Collection<Bucket> buckets = syncRegistryMetadata();
 
