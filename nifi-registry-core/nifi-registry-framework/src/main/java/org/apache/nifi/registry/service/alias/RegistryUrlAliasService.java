@@ -40,7 +40,9 @@ import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -99,12 +101,17 @@ public class RegistryUrlAliasService {
 
         this.aliases = new ArrayList<>(aliases.size());
 
+        Set<String> internalTokens = new HashSet<>();
         for (Pair<String, String> alias : aliases) {
             String internal = alias.getKey();
             String external = alias.getValue();
 
             if (!urlStart.matcher(external).find()) {
                 throw new IllegalArgumentException("Expected " + external + " to start with http:// or https://");
+            }
+
+            if (!internalTokens.add(internal)) {
+                throw new IllegalArgumentException("Duplicate internal token " + internal);
             }
 
             this.aliases.add(Pair.of(internal, external));

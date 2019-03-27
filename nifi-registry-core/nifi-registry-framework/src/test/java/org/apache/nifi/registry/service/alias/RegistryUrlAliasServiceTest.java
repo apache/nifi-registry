@@ -138,4 +138,13 @@ public class RegistryUrlAliasServiceTest {
         assertEquals(unchanged, aliaser.getExternal(unchanged));
         assertEquals(unchanged, aliaser.getInternal(unchanged));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDuplicateInternalTokens() {
+        String internal = "THIS_NIFI_REGISTRY";
+        String external1 = "http://localhost:18080";
+        String external2 = "http://localhost:18081";
+
+        new RegistryUrlAliasService(Arrays.asList(Pair.of(internal, external1), Pair.of(internal, external2)));
+    }
 }
