@@ -71,7 +71,7 @@ public class SyncIT extends UnsecuredITBase {
                 .target(createURL("sync"))
                 .path("metadata")
                 .request()
-                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
+                .put(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
         assertNotNull(buckets);
         assertEquals(0, buckets.length);
@@ -91,7 +91,7 @@ public class SyncIT extends UnsecuredITBase {
                 .target(createURL("sync"))
                 .path("metadata")
                 .request()
-                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
+                .put(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
         assertNotNull(buckets);
         assertEquals(10, buckets.length);

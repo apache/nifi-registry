@@ -80,7 +80,7 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "get current sync status",
+            value = "Get current sync status",
             response = RepositorySyncStatus.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -101,12 +101,12 @@ public class SyncResource extends AuthorizableApplicationResource {
     }
 
 
-    @POST
+    @PUT
     @Path("metadata")
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "enforce sync of metadata (buckets, etc.) with the data of the underlying persistence provider",
+            value = "Replaces the registry metadata (buckets, etc.) with the data of the underlying (local) persistence provider",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -131,9 +131,9 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "reset provider repository to a initial state (whatever intial state means depends on the " +
-                    "underlying provider, in case of a GitFlowPersistenceProvider an 'initial state' invokes " +
-                    "a clone command) and re-sync metadata",
+            value = "Reset provider repository to an initial state and re-syncs metadata (same as in POST /sync/metadata). " +
+                    "What initial state means depends on the underlying provider, in case of a GitFlowPersistenceProvider" +
+                    " an 'initial state' invokes a clone command to synchronize the remote repository with the local repository.",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -162,7 +162,8 @@ public class SyncResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "get latest changes of remote provider repository and rebuild nifi-registry metadata.",
+            value = "Get latest changes of remote provider repository and rebuild nifi-registry metadata. Use this only after " +
+                    "having initialized the persistence provider.",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {

@@ -39,7 +39,7 @@ public class SyncWithoutGitProviderIT extends UnsecuredITBase {
                 .target(createURL("sync"))
                 .path("metadata")
                 .request()
-                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
+                .put(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
         assertNotNull(buckets);
         assertEquals(3, buckets.length);
