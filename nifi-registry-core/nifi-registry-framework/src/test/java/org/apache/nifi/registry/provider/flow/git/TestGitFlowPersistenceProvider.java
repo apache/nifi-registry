@@ -34,14 +34,15 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import static org.hamcrest.CoreMatchers.*;
-
 import static org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider.REMOTE_TO_PUSH;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class TestGitFlowPersistenceProvider {
 
@@ -359,7 +360,7 @@ public class TestGitFlowPersistenceProvider {
             });
             waitUntilPushHasBeenFinished();
 
-            sut.resetRepository(remoteGitDir.toURI());
+            sut.resetRepository();
 
             final byte[] flowVersion = sut.getFlowContent("bucket-id-A", "flow-id-1", 2);
             assertEquals("Flow1 ver.2", new String(flowVersion, StandardCharsets.UTF_8));

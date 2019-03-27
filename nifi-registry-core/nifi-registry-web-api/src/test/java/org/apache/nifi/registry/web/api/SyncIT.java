@@ -35,8 +35,6 @@ import org.springframework.test.context.jdbc.Sql;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -83,7 +81,7 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/clearDB.sql",
             "classpath:db/BucketsIT.sql"
     })
-    public void testSyncBucketsWithFilledGitRepository() {
+    public void testSyncBucketsWithInitializedGitRepository() {
         List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
         when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
 
@@ -106,7 +104,7 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/clearDB.sql",
             "classpath:db/BucketsIT.sql"
     })
-    public void testSyncBucketsByResettingGitRepository() throws URISyntaxException, IOException {
+    public void testSyncBucketsByResettingGitRepository() throws IOException {
         List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
         when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
         when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
@@ -115,9 +113,9 @@ public class SyncIT extends UnsecuredITBase {
                 .target(createURL("sync"))
                 .path("remote")
                 .request()
-                .put(Entity.entity("https://gitrepository.com/fancy", MediaType.WILDCARD_TYPE), Bucket[].class);
+                .put(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
-        verify(gitFlowPersistenceProviderMock).resetRepository(new URI("https://gitrepository.com/fancy"));
+        verify(gitFlowPersistenceProviderMock).resetRepository();
         assertNotNull(buckets);
         assertEquals(10, buckets.length);
         assertBuckets(
@@ -130,7 +128,7 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/clearDB.sql",
             "classpath:db/BucketsIT.sql"
     })
-    public void testSyncBucketsByGettingLatestChangesRepository() throws URISyntaxException, IOException {
+    public void testSyncBucketsByGettingLatestChangesRepository() throws IOException {
         List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
         when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
         when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
@@ -139,7 +137,7 @@ public class SyncIT extends UnsecuredITBase {
                 .target(createURL("sync"))
                 .path("remote")
                 .request()
-                .post(Entity.entity("https://gitrepository.com/fancy", MediaType.WILDCARD_TYPE), Bucket[].class);
+                .post(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
         verify(gitFlowPersistenceProviderMock).getLatestChangesOfRemoteRepository();
         assertNotNull(buckets);

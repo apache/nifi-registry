@@ -3,7 +3,6 @@ package org.apache.nifi.registry.provider;
 import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 
 import java.io.IOException;
-import java.net.URI;
 
 public interface ProviderSynchronization {
     /**
@@ -20,7 +19,7 @@ public interface ProviderSynchronization {
     /**
      * reset repository completely and re-synchronize with the remote repository
      */
-    void resetRepository(URI repositoryURI) throws IOException;
+    void resetRepository() throws IOException;
 
     /**
      * get the current status of the repository synchronization

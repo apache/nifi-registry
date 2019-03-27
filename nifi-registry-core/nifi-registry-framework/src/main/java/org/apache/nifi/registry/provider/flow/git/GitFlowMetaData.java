@@ -27,10 +27,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.PushResult;
-import org.eclipse.jgit.transport.RemoteConfig;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +129,8 @@ class GitFlowMetaData {
     }
 
 
-    public void resetGitRepository(File gitProjectRootDir, URI gitRepositoryUrl) throws IOException, GitAPIException, InterruptedException {
+    public void resetGitRepository(File gitProjectRootDir) throws IOException, GitAPIException, InterruptedException {
+        URI gitRepositoryUrl = URI.create("");
         if (this.isGitRepositoryExisting(gitProjectRootDir)) {
             gitRepo = openRepository(gitProjectRootDir, false);
 
@@ -142,7 +140,23 @@ class GitFlowMetaData {
                 if (!git.status().call().isClean()) {
                     throw new IOException("Directory '%s' contains changes. " +
                             "Therefore a complete reset of the repository is not possible.\n" +
-                            "Please commit your changes and push to remote repository.");
+                            "Please commit your changes and push to remote repository manually." +
+                            "Git persistence provider does not recover from conflicting changes automatically.");
+                }
+
+                Optional<RemoteConfig> remoteConfig = git.remoteList().call()
+                        .stream().filter(r -> r.getName().equalsIgnoreCase(remoteToPush)).findFirst();
+                if (remoteConfig.isPresent() && !remoteConfig.get().getURIs().isEmpty()) {
+                    URIish remoteUri = remoteConfig.get().getURIs().get(0);
+                    if (remoteUri.getHost() == null) {
+                        gitRepositoryUrl = new File(remoteUri.toString()).toURI();
+                    } else {
+                        gitRepositoryUrl = URI.create(remoteUri.toString());
+                    }
+                } else {
+                    throw new IOException("Cannot find/derive a remote git repository uri. Please provide a valid " +
+                            "remote origin by initializing your git repository correctly (for example: " +
+                            "git remote add origin repositoryUri).");
                 }
             }
         }

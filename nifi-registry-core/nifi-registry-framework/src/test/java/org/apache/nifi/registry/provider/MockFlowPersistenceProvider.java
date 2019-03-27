@@ -21,8 +21,6 @@ import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 
-import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 
 public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
@@ -69,7 +67,7 @@ public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
     }
 
     @Override
-    public void resetRepository(URI repositoryURI) {
+    public void resetRepository() {
 
     }
 

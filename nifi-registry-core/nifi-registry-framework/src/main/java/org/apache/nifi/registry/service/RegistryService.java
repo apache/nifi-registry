@@ -57,7 +57,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 import java.io.*;
-import java.net.URI;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -1234,9 +1233,9 @@ public class RegistryService {
         return this.metadataService.getAllBuckets().stream().map(BucketMappings::map).collect(toList());
     }
 
-    public void resetProviderRepository(URI repositoryURI) throws IOException {
+    public void resetProviderRepository() throws IOException {
         if (this.flowPersistenceProvider.canBeSynchronized()) {
-            flowPersistenceProvider.resetRepository(repositoryURI);
+            flowPersistenceProvider.resetRepository();
             return;
         }
 

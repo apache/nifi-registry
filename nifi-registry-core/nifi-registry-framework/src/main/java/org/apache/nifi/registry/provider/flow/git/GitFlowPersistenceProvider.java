@@ -37,9 +37,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URI;
-import java.sql.Date;
-import java.time.Instant;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -371,9 +368,9 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
     }
 
     @Override
-    public void resetRepository(URI repositoryURI) throws IOException {
+    public void resetRepository() throws IOException {
         try {
-            this.flowMetaData.resetGitRepository(flowStorageDir, repositoryURI);
+            this.flowMetaData.resetGitRepository(flowStorageDir);
             this.onConfigured(new StandardProviderConfigurationContext(this.props));
         } catch (GitAPIException e) {
             throw new IOException(e);

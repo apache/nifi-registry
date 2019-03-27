@@ -39,8 +39,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 
 @Component
@@ -145,18 +143,10 @@ public class SyncResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
-    public Response resetProviderRepository(
-            @ApiParam(value = "An URI identifying a remote repository.", required = true)
-            @QueryParam("repositoryUri")
-                    String repositoryURI
-    ) throws URISyntaxException, IOException {
+    public Response resetProviderRepository() throws IOException {
         authorizeAccess(RequestAction.WRITE);
 
-        if (repositoryURI == null || repositoryURI.isEmpty())
-            return Response.status(Response.Status.BAD_REQUEST).build();
-
-        URI uri = new URI(repositoryURI);
-        registryService.resetProviderRepository(uri);
+        registryService.resetProviderRepository();
         Collection<Bucket> buckets = syncRegistryMetadata();
 
         return Response.status(Response.Status.OK).entity(buckets).build();
