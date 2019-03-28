@@ -57,8 +57,8 @@ import java.util.List;
 @Component
 @Path("/buckets/{bucketId}/bundles")
 @Api(
-        value = "bucket_bundles",
-        description = "Create extension bundles scoped to an existing bucket in the registry.",
+        value = "bucket bundles",
+        description = "Create extension bundles scoped to an existing bucket in the registry. ",
         authorizations = { @Authorization("Authorization") }
 )
 public class BucketBundleResource extends AuthorizableApplicationResource {
@@ -87,15 +87,16 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Creates a version of an extension bundle by uploading a binary artifact",
-            notes = "If an extension bundle already exists in the given bucket with the same group id and artifact id " +
+            value = "Create extension bundle version",
+            notes =  "Creates a version of an extension bundle by uploading a binary artifact. " +
+                    "If an extension bundle already exists in the given bucket with the same group id and artifact id " +
                     "as that of the bundle being uploaded, then it will be added as a new version to the existing bundle. " +
                     "If an extension bundle does not already exist in the given bucket with the same group id and artifact id, " +
                     "then a new extension bundle will be created and this version will be added to the new bundle. " +
                     "Client's may optionally supply a SHA-256 in hex format through the multi-part form field 'sha256'. " +
                     "If supplied, then this value will be compared against the SHA-256 computed by the server, and the bundle " +
                     "will be rejected if the values do not match. If not supplied, the bundle will be accepted, but will be marked " +
-                    "to indicate that the client did not supply a SHA-256 during creation.",
+                    "to indicate that the client did not supply a SHA-256 during creation. " + NON_GUARANTEED_ENDPOINT,
             response = BundleVersion.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -146,7 +147,8 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all extension bundles in the given bucket",
+            value = "Get extension bundles by bucket",
+            notes = NON_GUARANTEED_ENDPOINT,
             response = Bundle.class,
             responseContainer = "List",
             extensions = {

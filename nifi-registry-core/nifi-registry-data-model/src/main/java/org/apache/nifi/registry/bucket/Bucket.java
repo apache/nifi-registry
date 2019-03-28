@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Objects;
 
 @XmlRootElement
-@ApiModel(value = "bucket")
+@ApiModel
 public class Bucket extends LinkableEntity {
 
     @NotBlank

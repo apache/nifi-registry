@@ -91,7 +91,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Creates an access policy",
+            value = "Create access policy",
             response = AccessPolicy.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -138,7 +138,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all access policies",
+            value = "Get all access policies",
             response = AccessPolicy.class,
             responseContainer = "List",
             extensions = {
@@ -175,7 +175,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}")
     @ApiOperation(
-            value = "Gets an access policy",
+            value = "Get access policy",
             response = AccessPolicy.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -218,7 +218,8 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{action}/{resource: .+}")
     @ApiOperation(
-            value = "Gets an access policy for the specified action and resource",
+            value = "Get access policy for resource",
+            notes = "Gets an access policy for the specified action and resource",
             response = AccessPolicy.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -268,7 +269,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}")
     @ApiOperation(
-            value = "Updates a access policy",
+            value = "Update access policy",
             response = AccessPolicy.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -321,7 +322,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{id}")
     @ApiOperation(
-            value = "Deletes an access policy",
+            value = "Delete access policy",
             response = AccessPolicy.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -361,7 +362,8 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the available resources that support access/authorization policies",
+            value = "Get available resources",
+            notes = "Gets the available resources that support access/authorization policies",
             response = Resource.class,
             responseContainer = "List",
             extensions = {

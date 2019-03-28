@@ -79,7 +79,8 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Retrieves the available field names that can be used for searching or sorting on flows.",
+            value = "Get flow fields",
+            notes = "Retrieves the flow field names that can be used for searching or sorting on flows.",
             response = Fields.class
     )
     public Response getAvailableFlowFields() {
@@ -93,7 +94,8 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets a flow",
+            value = "Get flow",
+            notes = "Gets a flow by id.",
             nickname = "globalGetFlow",
             response = VersionedFlow.class,
             extensions = {
@@ -133,7 +135,8 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
+            value = "Get flow versions",
+            notes = "Gets summary information for all versions of a given flow. Versions are ordered newest->oldest.",
             nickname = "globalGetFlowVersions",
             response = VersionedFlowSnapshotMetadata.class,
             responseContainer = "List",
@@ -175,7 +178,8 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the given version of a flow",
+            value = "Get flow version",
+            notes = "Gets the given version of a flow, including metadata and flow content.",
             nickname = "globalGetFlowVersion",
             response = VersionedFlowSnapshot.class,
             extensions = {
@@ -217,7 +221,8 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get the latest version of a flow",
+            value = "Get latest flow version",
+            notes = "Gets the latest version of a flow, including metadata and flow content.",
             nickname = "globalGetLatestFlowVersion",
             response = VersionedFlowSnapshot.class,
             extensions = {
@@ -256,7 +261,8 @@ public class FlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get the metadata for the latest version of a flow",
+            value = "Get latest flow version metadata",
+            notes = "Gets the metadata for the latest version of a flow.",
             nickname = "globalGetLatestFlowVersionMetadata",
             response = VersionedFlowSnapshotMetadata.class,
             extensions = {

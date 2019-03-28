@@ -25,6 +25,14 @@
     <version>0.4.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
+    <properties>
+        <swagger.source.dir>${project.basedir}/src/main/resources/swagger</swagger.source.dir>
+        <swagger.generated.dir>${project.build.directory}/swagger</swagger.generated.dir>
+        <asciidoc.source.dir>${project.basedir}/src/main/asciidoc</asciidoc.source.dir>
+        <asciidoc.generated.dir>${project.build.directory}/asciidoc</asciidoc.generated.dir>
+        <docs.dir>${project.build.directory}/${project.artifactId}-${project.version}/docs/</docs.dir>
+    </properties>
+
     <build>
         <resources>
             <resource>
@@ -65,7 +73,7 @@
                                     </schemes>
                                     <basePath>/nifi-registry-api</basePath>
                                     <info>
-                                        <title>NiFi Registry REST API</title>
+                                        <title>Apache NiFi Registry REST API</title>
                                         <version>${project.version}</version>
                                         <description>
                                             The REST API provides an interface to a registry with operations for saving, versioning, reading NiFi flows and components.
@@ -79,17 +87,16 @@
                                             <url>http://www.apache.org/licenses/LICENSE-2.0.html</url>
                                             <name>Apache 2.0 License</name>
                                         </license>
+                                        <termsOfService>As described in the license</termsOfService>
                                     </info>
                                     <securityDefinitions>
                                         <securityDefinition>
-                                            <jsonPath>${project.basedir}/src/main/resources/swagger/security-definitions.json</jsonPath>
+                                            <jsonPath>${swagger.source.dir}/security-definitions.json</jsonPath>
                                         </securityDefinition>
                                     </securityDefinitions>
                                     <templatePath>classpath:/templates/index.html.hbs</templatePath>
-                                    <outputPath>
-                                        ${project.build.directory}/${project.artifactId}-${project.version}/docs/rest-api/index.html
-                                    </outputPath>
-                                    <swaggerDirectory>${project.build.directory}/swagger</swaggerDirectory>
+                                    <outputPath>${docs.dir}/rest-api/index.html</outputPath>
+                                    <swaggerDirectory>${swagger.generated.dir}</swaggerDirectory>
                                 </apiSource>
                             </apiSources>
                         </configuration>
@@ -106,7 +113,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/${project.artifactId}-${project.version}/docs/rest-api/images</outputDirectory>
+                            <outputDirectory>${docs.dir}/rest-api/images</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>src/main/resources/images</directory>
@@ -131,12 +138,9 @@
                             <goal>wget</goal>
                         </goals>
                         <configuration>
-                            <url>
-                                https://github.com/swagger-api/swagger-ui/archive/v${swagger.ui.version}.tar.gz
-                            </url>
+                            <url>https://github.com/swagger-api/swagger-ui/archive/v${swagger.ui.version}.tar.gz</url>
                             <unpack>true</unpack>
-                            <outputDirectory>${project.build.directory}
-                            </outputDirectory>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -180,6 +184,65 @@
                                     </copy>
                                 </sequential>
                             </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Generates asciidoc files from swagger.json -->
+            <plugin>
+                <groupId>io.github.swagger2markup</groupId>
+                <artifactId>swagger2markup-maven-plugin</artifactId>
+                <version>1.3.3</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>convertSwagger2markup</goal>
+                        </goals>
+                        <configuration>
+                            <swaggerInput>${swagger.generated.dir}/swagger.json</swaggerInput>
+                            <outputDir>${asciidoc.generated.dir}</outputDir>
+                            <config>
+                                <swagger2markup.markupLanguage>ASCIIDOC</swagger2markup.markupLanguage>
+                                <swagger2markup.pathsGroupedBy>TAGS</swagger2markup.pathsGroupedBy>
+                                <swagger2markup.generatedExamplesEnabled>true</swagger2markup.generatedExamplesEnabled>
+                            </config>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Generates rest-api.html from rest-api.adoc and places it in docs dir within WAR -->
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>1.5.7.1</version>
+                <configuration>
+                    <sourceDirectory>${asciidoc.source.dir}</sourceDirectory>
+                    <sourceDocumentName>rest-api.adoc</sourceDocumentName>
+                    <attributes>
+                        <doctype>article</doctype>
+                        <toc></toc>
+                        <toclevels>3</toclevels>
+                        <numbered></numbered>
+                        <hardbreaks></hardbreaks>
+                        <sectlinks></sectlinks>
+                        <sectanchors></sectanchors>
+                        <revnumber>${project.version}</revnumber>
+                        <organization>Apache NiFi</organization>
+                        <generated>${asciidoc.generated.dir}</generated>
+                    </attributes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>output-html</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <backend>html5</backend>
+                            <outputDirectory>${docs.dir}/rest-api</outputDirectory>
+                            <outputFile>rest-api.html</outputFile>
                         </configuration>
                     </execution>
                 </executions>

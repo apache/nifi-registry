@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiModelProperty;
 /**
  * Access policy summary of which actions ("read', "write", "delete") are allowable for a specified web resource.
  */
-@ApiModel("accessPolicySummary")
+@ApiModel
 public class AccessPolicySummary {
 
     private String identifier;

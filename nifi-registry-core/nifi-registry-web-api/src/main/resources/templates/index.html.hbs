@@ -441,6 +441,10 @@
                 // organize the endpoints
                 organizeEndpoints('/buckets', $('#bucket-endpoints'));
                 organizeEndpoints('/items', $('#item-endpoints'));
+                organizeEndpoints('/flows', $('#flow-endpoints'));
+                organizeEndpoints('/bundles', $('#bundle-endpoints'));
+                organizeEndpoints('/extensions', $('#extension-endpoints'));
+                organizeEndpoints('/extension-repository', $('#extension-repository-endpoints'));
                 organizeEndpoints('/tenants', $('#tenant-endpoints'));
                 organizeEndpoints('/policies', $('#policy-endpoints'));
                 organizeEndpoints('/access', $('#access-endpoints'));
@@ -476,6 +480,38 @@
                 <div class="clear"></div>
             </div>
             <div id="item-endpoints" class="section-endpoints hidden"></div>
+        </div>
+        <div class="section">
+            <div class="section-header">
+                <div class="title link">Flows</div>
+                <div class="sub-title section-description">Flow endpoints</div>
+                <div class="clear"></div>
+            </div>
+            <div id="flow-endpoints" class="section-endpoints hidden"></div>
+        </div>
+        <div class="section">
+            <div class="section-header">
+                <div class="title link">Bundles</div>
+                <div class="sub-title section-description">Bundle endpoints</div>
+                <div class="clear"></div>
+            </div>
+            <div id="bundle-endpoints" class="section-endpoints hidden"></div>
+        </div>
+        <div class="section">
+            <div class="section-header">
+                <div class="title link">Extensions</div>
+                <div class="sub-title section-description">Extension endpoints</div>
+                <div class="clear"></div>
+            </div>
+            <div id="extension-endpoints" class="section-endpoints hidden"></div>
+        </div>
+        <div class="section">
+            <div class="section-header">
+                <div class="title link">Extension Repository</div>
+                <div class="sub-title section-description">Extension Repository endpoints</div>
+                <div class="clear"></div>
+            </div>
+            <div id="extension-repository-endpoints" class="section-endpoints hidden"></div>
         </div>
         <div class="section">
             <div class="section-header">

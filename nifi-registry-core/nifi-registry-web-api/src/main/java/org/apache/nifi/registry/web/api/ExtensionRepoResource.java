@@ -62,8 +62,8 @@ import java.util.SortedSet;
 @Component
 @Path("/extension-repository")
 @Api(
-        value = "extension_repository",
-        description = "Interact with extension bundles via the hierarchy of bucket/group/artifact/version.",
+        value = "extension repository",
+        description = "Interact with extension bundles via the hierarchy of bucket/group/artifact/version. ",
         authorizations = { @Authorization("Authorization") }
 )
 public class ExtensionRepoResource extends AuthorizableApplicationResource {
@@ -87,7 +87,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the names of the buckets the current user is authorized for in order to browse the repo by bucket",
+            value = "Get extension repo buckets",
+            notes = "Gets the names of the buckets the current user is authorized for in order to browse the repo by bucket. " + NON_GUARANTEED_ENDPOINT,
             response = ExtensionRepoBucket.class,
             responseContainer = "List"
     )
@@ -115,7 +116,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the groups in the extension repository in the bucket with the given name",
+            value = "Get extension repo groups",
+            notes = "Gets the groups in the extension repository in the given bucket. " + NON_GUARANTEED_ENDPOINT,
             response = ExtensionRepoGroup.class,
             responseContainer = "List",
             extensions = {
@@ -148,7 +150,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the artifacts in the extension repository with the given group in the bucket with the given name",
+            value = "Get extension repo artifacts",
+            notes = "Gets the artifacts in the extension repository in the given bucket and group. " + NON_GUARANTEED_ENDPOINT,
             response = ExtensionRepoArtifact.class,
             responseContainer = "List",
             extensions = {
@@ -184,7 +187,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the versions of the artifact in the extension repository specified by the given bucket, group, artifact, and version",
+            value = "Get extension repo versions",
+            notes = "Gets the versions in the extension repository for the given bucket, group, and artifact. " + NON_GUARANTEED_ENDPOINT,
             response = ExtensionRepoVersionSummary.class,
             responseContainer = "List",
             extensions = {
@@ -223,7 +227,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the information about the version specified by the given bucket, group, artifact, and version",
+            value = "Get extension repo version",
+            notes = "Gets information about the version in the given bucket, group, and artifact. " + NON_GUARANTEED_ENDPOINT,
             response = ExtensionRepoVersion.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -294,7 +299,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the information about the extensions in the extension bundle specified by the given bucket, group, artifact, and version",
+            value = "Get extension repo extensions",
+            notes = "Gets information about the extensions in the given bucket, group, artifact, and version. " + NON_GUARANTEED_ENDPOINT,
             response = ExtensionMetadata.class,
             responseContainer = "List",
             extensions = {
@@ -341,7 +347,9 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the information about the extension in the extension bundle specified by the given bucket, group, artifact, and version",
+            value = "Get extension repo extension",
+            notes = "Gets information about the extension with the given name in " +
+                    "the given bucket, group, artifact, and version. " + NON_GUARANTEED_ENDPOINT,
             response = org.apache.nifi.registry.extension.component.manifest.Extension.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -385,7 +393,9 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     @ApiOperation(
-            value = "Gets the documentation for the given extension",
+            value = "Get extension repo extension docs",
+            notes = "Gets the documentation for the extension with the given name in " +
+                    "the given bucket, group, artifact, and version. " + NON_GUARANTEED_ENDPOINT,
             response = String.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -429,7 +439,9 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     @ApiOperation(
-            value = "Gets the additional details documentation for the given extension",
+            value = "Get extension repo extension details",
+            notes = "Gets the additional details documentation for the extension with the given name in " +
+                    "the given bucket, group, artifact, and version. " + NON_GUARANTEED_ENDPOINT,
             response = String.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -473,7 +485,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation(
-            value = "Gets the binary content of the extension bundle specified by the given bucket, group, artifact, and version",
+            value = "Get extension repo version content",
+            notes = "Gets the binary content of the bundle with the given bucket, group, artifact, and version. " + NON_GUARANTEED_ENDPOINT,
             response = byte[].class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -517,7 +530,9 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
     @ApiOperation(
-            value = "Gets the hex representation of the SHA-256 digest for the binary content of the version of the extension bundle",
+            value = "Get extension repo version checksum",
+            notes = "Gets the hex representation of the SHA-256 digest for the binary content of the bundle " +
+                    "with the given bucket, group, artifact, and version." + NON_GUARANTEED_ENDPOINT,
             response = String.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -558,9 +573,10 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
     @ApiOperation(
-            value = "Gets the hex representation of the SHA-256 digest for the binary content of the version of the extension bundle. Since the " +
-                    "same group-artifact-version can exist in multiple buckets, this will return the checksum of the first one returned. This will be " +
-                    "consistent since the checksum must be the same when existing in multiple buckets.",
+            value = "Get global extension repo version checksum",
+            notes = "Gets the hex representation of the SHA-256 digest for the binary content with the given bucket, group, artifact, and version. " +
+                    "Since the same group-artifact-version can exist in multiple buckets, this will return the checksum of the first one returned. " +
+                    "This will be consistent since the checksum must be the same when existing in multiple buckets. " + NON_GUARANTEED_ENDPOINT,
             response = String.class
     )
     @ApiResponses({
