@@ -28,7 +28,7 @@ import java.util.Objects;
  * The metadata information about a VersionedFlowSnapshot. This class implements Comparable in order
  * to sort based on the snapshot version in ascending order.
  */
-@ApiModel(value = "versionedFlowSnapshotMetadata")
+@ApiModel
 public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Comparable<VersionedFlowSnapshotMetadata> {
 
     @NotBlank

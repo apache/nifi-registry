@@ -19,7 +19,7 @@ package org.apache.nifi.registry.authorization;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("resource")
+@ApiModel
 public class Resource {
 
     private String identifier;

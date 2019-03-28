@@ -22,6 +22,16 @@
     </parent>
     <packaging>pom</packaging>
     <artifactId>nifi-registry-docs</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-web-api</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
+            <type>war</type>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -60,6 +70,7 @@
                 </executions>
                 <configuration>
                     <sourceDirectory>${project.build.directory}/asciidoc</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-docs</outputDirectory>
                     <backend>html5</backend>
                     <attributes>
                         <imagesdir>./images</imagesdir>
@@ -73,6 +84,58 @@
                         <stylesheet>asciidoc-mod.css</stylesheet>
                     </attributes>
                 </configuration>
+            </plugin>
+            <!-- Unpack rest-api.html that was generated from nifi-registry-web-api and place it into a temp folder in the target dir -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <execution>
+                        <id>unpack-rest-api-doc</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeGroupIds>org.apache.nifi.registry</includeGroupIds>
+                            <includeArtifactIds>nifi-registry-web-api</includeArtifactIds>
+                            <outputDirectory>${project.build.directory}/nifi-registry-web-api/</outputDirectory>
+                            <includes>**/rest-api.html</includes>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Copy rest-api.html from the tmp dir to the generated-docs dir where the other html docs are, this is done
+                    in two steps to eliminate the nested path that was created in the temp dir when running unpack-dependencies
+             -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>copy-rest-api-doc</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <sequential>
+                                    <echo>Copy unpacked rest-api.html to generated-docs dir</echo>
+                                    <copy todir="${project.build.directory}/generated-docs">
+                                        <fileset dir="${project.build.directory}/nifi-registry-web-api/docs/rest-api/">
+                                            <include name="**" />
+                                        </fileset>
+                                    </copy>
+                                </sequential>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <!-- This plugin is used to insert the Apache License into the output HMTL because
             AsciiDoc doesn't appear to provide a mechanism for doing this. -->

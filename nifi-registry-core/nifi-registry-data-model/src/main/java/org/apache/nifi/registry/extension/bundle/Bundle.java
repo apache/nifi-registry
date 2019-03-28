@@ -32,8 +32,11 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Each bundle may then have one or more versions associated with it by creating an {@link BundleVersion}.
  *
  * The {@link BundleVersion} represents the actually binary bundle which may contain one or more extensions.
+ *
+ * Note: The @ApiModel annotation needs a value specified because there is another class called Bundle in a different
+ * package for flows, and the model names must be unique since they won't carry the Java package structure forward.
  */
-@ApiModel
+@ApiModel("ExtensionBundle")
 @XmlRootElement
 public class Bundle extends BucketItem {
 

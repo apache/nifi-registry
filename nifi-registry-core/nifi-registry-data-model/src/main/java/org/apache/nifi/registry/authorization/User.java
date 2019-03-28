@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-@ApiModel("user")
+@ApiModel
 public class User extends Tenant {
 
     private Set<Tenant> userGroups;

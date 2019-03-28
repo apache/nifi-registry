@@ -26,7 +26,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
 
-@ApiModel("bucketItem")
+@ApiModel
 public abstract class BucketItem extends LinkableEntity {
 
     @NotBlank

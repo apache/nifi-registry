@@ -108,7 +108,8 @@ public class AccessResource extends ApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Returns the current client's authenticated identity and permissions to top-level resources",
+            value = "Get access status",
+            notes = "Returns the current client's authenticated identity and permissions to top-level resources",
             response = CurrentUser.class,
             authorizations = {@Authorization(value = "Authorization")}
     )
@@ -139,8 +140,9 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token")
     @ApiOperation(
-            value = "Creates a token for accessing the REST API via auto-detected method of verifying client identity claim credentials",
-            notes = "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
+            value = "Create token trying all providers",
+            notes = "Creates a token for accessing the REST API via auto-detected method of verifying client identity claim credentials. " +
+                    "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
                     "the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header " +
                     "in the format 'Authorization: Bearer <token>'.",
             response = String.class
@@ -204,8 +206,8 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token/login")
     @ApiOperation(
-            value = "Creates a token for accessing the REST API via username/password",
-            notes = "The user credentials must be passed in standard HTTP Basic Auth format. " +
+            value = "Create token using basic auth",
+            notes = "Creates a token for accessing the REST API via username/password. The user credentials must be passed in standard HTTP Basic Auth format. " +
                     "That is: 'Authorization: Basic <credentials>', where <credentials> is the base64 encoded value of '<username>:<password>'. " +
                     "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
                     "the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header " +
@@ -262,8 +264,9 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token/kerberos")
     @ApiOperation(
-            value = "Creates a token for accessing the REST API via Kerberos Service Tickets or SPNEGO Tokens (which includes Kerberos Service Tickets)",
-            notes = "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
+            value = "Create token using kerberos",
+            notes = "Creates a token for accessing the REST API via Kerberos Service Tickets or SPNEGO Tokens (which includes Kerberos Service Tickets). " +
+                    "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
                     "the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header " +
                     "in the format 'Authorization: Bearer <token>'.",
             response = String.class
@@ -317,8 +320,9 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token/identity-provider")
     @ApiOperation(
-            value = "Creates a token for accessing the REST API via a custom identity provider.",
-            notes = "The user credentials must be passed in a format understood by the custom identity provider, e.g., a third-party auth token in an HTTP header. " +
+            value = "Create token using identity provider",
+            notes = "Creates a token for accessing the REST API via a custom identity provider. " +
+                    "The user credentials must be passed in a format understood by the custom identity provider, e.g., a third-party auth token in an HTTP header. " +
                     "The exact format of the user credentials expected by the custom identity provider can be discovered by 'GET /access/token/identity-provider/usage'. " +
                     "The token returned is formatted as a JSON Web Token (JWT). The token is base64 encoded and comprised of three parts. The header, " +
                     "the body, and the signature. The expiration of the token is a contained within the body. The token can be used in the Authorization header " +
@@ -374,7 +378,8 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token/identity-provider/usage")
     @ApiOperation(
-            value = "Provides a description of how the currently configured identity provider expects credentials to be passed to POST /access/token/identity-provider",
+            value = "Get identity provider usage",
+            notes = "Provides a description of how the currently configured identity provider expects credentials to be passed to POST /access/token/identity-provider",
             response = String.class
     )
     @ApiResponses({
@@ -416,8 +421,9 @@ public class AccessResource extends ApplicationResource {
     @Produces(MediaType.TEXT_PLAIN)
     @Path("/token/identity-provider/test")
     @ApiOperation(
-            value = "Tests the format of the credentials against this identity provider without preforming authentication on the credentials to validate them.",
-            notes = "The user credentials should be passed in a format understood by the custom identity provider as defined by 'GET /access/token/identity-provider/usage'.",
+            value = "Test identity provider",
+            notes = "Tests the format of the credentials against this identity provider without preforming authentication on the credentials to validate them. " +
+                    "The user credentials should be passed in a format understood by the custom identity provider as defined by 'GET /access/token/identity-provider/usage'.",
             response = String.class
     )
     @ApiResponses({

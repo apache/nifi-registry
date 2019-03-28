@@ -92,7 +92,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("users")
     @ApiOperation(
-            value = "Creates a user",
+            value = "Create user",
             notes = NON_GUARANTEED_ENDPOINT,
             response = User.class,
             extensions = {
@@ -144,7 +144,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("users")
     @ApiOperation(
-            value = "Gets all users",
+            value = "Get all users",
             notes = NON_GUARANTEED_ENDPOINT,
             response = User.class,
             responseContainer = "List",
@@ -182,7 +182,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("users/{id}")
     @ApiOperation(
-            value = "Gets a user",
+            value = "Get user",
             notes = NON_GUARANTEED_ENDPOINT,
             response = User.class,
             extensions = {
@@ -225,7 +225,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("users/{id}")
     @ApiOperation(
-            value = "Updates a user",
+            value = "Update user",
             notes = NON_GUARANTEED_ENDPOINT,
             response = User.class,
             extensions = {
@@ -283,7 +283,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("users/{id}")
     @ApiOperation(
-            value = "Deletes a user",
+            value = "Delete user",
             notes = NON_GUARANTEED_ENDPOINT,
             response = User.class,
             extensions = {
@@ -334,7 +334,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("user-groups")
     @ApiOperation(
-            value = "Creates a user group",
+            value = "Create user group",
             notes = NON_GUARANTEED_ENDPOINT,
             response = UserGroup.class,
             extensions = {
@@ -385,7 +385,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("user-groups")
     @ApiOperation(
-            value = "Gets all user groups",
+            value = "Get user groups",
             notes = NON_GUARANTEED_ENDPOINT,
             response = UserGroup.class,
             responseContainer = "List",
@@ -420,7 +420,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("user-groups/{id}")
     @ApiOperation(
-            value = "Gets a user group",
+            value = "Get user group",
             notes = NON_GUARANTEED_ENDPOINT,
             response = UserGroup.class,
             extensions = {
@@ -464,7 +464,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("user-groups/{id}")
     @ApiOperation(
-            value = "Updates a user group",
+            value = "Update user group",
             notes = NON_GUARANTEED_ENDPOINT,
             response = UserGroup.class,
             extensions = {
@@ -523,7 +523,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("user-groups/{id}")
     @ApiOperation(
-            value = "Deletes a user group",
+            value = "Delete user group",
             notes = NON_GUARANTEED_ENDPOINT,
             response = UserGroup.class,
             extensions = {

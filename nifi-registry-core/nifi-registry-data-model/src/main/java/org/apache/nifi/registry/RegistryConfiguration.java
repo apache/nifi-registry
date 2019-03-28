@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
-@ApiModel(value = "registryConfiguration")
+@ApiModel
 public class RegistryConfiguration {
 
     private Boolean supportsManagedAuthorizer;

@@ -87,8 +87,8 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get items across all buckets",
-            notes = "The returned items will include only items from buckets for which the user is authorized. " +
+            value = "Get all items",
+            notes = "Get items across all buckets. The returned items will include only items from buckets for which the user is authorized. " +
                     "If the user is not authorized to any buckets, an empty list will be returned.",
             response = BucketItem.class,
             responseContainer = "List"
@@ -125,7 +125,8 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets items of the given bucket",
+            value = "Get bucket items",
+            notes = "Gets the items located in the given bucket.",
             response = BucketItem.class,
             responseContainer = "List",
             nickname = "getItemsInBucket",
@@ -159,7 +160,8 @@ public class ItemResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Retrieves the available field names for searching or sorting on bucket items.",
+            value = "Get item fields",
+            notes = "Retrieves the item field names for searching or sorting on bucket items.",
             response = Fields.class
     )
     public Response getAvailableBucketItemFields() {

@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @see VersionedFlowSnapshot
  */
 @XmlRootElement
-@ApiModel(value = "versionedFlow")
+@ApiModel
 public class VersionedFlow extends BucketItem {
 
     @Min(0)

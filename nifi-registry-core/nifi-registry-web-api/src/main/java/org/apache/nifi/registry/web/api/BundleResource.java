@@ -61,7 +61,7 @@ import java.util.SortedSet;
 @Path("/bundles")
 @Api(
         value = "bundles",
-        description = "Gets metadata about extension bundles and their versions.",
+        description = "Gets metadata about extension bundles and their versions. ",
         authorizations = { @Authorization("Authorization") }
 )
 public class BundleResource extends AuthorizableApplicationResource {
@@ -89,9 +89,10 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get extension bundles across all authorized buckets",
-            notes = "The returned items will include only items from buckets for which the user is authorized. " +
-                    "If the user is not authorized to any buckets, an empty list will be returned.",
+            value = "Get all bundles",
+            notes = "Gets the metadata for all bundles across all authorized buckets with optional filters applied. " +
+                    "The returned results will include only items from buckets for which the user is authorized. " +
+                    "If the user is not authorized to any buckets, an empty list will be returned. " + NON_GUARANTEED_ENDPOINT,
             response = Bundle.class,
             responseContainer = "List"
     )
@@ -133,7 +134,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the metadata about an extension bundle",
+            value = "Get bundle",
+            notes = "Gets the metadata about an extension bundle. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalGetExtensionBundle",
             response = Bundle.class,
             extensions = {
@@ -165,7 +167,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Deletes the given extension bundle and all of it's versions",
+            value = "Delete bundle",
+            notes = "Deletes the given extension bundle and all of it's versions. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalDeleteExtensionBundle",
             response = Bundle.class,
             extensions = {
@@ -203,9 +206,9 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get extension bundles versions across all authorized buckets",
-            notes = "The returned items will include only items from buckets for which the user is authorized. " +
-                    "If the user is not authorized to any buckets, an empty list will be returned.",
+            value = "Get all bundle versions",
+            notes = "Gets the metadata about extension bundle versions across all authorized buckets with optional filters applied. " +
+                    "If the user is not authorized to any buckets, an empty list will be returned. " + NON_GUARANTEED_ENDPOINT,
             response = BundleVersionMetadata.class,
             responseContainer = "List"
     )
@@ -243,7 +246,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the metadata about the versions of an extension bundle",
+            value = "Get bundle versions",
+            notes = "Gets the metadata for the versions of the given extension bundle. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalGetBundleVersions",
             response = BundleVersionMetadata.class,
             responseContainer = "List",
@@ -276,7 +280,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the descriptor for the specified version of the extension bundle",
+            value = "Get bundle version",
+            notes = "Gets the descriptor for the given version of the given extension bundle. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalGetBundleVersion",
             response = BundleVersion.class,
             extensions = {
@@ -311,7 +316,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation(
-            value = "Gets the binary content for the specified version of the extension bundle",
+            value = "Get bundle version content",
+            notes = "Gets the binary content for the given version of the given extension bundle. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalGetBundleVersionContent",
             response = byte[].class,
             extensions = {
@@ -349,7 +355,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Deletes the given extension bundle version",
+            value = "Delete bundle version",
+            notes = "Deletes the given extension bundle version and it's associated binary content. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalDeleteBundleVersion",
             response = BundleVersion.class,
             extensions = {
@@ -387,7 +394,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the metadata about the extensions in the given extension bundle version",
+            value = "Get bundle version extensions",
+            notes = "Gets the metadata about the extensions in the given extension bundle version. " + NON_GUARANTEED_ENDPOINT,
             nickname = "globalGetBundleVersionExtensions",
             response = ExtensionMetadata.class,
             responseContainer = "List",
@@ -424,8 +432,9 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the metadata about the extensions in the given extension bundle version",
-            nickname = "globalGetBundleVersionExtensions",
+            value = "Get bundle version extension",
+            notes = "Gets the metadata about the extension with the given name in the given extension bundle version. " + NON_GUARANTEED_ENDPOINT,
+            nickname = "globalGetBundleVersionExtension",
             response = org.apache.nifi.registry.extension.component.manifest.Extension.class,
             responseContainer = "List",
             extensions = {
@@ -464,7 +473,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     @ApiOperation(
-            value = "Gets the documentation for the given extension in the given extension bundle version",
+            value = "Get bundle version extension docs",
+            notes = "Gets the documentation for the given extension in the given extension bundle version. " + NON_GUARANTEED_ENDPOINT,
             response = String.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -501,7 +511,8 @@ public class BundleResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_HTML)
     @ApiOperation(
-            value = "Gets the additional details documentation for the given extension in the given extension bundle version",
+            value = "Get bundle version extension docs details",
+            notes = "Gets the additional details documentation for the given extension in the given extension bundle version. " + NON_GUARANTEED_ENDPOINT,
             response = String.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {

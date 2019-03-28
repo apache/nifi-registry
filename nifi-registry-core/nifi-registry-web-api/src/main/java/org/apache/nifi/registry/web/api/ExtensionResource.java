@@ -53,7 +53,7 @@ import java.util.SortedSet;
 @Path("/extensions")
 @Api(
         value = "extensions",
-        description = "Find and retrieve extensions.",
+        description = "Find and retrieve extensions. ",
         authorizations = { @Authorization("Authorization") }
 )
 public class ExtensionResource extends AuthorizableApplicationResource {
@@ -74,9 +74,11 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all extensions that match the filter params and are part of bundles located in buckets the current user is authorized for.",
-            response = ExtensionMetadataContainer.class,
-            responseContainer = "List"
+            value = "Get all extensions",
+            notes = "Gets the metadata for all extensions that match the filter params and are part of bundles located in buckets the " +
+                    "current user is authorized for. If the user is not authorized to any buckets, an empty result set will be returned." +
+                    NON_GUARANTEED_ENDPOINT,
+            response = ExtensionMetadataContainer.class
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -124,9 +126,11 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all extensions that provide the specified API and are part of bundles located in buckets the current user is authorized for.",
-            response = ExtensionMetadataContainer.class,
-            responseContainer = "List"
+            value = "Get extensions providing service API",
+            notes = "Gets the metadata for extensions that provide the specified API and are part of bundles located in buckets the " +
+                    "current user is authorized for. If the user is not authorized to any buckets, an empty result set will be returned." +
+                    NON_GUARANTEED_ENDPOINT,
+            response = ExtensionMetadataContainer.class
     )
     @ApiResponses({
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
@@ -176,7 +180,9 @@ public class ExtensionResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all the extension tags known to this NiFi Registry instance.",
+            value = "Get extension tags",
+            notes = "Gets all the extension tags known to this NiFi Registry instance, along with the " +
+                    "number of extensions that have the given tag." + NON_GUARANTEED_ENDPOINT,
             response = TagCount.class,
             responseContainer = "List"
     )

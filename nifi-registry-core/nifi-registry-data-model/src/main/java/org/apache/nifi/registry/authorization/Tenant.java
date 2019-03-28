@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * A tenant of this NiFi Registry
  */
-@ApiModel("tenant")
+@ApiModel
 public class Tenant {
 
     private String identifier;
