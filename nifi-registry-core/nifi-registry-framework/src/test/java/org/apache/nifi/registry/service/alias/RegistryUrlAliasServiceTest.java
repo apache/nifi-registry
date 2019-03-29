@@ -16,7 +16,7 @@
  */
 package org.apache.nifi.registry.service.alias;
 
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.nifi.registry.url.aliaser.generated.Alias;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -25,6 +25,13 @@ import java.util.Collections;
 import static org.junit.Assert.assertEquals;
 
 public class RegistryUrlAliasServiceTest {
+    private static Alias createAlias(String internal, String external) {
+        Alias result = new Alias();
+        result.setInternal(internal);
+        result.setExternal(external);
+        return result;
+    }
+
     @Test
     public void testNoAliases() {
         RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Collections.emptyList());
@@ -37,7 +44,7 @@ public class RegistryUrlAliasServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testMalformedExternal() {
-        new RegistryUrlAliasService(Collections.singletonList(Pair.of("https://registry.com:18080", "registry.com:18080")));
+        new RegistryUrlAliasService(Collections.singletonList(createAlias("https://registry.com:18080", "registry.com:18080")));
     }
 
     @Test
@@ -46,7 +53,7 @@ public class RegistryUrlAliasServiceTest {
         String external = "http://localhost:18080";
         String unchanged = "https://registry-2.com:18443";
 
-        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Collections.singletonList(Pair.of(internal, external)));
+        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Collections.singletonList(createAlias(internal, external)));
 
         assertEquals(external, aliaser.getExternal(internal));
         assertEquals(internal, aliaser.getInternal(external));
@@ -72,7 +79,7 @@ public class RegistryUrlAliasServiceTest {
         String external = "http://localhost:18080";
         String unchanged = "https://registry-2.com:18443";
 
-        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Collections.singletonList(Pair.of(internal, external)));
+        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Collections.singletonList(createAlias(internal, external)));
 
         assertEquals(external, aliaser.getExternal(internal));
         assertEquals(internal, aliaser.getInternal(external));
@@ -103,7 +110,7 @@ public class RegistryUrlAliasServiceTest {
 
         String unchanged = "https://registry-3.com:18443";
 
-        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Arrays.asList(Pair.of(internal1, external1), Pair.of(internal2, external2), Pair.of(internal3, external3)));
+        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Arrays.asList(createAlias(internal1, external1), createAlias(internal2, external2), createAlias(internal3, external3)));
 
         assertEquals(external1, aliaser.getExternal(internal1));
         assertEquals(external2, aliaser.getExternal(internal2));
@@ -139,12 +146,26 @@ public class RegistryUrlAliasServiceTest {
         assertEquals(unchanged, aliaser.getInternal(unchanged));
     }
 
+    @Test
+    public void testMigrationPath() {
+        String internal1 = "INTERNAL_TOKEN";
+        String internal2 = "http://old.registry.url";
+        String external = "https://new.registry.url";
+
+        RegistryUrlAliasService aliaser = new RegistryUrlAliasService(Arrays.asList(createAlias(internal1, external), createAlias(internal2, external)));
+
+        assertEquals(internal1, aliaser.getInternal(external));
+
+        assertEquals(external, aliaser.getExternal(internal1));
+        assertEquals(external, aliaser.getExternal(internal2));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testDuplicateInternalTokens() {
         String internal = "THIS_NIFI_REGISTRY";
         String external1 = "http://localhost:18080";
         String external2 = "http://localhost:18081";
 
-        new RegistryUrlAliasService(Arrays.asList(Pair.of(internal, external1), Pair.of(internal, external2)));
+        new RegistryUrlAliasService(Arrays.asList(createAlias(internal, external1), createAlias(internal, external2)));
     }
 }

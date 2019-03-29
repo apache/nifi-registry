@@ -16,13 +16,13 @@
  */
 package org.apache.nifi.registry.service.alias;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.nifi.registry.flow.VersionedFlowCoordinates;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.ProviderFactoryException;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.security.util.XmlUtils;
+import org.apache.nifi.registry.url.aliaser.generated.Alias;
 import org.apache.nifi.registry.url.aliaser.generated.Aliases;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,13 +38,11 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Allows aliasing of registry url(s) without modifying the flows on disk.
@@ -66,14 +64,15 @@ public class RegistryUrlAliasService {
         }
     }
 
-    private final List<Pair<String, String>> aliases;
+    // Will be LinkedHashMap to preserve insertion order.
+    private final Map<String, String> aliases;
 
     @Autowired
     public RegistryUrlAliasService(NiFiRegistryProperties niFiRegistryProperties) {
         this(createAliases(niFiRegistryProperties));
     }
 
-    private static List<Pair<String, String>> createAliases(NiFiRegistryProperties niFiRegistryProperties) {
+    private static List<Alias> createAliases(NiFiRegistryProperties niFiRegistryProperties) {
         File configurationFile = niFiRegistryProperties.getRegistryAliasConfigurationFile();
         if (configurationFile.exists()) {
             try {
@@ -85,9 +84,8 @@ public class RegistryUrlAliasService {
                 final Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
                 unmarshaller.setSchema(schema);
 
-                // set the holder for later use
                 final JAXBElement<Aliases> element = unmarshaller.unmarshal(XmlUtils.createSafeReader(new StreamSource(configurationFile)), Aliases.class);
-                return element.getValue().getAlias().stream().map(a -> Pair.of(a.getInternal(), a.getExternal())).collect(Collectors.toList());
+                return element.getValue().getAlias();
             } catch (SAXException | JAXBException | XMLStreamException e) {
                 throw new ProviderFactoryException("Unable to load the registry alias configuration file at: " + configurationFile.getAbsolutePath(), e);
             }
@@ -96,25 +94,22 @@ public class RegistryUrlAliasService {
         }
     }
 
-    public RegistryUrlAliasService(List<Pair<String, String>> aliases) {
+    protected RegistryUrlAliasService(List<Alias> aliases) {
         Pattern urlStart = Pattern.compile("^https?://");
 
-        this.aliases = new ArrayList<>(aliases.size());
+        this.aliases = new LinkedHashMap<>();
 
-        Set<String> internalTokens = new HashSet<>();
-        for (Pair<String, String> alias : aliases) {
-            String internal = alias.getKey();
-            String external = alias.getValue();
+        for (Alias alias : aliases) {
+            String internal = alias.getInternal();
+            String external = alias.getExternal();
 
             if (!urlStart.matcher(external).find()) {
                 throw new IllegalArgumentException("Expected " + external + " to start with http:// or https://");
             }
 
-            if (!internalTokens.add(internal)) {
+            if (this.aliases.put(internal, external) != null) {
                 throw new IllegalArgumentException("Duplicate internal token " + internal);
             }
-
-            this.aliases.add(Pair.of(internal, external));
         }
     }
 
@@ -143,7 +138,7 @@ public class RegistryUrlAliasService {
     }
 
     protected String getExternal(String url) {
-        for (Pair<String, String> alias : aliases) {
+        for (Map.Entry<String, String> alias : aliases.entrySet()) {
             String internal = alias.getKey();
             String external = alias.getValue();
 
@@ -159,7 +154,7 @@ public class RegistryUrlAliasService {
     }
 
     protected String getInternal(String url) {
-        for (Pair<String, String> alias : aliases) {
+        for (Map.Entry<String, String> alias : aliases.entrySet()) {
             String internal = alias.getKey();
             String external = alias.getValue();
 
