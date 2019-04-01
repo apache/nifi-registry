@@ -17,10 +17,10 @@
 
 package org.apache.nifi.registry.flow;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Map;
 import java.util.Set;
-
-import io.swagger.annotations.ApiModelProperty;
 
 public class VersionedProcessor extends VersionedComponent
         implements VersionedConfigurableComponent, VersionedExtensionComponent {
@@ -42,7 +42,7 @@ public class VersionedProcessor extends VersionedComponent
     private Long runDurationMillis;
     private Integer concurrentlySchedulableTaskCount;
     private Set<String> autoTerminatedRelationships;
-
+    private ScheduledState scheduledState;
 
     @ApiModelProperty("The frequency with which to schedule the processor. The format of the value will depend on th value of schedulingStrategy.")
     public String getSchedulingPeriod() {
@@ -190,8 +190,18 @@ public class VersionedProcessor extends VersionedComponent
         this.style = style;
     }
 
+    @ApiModelProperty("The scheduled state of the component")
+    public ScheduledState getScheduledState() {
+        return scheduledState;
+    }
+
+    public void setScheduledState(ScheduledState scheduledState) {
+        this.scheduledState = scheduledState;
+    }
+
     @Override
     public ComponentType getComponentType() {
         return ComponentType.PROCESSOR;
     }
+
 }
