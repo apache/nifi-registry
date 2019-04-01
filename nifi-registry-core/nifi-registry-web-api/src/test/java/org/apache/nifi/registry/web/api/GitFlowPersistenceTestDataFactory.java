@@ -41,7 +41,7 @@ public class GitFlowPersistenceTestDataFactory {
         Flow.FlowPointer pointer = new Flow.FlowPointer(flow.getFlowId() + 1);
         Calendar calendar = Calendar.getInstance();
         calendar.set(2018, 12, 12, 4, 2);
-        pointer.setTimestamp(calendar.getTime());
+        pointer.setCreated(calendar.getTime().getTime());
         pointer.setAuthor("author");
 
         flow.putVersion(1, pointer);

@@ -57,8 +57,6 @@ class Flow {
         private String gitRev;
         private String objectId;
         private final String fileName;
-        private String comments;        
-        private Date timestamp;
 
         // May not be populated pre-0.3.0
         private String flowName;

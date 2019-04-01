@@ -59,10 +59,6 @@ class Bucket {
         return this.flows.computeIfAbsent(flowId, k -> new Flow(flowId));
     }
 
-    public Collection<Flow> getFlows(){
-        return this.flows.values();
-    }
-
     public Optional<Flow> getFlow(String flowId) {
         return Optional.ofNullable(flows.get(flowId));
     }

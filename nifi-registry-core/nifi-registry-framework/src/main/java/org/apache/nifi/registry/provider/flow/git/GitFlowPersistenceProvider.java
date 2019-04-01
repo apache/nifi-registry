@@ -26,6 +26,7 @@ import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.*;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
+import org.apache.nifi.registry.provider.ProviderSynchronization;
 import org.apache.nifi.registry.provider.StandardProviderConfigurationContext;
 import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.apache.nifi.registry.util.FileUtils;
