@@ -86,7 +86,6 @@ class GitFlowMetaData {
 
     /**
      * Open a Git repository using the specified directory.
-     *
      * @param gitProjectRootDir a root directory of a Git project
      * @return created Repository
      * @throws IOException thrown when the specified directory does not exist,
@@ -464,12 +463,18 @@ class GitFlowMetaData {
                 }
                 if (flowMeta.containsKey(AUTHOR)) {
                     pointer.setAuthor((String)flowMeta.get(AUTHOR));
+                }else{
+                    pointer.setAuthor(commit.getCommitterIdent().getName());
                 }
                 if (flowMeta.containsKey(COMMENTS)) {
                     pointer.setComment((String)flowMeta.get(COMMENTS));
+                }else{
+                    pointer.setComment(commit.getFullMessage());
                 }
                 if (flowMeta.containsKey(CREATED)) {
                     pointer.setCreated((long)flowMeta.get(CREATED));
+                }else{
+                    pointer.setCreated(commit.getCommitTime() * 1000L);
                 }
 
                 flow.putVersion(version, pointer);
