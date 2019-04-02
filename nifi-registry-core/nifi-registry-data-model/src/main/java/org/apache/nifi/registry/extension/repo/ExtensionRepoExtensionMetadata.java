@@ -53,7 +53,8 @@ public class ExtensionRepoExtensionMetadata extends LinkableEntity implements Li
     @Override
     @XmlElement
     @XmlJavaTypeAdapter(LinkAdapter.class)
-    @ApiModelProperty(value = "A WebLink to the documentation for this extension.", readOnly = true)
+    @ApiModelProperty(value = "A WebLink to the documentation for this extension.",
+            dataType = "org.apache.nifi.registry.link.JaxbLink", readOnly = true)
     public Link getLinkDocs() {
         return linkDocs;
     }

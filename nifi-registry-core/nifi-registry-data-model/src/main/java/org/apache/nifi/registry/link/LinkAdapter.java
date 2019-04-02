@@ -24,16 +24,16 @@ import java.util.Map;
 /**
  * This class is a modified version of Jersey's Link.JaxbAdapter that adds protection against nulls.
  */
-public class LinkAdapter extends XmlAdapter<Link.JaxbLink, Link> {
+public class LinkAdapter extends XmlAdapter<JaxbLink, Link> {
 
     /**
-     * Convert a {@link Link.JaxbLink} into a {@link Link}.
+     * Convert a {@link JaxbLink} into a {@link Link}.
      *
-     * @param v instance of type {@link Link.JaxbLink}.
+     * @param v instance of type {@link JaxbLink}.
      * @return mapped instance of type {@link Link.JaxbLink}
      */
     @Override
-    public Link unmarshal(Link.JaxbLink v) {
+    public Link unmarshal(JaxbLink v) {
         if (v == null) {
             return null;
         }
@@ -46,18 +46,18 @@ public class LinkAdapter extends XmlAdapter<Link.JaxbLink, Link> {
     }
 
     /**
-     * Convert a {@link Link} into a {@link Link.JaxbLink}.
+     * Convert a {@link Link} into a {@link JaxbLink}.
      *
      * @param v instance of type {@link Link}.
-     * @return mapped instance of type {@link Link.JaxbLink}.
+     * @return mapped instance of type {@link JaxbLink}.
      */
     @Override
-    public Link.JaxbLink marshal(Link v) {
+    public JaxbLink marshal(Link v) {
         if (v == null) {
            return null;
         }
 
-        Link.JaxbLink jl = new Link.JaxbLink(v.getUri());
+        final JaxbLink jl = new JaxbLink(v.getUri());
         for (Map.Entry<String, String> e : v.getParams().entrySet()) {
             final String name = e.getKey();
             jl.getParams().put(new QName("", name), e.getValue());

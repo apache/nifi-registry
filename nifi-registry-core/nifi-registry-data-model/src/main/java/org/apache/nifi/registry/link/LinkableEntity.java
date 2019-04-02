@@ -33,7 +33,8 @@ public abstract class LinkableEntity {
 
     @XmlElement
     @XmlJavaTypeAdapter(LinkAdapter.class)
-    @ApiModelProperty(value = "An WebLink to this entity.", readOnly = true)
+    @ApiModelProperty(value = "An WebLink to this entity.",
+            dataType = "org.apache.nifi.registry.link.JaxbLink", readOnly = true)
     public Link getLink() {
         return link;
     }
