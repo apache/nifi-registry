@@ -18,7 +18,6 @@ package org.apache.nifi.registry.link;
 
 import javax.ws.rs.core.Link;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.namespace.QName;
 import java.util.Map;
 
 /**
@@ -39,8 +38,10 @@ public class LinkAdapter extends XmlAdapter<JaxbLink, Link> {
         }
 
         Link.Builder lb = Link.fromUri(v.getUri());
-        for (Map.Entry<QName, Object> e : v.getParams().entrySet()) {
-            lb.param(e.getKey().getLocalPart(), e.getValue().toString());
+        if (v.getParams() != null) {
+            for (Map.Entry<String,String> e : v.getParams().entrySet()) {
+                lb.param(e.getKey(), e.getValue());
+            }
         }
         return lb.build();
     }
@@ -58,9 +59,10 @@ public class LinkAdapter extends XmlAdapter<JaxbLink, Link> {
         }
 
         final JaxbLink jl = new JaxbLink(v.getUri());
-        for (Map.Entry<String, String> e : v.getParams().entrySet()) {
-            final String name = e.getKey();
-            jl.getParams().put(new QName("", name), e.getValue());
+        if (v.getParams() != null) {
+            for (Map.Entry<String, String> e : v.getParams().entrySet()) {
+                jl.getParams().put(e.getKey(), e.getValue());
+            }
         }
         return jl;
     }

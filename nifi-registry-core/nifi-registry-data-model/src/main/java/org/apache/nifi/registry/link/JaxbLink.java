@@ -21,7 +21,6 @@ import io.swagger.annotations.ApiModelProperty;
 
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +32,7 @@ import java.util.Map;
 public class JaxbLink {
 
     private URI uri;
-    private Map<QName, Object> params;
+    private Map<String,String> params;
 
     /**
      * Default constructor needed during unmarshalling.
@@ -56,7 +55,7 @@ public class JaxbLink {
      * @param uri    underlying URI.
      * @param params parameters of this link.
      */
-    public JaxbLink(URI uri, Map<QName, Object> params) {
+    public JaxbLink(URI uri, Map<String,String> params) {
         this.uri = uri;
         this.params = params;
     }
@@ -79,9 +78,9 @@ public class JaxbLink {
      */
     @XmlAnyAttribute
     @ApiModelProperty(name = "params", value = "The params for the link")
-    public Map<QName, Object> getParams() {
+    public Map<String,String> getParams() {
         if (params == null) {
-            params = new HashMap<QName, Object>();
+            params = new HashMap<>();
         }
         return params;
     }
@@ -100,7 +99,7 @@ public class JaxbLink {
      *
      * This setter is needed for JAXB unmarshalling.
      */
-    void setParams(Map<QName, Object> params) {
+    void setParams(Map<String,String> params) {
         this.params = params;
     }
 
