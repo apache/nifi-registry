@@ -18,7 +18,9 @@ package org.apache.nifi.registry.provider.flow.git;
 
 import org.apache.nifi.registry.util.FileUtils;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 class Flow {
     /**
@@ -39,11 +41,13 @@ class Flow {
         return versions.containsKey(version);
     }
 
-    public FlowPointer getFlowVersion(int version) {
+    public FlowPointer getFlowVersion(int version){
         return versions.get(version);
-    }    
+    }
 
-    public String getFlowId(){ return this.flowId; }
+    public String getFlowId(){
+        return this.flowId;
+    }
 
     public void putVersion(int version, FlowPointer pointer) {
         versions.put(version, pointer);

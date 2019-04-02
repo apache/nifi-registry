@@ -147,8 +147,9 @@ public class TestGitFlowPersistenceProvider {
     }
 
     private void createGitRemoteRepository(File remoteGitDir) throws GitAPIException, IOException {
-        boolean gitRepoExists = remoteGitDir.exists() &&
-                org.apache.commons.io.FileUtils.directoryContains(remoteGitDir, new File(remoteGitDir, "HEAD"));
+        boolean gitRepoExists = remoteGitDir.exists()
+                                    && org.apache.commons.io.FileUtils.directoryContains(remoteGitDir,
+                                                                        new File(remoteGitDir, "HEAD"));
         if (gitRepoExists) {
             return;
         }

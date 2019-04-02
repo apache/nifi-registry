@@ -16,7 +16,6 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
