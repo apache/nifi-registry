@@ -585,7 +585,7 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
-    public Response getExtensionRepoVersionSha256(
+    public Response getGlobalExtensionRepoVersionSha256(
             @PathParam("groupId")
             @ApiParam("The group identifier")
                 final String groupId,

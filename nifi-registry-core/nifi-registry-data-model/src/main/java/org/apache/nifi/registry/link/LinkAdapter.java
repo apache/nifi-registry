@@ -18,49 +18,51 @@ package org.apache.nifi.registry.link;
 
 import javax.ws.rs.core.Link;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.namespace.QName;
 import java.util.Map;
 
 /**
  * This class is a modified version of Jersey's Link.JaxbAdapter that adds protection against nulls.
  */
-public class LinkAdapter extends XmlAdapter<Link.JaxbLink, Link> {
+public class LinkAdapter extends XmlAdapter<JaxbLink, Link> {
 
     /**
-     * Convert a {@link Link.JaxbLink} into a {@link Link}.
+     * Convert a {@link JaxbLink} into a {@link Link}.
      *
-     * @param v instance of type {@link Link.JaxbLink}.
+     * @param v instance of type {@link JaxbLink}.
      * @return mapped instance of type {@link Link.JaxbLink}
      */
     @Override
-    public Link unmarshal(Link.JaxbLink v) {
+    public Link unmarshal(JaxbLink v) {
         if (v == null) {
             return null;
         }
 
         Link.Builder lb = Link.fromUri(v.getUri());
-        for (Map.Entry<QName, Object> e : v.getParams().entrySet()) {
-            lb.param(e.getKey().getLocalPart(), e.getValue().toString());
+        if (v.getParams() != null) {
+            for (Map.Entry<String,String> e : v.getParams().entrySet()) {
+                lb.param(e.getKey(), e.getValue());
+            }
         }
         return lb.build();
     }
 
     /**
-     * Convert a {@link Link} into a {@link Link.JaxbLink}.
+     * Convert a {@link Link} into a {@link JaxbLink}.
      *
      * @param v instance of type {@link Link}.
-     * @return mapped instance of type {@link Link.JaxbLink}.
+     * @return mapped instance of type {@link JaxbLink}.
      */
     @Override
-    public Link.JaxbLink marshal(Link v) {
+    public JaxbLink marshal(Link v) {
         if (v == null) {
            return null;
         }
 
-        Link.JaxbLink jl = new Link.JaxbLink(v.getUri());
-        for (Map.Entry<String, String> e : v.getParams().entrySet()) {
-            final String name = e.getKey();
-            jl.getParams().put(new QName("", name), e.getValue());
+        final JaxbLink jl = new JaxbLink(v.getUri());
+        if (v.getParams() != null) {
+            for (Map.Entry<String, String> e : v.getParams().entrySet()) {
+                jl.getParams().put(e.getKey(), e.getValue());
+            }
         }
         return jl;
     }
