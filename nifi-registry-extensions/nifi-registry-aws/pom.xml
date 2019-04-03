@@ -15,19 +15,34 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>nifi-registry</artifactId>
+        <artifactId>nifi-registry-extensions</artifactId>
         <groupId>org.apache.nifi.registry</groupId>
         <version>0.4.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>nifi-registry-extensions</artifactId>
+    <artifactId>nifi-registry-aws</artifactId>
     <packaging>pom</packaging>
 
     <modules>
-        <module>nifi-registry-ranger</module>
-	<module>nifi-registry-aws</module>
+        <module>nifi-registry-aws-assembly</module>
+        <module>nifi-registry-aws-extensions</module>
     </modules>
 
+    <properties>
+        <aws-java-sdk-version>2.5.9</aws-java-sdk-version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws-java-sdk-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 </project>

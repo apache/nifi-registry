@@ -389,6 +389,7 @@ public class StandardExtensionService implements ExtensionService {
                 .bundleGroupId(bundle.getGroupId())
                 .bundleArtifactId(bundle.getArtifactId())
                 .bundleVersion(bundleVersion.getVersion())
+                .bundleSize(bundleVersion.getContentSize())
                 .author(bundleVersion.getCreatedBy())
                 .timestamp(bundleVersion.getCreated().getTime())
                 .build();

@@ -31,6 +31,7 @@ public class StandardBundleContext implements BundleContext {
     private final String description;
     private final String author;
     private final long timestamp;
+    private final long bundleSize;
 
     private StandardBundleContext(final Builder builder) {
         this.bundleType = builder.bundleType;
@@ -40,6 +41,7 @@ public class StandardBundleContext implements BundleContext {
         this.bundleGroupId = builder.bundleGroupId;
         this.bundleArtifactId = builder.bundleArtifactId;
         this.bundleVersion = builder.bundleVersion;
+        this.bundleSize = builder.bundleSize;
         this.description = builder.description;
         this.author = builder.author;
         this.timestamp = builder.timestamp;
@@ -90,6 +92,11 @@ public class StandardBundleContext implements BundleContext {
     }
 
     @Override
+    public long getBundleSize() {
+        return bundleSize;
+    }
+
+    @Override
     public String getDescription() {
         return description;
     }
@@ -116,6 +123,7 @@ public class StandardBundleContext implements BundleContext {
         private String description;
         private String author;
         private long timestamp;
+        private long bundleSize;
 
         public Builder bundleType(final BundleType bundleType) {
             this.bundleType = bundleType;
@@ -164,6 +172,11 @@ public class StandardBundleContext implements BundleContext {
 
         public Builder timestamp(final long timestamp) {
             this.timestamp = timestamp;
+            return this;
+        }
+
+        public Builder bundleSize(final long size) {
+            this.bundleSize = size;
             return this;
         }
 

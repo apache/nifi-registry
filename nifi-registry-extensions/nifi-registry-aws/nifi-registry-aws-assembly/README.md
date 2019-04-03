@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
@@ -13,56 +12,63 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<providers>
+# NiFi Registry AWS extensions
 
-    <!-- NOTE: The providers in this file must be listed in the order defined in providers.xsd which is the following:
-            1) Flow Persistence Provider (Must occur once and only once)
-            2) Event Hook Providers (May occur 0 or more times)
-            3) Bundle Persistence Provider (Must occur once and only once)
-     -->
+This modules provides AWS related extensions for NiFi Registry.
 
-    <flowPersistenceProvider>
-        <class>org.apache.nifi.registry.provider.flow.FileSystemFlowPersistenceProvider</class>
-        <property name="Flow Storage Directory">./flow_storage</property>
-    </flowPersistenceProvider>
+## Prerequisites
 
-    <!--
-    <flowPersistenceProvider>
-        <class>org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider</class>
-        <property name="Flow Storage Directory">./flow_storage</property>
-        <property name="Remote To Push"></property>
-        <property name="Remote Access User"></property>
-        <property name="Remote Access Password"></property>
-    </flowPersistenceProvider>
-    -->
+* AWS account credentials and an S3 bucket.
 
-    <!--
-    <eventHookProvider>
-    	<class>org.apache.nifi.registry.provider.hook.ScriptEventHookProvider</class>
-    	<property name="Script Path"></property>
-    	<property name="Working Directory"></property>
-    	-->
-    	<!-- Optional Whitelist Event types
-        <property name="Whitelisted Event Type 1">CREATE_FLOW</property>
-        <property name="Whitelisted Event Type 2">DELETE_FLOW</property>
-    	-->
-    <!--
-    </eventHookProvider>
-    -->
+## How to install
 
-    <!-- This will log all events to a separate file specified by the EVENT_APPENDER in logback.xml -->
-    <!--
-    <eventHookProvider>
-        <class>org.apache.nifi.registry.provider.hook.LoggingEventHookProvider</class>
-    </eventHookProvider>
-    -->
+### Enable AWS extensions at NiFi Registry build
 
-    <extensionBundlePersistenceProvider>
-        <class>org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider</class>
-        <property name="Extension Bundle Storage Directory">./extension_bundles</property>
-    </extensionBundlePersistenceProvider>
+In order to enable AWS extensions when you build NiFi Registry, specify `include-aws` profile with a maven install command:
 
-    <!-- Example S3 Bundle Persistence Provider
+```
+cd nifi-registry
+mvn clean install -Paws
+```
+
+Then the extension will be installed at `${NIFI_REG_HOME}/ext/aws` directory.
+
+### Add AWS extensions to existing NiFi Registry
+
+Alternatively, you can add AWS extensions to an existing NiFi Registry.
+To do so, build the extension with the following command:
+
+```
+cd nifi-registry
+mvn clean install -f nifi-registry-extensions/nifi-registry-aws
+```
+
+The extension zip will be created as `nifi-registry-extensions/nifi-registry-aws/nifi-registry-aws-assembly/target/nifi-registry-aws-assembly-xxx-bin.zip`.
+
+Unzip the file into arbitrary directory so that NiFi Registry can use, such as `${NIFI_REG_HOME}/ext/aws`.
+For example:
+
+```
+mkdir -p ${NIFI_REG_HOME}/ext/aws
+unzip -d ${NIFI_REG_HOME}/ext/aws nifi-registry-extensions/nifi-registry-aws/nifi-registry-aws-assembly/target/nifi-registry-aws-assembly-xxx-bin.zip
+```
+
+## NiFi Registry Configuration
+
+In order to use this extension, following NiFi Registry files need to be configured.
+
+### nifi-registry.properties
+
+```
+# Specify AWS extension dir
+nifi.registry.extension.dir.aws=./ext/aws/lib
+```
+
+### providers.xml
+
+Uncomment the extensionBundlePersistenceProvider for S3:
+```
+<!-- Example S3 Bundle Persistence Provider
             - Requires nifi-registry-aws-assembly to be added to the classpath via a custom extension dir in nifi-registry.properties
                 Example: nifi.registry.extension.dir.aws=./ext/aws/lib
                 Where "./ext/aws/lib" contains the extracted contents of nifi-registry-aws-assembly
@@ -86,5 +92,7 @@
         <property name="Secret Access Key"></property>
     </extensionBundlePersistenceProvider>
     -->
+```
 
-</providers>
+NOTE: Remember to remove, or comment out the FileSystemBundlePersistenceProvider since there can only be one defined.
+

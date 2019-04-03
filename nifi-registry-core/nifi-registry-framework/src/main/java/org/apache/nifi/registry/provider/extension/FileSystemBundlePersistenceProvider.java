@@ -224,7 +224,8 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
             case MINIFI_CPP:
                 return CPP_EXTENSION;
             default:
-                throw new IllegalArgumentException("Unknown bundle type: " + bundleType);
+                LOGGER.warn("Unknown bundle type: " + bundleType);
+                return "";
         }
     }
 

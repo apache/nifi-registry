@@ -29,4 +29,11 @@ public interface Provider {
      */
     void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException;
 
+    /**
+     * Called prior to destroying the provider.
+     */
+    default void preDestruction() {
+
+    }
+
 }

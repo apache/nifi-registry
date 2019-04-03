@@ -25,6 +25,7 @@ import org.apache.nifi.registry.provider.generated.Property;
 import org.apache.nifi.registry.provider.generated.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,7 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Standard implementation of ProviderFactory.
  */
 @Configuration
-public class StandardProviderFactory implements ProviderFactory {
+public class StandardProviderFactory implements ProviderFactory, DisposableBean {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StandardProviderFactory.class);
 
@@ -239,10 +240,27 @@ public class StandardProviderFactory implements ProviderFactory {
 
             final ProviderConfigurationContext configurationContext = createConfigurationContext(jaxbExtensionBundleProvider.getProperty());
             bundlePersistenceProvider.onConfigured(configurationContext);
-            LOGGER.info("Configured FlowPersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
+            LOGGER.info("Configured BundlePersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
         }
 
         return bundlePersistenceProvider;
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        final List<Provider> providers = new ArrayList<>(eventHookProviders);
+        providers.add(flowPersistenceProvider);
+        providers.add(bundlePersistenceProvider);
+
+        for (final Provider provider : providers) {
+            if (provider != null) {
+                try {
+                    provider.preDestruction();
+                } catch (Throwable t) {
+                    LOGGER.error(t.getMessage(), t);
+                }
+            }
+        }
     }
 
     private ProviderConfigurationContext createConfigurationContext(final List<Property> configProperties) {

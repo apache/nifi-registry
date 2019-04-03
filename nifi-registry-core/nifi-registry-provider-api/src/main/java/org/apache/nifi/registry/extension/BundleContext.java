@@ -62,6 +62,11 @@ public interface BundleContext {
     String getBundleVersion();
 
     /**
+     * @return the size of the bundle content in bytes
+     */
+    long getBundleSize();
+
+    /**
      * @return the comments for the version of the bundle
      */
     String getDescription();
