@@ -32,8 +32,11 @@ import org.apache.nifi.registry.db.entity.BundleVersionEntity;
 import org.apache.nifi.registry.db.entity.ExtensionAdditionalDetailsEntity;
 import org.apache.nifi.registry.db.entity.ExtensionEntity;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.extension.BundleContext;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceContext;
 import org.apache.nifi.registry.extension.BundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundleVersionCoordinate;
+import org.apache.nifi.registry.extension.BundleVersionType;
 import org.apache.nifi.registry.extension.bundle.BuildInfo;
 import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
@@ -52,7 +55,9 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.provider.extension.StandardBundleContext;
+import org.apache.nifi.registry.provider.extension.StandardBundleCoordinate;
+import org.apache.nifi.registry.provider.extension.StandardBundlePersistenceContext;
+import org.apache.nifi.registry.provider.extension.StandardBundleVersionCoordinate;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.service.MetadataService;
@@ -256,7 +261,7 @@ public class StandardExtensionService implements ExtensionService {
             extensionEntities.forEach(e -> metadataService.createExtension(e));
 
             // persist the content of the bundle to the persistence provider
-            persistBundleVersionContent(bundleType, existingBucket, bundleEntity, versionEntity, extensionWorkingFile, overwriteBundleVersion);
+            persistBundleVersionContent(bundleType, bundleEntity, versionEntity, extensionWorkingFile, overwriteBundleVersion);
 
             // get the updated extension bundle so it contains the correct version count
             final BundleEntity updatedBundle = metadataService.getBundle(bucketIdentifier, groupId, artifactId);
@@ -378,35 +383,42 @@ public class StandardExtensionService implements ExtensionService {
         return existingBundleEntity;
     }
 
-    private void persistBundleVersionContent(final BundleType bundleType, final BucketEntity bucket, final BundleEntity bundle,
-                                             final BundleVersionEntity bundleVersion, final File extensionWorkingFile,
-                                             final boolean overwriteBundleVersion) throws IOException {
-        final BundleContext context = new StandardBundleContext.Builder()
-                .bundleType(getProviderBundleType(bundleType))
-                .bucketId(bucket.getId())
-                .bucketName(bucket.getName())
-                .bundleId(bundle.getId())
-                .bundleGroupId(bundle.getGroupId())
-                .bundleArtifactId(bundle.getArtifactId())
-                .bundleVersion(bundleVersion.getVersion())
+    private void persistBundleVersionContent(final BundleType bundleType, final BundleEntity bundle, final BundleVersionEntity bundleVersion,
+                                             final File extensionWorkingFile, final boolean overwriteBundleVersion) throws IOException {
+
+        final BundleVersionCoordinate versionCoordinate = new StandardBundleVersionCoordinate.Builder()
+                .bucketId(bundle.getBucketId())
+                .groupId(bundle.getGroupId())
+                .artifactId(bundle.getArtifactId())
+                .version(bundleVersion.getVersion())
+                .type(getProviderBundleType(bundleType))
+                .build();
+
+        final BundlePersistenceContext context = new StandardBundlePersistenceContext.Builder()
+                .coordinate(versionCoordinate)
+                .bundleSize(bundleVersion.getContentSize())
                 .author(bundleVersion.getCreatedBy())
                 .timestamp(bundleVersion.getCreated().getTime())
                 .build();
 
         try (final InputStream in = new FileInputStream(extensionWorkingFile);
              final InputStream bufIn = new BufferedInputStream(in)) {
-            bundlePersistenceProvider.saveBundleVersion(context, bufIn, overwriteBundleVersion);
-            LOGGER.debug("Bundle saved to persistence provider - '{}' - '{}' - '{}'",
-                    new Object[]{context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion()});
+            if (overwriteBundleVersion) {
+                bundlePersistenceProvider.updateBundleVersion(context, bufIn);
+                LOGGER.debug("Bundle version updated in persistence provider - {}", new Object[]{versionCoordinate.toString()});
+            } else {
+                bundlePersistenceProvider.createBundleVersion(context, bufIn);
+                LOGGER.debug("Bundle version created in persistence provider - {}", new Object[]{versionCoordinate.toString()});
+            }
         }
     }
 
-    private BundleContext.BundleType getProviderBundleType(final BundleType bundleType) {
+    private BundleVersionType getProviderBundleType(final BundleType bundleType) {
         switch (bundleType) {
             case NIFI_NAR:
-                return BundleContext.BundleType.NIFI_NAR;
+                return BundleVersionType.NIFI_NAR;
             case MINIFI_CPP:
-                return BundleContext.BundleType.MINIFI_CPP;
+                return BundleVersionType.MINIFI_CPP;
             default:
                 throw new IllegalArgumentException("Unknown bundle type: " + bundleType.toString());
         }
@@ -455,11 +467,13 @@ public class StandardExtensionService implements ExtensionService {
         metadataService.deleteBundle(bundle.getIdentifier());
 
         // delete all content associated with the bundle in the persistence provider
-        bundlePersistenceProvider.deleteAllBundleVersions(
-                bundle.getBucketIdentifier(),
-                bundle.getBucketName(),
-                bundle.getGroupId(),
-                bundle.getArtifactId());
+        final BundleCoordinate bundleCoordinate = new StandardBundleCoordinate.Builder()
+                .bucketId(bundle.getBucketIdentifier())
+                .groupId(bundle.getGroupId())
+                .artifactId(bundle.getArtifactId())
+                .build();
+
+        bundlePersistenceProvider.deleteAllBundleVersions(bundleCoordinate);
 
         return bundle;
     }
@@ -603,8 +617,8 @@ public class StandardExtensionService implements ExtensionService {
     @Override
     public void writeBundleVersionContent(final BundleVersion bundleVersion, final OutputStream out) {
         // get the content from the persistence provider and write it to the output stream
-        final BundleContext context = getExtensionBundleContext(bundleVersion);
-        bundlePersistenceProvider.getBundleVersion(context, out);
+        final BundleVersionCoordinate versionCoordinate = getVersionCoordinate(bundleVersion);
+        bundlePersistenceProvider.getBundleVersionContent(versionCoordinate, out);
     }
 
     @Override
@@ -618,19 +632,8 @@ public class StandardExtensionService implements ExtensionService {
         metadataService.deleteBundleVersion(extensionBundleVersionId);
 
         // delete content associated with the bundle version in the persistence provider
-        final BundleContext context = new StandardBundleContext.Builder()
-                .bundleType(getProviderBundleType(bundleVersion.getBundle().getBundleType()))
-                .bucketId(bundleVersion.getBucket().getIdentifier())
-                .bucketName(bundleVersion.getBucket().getName())
-                .bundleId(bundleVersion.getBundle().getIdentifier())
-                .bundleGroupId(bundleVersion.getBundle().getGroupId())
-                .bundleArtifactId(bundleVersion.getBundle().getArtifactId())
-                .bundleVersion(bundleVersion.getVersionMetadata().getVersion())
-                .author(bundleVersion.getVersionMetadata().getAuthor())
-                .timestamp(bundleVersion.getVersionMetadata().getTimestamp())
-                .build();
-
-        bundlePersistenceProvider.deleteBundleVersion(context);
+        final BundleVersionCoordinate versionCoordinate = getVersionCoordinate(bundleVersion);
+        bundlePersistenceProvider.deleteBundleVersion(versionCoordinate);
 
         return bundleVersion;
     }
@@ -921,23 +924,20 @@ public class StandardExtensionService implements ExtensionService {
 
     // ------ Helper Methods -------
 
-    private BundleContext getExtensionBundleContext(final BundleVersion bundleVersion) {
-        return getExtensionBundleContext(bundleVersion.getBucket(), bundleVersion.getBundle(), bundleVersion.getVersionMetadata());
+    private BundleVersionCoordinate getVersionCoordinate(final BundleVersion bundleVersion) {
+        return getVersionCoordinate(bundleVersion.getBundle(), bundleVersion.getVersionMetadata());
     }
 
-    private BundleContext getExtensionBundleContext(final Bucket bucket, final Bundle bundle,
-                                                    final BundleVersionMetadata bundleVersionMetadata) {
-        return new StandardBundleContext.Builder()
-                .bundleType(getProviderBundleType(bundle.getBundleType()))
-                .bucketId(bucket.getIdentifier())
-                .bucketName(bucket.getName())
-                .bundleId(bundle.getIdentifier())
-                .bundleGroupId(bundle.getGroupId())
-                .bundleArtifactId(bundle.getArtifactId())
-                .bundleVersion(bundleVersionMetadata.getVersion())
-                .author(bundleVersionMetadata.getAuthor())
-                .timestamp(bundleVersionMetadata.getTimestamp())
+    private BundleVersionCoordinate getVersionCoordinate(final Bundle bundle, final BundleVersionMetadata bundleVersionMetadata) {
+        final BundleVersionCoordinate versionCoordinate = new StandardBundleVersionCoordinate.Builder()
+                .bucketId(bundle.getBucketIdentifier())
+                .groupId(bundle.getGroupId())
+                .artifactId(bundle.getArtifactId())
+                .version(bundleVersionMetadata.getVersion())
+                .type(getProviderBundleType(bundle.getBundleType()))
                 .build();
+
+        return versionCoordinate;
     }
 
     private BucketEntity getBucketEntity(final String bucketIdentifier) {

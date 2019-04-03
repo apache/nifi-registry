@@ -16,9 +16,11 @@
  */
 package org.apache.nifi.registry.provider;
 
-import org.apache.nifi.registry.extension.BundleContext;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceContext;
 import org.apache.nifi.registry.extension.BundlePersistenceException;
 import org.apache.nifi.registry.extension.BundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundleVersionCoordinate;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,23 +31,27 @@ public class MockBundlePersistenceProvider implements BundlePersistenceProvider 
     private Map<String,String> properties;
 
     @Override
-    public void saveBundleVersion(BundleContext context, InputStream contentStream, boolean overwrite)
-            throws BundlePersistenceException {
+    public void createBundleVersion(BundlePersistenceContext context, InputStream contentStream) throws BundlePersistenceException {
 
     }
 
     @Override
-    public void getBundleVersion(BundleContext context, OutputStream outputStream) throws BundlePersistenceException {
+    public void updateBundleVersion(BundlePersistenceContext context, InputStream contentStream) throws BundlePersistenceException {
 
     }
 
     @Override
-    public void deleteBundleVersion(BundleContext context) throws BundlePersistenceException {
+    public void getBundleVersionContent(BundleVersionCoordinate versionCoordinate, OutputStream outputStream) throws BundlePersistenceException {
 
     }
 
     @Override
-    public void deleteAllBundleVersions(String bucketId, String bucketName, String groupId, String artifactId) throws BundlePersistenceException {
+    public void deleteBundleVersion(BundleVersionCoordinate versionCoordinate) throws BundlePersistenceException {
+
+    }
+
+    @Override
+    public void deleteAllBundleVersions(BundleCoordinate bundleCoordinate) throws BundlePersistenceException {
 
     }
 

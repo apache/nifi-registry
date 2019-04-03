@@ -18,9 +18,12 @@ package org.apache.nifi.registry.provider.extension;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.extension.BundleContext;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceContext;
 import org.apache.nifi.registry.extension.BundlePersistenceException;
 import org.apache.nifi.registry.extension.BundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundleVersionCoordinate;
+import org.apache.nifi.registry.extension.BundleVersionType;
 import org.apache.nifi.registry.flow.FlowPersistenceException;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
@@ -76,11 +79,20 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     }
 
     @Override
-    public synchronized void saveBundleVersion(final BundleContext context, final InputStream contentStream, boolean overwrite)
+    public synchronized void createBundleVersion(final BundlePersistenceContext context, final InputStream contentStream)
             throws BundlePersistenceException {
+        saveOrUpdateBundleVersion(context, contentStream, false);
+    }
 
-        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
-                context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion());
+    @Override
+    public synchronized void updateBundleVersion(final BundlePersistenceContext context, final InputStream contentStream) throws BundlePersistenceException {
+        saveOrUpdateBundleVersion(context, contentStream, true);
+    }
+
+    private synchronized void saveOrUpdateBundleVersion(final BundlePersistenceContext context, final InputStream contentStream,
+                                                       final boolean overwrite) throws BundlePersistenceException {
+        final BundleVersionCoordinate versionCoordinate = context.getCoordinate();
+        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, versionCoordinate);
         try {
             FileUtils.ensureDirectoryExistAndCanReadAndWrite(bundleVersionDir);
         } catch (IOException e) {
@@ -88,12 +100,10 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
                     + bundleVersionDir.getAbsolutePath(), e);
         }
 
-        final File bundleFile = getBundleFile(bundleVersionDir, context.getBundleArtifactId(),
-                context.getBundleVersion(), context.getBundleType());
-
+        final File bundleFile = getBundleFile(bundleVersionDir, versionCoordinate);
         if (bundleFile.exists() && !overwrite) {
-            throw new BundlePersistenceException("Unable to save because an extension bundle already exists at "
-                    + bundleFile.getAbsolutePath());
+            final String existingPath = bundleFile.getAbsolutePath();
+            throw new BundlePersistenceException("Unable to save because a bundle versions already exists at " + existingPath);
         }
 
         if (LOGGER.isDebugEnabled()) {
@@ -109,15 +119,10 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     }
 
     @Override
-    public synchronized void getBundleVersion(final BundleContext context, final OutputStream outputStream)
+    public synchronized void getBundleVersionContent(final BundleVersionCoordinate versionCoordinate, final OutputStream outputStream)
             throws BundlePersistenceException {
 
-        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
-                context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion());
-
-        final File bundleFile = getBundleFile(bundleVersionDir, context.getBundleArtifactId(),
-                context.getBundleVersion(), context.getBundleType());
-
+        final File bundleFile = getBundleFile(versionCoordinate);
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Reading extension bundle from {}", new Object[]{bundleFile.getAbsolutePath()});
         }
@@ -134,13 +139,8 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     }
 
     @Override
-    public synchronized void deleteBundleVersion(final BundleContext context) throws BundlePersistenceException {
-        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, context.getBucketName(),
-                context.getBundleGroupId(), context.getBundleArtifactId(), context.getBundleVersion());
-
-        final File bundleFile = getBundleFile(bundleVersionDir, context.getBundleArtifactId(),
-                context.getBundleVersion(), context.getBundleType());
-
+    public synchronized void deleteBundleVersion(final BundleVersionCoordinate versionCoordinate) throws BundlePersistenceException {
+        final File bundleFile = getBundleFile(versionCoordinate);
         if (!bundleFile.exists()) {
             LOGGER.warn("Extension bundle content does not exist at {}", new Object[] {bundleFile.getAbsolutePath()});
             return;
@@ -157,10 +157,8 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
     }
 
     @Override
-    public synchronized void deleteAllBundleVersions(final String bucketId, final String bucketName, final String groupId, final String artifactId)
-            throws BundlePersistenceException {
-
-        final File bundleDir = getBundleDirectory(bundleStorageDir, bucketName, groupId, artifactId);
+    public synchronized void deleteAllBundleVersions(final BundleCoordinate bundleCoordinate) throws BundlePersistenceException {
+        final File bundleDir = getBundleDirectory(bundleStorageDir, bundleCoordinate);
         if (!bundleDir.exists()) {
             LOGGER.warn("Extension bundle directory does not exist at {}", new Object[] {bundleDir.getAbsolutePath()});
             return;
@@ -199,15 +197,34 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
         }
     }
 
-    static File getBundleDirectory(final File bundleStorageDir, final String bucketName, final String groupId, final String artifactId) {
-        return new File(bundleStorageDir, sanitize(bucketName) + "/" + sanitize(groupId) + "/" + sanitize(artifactId));
+    private File getBundleFile(final BundleVersionCoordinate coordinate) {
+        final File bundleVersionDir = getBundleVersionDirectory(bundleStorageDir, coordinate);
+        return getBundleFile(bundleVersionDir, coordinate);
     }
 
-    static File getBundleVersionDirectory(final File bundleStorageDir, final String bucketName, final String groupId, final String artifactId, final String version) {
-        return new File(bundleStorageDir, sanitize(bucketName) + "/" + sanitize(groupId) + "/" + sanitize(artifactId) + "/" + sanitize(version));
+    static File getBundleDirectory(final File bundleStorageDir, final BundleCoordinate bundleCoordinate) {
+        final String bucketId = bundleCoordinate.getBucketId();
+        final String groupId = bundleCoordinate.getGroupId();
+        final String artifactId = bundleCoordinate.getArtifactId();
+
+        return new File(bundleStorageDir, sanitize(bucketId) + "/" + sanitize(groupId) + "/" + sanitize(artifactId));
     }
 
-    static File getBundleFile(final File parentDir, final String artifactId, final String version, final BundleContext.BundleType bundleType) {
+    static File getBundleVersionDirectory(final File bundleStorageDir, final BundleVersionCoordinate versionCoordinate) {
+        final String bucketId = versionCoordinate.getBucketId();
+        final String groupId = versionCoordinate.getGroupId();
+        final String artifactId = versionCoordinate.getArtifactId();
+        final String version = versionCoordinate.getVersion();
+
+        return new File(bundleStorageDir, sanitize(bucketId) + "/" + sanitize(groupId) + "/" + sanitize(artifactId) + "/" + sanitize(version));
+    }
+
+    static File getBundleFile(final File parentDir, final BundleVersionCoordinate versionCoordinate) {
+        final String artifactId = versionCoordinate.getArtifactId();
+        final String version = versionCoordinate.getVersion();
+        final BundleVersionType bundleType = versionCoordinate.getType();
+
+
         final String bundleFileExtension = getBundleFileExtension(bundleType);
         final String bundleFilename = sanitize(artifactId) + "-" + sanitize(version) + bundleFileExtension;
         return new File(parentDir, bundleFilename);
@@ -217,14 +234,15 @@ public class FileSystemBundlePersistenceProvider implements BundlePersistencePro
         return FileUtils.sanitizeFilename(input).trim().toLowerCase();
     }
 
-    static String getBundleFileExtension(final BundleContext.BundleType bundleType) {
+    static String getBundleFileExtension(final BundleVersionType bundleType) {
         switch (bundleType) {
             case NIFI_NAR:
                 return NAR_EXTENSION;
             case MINIFI_CPP:
                 return CPP_EXTENSION;
             default:
-                throw new IllegalArgumentException("Unknown bundle type: " + bundleType);
+                LOGGER.warn("Unknown bundle type: " + bundleType);
+                return "";
         }
     }
 

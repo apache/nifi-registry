@@ -14,26 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
+package org.apache.nifi.registry.extension;
 
 /**
- * Base interface for providers.
+ * The types of bundles that can be persisted.
  */
-public interface Provider {
+public enum BundleVersionType {
 
-    /**
-     * Called to configure the Provider.
-     *
-     * @param configurationContext the context containing configuration for the given provider
-     * @throws ProviderCreationException if an error occurs while the provider is configured
-     */
-    void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException;
+    NIFI_NAR,
 
-    /**
-     * Called prior to destroying the provider.
-     */
-    default void preDestruction() {
-
-    }
+    MINIFI_CPP;
 
 }

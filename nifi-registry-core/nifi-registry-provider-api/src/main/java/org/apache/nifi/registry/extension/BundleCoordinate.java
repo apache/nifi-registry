@@ -14,26 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
+package org.apache.nifi.registry.extension;
 
 /**
- * Base interface for providers.
+ * The coordinate of a bundle.
+ *
+ * Implementations of {@link BundlePersistenceProvider} will be expected to be able to delete all versions for a given BundleCoordinate.
  */
-public interface Provider {
+public interface BundleCoordinate {
 
     /**
-     * Called to configure the Provider.
-     *
-     * @param configurationContext the context containing configuration for the given provider
-     * @throws ProviderCreationException if an error occurs while the provider is configured
+     * @return the NiFi Registry bucket id where the bundle is located
      */
-    void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException;
+    String getBucketId();
 
     /**
-     * Called prior to destroying the provider.
+     * @return the group id of the bundle
      */
-    default void preDestruction() {
+    String getGroupId();
 
-    }
+    /**
+     * @return the artifact id of the bundle
+     */
+    String getArtifactId();
 
 }

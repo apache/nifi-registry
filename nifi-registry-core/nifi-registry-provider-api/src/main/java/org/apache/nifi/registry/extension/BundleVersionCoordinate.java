@@ -14,26 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.provider;
+package org.apache.nifi.registry.extension;
 
 /**
- * Base interface for providers.
+ * The coordinate of a version of a bundle.
+ *
+ * BundlePersistenceProviders will be expected to retrieve the content of a given BundleVersionCoordinate.
  */
-public interface Provider {
+public interface BundleVersionCoordinate {
 
     /**
-     * Called to configure the Provider.
-     *
-     * @param configurationContext the context containing configuration for the given provider
-     * @throws ProviderCreationException if an error occurs while the provider is configured
+     * @return the NiFi Registry bucket id where the bundle is located
      */
-    void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException;
+    String getBucketId();
 
     /**
-     * Called prior to destroying the provider.
+     * @return the group id of the bundle
      */
-    default void preDestruction() {
+    String getGroupId();
 
-    }
+    /**
+     * @return the artifact id of the bundle
+     */
+    String getArtifactId();
 
+    /**
+     * @return the version of the bundle
+     */
+    String getVersion();
+
+    /**
+     * @return the type of the bundle
+     */
+    BundleVersionType getType();
+
+    /**
+     * @return the string representation of the coordinate
+     */
+    String toString();
 }

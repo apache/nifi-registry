@@ -62,4 +62,29 @@
         <property name="Extension Bundle Storage Directory">./extension_bundles</property>
     </extensionBundlePersistenceProvider>
 
+    <!-- Example S3 Bundle Persistence Provider
+            - Requires nifi-registry-aws-assembly to be added to the classpath via a custom extension dir in nifi-registry.properties
+                Example: nifi.registry.extension.dir.aws=./ext/aws/lib
+                Where "./ext/aws/lib" contains the extracted contents of nifi-registry-aws-assembly
+            - "Region" - The name of the S3 region where the bucket exists
+            - "Bucket Name" - The name of an existing bucket to store extension bundles
+            - "Key Prefix" - An optional prefix that if specified will be added to the beginning of all S3 keys
+            - "Credentials Provider" - Indicates how credentials will be provided, must be a value of DEFAULT_CHAIN or STATIC
+                - DEFAULT_CHAIN will consider in order: Java system properties, environment variables, credential profiles (~/.aws/credentials)
+                - STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file
+            - "Access Key" - The access key to use when using STATIC credentials provider
+            - "Secret Access Key" - The secret access key to use when using STATIC credentials provider
+     -->
+    <!--
+    <extensionBundlePersistenceProvider>
+        <class>org.apache.nifi.registry.aws.S3BundlePersistenceProvider</class>
+        <property name="Region">us-east-1</property>
+        <property name="Bucket Name">my-bundles</property>
+        <property name="Key Prefix"></property>
+        <property name="Credentials Provider">DEFAULT_CHAIN</property>
+        <property name="Access Key"></property>
+        <property name="Secret Access Key"></property>
+    </extensionBundlePersistenceProvider>
+    -->
+
 </providers>
