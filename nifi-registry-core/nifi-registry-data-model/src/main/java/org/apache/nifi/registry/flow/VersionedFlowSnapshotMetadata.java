@@ -37,7 +37,7 @@ public class VersionedFlowSnapshotMetadata extends LinkableEntity implements Com
     @NotBlank
     private String flowIdentifier;
 
-    @Min(1)
+    @Min(-1)
     private int version;
 
     @Min(1)
