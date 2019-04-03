@@ -638,6 +638,10 @@ public class RegistryService {
                 throw new IllegalStateException("The requested flow is not located in the given bucket");
             }
 
+            if (snapshotMetadata.getVersion() == 0) {
+                throw new IllegalArgumentException("Version must be greater than zero, or use -1 to indicate latest version");
+            }
+
             // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata
             final SortedSet<VersionedFlowSnapshotMetadata> sortedSnapshots = new TreeSet<>();
             final List<FlowSnapshotEntity> existingFlowSnapshots = metadataService.getSnapshots(existingFlow.getId());
@@ -646,18 +650,22 @@ public class RegistryService {
             }
 
             // if we already have snapshots we need to verify the new one has the correct version
-            if (sortedSnapshots != null && sortedSnapshots.size() > 0) {
+            if (sortedSnapshots.size() > 0) {
                 final VersionedFlowSnapshotMetadata lastSnapshot = sortedSnapshots.last();
 
-                if (snapshotMetadata.getVersion() <= lastSnapshot.getVersion()) {
+                // if we have existing versions and a client sends -1, then make this the latest version
+                if (snapshotMetadata.getVersion() == -1) {
+                    snapshotMetadata.setVersion(lastSnapshot.getVersion() + 1);
+                } else if (snapshotMetadata.getVersion() <= lastSnapshot.getVersion()) {
                     throw new IllegalStateException("A Versioned flow snapshot with the same version already exists: " + snapshotMetadata.getVersion());
+                } else if (snapshotMetadata.getVersion() > (lastSnapshot.getVersion() + 1)) {
+                    throw new IllegalStateException("Version must be a one-up number, last version was " + lastSnapshot.getVersion()
+                            + " and version for this snapshot was " + snapshotMetadata.getVersion());
                 }
 
-                if (snapshotMetadata.getVersion() > (lastSnapshot.getVersion() + 1)) {
-                    throw new IllegalStateException("Version must be a one-up number, last version was "
-                            + lastSnapshot.getVersion() + " and version for this snapshot was "
-                            + snapshotMetadata.getVersion());
-                }
+            } else if (snapshotMetadata.getVersion() == -1) {
+                // if we have no existing versions and a client sends -1, then this is the first version
+                snapshotMetadata.setVersion(1);
             } else if (snapshotMetadata.getVersion() != 1) {
                 throw new IllegalStateException("Version of first snapshot must be 1");
             }
