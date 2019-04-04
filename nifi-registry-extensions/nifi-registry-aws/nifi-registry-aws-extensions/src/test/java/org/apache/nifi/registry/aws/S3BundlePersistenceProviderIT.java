@@ -16,8 +16,11 @@
  */
 package org.apache.nifi.registry.aws;
 
-import org.apache.nifi.registry.extension.BundleContext;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceContext;
 import org.apache.nifi.registry.extension.BundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundleVersionCoordinate;
+import org.apache.nifi.registry.extension.BundleVersionType;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.junit.After;
 import org.junit.Before;
@@ -35,6 +38,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -98,49 +102,64 @@ public class S3BundlePersistenceProviderIT {
     public void testS3PersistenceProvider() throws IOException {
         final File narFile = new File("src/test/resources/nars/nifi-foo-nar-1.0.0.nar");
 
+        final UUID bucketId = UUID.randomUUID();
+
         // Save bundle version #1
-        final BundleContext bundleContext = mock(BundleContext.class);
-        when(bundleContext.getBundleGroupId()).thenReturn("org.apache.nifi");
-        when(bundleContext.getBundleArtifactId()).thenReturn("nifi-foo-nar");
-        when(bundleContext.getBundleVersion()).thenReturn("1.0.0");
-        when(bundleContext.getBundleSize()).thenReturn(narFile.length());
-        when(bundleContext.getBundleType()).thenReturn(BundleContext.BundleType.NIFI_NAR);
+        final BundleVersionCoordinate versionCoordinate1 = mock(BundleVersionCoordinate.class);
+        when(versionCoordinate1.getBucketId()).thenReturn(bucketId.toString());
+        when(versionCoordinate1.getGroupId()).thenReturn("org.apache.nifi");
+        when(versionCoordinate1.getArtifactId()).thenReturn("nifi-foo-nar");
+        when(versionCoordinate1.getVersion()).thenReturn("1.0.0");
+        when(versionCoordinate1.getType()).thenReturn(BundleVersionType.NIFI_NAR);
+
+        final BundlePersistenceContext context1 = mock(BundlePersistenceContext.class);
+        when(context1.getCoordinate()).thenReturn(versionCoordinate1);
+        when(context1.getSize()).thenReturn(narFile.length());
 
         try (final InputStream in = new FileInputStream(narFile)) {
-            provider.saveBundleVersion(bundleContext, in, true);
+            provider.createBundleVersion(context1, in);
         }
 
         // Save bundle version #2
-        final BundleContext bundleContext2 = mock(BundleContext.class);
-        when(bundleContext2.getBundleGroupId()).thenReturn("org.apache.nifi");
-        when(bundleContext2.getBundleArtifactId()).thenReturn("nifi-foo-nar");
-        when(bundleContext2.getBundleVersion()).thenReturn("2.0.0");
-        when(bundleContext2.getBundleSize()).thenReturn(narFile.length());
-        when(bundleContext2.getBundleType()).thenReturn(BundleContext.BundleType.NIFI_NAR);
+        final BundleVersionCoordinate versionCoordinate2 = mock(BundleVersionCoordinate.class);
+        when(versionCoordinate2.getBucketId()).thenReturn(bucketId.toString());
+        when(versionCoordinate2.getGroupId()).thenReturn("org.apache.nifi");
+        when(versionCoordinate2.getArtifactId()).thenReturn("nifi-foo-nar");
+        when(versionCoordinate2.getVersion()).thenReturn("2.0.0");
+        when(versionCoordinate2.getType()).thenReturn(BundleVersionType.NIFI_NAR);
+
+        final BundlePersistenceContext context2 = mock(BundlePersistenceContext.class);
+        when(context2.getCoordinate()).thenReturn(versionCoordinate2);
+        when(context2.getSize()).thenReturn(narFile.length());
 
         try (final InputStream in = new FileInputStream(narFile)) {
-            provider.saveBundleVersion(bundleContext2, in, true);
+            provider.createBundleVersion(context2, in);
         }
 
         // Verify we can retrieve version #1
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        provider.getBundleVersion(bundleContext, outputStream);
-        assertEquals(bundleContext.getBundleSize(), outputStream.size());
+        provider.getBundleVersionContent(versionCoordinate1, outputStream);
+        assertEquals(context1.getSize(), outputStream.size());
 
         // Delete version #1
-        provider.deleteBundleVersion(bundleContext);
+        provider.deleteBundleVersion(versionCoordinate1);
 
         // Verify we can no longer retrieve version #1
         final ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
         try {
-            provider.getBundleVersion(bundleContext, outputStream2);
+            provider.getBundleVersionContent(versionCoordinate1, outputStream2);
             fail("Should have thrown exception");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         // Call delete all bundle versions which should leave an empty bucket
-        provider.deleteAllBundleVersions("", "", bundleContext.getBundleGroupId(), bundleContext.getBundleArtifactId());
+        final BundleCoordinate bundleCoordinate = mock(BundleCoordinate.class);
+        when(bundleCoordinate.getBucketId()).thenReturn(bucketId.toString());
+        when(bundleCoordinate.getGroupId()).thenReturn("org.apache.nifi");
+        when(bundleCoordinate.getArtifactId()).thenReturn("nifi-foo-nar");
+
+        provider.deleteAllBundleVersions(bundleCoordinate);
     }
 
 }

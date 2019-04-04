@@ -24,6 +24,7 @@ import org.apache.nifi.registry.diff.ComponentDifference;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
+import org.apache.nifi.registry.extension.BundlePersistenceProvider;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
@@ -75,6 +76,7 @@ public class TestRegistryService {
 
     private MetadataService metadataService;
     private FlowPersistenceProvider flowPersistenceProvider;
+    private BundlePersistenceProvider bundlePersistenceProvider;
     private Serializer<VersionedProcessGroup> snapshotSerializer;
     private ExtensionService extensionService;
     private Validator validator;
@@ -86,6 +88,7 @@ public class TestRegistryService {
     public void setup() {
         metadataService = mock(MetadataService.class);
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
+        bundlePersistenceProvider = mock(BundlePersistenceProvider.class);
         snapshotSerializer = mock(VersionedProcessGroupSerializer.class);
         extensionService = mock(StandardExtensionService.class);
         registryUrlAliasService = mock(RegistryUrlAliasService.class);
@@ -93,7 +96,8 @@ public class TestRegistryService {
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
 
-        registryService = new RegistryService(metadataService, flowPersistenceProvider, snapshotSerializer, extensionService, validator, registryUrlAliasService);
+        registryService = new RegistryService(metadataService, flowPersistenceProvider, bundlePersistenceProvider,
+                snapshotSerializer, extensionService, validator, registryUrlAliasService);
     }
 
     // ---------------------- Test Bucket methods ---------------------------------------------

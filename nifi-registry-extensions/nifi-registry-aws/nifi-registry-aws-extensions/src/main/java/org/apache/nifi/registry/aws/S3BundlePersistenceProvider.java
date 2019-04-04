@@ -16,9 +16,12 @@
  */
 package org.apache.nifi.registry.aws;
 
-import org.apache.nifi.registry.extension.BundleContext;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceContext;
 import org.apache.nifi.registry.extension.BundlePersistenceException;
 import org.apache.nifi.registry.extension.BundlePersistenceProvider;
+import org.apache.nifi.registry.extension.BundleVersionCoordinate;
+import org.apache.nifi.registry.extension.BundleVersionType;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
 import org.apache.nifi.registry.util.FileUtils;
@@ -151,9 +154,19 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
     }
 
     @Override
-    public void saveBundleVersion(final BundleContext context, final InputStream contentStream, final boolean overwrite)
+    public synchronized void createBundleVersion(final BundlePersistenceContext context, final InputStream contentStream)
             throws BundlePersistenceException {
-        final String key = getKey(context);
+        createOrUpdateBundleVersion(context, contentStream);
+    }
+
+    @Override
+    public synchronized void updateBundleVersion(final BundlePersistenceContext context, final InputStream contentStream) throws BundlePersistenceException {
+        createOrUpdateBundleVersion(context, contentStream);
+    }
+
+    private synchronized void createOrUpdateBundleVersion(final BundlePersistenceContext context, final InputStream contentStream)
+            throws BundlePersistenceException {
+        final String key = getKey(context.getCoordinate());
         LOGGER.debug("Saving bundle version to S3 in bucket '{}' with key '{}'", new Object[]{s3BucketName, key});
 
         final PutObjectRequest request = PutObjectRequest.builder()
@@ -161,7 +174,7 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
                 .key(key)
                 .build();
 
-        final RequestBody requestBody = RequestBody.fromInputStream(contentStream, context.getBundleSize());
+        final RequestBody requestBody = RequestBody.fromInputStream(contentStream, context.getSize());
         try {
             s3Client.putObject(request, requestBody);
             LOGGER.debug("Successfully saved bundle version to S3 bucket '{}' with key '{}'", new Object[]{s3BucketName, key});
@@ -171,9 +184,9 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
     }
 
     @Override
-    public void getBundleVersion(final BundleContext context, final OutputStream outputStream)
+    public synchronized void getBundleVersionContent(final BundleVersionCoordinate versionCoordinate, final OutputStream outputStream)
             throws BundlePersistenceException {
-        final String key = getKey(context);
+        final String key = getKey(versionCoordinate);
         LOGGER.debug("Retrieving bundle version from S3 bucket '{}' with key '{}'", new Object[]{s3BucketName, key});
 
         final GetObjectRequest request = GetObjectRequest.builder()
@@ -190,8 +203,8 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
     }
 
     @Override
-    public void deleteBundleVersion(final BundleContext context) throws BundlePersistenceException {
-        final String key = getKey(context);
+    public synchronized void deleteBundleVersion(final BundleVersionCoordinate versionCoordinate) throws BundlePersistenceException {
+        final String key = getKey(versionCoordinate);
         LOGGER.debug("Deleting bundle version from S3 bucket '{}' with key '{}'", new Object[]{s3BucketName, key});
 
         final DeleteObjectRequest request = DeleteObjectRequest.builder()
@@ -208,11 +221,12 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
     }
 
     @Override
-    public void deleteAllBundleVersions(final String bucketId, final String bucketName, final String groupId, final String artifactId)
-            throws BundlePersistenceException {
+    public synchronized void deleteAllBundleVersions(final BundleCoordinate bundleCoordinate) throws BundlePersistenceException {
         final String basePrefix = s3KeyPrefix == null ? "" : s3KeyPrefix + "/";
-        final String prefix = basePrefix + sanitize(groupId) + "/" + sanitize(artifactId) + "/";
-        LOGGER.debug("Deleting all bundle versions from S3 bucket '{}' with prefix '{}'", new Object[]{bucketName, prefix});
+        final String bundlePrefix = getBundlePrefix(bundleCoordinate.getBucketId(), bundleCoordinate.getGroupId(), bundleCoordinate.getArtifactId());
+
+        final String prefix = basePrefix + bundlePrefix;
+        LOGGER.debug("Deleting all bundle versions from S3 bucket '{}' with prefix '{}'", new Object[]{s3BucketName, prefix});
 
         try {
             // List all the objects in the bucket with the given prefix of group/artifact...
@@ -231,10 +245,10 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
                         .key(s3ObjectKey)
                         .build()
                 );
-                LOGGER.debug("Successfully object from S3 bucket '{}' with key '{}'", new Object[]{bucketName, s3ObjectKey});
+                LOGGER.debug("Successfully object from S3 bucket '{}' with key '{}'", new Object[]{s3BucketName, s3ObjectKey});
             }
 
-            LOGGER.debug("Successfully deleted all bundle versions from S3 bucket '{}' with prefix '{}'", new Object[]{bucketName, prefix});
+            LOGGER.debug("Successfully deleted all bundle versions from S3 bucket '{}' with prefix '{}'", new Object[]{s3BucketName, prefix});
         } catch (Exception e) {
             throw new BundlePersistenceException("Error deleting bundle versions from S3 due to: " + e.getMessage(), e);
         }
@@ -245,16 +259,16 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
         s3Client.close();
     }
 
-    private String getKey(final BundleContext context) {
-        final String sanitizedGroup = sanitize(context.getBundleGroupId());
-        final String sanitizedArtifact = sanitize(context.getBundleArtifactId());
-        final String sanitizedVersion = sanitize(context.getBundleVersion());
+    private String getKey(final BundleVersionCoordinate coordinate) {
+        final String bundlePrefix = getBundlePrefix(coordinate.getBucketId(), coordinate.getGroupId(), coordinate.getArtifactId());
 
-        final String bundleFileExtension = getBundleFileExtension(context.getBundleType());
+        final String sanitizedArtifact = sanitize(coordinate.getArtifactId());
+        final String sanitizedVersion = sanitize(coordinate.getVersion());
+
+        final String bundleFileExtension = getBundleFileExtension(coordinate.getType());
         final String bundleFilename = sanitizedArtifact + "-" + sanitizedVersion + bundleFileExtension;
 
-        final String key = sanitizedGroup + "/" + sanitizedArtifact + "/" + sanitizedVersion + "/" + bundleFilename;
-
+        final String key = bundlePrefix + "/" + sanitizedVersion + "/" + bundleFilename;
         if (s3KeyPrefix == null) {
             return key;
         } else {
@@ -262,11 +276,18 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
         }
     }
 
-    static String sanitize(final String input) {
+    private String getBundlePrefix(final String bucketId, final String groupId, final String artifactId) {
+        final String sanitizedBucketId = sanitize(bucketId);
+        final String sanitizedGroup = sanitize(groupId);
+        final String sanitizedArtifact = sanitize(artifactId);
+        return sanitizedBucketId + "/" + sanitizedGroup + "/" + sanitizedArtifact;
+    }
+
+    private static String sanitize(final String input) {
         return FileUtils.sanitizeFilename(input).trim().toLowerCase();
     }
 
-    static String getBundleFileExtension(final BundleContext.BundleType bundleType) {
+    static String getBundleFileExtension(final BundleVersionType bundleType) {
         switch (bundleType) {
             case NIFI_NAR:
                 return NAR_EXTENSION;

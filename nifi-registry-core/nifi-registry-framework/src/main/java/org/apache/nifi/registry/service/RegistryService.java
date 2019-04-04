@@ -29,6 +29,8 @@ import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceProvider;
 import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
 import org.apache.nifi.registry.extension.bundle.BundleType;
@@ -58,6 +60,7 @@ import org.apache.nifi.registry.flow.diff.FlowComparison;
 import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
+import org.apache.nifi.registry.provider.extension.StandardBundleCoordinate;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
@@ -107,6 +110,7 @@ public class RegistryService {
 
     private final MetadataService metadataService;
     private final FlowPersistenceProvider flowPersistenceProvider;
+    private final BundlePersistenceProvider bundlePersistenceProvider;
     private final Serializer<VersionedProcessGroup> processGroupSerializer;
     private final ExtensionService extensionService;
     private final Validator validator;
@@ -119,12 +123,14 @@ public class RegistryService {
     @Autowired
     public RegistryService(final MetadataService metadataService,
                            final FlowPersistenceProvider flowPersistenceProvider,
+                           final BundlePersistenceProvider bundlePersistenceProvider,
                            final Serializer<VersionedProcessGroup> processGroupSerializer,
                            final ExtensionService extensionService,
                            final Validator validator,
                            final RegistryUrlAliasService registryUrlAliasService) {
         this.metadataService = Validate.notNull(metadataService);
         this.flowPersistenceProvider = Validate.notNull(flowPersistenceProvider);
+        this.bundlePersistenceProvider = Validate.notNull(bundlePersistenceProvider);
         this.processGroupSerializer = Validate.notNull(processGroupSerializer);
         this.extensionService = Validate.notNull(extensionService);
         this.validator = Validate.notNull(validator);
@@ -300,6 +306,16 @@ public class RegistryService {
             // for each flow in the bucket, delete all snapshots from the flow persistence provider
             for (final FlowEntity flowEntity : metadataService.getFlowsByBucket(existingBucket.getId())) {
                 flowPersistenceProvider.deleteAllFlowContent(bucketIdentifier, flowEntity.getId());
+            }
+
+            // for each bundle in the bucket, delete all versions from the bundle persistence provider
+            for (final BundleEntity bundleEntity : metadataService.getBundlesByBucket(existingBucket.getId())) {
+                final BundleCoordinate bundleCoordinate = new StandardBundleCoordinate.Builder()
+                        .bucketId(bundleEntity.getBucketId())
+                        .groupId(bundleEntity.getGroupId())
+                        .artifactId(bundleEntity.getArtifactId())
+                        .build();
+                bundlePersistenceProvider.deleteAllBundleVersions(bundleCoordinate);
             }
 
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
