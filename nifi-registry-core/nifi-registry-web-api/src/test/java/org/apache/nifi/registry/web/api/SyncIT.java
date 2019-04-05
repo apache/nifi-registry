@@ -67,12 +67,14 @@ public class SyncIT extends UnsecuredITBase {
             "classpath:db/BucketsIT.sql"
     })
     public void testSyncDeletesExistingBucketsWhenGitRepositoryIsEmpty() {
+        when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
         final Bucket[] buckets = client
                 .target(createURL("sync"))
                 .path("metadata")
                 .request()
                 .put(Entity.entity("", MediaType.WILDCARD_TYPE), Bucket[].class);
 
+        verify(gitFlowPersistenceProviderMock).canBeSynchronized();
         assertNotNull(buckets);
         assertEquals(0, buckets.length);
     }
@@ -85,6 +87,7 @@ public class SyncIT extends UnsecuredITBase {
     })
     public void testSyncBucketsWithInitializedGitRepository() {
         List<BucketMetadata> bucketMetadata = GitFlowPersistenceTestDataFactory.createSampleFlowMetadata();
+        when(gitFlowPersistenceProviderMock.canBeSynchronized()).thenReturn(true);
         when(gitFlowPersistenceProviderMock.getMetadata()).thenReturn(bucketMetadata);
 
         final Bucket[] buckets = client

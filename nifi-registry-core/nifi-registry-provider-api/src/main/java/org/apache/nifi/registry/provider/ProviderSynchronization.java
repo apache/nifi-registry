@@ -22,7 +22,7 @@ import java.io.IOException;
 
 public interface ProviderSynchronization {
     /**
-     * define that the instance is capable of making a synchronization
+     * define that this persistence provider is capable of making a synchronization
      *
      * @return true, if the instance can synchronize the repository otherwise false
      */

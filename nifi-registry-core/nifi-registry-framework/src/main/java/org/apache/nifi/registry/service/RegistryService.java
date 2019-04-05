@@ -60,7 +60,6 @@ import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.FlowMetadataSynchronizer;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
-import org.apache.nifi.registry.provider.flow.git.GitFlowPersistenceProvider;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
@@ -1242,7 +1241,7 @@ public class RegistryService {
 
 
     public Collection<Bucket> syncBuckets(){
-        if (this.flowPersistenceProvider instanceof GitFlowPersistenceProvider){
+        if (this.flowPersistenceProvider.canBeSynchronized()) {
             deleteAllBucketsInMetaDatabase();
             return createBucketsFromGitProvider();
         }
