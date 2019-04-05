@@ -1243,7 +1243,7 @@ public class RegistryService {
     public Collection<Bucket> syncBuckets(){
         if (this.flowPersistenceProvider.canBeSynchronized()) {
             deleteAllBucketsInMetaDatabase();
-            return createBucketsFromGitProvider();
+            return createBucketsFromProvider();
         }
 
         return this.metadataService.getAllBuckets()
@@ -1257,7 +1257,7 @@ public class RegistryService {
         }
     }
 
-    private Collection<Bucket> createBucketsFromGitProvider() {
+    private Collection<Bucket> createBucketsFromProvider() {
         FlowMetadataSynchronizer metadataSynchronizer =
                 new FlowMetadataSynchronizer(this.metadataService, this.flowPersistenceProvider);
         metadataSynchronizer.synchronize();
