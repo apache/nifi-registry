@@ -1032,6 +1032,16 @@ content of the flows saved to the registry. For further details on persistence p
 |`nifi.registry.providers.configuration.file`|This is the location of the file where flow persistence providers are configured. The default value is `./conf/providers.xml`.
 |====
 
+=== Alias Properties
+
+These properties pertain to the support for URL aliasing. For further details, refer to <<URL Aliasing>>.
+
+|====
+|*Property*|*Description*
+|`nifi.registry.registry.alias.configuration.file`|This is the location of the file where URL aliases are configured. The default value is `./conf/registry-aliases.xml`.
+|====
+
+
 === Database Properties
 
 These properties define the settings for the Registry database, which keeps track of metadata about buckets and all items stored in buckets.
@@ -1395,3 +1405,69 @@ via NiFi Registry’s logback.xml, which by default contains an appender that wr
     </class>
 </eventHookProvider>
 ....
+
+== URL Aliasing
+A versioned item may contain the URL of a registry instance embedded in the content of the item. For example, flows with nested versioning contain the URL of the registry where the nested versioned flow is located. If the location of the registry instances changes, then the content is no longer accurate.
+
+URL aliasing can be used to dynamically handle this situation so that URLs are never written to the stored content, and can be re-written with the correct value when being retrieved by a client.
+
+The aliases are configured in an XML file which can be specified in _<<Alias Properties,nifi-registry.properties>>_.
+
+.Example aliases in registry-aliases.xml
+[source,xml]
+....
+<aliases>
+    <alias>
+        <internal>NIFI_REGISTRY_1</internal>
+        <external>http://registry1.nifi.apache.org:18080</external>
+    </alias>
+    <alias>
+        <internal>NIFI_REGISTRY_2</internal>
+        <external>http://registry2.nifi.apache.org:18080</external>
+    </alias>
+</aliases>
+....
+
+If a flow is saved to registry with two child process groups, each under version control, the incoming flow would contain something like the following:
+....
+"processGroups" : [ {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "178a6657-e1a7-4cce-8f83-4e615e38f57a",
+        "registryUrl" : "http://registry1.nifi.apache.org:18080",
+        "version" : 1
+      },
+      {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "985cb44b-3aec-32be-860f-d2a0f2c72aac",
+        "registryUrl" : "http://registry2.nifi.apache.org:18080",
+        "version" : 1
+      }
+]
+....
+
+With the example aliases configuration above, the URLs would be written to the FlowPersistenceProvider as the following:
+....
+"processGroups" : [ {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "178a6657-e1a7-4cce-8f83-4e615e38f57a",
+        "registryUrl" : "NIFI_REGISTRY_1",
+        "version" : 1
+      },
+      {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "985cb44b-3aec-32be-860f-d2a0f2c72aac",
+        "registryUrl" : "NIFI_REGISTRY_2",
+        "version" : 1
+      }
+]
+....
+
+When this flow is retrieved from any API call, the internal values would be rewritten to the external values.
