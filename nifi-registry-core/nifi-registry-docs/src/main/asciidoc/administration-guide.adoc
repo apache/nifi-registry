@@ -1062,30 +1062,28 @@ providing 2 total locations, including `nifi.registry.extension.dir.1`.
 
 == Persistence Providers
 
-NiFi Registry uses a pluggable flow persistence provider to store the content of the flows saved to the registry. NiFi Registry provides `<<FileSystemFlowPersistenceProvider>>` and `<<GitFlowPersistenceProvider>>`.
+NiFi Registry uses a pluggable persistence provider to store the content of each versioned item. Each type of versioned item, such as a versioned flow or extension bundle, has its own persistence provider.
 
-Each persistence provider has its own configuration parameters, those can be configured in a XML file specified in _<<Providers Properties,nifi-registry.properties>>_.
+Each persistence provider has its own configuration parameters, which can be configured in an XML file specified in _<<Providers Properties,nifi-registry.properties>>_.
+
+=== Flow Persistence Providers
+
+The flow persistence provider stores the content of the flows saved to the registry. NiFi Registry provides `<<FileSystemFlowPersistenceProvider>>` and `<<GitFlowPersistenceProvider>>`.
 
 The XML configuration file looks like below. It has a `flowPersistenceProvider` element in which qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each provider.
 
-.Example providers.xml
+.Example flow persistence provider in providers.xml
 [source,xml]
 ....
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<providers>
-
-    <flowPersistenceProvider>
-        <class>persistence-provider-qualified-class-name</class>
-        <property name="property-1">property-value-1</property>
-        <property name="property-2">property-value-2</property>
-        <property name="property-n">property-value-n</property>
-    </flowPersistenceProvider>
-
-</providers>
+<flowPersistenceProvider>
+    <class>persistence-provider-qualified-class-name</class>
+    <property name="property-1">property-value-1</property>
+    <property name="property-2">property-value-2</property>
+    <property name="property-n">property-value-n</property>
+</flowPersistenceProvider>
 ....
 
-
-=== FileSystemFlowPersistenceProvider
+==== FileSystemFlowPersistenceProvider
 
 FileSystemFlowPersistenceProvider simply stores serialized Flow contents into `{bucket-id}/{flow-id}/{version}` directories.
 
@@ -1109,7 +1107,7 @@ Qualified class name: `org.apache.nifi.registry.provider.flow.FileSystemFlowPers
 |====
 
 
-=== GitFlowPersistenceProvider
+==== GitFlowPersistenceProvider
 
 `GitFlowPersistenceProvider` stores flow contents under a Git directory.
 
@@ -1153,7 +1151,7 @@ link:https://git-scm.com/book/en/v2/Git-Internals-The-Refspec[https://git-scm.co
 |`Remote Access Password`|Used with `Remote Access User`.
 |====
 
-==== Initialize Git directory
+===== Initialize Git directory
 
 In order to use `GitFlowPersistenceRepository`, you need to prepare a Git directory on the local file system. You can do so by initializing a directory with `git init` command, or clone an existing Git project from a remote Git repository by `git clone` command.
 
@@ -1162,7 +1160,7 @@ link:https://git-scm.com/docs/git-init[https://git-scm.com/docs/git-init^]
 - `git clone` command
 link:https://git-scm.com/docs/git-clone[https://git-scm.com/docs/git-clone^]
 
-==== Git user configuration
+===== Git user configuration
 
 This persistence provider uses preconfigured Git user name and user email address when it creates Git commits. NiFi Registry user name is added to commit messages.
 
@@ -1184,7 +1182,7 @@ You can configure Git user name and email address by `git config` command.
 link:https://git-scm.com/docs/git-config[https://git-scm.com/docs/git-config^]
 
 
-==== Git user authentication
+===== Git user authentication
 
 By default, this persistence repository only create commits to local repository. No user authentication is needed to do so. However, if 'Commit To Push' is enabled, user authentication to the remote Git repository is required.
 
@@ -1207,9 +1205,9 @@ Host bitbucket.org
   IdentityFile ~/.ssh/key-for-bitbucket
 ....
 
-=== Switching from other Persistence Provider
+==== Switching from other Flow Persistence Provider
 
-In order to switch the Persistence Provider to use, it is necessary to reset NiFi Registry.
+In order to switch the Flow Persistence Provider, it is necessary to reset NiFi Registry.
 For example, to switch from `FileSystemFlowPersistenceProvider` to `GitFlowPersistenceProvider`, follow these steps:
 
 . Stop version control on all ProcessGroups in NiFi
@@ -1220,7 +1218,7 @@ For example, to switch from `FileSystemFlowPersistenceProvider` to `GitFlowPersi
 . Recreate any buckets
 . Start version control on all ProcessGroups again
 
-=== Data model version of serialized Flow snapshots
+==== Data model version of serialized Flow snapshots
 
 Serialized Flow snapshots saved by these persistence providers have versions, so that the data format and schema can evolve over time. Data model version update is done automatically by NiFi Registry when it reads and stores each Flow content.
 
@@ -1230,6 +1228,77 @@ Here is the data model version histories:
 |*Data model version*|*Since NiFi Registry*|*Description*
 |2|0.2|JSON formatted text file. The root object contains header and Flow content object.
 |1|0.1|Binary format having header bytes at the beginning followed by Flow content represented as XML.
+|====
+
+=== Bundle Persistence Providers
+
+The bundle persistence provider stores the content of extension bundles saved to the registry. NiFi Registry provides `<<FileSystemBundlePersistenceProvider>>` and `<<S3BundlePersistenceProvider>>`.
+
+The XML configuration file looks like below. It has a `extensionBundlePersistenceProvider` element in which the qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each provider.
+
+.Example extension bundle persistence provider in providers.xml
+[source,xml]
+....
+<extensionBundlePersistenceProvider>
+    <class>persistence-provider-qualified-class-name</class>
+    <property name="property-1">property-value-1</property>
+    <property name="property-2">property-value-2</property>
+    <property name="property-n">property-value-n</property>
+</extensionBundlePersistenceProvider>
+....
+
+==== FileSystemBundlePersistenceProvider
+
+The FileSystemBundlePersistenceProvider stores the content of extension bundles on the local file-system. The bundles are organized in directories according to bucket id, group, artifact, and version.
+
+Example of persisted extension bundles:
+....
+Extension Bundle Storage Directory/
+├── {bucket-id}/
+   └── {group-id}/
+       └── {artifact-id}
+           └── {version}/{artifact-id}-{version}.{extension}
+├── d1beba88-32e9-45d1-bfe9-057cc41f7ce8/
+    └── org.apache.nifi
+        └── nifi-example-nar
+            └── 1.0.0/nifi-example-nar-1.0.0.nar
+            └── 2.0.0/nifi-example-nar-2.0.0.nar
+....
+
+===== Configuration
+
+Qualified class name: `org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider`
+
+|====
+|*Property*|*Description*
+|`Extension Bundle Storage Directory`|REQUIRED: File system path for a directory where extension bundle contents files are persisted to. If the directory does not exist when NiFi Registry starts, it will be created. If the directory exists, it must be readable and writable from NiFi Registry.
+|====
+
+==== S3BundlePersistenceProvider
+
+The S3BundlePersistenceProvider stores the content of extension bundles in AWS S3 bucket. The bucket is expected to already exist and be accessible to the credentials provided to the persistence providcer.
+
+NOTE: This provider must be added to the classpath by specifying a custom extension directory in nifi-registry.properties, such as nifi.registry.extension.dir.aws=./ext/aws/lib, where ./ext/aws/ contains the contents of the extracted nifi-registry-aws-assembly-<version>-bin.zip.
+
+The key of an extension bundle in the S3 bucket will be the following:
+....
+/{registry-bucket-id}/{group-id}/{artifact-id}/{version}/{artifact-id}-{version}.{extension}
+....
+
+If an optional Key Prefix is specified, then that prefix will be applied to the beginning of the above key.
+
+===== Configuration
+
+Qualified class name: `org.apache.nifi.registry.aws.S3BundlePersistenceProvider`
+
+|====
+|*Property*|*Description*
+|`Region`|REQUIRED: The name of the S3 region where the bucket exists.
+|`Bucket Name`|REQUIRED: The name of an existing bucket to store extension bundles.
+|`Key Prefix`|An optional prefix that if specified will be added to the beginning of all S3 keys.
+|`Credentials Provider`|REQUIRED: Indicates how credentials will be provided, must be a value of DEFAULT_CHAIN or STATIC. DEFAULT_CHAIN will consider in order: Java system properties, environment variables, credential profiles (~/.aws/credentials). STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file.
+|`Access Key`| The access key to use when using STATIC credentials provider.
+|`Secret Access Key`| The secret access key to use when using STATIC credentials provider.
 |====
 
 == Event Hooks
