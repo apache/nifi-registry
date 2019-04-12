@@ -616,6 +616,90 @@ In this example, the users and groups are loaded from LDAP but the servers are m
 from an attribute in a LDAP entry based on the `User Identity Attribute`. The `NiFi Identity` values are established in the local file using the
 `Initial User Identity` properties.
 
+=== Access Policies
+
+You can manage the ability for users and groups to view or modify NiFi Registry resources using 'access policies'.  Access policies can be created to control access to buckets, as well as to grant special privileges to users for managing a NiFi Registry instance.
+
+==== Bucket Policies
+
+Bucket policies govern the following bucket level authorizations:
+
+|===
+|Policy |Privilege |Resource Descriptor
+
+| Read Bucket
+| Allows users to read items in the bucket
+| `resource="/buckets/<bucket-UUID>" action="R"`
+
+| Write Bucket
+| Allows users to write items to the bucket
+| `resource="/buckets/<bucket-UUID>" action="W"`
+
+| Delete Bucket
+| Allows users to delete the bucket
+| `resource="/buckets/<bucket-UUID>" action="D"`
+
+
+|===
+
+
+==== Special Privilege Policies
+
+Special privilege policies govern the following system level authorizations:
+
+|===
+|Policy |Privilege |Resource Descriptor
+
+| Can Manage Buckets (Read)
+| Allows users to read from all buckets
+| `resource="/buckets" action="R"`
+
+| Can Manage Buckets (Write)
+| Allows users to write to all buckets
+| `resource="/buckets" action="W"`
+
+| Can Manage Buckets (Delete)
+| Allows users to delete all buckets
+| `resource="/buckets" action="D"`
+
+| Can Manage Users (Read)
+| Allows users to view users
+| `resource="/tenants" action="R"`
+
+| Can Manage Users (Write)
+| Allows users to create and modify users
+| `resource="/tenants" action="W"`
+
+| Can Manage Users (Delete)
+| Allows users to delete users
+| `resource="/tenants" action="D"`
+
+| Can Manage Policies (Read)
+| Allows users to view policies
+| `resource="/policies" action="R"`
+
+| Can Manage Policies (Write)
+| Allows users to create and modify policies
+| `resource="/policies" action="W"`
+
+| Can Manage Policies (Delete)
+| Allows users to delete policies
+| `resource="/policies" action="D"`
+
+| Can Proxy Requests
+| Allows users to proxy requests
+| `resource="/proxy" action="W"`
+
+| View Swagger
+| Allows users to access the self-hosted Swagger UI
+| `resource="/swagger" action="R"`
+
+| View Actuator
+| Allows users to access the Spring Boot Actuator end-points
+| `resource="/actuator" action="R"`
+
+|===
+
 
 == Encrypted Passwords in Configuration Files
 
