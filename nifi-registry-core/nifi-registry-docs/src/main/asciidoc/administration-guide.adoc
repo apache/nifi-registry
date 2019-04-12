@@ -990,6 +990,38 @@ These properties pertain to various security features in NiFi Registry. Many of 
 |`nifi.registry.security.identity.provider`|This indicates what type of identity provider to use. The default value is blank, can be set to the identifier from a provider in the file specified in `nifi.registry.security.identity.providers.configuration.file`. Setting this property will trigger NiFi Registry to support username/password authentication.
 |====
 
+=== Identity Mapping Properties
+
+These properties can be utilized to normalize user identities.  When implemented, identities authenticated by different identity providers (certificates, LDAP, Kerberos) are treated the same internally in NiFi Registry.  As a result, duplicate users are avoided and user-specific configurations such as authorizations only need to be setup once per user.
+
+The following examples demonstrate normalizing DNs from certificates and principals from Kerberos:
+
+----
+nifi.registry.security.identity.mapping.pattern.dn=^CN=(.*?), OU=(.*?), O=(.*?), L=(.*?), ST=(.*?), C=(.*?)$
+nifi.registry.security.identity.mapping.value.dn=$1@$2
+nifi.registry.security.identity.mapping.transform.dn=NONE
+nifi.registry.security.identity.mapping.pattern.kerb=^(.*?)/instance@(.*?)$
+nifi.registry.security.identity.mapping.value.kerb=$1@$2
+nifi.registry.security.identity.mapping.transform.kerb=NONE
+----
+
+The last segment of each property is an identifier used to associate the pattern with the replacement value.  When a user makes a request to NiFi Registry, their identity is checked to see if it matches each of those patterns in lexicographical order.  For the first one that matches, the replacement specified in the `nifi.registry.security.identity.mapping.value.xxxx` property is used. So a login with `CN=localhost, OU=Apache NiFi, O=Apache, L=Santa Monica, ST=CA, C=US` matches the DN mapping pattern above and the DN mapping value `$1@$2` is applied.  The user is normalized to `localhost@Apache NiFi`.
+
+In addition to mapping, a transform may be applied. The supported versions are `NONE` (no transform applied), `LOWER` (identity lowercased), and `UPPER` (identity uppercased). If not specified, the default value is `NONE`.
+
+NOTE: These mappings are also applied to the "Initial Admin Identity" in the _authorizers.xml_ file, as well as users imported from LDAP (See <<authorizers-setup>>).
+
+Group names can also be mapped. The following example will accept the existing group name but will lowercase it. This may be helpful when used in conjunction with an external authorizer.
+
+----
+nifi.registry.security.group.mapping.pattern.anygroup=^(.*)$
+nifi.registry.security.group.mapping.value.anygroup=$1
+nifi.registry.security.group.mapping.transform.anygroup=LOWER
+----
+
+NOTE: These mappings are applied to groups imported from LDAP.
+
+
 === Providers Properties
 
 These properties pertain to flow persistence providers. NiFi Registry uses a pluggable flow persistence provider to store the
