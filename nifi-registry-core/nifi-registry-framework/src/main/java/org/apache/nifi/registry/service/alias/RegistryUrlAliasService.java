@@ -94,7 +94,7 @@ public class RegistryUrlAliasService {
         }
     }
 
-    protected RegistryUrlAliasService(List<Alias> aliases) {
+    public RegistryUrlAliasService(List<Alias> aliases) {
         Pattern urlStart = Pattern.compile("^https?://");
 
         this.aliases = new LinkedHashMap<>();
@@ -137,7 +137,7 @@ public class RegistryUrlAliasService {
         }
     }
 
-    protected String getExternal(String url) {
+    public String getExternal(String url) {
         for (Map.Entry<String, String> alias : aliases.entrySet()) {
             String internal = alias.getKey();
             String external = alias.getValue();
@@ -153,7 +153,7 @@ public class RegistryUrlAliasService {
         return url;
     }
 
-    protected String getInternal(String url) {
+    public String getInternal(String url) {
         for (Map.Entry<String, String> alias : aliases.entrySet()) {
             String internal = alias.getKey();
             String external = alias.getValue();

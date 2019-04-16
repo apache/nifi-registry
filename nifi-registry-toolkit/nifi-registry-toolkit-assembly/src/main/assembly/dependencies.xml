@@ -45,6 +45,11 @@
             <outputDirectory>classpath/</outputDirectory>
             <fileMode>0600</fileMode>
         </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/src/main/resources/conf</directory>
+            <outputDirectory>conf/</outputDirectory>
+            <fileMode>0600</fileMode>
+        </fileSet>
     </fileSets>
     <files>
         <file>

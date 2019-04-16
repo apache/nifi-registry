@@ -56,6 +56,11 @@ language governing permissions and limitations under the License. -->
             <version>0.4.0-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-toolkit-rebase</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <scope>compile</scope>
