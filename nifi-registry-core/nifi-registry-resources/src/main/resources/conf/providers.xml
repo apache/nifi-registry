@@ -74,6 +74,8 @@
                 - STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file
             - "Access Key" - The access key to use when using STATIC credentials provider
             - "Secret Access Key" - The secret access key to use when using STATIC credentials provider
+            - "Endpoint URL" - An optional URL that overrides the default AWS S3 endpoint URL.
+                 Set this when using an AWS S3 API compatible service hosted at a different URL.
      -->
     <!--
     <extensionBundlePersistenceProvider>
@@ -84,6 +86,7 @@
         <property name="Credentials Provider">DEFAULT_CHAIN</property>
         <property name="Access Key"></property>
         <property name="Secret Access Key"></property>
+        <property name="Endpoint URL"></property>
     </extensionBundlePersistenceProvider>
     -->
 

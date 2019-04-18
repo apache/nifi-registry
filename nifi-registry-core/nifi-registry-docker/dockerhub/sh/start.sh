@@ -43,6 +43,7 @@ case ${AUTH} in
 esac
 
 . "${scripts_dir}/update_flow_provider.sh"
+. "${scripts_dir}/update_bundle_provider.sh"
 
 # Continuously provide logs so that 'docker logs' can produce them
 tail -F "${NIFI_REGISTRY_HOME}/logs/nifi-registry-app.log" &

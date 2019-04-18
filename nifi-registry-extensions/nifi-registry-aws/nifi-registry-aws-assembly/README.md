@@ -78,6 +78,7 @@ Uncomment the extensionBundlePersistenceProvider for S3:
     <property name="Credentials Provider">DEFAULT_CHAIN</property>
     <property name="Access Key"></property>
     <property name="Secret Access Key"></property>
+    <property name="Endpoint URL"></property>
 </extensionBundlePersistenceProvider>
 -->
 ```

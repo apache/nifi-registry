@@ -42,7 +42,7 @@ The configuration scripts are suitable for at least 0.1.0+.
 
 ## Running a container
 
-### Standalone Instance, Unsecured
+### Unsecured
 The minimum to run a NiFi Registry instance is as follows:
 
     docker run --name nifi-registry \
@@ -63,7 +63,7 @@ You can also pass in environment variables to change the NiFi Registry communica
 
 For a list of the environment variables recognised in this build, look into the .sh/secure.sh and .sh/start.sh scripts
         
-### Standalone Instance, Two-Way SSL
+### Secured with Two-Way TLS
 In this configuration, the user will need to provide certificates and the associated configuration information.
 Of particular note, is the `AUTH` environment variable which is set to `tls`.  Additionally, the user must provide an
 the DN as provided by an accessing client certificate in the `INITIAL_ADMIN_IDENTITY` environment variable.
@@ -84,7 +84,7 @@ Finally, this command makes use of a volume to provide certificates on the host 
       -d \
       apache/nifi-registry:latest
 
-### Standalone Instance, LDAP
+### Secured with LDAP
 In this configuration, the user will need to provide certificates and the associated configuration information.  Optionally,
 if the LDAP provider of interest is operating in LDAPS or START_TLS modes, certificates will additionally be needed.
 Of particular note, is the `AUTH` environment variable which is set to `ldap`.  Additionally, the user must provide a
@@ -92,7 +92,7 @@ DN as provided by the configured LDAP server in the `INITIAL_ADMIN_IDENTITY` env
 used to seed the instance with an initial user with administrative privileges.  Finally, this command makes use of a 
 volume to provide certificates on the host system to the container instance.
 
-#### For a minimal, connection to an LDAP server using SIMPLE authentication:
+For a minimal, connection to an LDAP server using SIMPLE authentication:
 
     docker run --name nifi-registry \
       -v /path/to/tls/certs/localhost:/opt/certs \
@@ -115,7 +115,7 @@ volume to provide certificates on the host system to the container instance.
       -d \
       apache/nifi-registry:latest
 
-#### The following, optional environment variables may be added to the above command when connecting to a secure  LDAP server configured with START_TLS or LDAPS
+The following, optional environment variables may be added to the above command when connecting to a secure LDAP server configured with START_TLS or LDAPS
 
     -e LDAP_TLS_KEYSTORE: ''
     -e LDAP_TLS_KEYSTORE_PASSWORD: ''
@@ -124,7 +124,11 @@ volume to provide certificates on the host system to the container instance.
     -e LDAP_TLS_TRUSTSTORE_PASSWORD: ''
     -e LDAP_TLS_TRUSTSTORE_TYPE: ''
 
-### The following, optional environment variables can be used to configure the database
+### Additional Configuration Options
+
+#### Database Configuration
+
+The following, optional environment variables can be used to configure the database.
 
 | nifi-registry.properties entry         | Variable                   |
 |----------------------------------------|----------------------------|
@@ -136,7 +140,9 @@ volume to provide certificates on the host system to the container instance.
 | nifi.registry.db.maxConnections        | NIFI_REGISTRY_DB_MAX_CONNS |
 | nifi.registry.db.sql.debug             | NIFI_REGISTRY_DB_DEBUG_SQL |
 
-#### The following, optional environment variables may be added to configure flow persistence provider.
+#### Flow Persistence Configuration
+
+The following, optional environment variables may be added to configure flow persistence provider.
 
 | Environment Variable           | Configuration Property               |
 |--------------------------------|--------------------------------------|
@@ -145,4 +151,20 @@ volume to provide certificates on the host system to the container instance.
 | NIFI_REGISTRY_GIT_REMOTE       | Remote to Push                       |
 | NIFI_REGISTRY_GIT_USER         | Remote Access User                   |
 | NIFI_REGISTRY_GIT_PASSWORD     | Remote Access Password               |
+
+#### Extension Bundle Persistence Configuration
+
+The following, optional environment variables may be added to configure extension bundle persistence provider.
+
+| Environment Variable                  | Configuration Property              |
+|---------------------------------------|-------------------------------------|
+| NIFI_REGISTRY_BUNDLE_STORAGE_DIR      | Extension Bundle Storage Directory  |
+| NIFI_REGISTRY_BUNDLE_PROVIDER         | (Class tag); valid values: file, s3 |
+| NIFI_REGISTRY_S3_REGION               | Region                              |
+| NIFI_REGISTRY_S3_BUCKET_NAME          | Bucket Name                         |
+| NIFI_REGISTRY_S3_KEY_PREFIX           | Key Prefix                          |
+| NIFI_REGISTRY_S3_CREDENTIALS_PROVIDER | Credentials Provider                |
+| NIFI_REGISTRY_S3_ACCESS_KEY           | Access Key                          |
+| NIFI_REGISTRY_S3_SECRET_ACCESS_KEY    | Secret Access Key                   |
+| NIFI_REGISTRY_S3_ENDPOINT_URL         | Endpoint URL                        |
 

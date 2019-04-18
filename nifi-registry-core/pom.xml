@@ -36,16 +36,16 @@
         <module>nifi-registry-runtime</module>
         <module>nifi-registry-security-api</module>
         <module>nifi-registry-security-utils</module>
-	<module>nifi-registry-framework</module>
+        <module>nifi-registry-framework</module>
         <module>nifi-registry-provider-api</module>
         <module>nifi-registry-web-api</module>
         <module>nifi-registry-web-ui</module>
         <module>nifi-registry-web-docs</module>
-	<module>nifi-registry-bootstrap</module>
+        <module>nifi-registry-bootstrap</module>
         <module>nifi-registry-docs</module>
-	<module>nifi-registry-client</module>
+        <module>nifi-registry-client</module>
         <module>nifi-registry-docker</module>
-	<module>nifi-registry-bundle-utils</module>
+        <module>nifi-registry-bundle-utils</module>
     </modules>
 
     <dependencyManagement>
