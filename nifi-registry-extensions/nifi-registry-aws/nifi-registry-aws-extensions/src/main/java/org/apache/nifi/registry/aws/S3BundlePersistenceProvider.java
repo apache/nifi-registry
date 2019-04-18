@@ -36,6 +36,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -48,6 +49,7 @@ import software.amazon.awssdk.utils.StringUtils;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 
 /**
  * An {@link BundlePersistenceProvider} that uses AWS S3 for storage.
@@ -62,6 +64,7 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
     public static final String CREDENTIALS_PROVIDER_PROP = "Credentials Provider";
     public static final String ACCESS_KEY_PROP = "Access Key";
     public static final String SECRET_ACCESS_KEY_PROP = "Secret Access Key";
+    public static final String ENDPOINT_URL_PROP = "Endpoint URL";
 
     public static final String NAR_EXTENSION = ".nar";
     public static final String CPP_EXTENSION = ".cpp";
@@ -90,10 +93,17 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
 
     protected S3Client createS3Client(final ProviderConfigurationContext configurationContext) {
 
-        return S3Client.builder()
+        final S3ClientBuilder builder = S3Client.builder()
                 .region(getRegion(configurationContext))
-                .credentialsProvider(getCredentialsProvider(configurationContext))
-                .build();
+                .credentialsProvider(getCredentialsProvider(configurationContext));
+
+        final URI s3EndpointOverride = getS3EndpointOverride(configurationContext);
+        if (s3EndpointOverride != null) {
+            builder.endpointOverride(s3EndpointOverride);
+        }
+
+        return builder.build();
+
     }
 
     private Region getRegion(final ProviderConfigurationContext configurationContext) {
@@ -151,6 +161,21 @@ public class S3BundlePersistenceProvider implements BundlePersistenceProvider {
             LOGGER.debug("Creating DefaultCredentialsProvider");
             return DefaultCredentialsProvider.create();
         }
+    }
+
+    private URI getS3EndpointOverride(final ProviderConfigurationContext configurationContext) {
+        final URI s3EndpointOverride;
+        final String endpointUrlValue = configurationContext.getProperties().get(ENDPOINT_URL_PROP);
+        try {
+            s3EndpointOverride = StringUtils.isBlank(endpointUrlValue) ? null : URI.create(endpointUrlValue);
+        } catch (IllegalArgumentException e) {
+            final String errMessage = "The optional property '" + ENDPOINT_URL_PROP + "' must be a valid URL if set. " +
+                    "URI Syntax Exception is: " + e.getLocalizedMessage();
+            LOGGER.error(errMessage);
+            LOGGER.debug("", e);
+            throw new ProviderCreationException(errMessage, e);
+        }
+        return s3EndpointOverride;
     }
 
     @Override

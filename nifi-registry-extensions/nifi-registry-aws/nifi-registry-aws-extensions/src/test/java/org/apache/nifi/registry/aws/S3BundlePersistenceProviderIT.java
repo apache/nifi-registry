@@ -29,6 +29,7 @@ import org.junit.Test;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -36,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -56,17 +58,9 @@ public class S3BundlePersistenceProviderIT {
     public void setup() {
         final Region region = Region.US_EAST_1;
         final String bucketName = "integration-test-" + System.currentTimeMillis();
-
-        // Create a separate client just for the IT test so we can setup a new bucket
-        s3Client = S3Client.builder().region(region)
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .build();
-
-        final CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
-                .bucket(bucketName)
-                .build();
-
-        s3Client.createBucket(createBucketRequest);
+        final String endpointUrl =
+                //null;                     // When using AWS S3
+                "http://localhost:9000";    // When using Docker:  docker run -it -p 9000:9000 minio/minio server /data
 
         // Create config context and provider, and call onConfigured
         final Map<String,String> properties = new HashMap<>();
@@ -74,12 +68,23 @@ public class S3BundlePersistenceProviderIT {
         properties.put(S3BundlePersistenceProvider.BUCKET_NAME_PROP, bucketName);
         properties.put(S3BundlePersistenceProvider.CREDENTIALS_PROVIDER_PROP,
                 S3BundlePersistenceProvider.CredentialProvider.DEFAULT_CHAIN.name());
+        properties.put(S3BundlePersistenceProvider.ENDPOINT_URL_PROP, endpointUrl);
 
         configurationContext = mock(ProviderConfigurationContext.class);
         when(configurationContext.getProperties()).thenReturn(properties);
 
         provider = new S3BundlePersistenceProvider();
         provider.onConfigured(configurationContext);
+
+        // Create a separate client just for the IT test so we can setup a new bucket
+        s3Client = ((S3BundlePersistenceProvider)provider).createS3Client(configurationContext);
+
+        final CreateBucketRequest createBucketRequest = CreateBucketRequest.builder()
+                .bucket(bucketName)
+                .build();
+
+        s3Client.createBucket(createBucketRequest);
+
     }
 
     @After
