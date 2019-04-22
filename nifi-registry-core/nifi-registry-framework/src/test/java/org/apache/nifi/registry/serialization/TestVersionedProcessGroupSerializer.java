@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.serialization;
 
+import org.apache.nifi.registry.flow.ExternalControllerServiceReference;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.junit.Assert;
@@ -25,6 +26,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -61,6 +64,47 @@ public class TestVersionedProcessGroupSerializer {
         Assert.assertEquals(processor1.getIdentifier(), deserializedProcessor1.getIdentifier());
         Assert.assertEquals(processor1.getName(), deserializedProcessor1.getName());
 
+    }
+
+    @Test
+    public void testSerializeDeserializeWithExternalServices() throws SerializationException {
+        final Serializer<VersionedProcessGroup> serializer = new VersionedProcessGroupSerializer();
+
+        final VersionedProcessGroup processGroup1 = new VersionedProcessGroup();
+        processGroup1.setIdentifier("pg1");
+        processGroup1.setName("My Process Group");
+
+        final ExternalControllerServiceReference serviceReference1 = new ExternalControllerServiceReference();
+        serviceReference1.setIdentifier("1");
+        serviceReference1.setName("Service 1");
+
+        final ExternalControllerServiceReference serviceReference2 = new ExternalControllerServiceReference();
+        serviceReference2.setIdentifier("2");
+        serviceReference2.setName("Service 2");
+
+        final Map<String,ExternalControllerServiceReference> serviceReferences = new HashMap<>();
+        serviceReferences.put(serviceReference1.getIdentifier(), serviceReference1);
+        serviceReferences.put(serviceReference2.getIdentifier(), serviceReference2);
+
+        processGroup1.setExternalControllerServices(serviceReferences);
+
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        serializer.serialize(processGroup1, out);
+
+        final ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        final VersionedProcessGroup deserializedProcessGroup = serializer.deserialize(in);
+
+        Assert.assertEquals(processGroup1.getIdentifier(), deserializedProcessGroup.getIdentifier());
+        Assert.assertEquals(processGroup1.getName(), deserializedProcessGroup.getName());
+
+        final Map<String,ExternalControllerServiceReference> deserializedServiceReferences = deserializedProcessGroup.getExternalControllerServices();
+        Assert.assertNotNull(deserializedServiceReferences);
+        Assert.assertEquals(2, deserializedServiceReferences.size());
+
+        final ExternalControllerServiceReference deserializedServiceReference1 = deserializedServiceReferences.get(serviceReference1.getIdentifier());
+        Assert.assertNotNull(deserializedServiceReference1);
+        Assert.assertEquals(serviceReference1.getIdentifier(), deserializedServiceReference1.getIdentifier());
+        Assert.assertEquals(serviceReference1.getName(), deserializedServiceReference1.getName());
     }
 
     @Test
