@@ -1341,6 +1341,7 @@ Qualified class name: `org.apache.nifi.registry.aws.S3BundlePersistenceProvider`
 |`Credentials Provider`|REQUIRED: Indicates how credentials will be provided, must be a value of DEFAULT_CHAIN or STATIC. DEFAULT_CHAIN will consider in order: Java system properties, environment variables, credential profiles (~/.aws/credentials). STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file.
 |`Access Key`| The access key to use when using STATIC credentials provider.
 |`Secret Access Key`| The secret access key to use when using STATIC credentials provider.
+|`Endpoint URL`| An optional URL that overrides the default AWS S3 endpoint URL. Set this when using an AWS S3 API compatible service hosted at a different URL.
 |====
 
 == Event Hooks
