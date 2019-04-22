@@ -165,6 +165,7 @@
 
         <!-- nifi-registry.properties: extension properties -->
         <nifi.registry.extensions.working.directory>./work/extensions</nifi.registry.extensions.working.directory>
+        <nifi.registry.extension.dir.aws></nifi.registry.extension.dir.aws>
 
         <!-- nifi-registry.properties: legacy database properties, used to migrate data from old DB to the new DB below -->
         <nifi.registry.db.directory />
@@ -426,8 +427,13 @@
         <profile>
             <id>include-aws</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>!skipAws</name>
+                </property>
             </activation>
+            <properties>
+                <nifi.registry.extension.dir.aws>./ext/aws/lib</nifi.registry.extension.dir.aws>
+            </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.apache.nifi.registry</groupId>

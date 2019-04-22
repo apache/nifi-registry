@@ -24,19 +24,17 @@ This modules provides AWS related extensions for NiFi Registry.
 
 ### Enable AWS extensions at NiFi Registry build
 
-In order to enable AWS extensions when you build NiFi Registry, specify `include-aws` profile with a maven install command:
+The AWS extensions will be automatically included when you build NiFi Registry and will be installed at the `${NIFI_REG_HOME}/ext/aws` directory.
 
+If you wish to build NiFi Registry without including the AWS extensions, specify the `skipAws` system property:
 ```
 cd nifi-registry
-mvn clean install -Paws
+mvn clean install -DskipAws
 ```
-
-Then the extension will be installed at `${NIFI_REG_HOME}/ext/aws` directory.
 
 ### Add AWS extensions to existing NiFi Registry
 
-Alternatively, you can add AWS extensions to an existing NiFi Registry.
-To do so, build the extension with the following command:
+To add AWS extensions to an existing NiFi Registry, build the extension with the following command:
 
 ```
 cd nifi-registry
@@ -55,10 +53,13 @@ unzip -d ${NIFI_REG_HOME}/ext/aws nifi-registry-extensions/nifi-registry-aws/nif
 
 ## NiFi Registry Configuration
 
-In order to use this extension, following NiFi Registry files need to be configured.
+In order to use this extension, the following NiFi Registry files need to be configured.
 
 ### nifi-registry.properties
 
+The extension dir property will be automatically configured when building with the `include-aws` profile (i.e. when not specifying -DskipAws).
+
+To manually specify the property when adding the AWS extensions to an existing NiFi registry, configure the following property:
 ```
 # Specify AWS extension dir
 nifi.registry.extension.dir.aws=./ext/aws/lib
@@ -68,31 +69,18 @@ nifi.registry.extension.dir.aws=./ext/aws/lib
 
 Uncomment the extensionBundlePersistenceProvider for S3:
 ```
-<!-- Example S3 Bundle Persistence Provider
-            - Requires nifi-registry-aws-assembly to be added to the classpath via a custom extension dir in nifi-registry.properties
-                Example: nifi.registry.extension.dir.aws=./ext/aws/lib
-                Where "./ext/aws/lib" contains the extracted contents of nifi-registry-aws-assembly
-            - "Region" - The name of the S3 region where the bucket exists
-            - "Bucket Name" - The name of an existing bucket to store extension bundles
-            - "Key Prefix" - An optional prefix that if specified will be added to the beginning of all S3 keys
-            - "Credentials Provider" - Indicates how credentials will be provided, must be a value of DEFAULT_CHAIN or STATIC
-                - DEFAULT_CHAIN will consider in order: Java system properties, environment variables, credential profiles (~/.aws/credentials)
-                - STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file
-            - "Access Key" - The access key to use when using STATIC credentials provider
-            - "Secret Access Key" - The secret access key to use when using STATIC credentials provider
-     -->
-    <!--
-    <extensionBundlePersistenceProvider>
-        <class>org.apache.nifi.registry.aws.S3BundlePersistenceProvider</class>
-        <property name="Region">us-east-1</property>
-        <property name="Bucket Name">my-bundles</property>
-        <property name="Key Prefix"></property>
-        <property name="Credentials Provider">DEFAULT_CHAIN</property>
-        <property name="Access Key"></property>
-        <property name="Secret Access Key"></property>
-    </extensionBundlePersistenceProvider>
-    -->
+<!--
+<extensionBundlePersistenceProvider>
+    <class>org.apache.nifi.registry.aws.S3BundlePersistenceProvider</class>
+    <property name="Region">us-east-1</property>
+    <property name="Bucket Name">my-bundles</property>
+    <property name="Key Prefix"></property>
+    <property name="Credentials Provider">DEFAULT_CHAIN</property>
+    <property name="Access Key"></property>
+    <property name="Secret Access Key"></property>
+</extensionBundlePersistenceProvider>
+-->
 ```
 
-NOTE: Remember to remove, or comment out the FileSystemBundlePersistenceProvider since there can only be one defined.
+NOTE: Remember to remove, or comment out, the FileSystemBundlePersistenceProvider since there can only be one defined.
 
