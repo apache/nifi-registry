@@ -248,16 +248,14 @@ NfRegistryApi.prototype = {
     /**
      * Updates a bucket.
      *
-     * @param {string} identifier   The identifier of the bucket.
-     * @param {string} name         The name of the bucket.
+     * @param {string} identifier           The identifier of the bucket.
+     * @param {string} name                 The name of the bucket.
+     * @param {string} allowBundleRedeploy  Whether or not the bucket allows redeploying released bundles
      * @returns {*}
      */
-    updateBucket: function (identifier, name) {
+    updateBucket: function (updatedBucket) {
         var self = this;
-        return this.http.put('/nifi-registry-api/buckets/' + identifier, {
-            'identifier': identifier,
-            'name': name
-        }, headers)
+        return this.http.put('/nifi-registry-api/buckets/' + updatedBucket.identifier, updatedBucket, headers)
             .map(function (response) {
                 return response;
             })

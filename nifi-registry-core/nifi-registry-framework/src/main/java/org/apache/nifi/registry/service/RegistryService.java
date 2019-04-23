@@ -155,8 +155,8 @@ public class RegistryService {
         bucket.setIdentifier(UUID.randomUUID().toString());
         bucket.setCreatedTimestamp(System.currentTimeMillis());
 
-        if (bucket.isAllowExtensionBundleRedeploy() == null) {
-            bucket.setAllowExtensionBundleRedeploy(false);
+        if (bucket.isAllowBundleRedeploy() == null) {
+            bucket.setAllowBundleRedeploy(false);
         }
 
         validate(bucket, "Cannot create Bucket");
@@ -277,8 +277,8 @@ public class RegistryService {
                 existingBucketById.setDescription(bucket.getDescription());
             }
 
-            if (bucket.isAllowExtensionBundleRedeploy() != null) {
-                existingBucketById.setAllowExtensionBundleRedeploy(bucket.isAllowExtensionBundleRedeploy());
+            if (bucket.isAllowBundleRedeploy() != null) {
+                existingBucketById.setAllowExtensionBundleRedeploy(bucket.isAllowBundleRedeploy());
             }
 
             // perform the actual update

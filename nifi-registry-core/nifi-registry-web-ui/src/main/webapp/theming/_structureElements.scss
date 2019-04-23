@@ -138,6 +138,14 @@ mat-sidenav {
   overflow: auto;
 }
 
+.field-header {
+  font-size: 11px;
+  color: #999999;
+  font-weight: 300;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
 body[fds] mat-form-field.td-chips-form-field.mat-input-container {
   width: unset;
 }
