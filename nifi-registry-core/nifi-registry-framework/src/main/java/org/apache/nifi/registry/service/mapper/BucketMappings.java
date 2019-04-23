@@ -32,7 +32,7 @@ public class BucketMappings {
         bucketEntity.setName(bucket.getName());
         bucketEntity.setDescription(bucket.getDescription());
         bucketEntity.setCreated(new Date(bucket.getCreatedTimestamp()));
-        bucketEntity.setAllowExtensionBundleRedeploy(bucket.isAllowExtensionBundleRedeploy());
+        bucketEntity.setAllowExtensionBundleRedeploy(bucket.isAllowBundleRedeploy());
         return bucketEntity;
     }
 
@@ -42,7 +42,7 @@ public class BucketMappings {
         bucket.setName(bucketEntity.getName());
         bucket.setDescription(bucketEntity.getDescription());
         bucket.setCreatedTimestamp(bucketEntity.getCreated().getTime());
-        bucket.setAllowExtensionBundleRedeploy(bucketEntity.isAllowExtensionBundleRedeploy());
+        bucket.setAllowBundleRedeploy(bucketEntity.isAllowExtensionBundleRedeploy());
         return bucket;
     }
 

@@ -61,7 +61,8 @@ function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableSer
         }
     ];
     this.userPermsSearchTerms = [];
-    this._bucketname = '';
+    this.bucketname = '';
+    this.allowBundleRedeploy = false;
     this.bucketPolicies = [];
     this.userPerms = {};
     this.groupPerms = {};
@@ -101,7 +102,7 @@ NfRegistryManageBucket.prototype = {
                     self.nfRegistryService.sidenav.open();
                     var bucket = response[0];
                     self.nfRegistryService.bucket = bucket;
-                    self._bucketname = response[0].name;
+                    self.bucketname = response[0].name;
                     if (!self.nfRegistryService.currentUser.anonymous) {
                         if (!response[1].status || response[1].status === 200) {
                             var policies = response[1];
@@ -161,7 +162,7 @@ NfRegistryManageBucket.prototype = {
             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier)
                 .subscribe(function (response) {
                     self.nfRegistryService.bucket = response;
-                    self._bucketname = response.name;
+                    self.bucketname = response.name;
 
                     if (dialogResult) {
                         if (dialogResult.userOrGroup.type === 'user') {
@@ -198,7 +199,7 @@ NfRegistryManageBucket.prototype = {
             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier)
                 .subscribe(function (response) {
                     self.nfRegistryService.bucket = response;
-                    self._bucketname = response.name;
+                    self.bucketname = response.name;
 
                     if (dialogResult) {
                         if (dialogResult.userOrGroup.type === 'user') {
@@ -394,7 +395,10 @@ NfRegistryManageBucket.prototype = {
      */
     updateBucketName: function (bucketname) {
         var self = this;
-        this.nfRegistryApi.updateBucket(this.nfRegistryService.bucket.identifier, bucketname).subscribe(function (response) {
+        this.nfRegistryApi.updateBucket({
+            'identifier': this.nfRegistryService.bucket.identifier,
+            'name': bucketname,
+        }).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.bucket = response;
                 // update the bucket identity in the buckets table
@@ -413,7 +417,7 @@ NfRegistryManageBucket.prototype = {
                     duration: 3000
                 });
             } else if (response.status === 409) {
-                self._bucketname = self.nfRegistryService.bucket.name;
+                self.bucketname = self.nfRegistryService.bucket.name;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: 'This bucket already exists. Please enter a different identity/bucket name.',
@@ -421,7 +425,41 @@ NfRegistryManageBucket.prototype = {
                     acceptButtonColor: 'fds-warn'
                 });
             } else if (response.status === 400) {
-                self._bucketname = self.nfRegistryService.bucket.name;
+                self.bucketname = self.nfRegistryService.bucket.name;
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+            }
+        });
+    },
+
+    /**
+     * Update allowBundleRedeploy flag.
+     *
+     * @param the checkbox change event
+     */
+    toggleBucketBundleRedeploy: function (event) {
+        var self = this;
+        this.nfRegistryApi.updateBucket({
+            'identifier': this.nfRegistryService.bucket.identifier,
+            'allowBundleRedeploy': event.checked,
+        }).subscribe(function (response) {
+            if (!response.status || response.status === 200) {
+                self.nfRegistryService.bucket = response;
+                var snackBarRef = self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'Bundle settings have been updated.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
+                });
+            }  else if (response.status === 400) {
+                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,

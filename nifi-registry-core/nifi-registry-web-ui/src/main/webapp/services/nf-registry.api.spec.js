@@ -627,7 +627,11 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
     it('should PUT to update a bucket name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
         // api call
-        nfRegistryApi.updateBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'Bucket #1').subscribe(function (response) {
+        nfRegistryApi.updateBucket({
+            'identifier' : '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name' : 'Bucket #1',
+            'allowBundleRedeploy' : false
+        }).subscribe(function (response) {
             expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
             expect(response[0].name).toEqual('Bucket #1');
         });
@@ -647,7 +651,11 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
     it('should fail to PUT to update a bucket name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
         // api call
-        nfRegistryApi.updateBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'Bucket #1').subscribe(function (response) {
+        nfRegistryApi.updateBucket({
+            'identifier' : '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name' : 'Bucket #1',
+            'allowBundleRedeploy' : false
+        }).subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error');
         });
 

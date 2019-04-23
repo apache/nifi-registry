@@ -41,7 +41,7 @@ public class Bucket extends LinkableEntity {
 
     private String description;
 
-    private Boolean allowExtensionBundleRedeploy;
+    private Boolean allowBundleRedeploy;
 
     private Permissions permissions;
 
@@ -82,12 +82,12 @@ public class Bucket extends LinkableEntity {
     }
 
     @ApiModelProperty("Indicates if this bucket allows the same version of an extension bundle to be redeployed and thus overwrite the existing artifact. By default this is false.")
-    public Boolean isAllowExtensionBundleRedeploy() {
-        return allowExtensionBundleRedeploy;
+    public Boolean isAllowBundleRedeploy() {
+        return allowBundleRedeploy;
     }
 
-    public void setAllowExtensionBundleRedeploy(final Boolean allowExtensionBundleRedeploy) {
-        this.allowExtensionBundleRedeploy = allowExtensionBundleRedeploy;
+    public void setAllowBundleRedeploy(final Boolean allowBundleRedeploy) {
+        this.allowBundleRedeploy = allowBundleRedeploy;
     }
 
     @ApiModelProperty(value = "The access that the current user has to this bucket.", readOnly = true)
