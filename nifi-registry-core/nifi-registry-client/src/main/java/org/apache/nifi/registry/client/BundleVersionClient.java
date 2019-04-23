@@ -157,6 +157,19 @@ public interface BundleVersionClient {
     Extension getExtension(String bundleId, String version, String name) throws IOException, NiFiRegistryException;
 
     /**
+     * Obtains an InputStream for the html docs of the given extension.
+     *
+     * @param bundleId the bundle id
+     * @param version the version of the bundle
+     * @param name the name of the extensions
+     * @return the InputStream for the extension docs
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    InputStream getExtensionDocs(String bundleId, String version, String name) throws IOException, NiFiRegistryException;
+
+    /**
      * Obtains an InputStream for the binary content for the version of the given bundle.
      *
      * @param bundleId the bundle id

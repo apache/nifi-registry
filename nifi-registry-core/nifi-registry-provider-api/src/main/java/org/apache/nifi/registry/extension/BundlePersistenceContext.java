@@ -19,52 +19,17 @@ package org.apache.nifi.registry.extension;
 /**
  * The context that will be passed to the {@link BundlePersistenceProvider} when saving a new version of an extension bundle.
  */
-public interface BundleContext {
-
-    enum BundleType {
-        NIFI_NAR,
-        MINIFI_CPP;
-    }
+public interface BundlePersistenceContext {
 
     /**
-     * @return the id of the bucket the bundle belongs to
+     * @return the unique identifier of the bundle version
      */
-    String getBucketId();
+    BundleVersionCoordinate getCoordinate();
 
     /**
-     * @return the name of the bucket the bundle belongs to
+     * @return the size of the bundle content in bytes
      */
-    String getBucketName();
-
-    /**
-     * @return the type of the bundle
-     */
-    BundleType getBundleType();
-
-    /**
-     * @return the NiFi Registry id of the bundle
-     */
-    String getBundleId();
-
-    /**
-     * @return the group id of the bundle
-     */
-    String getBundleGroupId();
-
-    /**
-     * @return the artifact id of the bundle
-     */
-    String getBundleArtifactId();
-
-    /**
-     * @return the version of the bundle
-     */
-    String getBundleVersion();
-
-    /**
-     * @return the comments for the version of the bundle
-     */
-    String getDescription();
+    long getSize();
 
     /**
      * @return the timestamp the bundle was created

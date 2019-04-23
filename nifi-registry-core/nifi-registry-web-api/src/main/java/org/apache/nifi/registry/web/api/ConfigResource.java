@@ -61,7 +61,8 @@ public class ConfigResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets NiFi Registry configurations",
+            value = "Get configration",
+            notes = "Gets the NiFi Registry configurations.",
             response = RegistryConfiguration.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {

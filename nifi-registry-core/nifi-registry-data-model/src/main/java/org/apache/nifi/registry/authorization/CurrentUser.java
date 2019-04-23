@@ -19,7 +19,7 @@ package org.apache.nifi.registry.authorization;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@ApiModel("currentUser")
+@ApiModel
 public class CurrentUser {
 
     private String identity;

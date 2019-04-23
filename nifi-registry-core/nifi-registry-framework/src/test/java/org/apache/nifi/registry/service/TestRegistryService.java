@@ -24,6 +24,7 @@ import org.apache.nifi.registry.diff.ComponentDifference;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
+import org.apache.nifi.registry.extension.BundlePersistenceProvider;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
@@ -32,6 +33,7 @@ import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.serialization.Serializer;
 import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
+import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.extension.StandardExtensionService;
 import org.junit.Assert;
@@ -74,9 +76,11 @@ public class TestRegistryService {
 
     private MetadataService metadataService;
     private FlowPersistenceProvider flowPersistenceProvider;
+    private BundlePersistenceProvider bundlePersistenceProvider;
     private Serializer<VersionedProcessGroup> snapshotSerializer;
     private ExtensionService extensionService;
     private Validator validator;
+    private RegistryUrlAliasService registryUrlAliasService;
 
     private RegistryService registryService;
 
@@ -84,13 +88,16 @@ public class TestRegistryService {
     public void setup() {
         metadataService = mock(MetadataService.class);
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
+        bundlePersistenceProvider = mock(BundlePersistenceProvider.class);
         snapshotSerializer = mock(VersionedProcessGroupSerializer.class);
         extensionService = mock(StandardExtensionService.class);
+        registryUrlAliasService = mock(RegistryUrlAliasService.class);
 
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
 
-        registryService = new RegistryService(metadataService, flowPersistenceProvider, snapshotSerializer, extensionService, validator);
+        registryService = new RegistryService(metadataService, flowPersistenceProvider, bundlePersistenceProvider,
+                snapshotSerializer, extensionService, validator, registryUrlAliasService);
     }
 
     // ---------------------- Test Bucket methods ---------------------------------------------
@@ -824,6 +831,114 @@ public class TestRegistryService {
         // set the first version to something other than 1
         snapshot.getSnapshotMetadata().setVersion(100);
         registryService.createFlowSnapshot(snapshot);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateFirstSnapshotWithZeroVersion() {
+        final VersionedFlowSnapshot snapshot = createSnapshot();
+
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucketId(existingBucket.getId());
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
+
+        // set the first version to something other than 1
+        snapshot.getSnapshotMetadata().setVersion(0);
+        registryService.createFlowSnapshot(snapshot);
+    }
+
+    @Test
+    public void testCreateFirstSnapshotWithLatestVersionWhenVersionExist() {
+        final VersionedFlowSnapshot snapshot = createSnapshot();
+
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucketId(existingBucket.getId());
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingFlow.getId())).thenReturn(existingFlow);
+
+        // make a snapshot that has the same version as the one being created
+        final FlowSnapshotEntity existingSnapshot = new FlowSnapshotEntity();
+        existingSnapshot.setFlowId(snapshot.getSnapshotMetadata().getFlowIdentifier());
+        existingSnapshot.setVersion(snapshot.getSnapshotMetadata().getVersion());
+        existingSnapshot.setComments("This is an existing snapshot");
+        existingSnapshot.setCreated(new Date());
+        existingSnapshot.setCreatedBy("test-user");
+
+        final List<FlowSnapshotEntity> existingSnapshots = Arrays.asList(existingSnapshot);
+        when(metadataService.getSnapshots(existingFlow.getId())).thenReturn(existingSnapshots);
+
+        // set the version to -1 to indicate that registry should make this the latest version
+        snapshot.getSnapshotMetadata().setVersion(-1);
+        registryService.createFlowSnapshot(snapshot);
+
+        final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
+        assertNotNull(createdSnapshot);
+        assertNotNull(createdSnapshot.getSnapshotMetadata());
+        assertEquals(2, createdSnapshot.getSnapshotMetadata().getVersion());
+    }
+
+    @Test
+    public void testCreateFirstSnapshotWithLatestVersionWhenNoVersionsExist() {
+        final VersionedFlowSnapshot snapshot = createSnapshot();
+
+        final BucketEntity existingBucket = new BucketEntity();
+        existingBucket.setId("b1");
+        existingBucket.setName("My Bucket");
+        existingBucket.setDescription("This is my bucket");
+        existingBucket.setCreated(new Date());
+
+        when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
+
+        // return a flow with the existing snapshot when getFlowById is called
+        final FlowEntity existingFlow = new FlowEntity();
+        existingFlow.setId("flow1");
+        existingFlow.setName("My Flow");
+        existingFlow.setDescription("This is my flow.");
+        existingFlow.setCreated(new Date());
+        existingFlow.setModified(new Date());
+        existingFlow.setBucketId(existingBucket.getId());
+
+        when(metadataService.getFlowById(existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getFlowByIdWithSnapshotCounts(existingFlow.getId())).thenReturn(existingFlow);
+        when(metadataService.getSnapshots(existingFlow.getId())).thenReturn(Collections.emptyList());
+
+        // set the version to -1 to indicate that registry should make this the latest version
+        snapshot.getSnapshotMetadata().setVersion(-1);
+        registryService.createFlowSnapshot(snapshot);
+
+        final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
+        assertNotNull(createdSnapshot);
+        assertNotNull(createdSnapshot.getSnapshotMetadata());
+        assertEquals(1, createdSnapshot.getSnapshotMetadata().getVersion());
     }
 
     @Test

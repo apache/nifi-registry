@@ -45,7 +45,7 @@ public class ApplicationResource {
     public static final String FORWARDED_PORT_HTTP_HEADER = "X-Forwarded-Port";
     public static final String FORWARDED_CONTEXT_HTTP_HEADER = "X-Forwarded-Context";
 
-    protected static final String NON_GUARANTEED_ENDPOINT = "Note: This endpoint is subject to change as NiFi Registry and its REST API evolve.";
+    public static final String NON_GUARANTEED_ENDPOINT = "\n\nNOTE: This endpoint is subject to change as NiFi Registry and its REST API evolve.";
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationResource.class);
 

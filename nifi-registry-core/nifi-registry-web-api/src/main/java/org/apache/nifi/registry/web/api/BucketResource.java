@@ -97,7 +97,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Creates a bucket",
+            value = "Create bucket",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -126,7 +126,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all buckets",
+            value = "Get all buckets",
             notes = "The returned list will include only buckets for which the user is authorized." +
                     "If the user is not authorized for any buckets, this returns an empty list.",
             response = Bucket.class,
@@ -162,7 +162,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets a bucket",
+            value = "Get bucket",
+            notes = "Gets the bucket with the given id.",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -192,7 +193,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Updates a bucket",
+            value = "Update bucket",
+            notes = "Updates the bucket with the given id.",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -242,7 +244,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Deletes a bucket along with all objects stored in the bucket",
+            value = "Delete bucket",
+            notes = "Deletes the bucket with the given id, along with all objects stored in the bucket",
             response = Bucket.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -276,7 +279,8 @@ public class BucketResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Retrieves field names for searching or sorting on buckets.",
+            value = "Get bucket fields",
+            notes = "Retrieves bucket field names for searching or sorting on buckets.",
             response = Fields.class
     )
     public Response getAvailableBucketFields() {

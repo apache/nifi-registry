@@ -129,6 +129,22 @@ public interface ExtensionRepoClient {
             throws IOException, NiFiRegistryException;
 
     /**
+     * Gets an InputStream for the html docs of the extension with the given name in the given bucket, group, artifact, and version.
+     *
+     * @param bucketName the bucket name
+     * @param groupId the group id
+     * @param artifactId the artifact id
+     * @param version the version
+     * @param extensionName the extension name
+     * @return the InputStream for the html docs
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws NiFiRegistryException if an non I/O error occurs
+     */
+    InputStream getVersionExtensionDocs(String bucketName, String groupId, String artifactId, String version, String extensionName)
+            throws IOException, NiFiRegistryException;
+
+    /**
      * Gets an InputStream for the binary content of the specified version.
      *
      * @param bucketName the bucket name

@@ -26,14 +26,15 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 /**
  * Base classes for domain objects that want to provide a hypermedia link.
  */
-@ApiModel("linkableEntity")
+@ApiModel
 public abstract class LinkableEntity {
 
     private Link link;
 
     @XmlElement
     @XmlJavaTypeAdapter(LinkAdapter.class)
-    @ApiModelProperty(value = "An WebLink to this entity.", readOnly = true)
+    @ApiModelProperty(value = "An WebLink to this entity.",
+            dataType = "org.apache.nifi.registry.link.JaxbLink", readOnly = true)
     public Link getLink() {
         return link;
     }

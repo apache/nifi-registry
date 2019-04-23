@@ -29,6 +29,8 @@ import org.apache.nifi.registry.db.entity.FlowSnapshotEntity;
 import org.apache.nifi.registry.diff.ComponentDifferenceGroup;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
+import org.apache.nifi.registry.extension.BundleCoordinate;
+import org.apache.nifi.registry.extension.BundlePersistenceProvider;
 import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
 import org.apache.nifi.registry.extension.bundle.BundleType;
@@ -59,8 +61,10 @@ import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.flow.FlowMetadataSynchronizer;
+import org.apache.nifi.registry.provider.extension.StandardBundleCoordinate;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.Serializer;
+import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
 import org.apache.nifi.registry.service.mapper.ExtensionMappings;
@@ -111,9 +115,11 @@ public class RegistryService {
 
     private final MetadataService metadataService;
     private final FlowPersistenceProvider flowPersistenceProvider;
+    private final BundlePersistenceProvider bundlePersistenceProvider;
     private final Serializer<VersionedProcessGroup> processGroupSerializer;
     private final ExtensionService extensionService;
     private final Validator validator;
+    private final RegistryUrlAliasService registryUrlAliasService;
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Lock readLock = lock.readLock();
@@ -122,19 +128,18 @@ public class RegistryService {
     @Autowired
     public RegistryService(final MetadataService metadataService,
                            final FlowPersistenceProvider flowPersistenceProvider,
+                           final BundlePersistenceProvider bundlePersistenceProvider,
                            final Serializer<VersionedProcessGroup> processGroupSerializer,
                            final ExtensionService extensionService,
-                           final Validator validator) {
-        this.metadataService = metadataService;
-        this.flowPersistenceProvider = flowPersistenceProvider;
-        this.processGroupSerializer = processGroupSerializer;
-        this.extensionService = extensionService;
-        this.validator = validator;
-        Validate.notNull(this.metadataService);
-        Validate.notNull(this.flowPersistenceProvider);
-        Validate.notNull(this.processGroupSerializer);
-        Validate.notNull(this.extensionService);
-        Validate.notNull(this.validator);
+                           final Validator validator,
+                           final RegistryUrlAliasService registryUrlAliasService) {
+        this.metadataService = Validate.notNull(metadataService);
+        this.flowPersistenceProvider = Validate.notNull(flowPersistenceProvider);
+        this.bundlePersistenceProvider = Validate.notNull(bundlePersistenceProvider);
+        this.processGroupSerializer = Validate.notNull(processGroupSerializer);
+        this.extensionService = Validate.notNull(extensionService);
+        this.validator = Validate.notNull(validator);
+        this.registryUrlAliasService = Validate.notNull(registryUrlAliasService);
     }
 
     private <T>  void validate(T t, String invalidMessage) {
@@ -306,6 +311,16 @@ public class RegistryService {
             // for each flow in the bucket, delete all snapshots from the flow persistence provider
             for (final FlowEntity flowEntity : metadataService.getFlowsByBucket(existingBucket.getId())) {
                 flowPersistenceProvider.deleteAllFlowContent(bucketIdentifier, flowEntity.getId());
+            }
+
+            // for each bundle in the bucket, delete all versions from the bundle persistence provider
+            for (final BundleEntity bundleEntity : metadataService.getBundlesByBucket(existingBucket.getId())) {
+                final BundleCoordinate bundleCoordinate = new StandardBundleCoordinate.Builder()
+                        .bucketId(bundleEntity.getBucketId())
+                        .groupId(bundleEntity.getGroupId())
+                        .artifactId(bundleEntity.getArtifactId())
+                        .build();
+                bundlePersistenceProvider.deleteAllBundleVersions(bundleCoordinate);
             }
 
             // now delete the bucket from the metadata provider, which deletes all flows referencing it
@@ -643,6 +658,10 @@ public class RegistryService {
                 throw new IllegalStateException("The requested flow is not located in the given bucket");
             }
 
+            if (snapshotMetadata.getVersion() == 0) {
+                throw new IllegalArgumentException("Version must be greater than zero, or use -1 to indicate latest version");
+            }
+
             // convert the set of FlowSnapshotEntity to set of VersionedFlowSnapshotMetadata
             final SortedSet<VersionedFlowSnapshotMetadata> sortedSnapshots = new TreeSet<>();
             final List<FlowSnapshotEntity> existingFlowSnapshots = metadataService.getSnapshots(existingFlow.getId());
@@ -651,24 +670,29 @@ public class RegistryService {
             }
 
             // if we already have snapshots we need to verify the new one has the correct version
-            if (sortedSnapshots != null && sortedSnapshots.size() > 0) {
+            if (sortedSnapshots.size() > 0) {
                 final VersionedFlowSnapshotMetadata lastSnapshot = sortedSnapshots.last();
 
-                if (snapshotMetadata.getVersion() <= lastSnapshot.getVersion()) {
+                // if we have existing versions and a client sends -1, then make this the latest version
+                if (snapshotMetadata.getVersion() == -1) {
+                    snapshotMetadata.setVersion(lastSnapshot.getVersion() + 1);
+                } else if (snapshotMetadata.getVersion() <= lastSnapshot.getVersion()) {
                     throw new IllegalStateException("A Versioned flow snapshot with the same version already exists: " + snapshotMetadata.getVersion());
+                } else if (snapshotMetadata.getVersion() > (lastSnapshot.getVersion() + 1)) {
+                    throw new IllegalStateException("Version must be a one-up number, last version was " + lastSnapshot.getVersion()
+                            + " and version for this snapshot was " + snapshotMetadata.getVersion());
                 }
 
-                if (snapshotMetadata.getVersion() > (lastSnapshot.getVersion() + 1)) {
-                    throw new IllegalStateException("Version must be a one-up number, last version was "
-                            + lastSnapshot.getVersion() + " and version for this snapshot was "
-                            + snapshotMetadata.getVersion());
-                }
+            } else if (snapshotMetadata.getVersion() == -1) {
+                // if we have no existing versions and a client sends -1, then this is the first version
+                snapshotMetadata.setVersion(1);
             } else if (snapshotMetadata.getVersion() != 1) {
                 throw new IllegalStateException("Version of first snapshot must be 1");
             }
 
             // serialize the snapshot
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
+            registryUrlAliasService.setInternal(flowSnapshot.getFlowContents());
             processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
 
             // save the serialized snapshot to the persistence provider
@@ -692,6 +716,7 @@ public class RegistryService {
 
             flowSnapshot.setBucket(bucket);
             flowSnapshot.setFlow(updatedVersionedFlow);
+            registryUrlAliasService.setExternal(flowSnapshot.getFlowContents());
             return flowSnapshot;
         } finally {
             writeLock.unlock();
@@ -763,6 +788,7 @@ public class RegistryService {
 
         // create the snapshot to return
         final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
+        registryUrlAliasService.setExternal(flowContents);
         snapshot.setFlowContents(flowContents);
         snapshot.setSnapshotMetadata(snapshotMetadata);
         snapshot.setFlow(versionedFlow);
@@ -1173,6 +1199,26 @@ public class RegistryService {
         readLock.lock();
         try {
             return extensionService.getExtension(bundleVersion, name);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public void writeExtensionDocs(final BundleVersion bundleVersion, final String name, final OutputStream outputStream)
+            throws IOException {
+        readLock.lock();
+        try {
+            extensionService.writeExtensionDocs(bundleVersion, name, outputStream);
+        } finally {
+            readLock.unlock();
+        }
+    }
+
+    public void writeAdditionalDetailsDocs(final BundleVersion bundleVersion, final String name, final OutputStream outputStream)
+            throws IOException {
+        readLock.lock();
+        try {
+            extensionService.writeAdditionalDetailsDocs(bundleVersion, name, outputStream);
         } finally {
             readLock.unlock();
         }

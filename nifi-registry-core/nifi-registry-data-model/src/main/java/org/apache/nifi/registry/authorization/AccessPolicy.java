@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Access policy details, including the users and user groups to which the policy applies.
  */
-@ApiModel("accessPolicy")
+@ApiModel
 public class AccessPolicy extends AccessPolicySummary {
 
     private Set<Tenant> users;

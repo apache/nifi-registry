@@ -37,6 +37,7 @@ public class ExtensionEntityRowMapper implements RowMapper<ExtensionEntity> {
         entity.setDisplayName(rs.getString("DISPLAY_NAME"));
         entity.setExtensionType(ExtensionType.valueOf(rs.getString("TYPE")));
         entity.setContent(rs.getString("CONTENT"));
+        entity.setHasAdditionalDetails(rs.getInt("HAS_ADDITIONAL_DETAILS") == 1 ? true : false);
 
         // fields from joined tables that we know will be there...
         entity.setBucketId(rs.getString("BUCKET_ID"));
@@ -45,6 +46,7 @@ public class ExtensionEntityRowMapper implements RowMapper<ExtensionEntity> {
         entity.setGroupId(rs.getString("GROUP_ID"));
         entity.setArtifactId(rs.getString("ARTIFACT_ID"));
         entity.setVersion(rs.getString("VERSION"));
+        entity.setSystemApiVersion(rs.getString("SYSTEM_API_VERSION"));
         entity.setBundleType(BundleType.valueOf(rs.getString("BUNDLE_TYPE")));
 
         return entity;

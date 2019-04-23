@@ -616,6 +616,90 @@ In this example, the users and groups are loaded from LDAP but the servers are m
 from an attribute in a LDAP entry based on the `User Identity Attribute`. The `NiFi Identity` values are established in the local file using the
 `Initial User Identity` properties.
 
+=== Access Policies
+
+You can manage the ability for users and groups to view or modify NiFi Registry resources using 'access policies'.  Access policies can be created to control access to buckets, as well as to grant special privileges to users for managing a NiFi Registry instance.
+
+==== Bucket Policies
+
+Bucket policies govern the following bucket level authorizations:
+
+|===
+|Policy |Privilege |Resource Descriptor
+
+| Read Bucket
+| Allows users to read items in the bucket
+| `resource="/buckets/<bucket-UUID>" action="R"`
+
+| Write Bucket
+| Allows users to write items to the bucket
+| `resource="/buckets/<bucket-UUID>" action="W"`
+
+| Delete Bucket
+| Allows users to delete the bucket
+| `resource="/buckets/<bucket-UUID>" action="D"`
+
+
+|===
+
+
+==== Special Privilege Policies
+
+Special privilege policies govern the following system level authorizations:
+
+|===
+|Policy |Privilege |Resource Descriptor
+
+| Can Manage Buckets (Read)
+| Allows users to read from all buckets
+| `resource="/buckets" action="R"`
+
+| Can Manage Buckets (Write)
+| Allows users to write to all buckets
+| `resource="/buckets" action="W"`
+
+| Can Manage Buckets (Delete)
+| Allows users to delete all buckets
+| `resource="/buckets" action="D"`
+
+| Can Manage Users (Read)
+| Allows users to view users
+| `resource="/tenants" action="R"`
+
+| Can Manage Users (Write)
+| Allows users to create and modify users
+| `resource="/tenants" action="W"`
+
+| Can Manage Users (Delete)
+| Allows users to delete users
+| `resource="/tenants" action="D"`
+
+| Can Manage Policies (Read)
+| Allows users to view policies
+| `resource="/policies" action="R"`
+
+| Can Manage Policies (Write)
+| Allows users to create and modify policies
+| `resource="/policies" action="W"`
+
+| Can Manage Policies (Delete)
+| Allows users to delete policies
+| `resource="/policies" action="D"`
+
+| Can Proxy Requests
+| Allows users to proxy requests
+| `resource="/proxy" action="W"`
+
+| View Swagger
+| Allows users to access the self-hosted Swagger UI
+| `resource="/swagger" action="R"`
+
+| View Actuator
+| Allows users to access the Spring Boot Actuator end-points
+| `resource="/actuator" action="R"`
+
+|===
+
 
 == Encrypted Passwords in Configuration Files
 
@@ -906,6 +990,38 @@ These properties pertain to various security features in NiFi Registry. Many of 
 |`nifi.registry.security.identity.provider`|This indicates what type of identity provider to use. The default value is blank, can be set to the identifier from a provider in the file specified in `nifi.registry.security.identity.providers.configuration.file`. Setting this property will trigger NiFi Registry to support username/password authentication.
 |====
 
+=== Identity Mapping Properties
+
+These properties can be utilized to normalize user identities.  When implemented, identities authenticated by different identity providers (certificates, LDAP, Kerberos) are treated the same internally in NiFi Registry.  As a result, duplicate users are avoided and user-specific configurations such as authorizations only need to be setup once per user.
+
+The following examples demonstrate normalizing DNs from certificates and principals from Kerberos:
+
+----
+nifi.registry.security.identity.mapping.pattern.dn=^CN=(.*?), OU=(.*?), O=(.*?), L=(.*?), ST=(.*?), C=(.*?)$
+nifi.registry.security.identity.mapping.value.dn=$1@$2
+nifi.registry.security.identity.mapping.transform.dn=NONE
+nifi.registry.security.identity.mapping.pattern.kerb=^(.*?)/instance@(.*?)$
+nifi.registry.security.identity.mapping.value.kerb=$1@$2
+nifi.registry.security.identity.mapping.transform.kerb=NONE
+----
+
+The last segment of each property is an identifier used to associate the pattern with the replacement value.  When a user makes a request to NiFi Registry, their identity is checked to see if it matches each of those patterns in lexicographical order.  For the first one that matches, the replacement specified in the `nifi.registry.security.identity.mapping.value.xxxx` property is used. So a login with `CN=localhost, OU=Apache NiFi, O=Apache, L=Santa Monica, ST=CA, C=US` matches the DN mapping pattern above and the DN mapping value `$1@$2` is applied.  The user is normalized to `localhost@Apache NiFi`.
+
+In addition to mapping, a transform may be applied. The supported versions are `NONE` (no transform applied), `LOWER` (identity lowercased), and `UPPER` (identity uppercased). If not specified, the default value is `NONE`.
+
+NOTE: These mappings are also applied to the "Initial Admin Identity" in the _authorizers.xml_ file, as well as users imported from LDAP (See <<authorizers-setup>>).
+
+Group names can also be mapped. The following example will accept the existing group name but will lowercase it. This may be helpful when used in conjunction with an external authorizer.
+
+----
+nifi.registry.security.group.mapping.pattern.anygroup=^(.*)$
+nifi.registry.security.group.mapping.value.anygroup=$1
+nifi.registry.security.group.mapping.transform.anygroup=LOWER
+----
+
+NOTE: These mappings are applied to groups imported from LDAP.
+
+
 === Providers Properties
 
 These properties pertain to flow persistence providers. NiFi Registry uses a pluggable flow persistence provider to store the
@@ -915,6 +1031,16 @@ content of the flows saved to the registry. For further details on persistence p
 |*Property*|*Description*
 |`nifi.registry.providers.configuration.file`|This is the location of the file where flow persistence providers are configured. The default value is `./conf/providers.xml`.
 |====
+
+=== Alias Properties
+
+These properties pertain to the support for URL aliasing. For further details, refer to <<URL Aliasing>>.
+
+|====
+|*Property*|*Description*
+|`nifi.registry.registry.alias.configuration.file`|This is the location of the file where URL aliases are configured. The default value is `./conf/registry-aliases.xml`.
+|====
+
 
 === Database Properties
 
@@ -978,30 +1104,28 @@ providing 2 total locations, including `nifi.registry.extension.dir.1`.
 
 == Persistence Providers
 
-NiFi Registry uses a pluggable flow persistence provider to store the content of the flows saved to the registry. NiFi Registry provides `<<FileSystemFlowPersistenceProvider>>` and `<<GitFlowPersistenceProvider>>`.
+NiFi Registry uses a pluggable persistence provider to store the content of each versioned item. Each type of versioned item, such as a versioned flow or extension bundle, has its own persistence provider.
 
-Each persistence provider has its own configuration parameters, those can be configured in a XML file specified in _<<Providers Properties,nifi-registry.properties>>_.
+Each persistence provider has its own configuration parameters, which can be configured in an XML file specified in _<<Providers Properties,nifi-registry.properties>>_.
+
+=== Flow Persistence Providers
+
+The flow persistence provider stores the content of the flows saved to the registry. NiFi Registry provides `<<FileSystemFlowPersistenceProvider>>` and `<<GitFlowPersistenceProvider>>`.
 
 The XML configuration file looks like below. It has a `flowPersistenceProvider` element in which qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each provider.
 
-.Example providers.xml
+.Example flow persistence provider in providers.xml
 [source,xml]
 ....
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<providers>
-
-    <flowPersistenceProvider>
-        <class>persistence-provider-qualified-class-name</class>
-        <property name="property-1">property-value-1</property>
-        <property name="property-2">property-value-2</property>
-        <property name="property-n">property-value-n</property>
-    </flowPersistenceProvider>
-
-</providers>
+<flowPersistenceProvider>
+    <class>persistence-provider-qualified-class-name</class>
+    <property name="property-1">property-value-1</property>
+    <property name="property-2">property-value-2</property>
+    <property name="property-n">property-value-n</property>
+</flowPersistenceProvider>
 ....
 
-
-=== FileSystemFlowPersistenceProvider
+==== FileSystemFlowPersistenceProvider
 
 FileSystemFlowPersistenceProvider simply stores serialized Flow contents into `{bucket-id}/{flow-id}/{version}` directories.
 
@@ -1025,7 +1149,7 @@ Qualified class name: `org.apache.nifi.registry.provider.flow.FileSystemFlowPers
 |====
 
 
-=== GitFlowPersistenceProvider
+==== GitFlowPersistenceProvider
 
 `GitFlowPersistenceProvider` stores flow contents under a Git directory.
 
@@ -1069,7 +1193,7 @@ link:https://git-scm.com/book/en/v2/Git-Internals-The-Refspec[https://git-scm.co
 |`Remote Access Password`|Used with `Remote Access User`.
 |====
 
-==== Initialize Git directory
+===== Initialize Git directory
 
 In order to use `GitFlowPersistenceRepository`, you need to prepare a Git directory on the local file system. You can do so by initializing a directory with `git init` command, or clone an existing Git project from a remote Git repository by `git clone` command.
 
@@ -1078,7 +1202,7 @@ link:https://git-scm.com/docs/git-init[https://git-scm.com/docs/git-init^]
 - `git clone` command
 link:https://git-scm.com/docs/git-clone[https://git-scm.com/docs/git-clone^]
 
-==== Git user configuration
+===== Git user configuration
 
 This persistence provider uses preconfigured Git user name and user email address when it creates Git commits. NiFi Registry user name is added to commit messages.
 
@@ -1100,7 +1224,7 @@ You can configure Git user name and email address by `git config` command.
 link:https://git-scm.com/docs/git-config[https://git-scm.com/docs/git-config^]
 
 
-==== Git user authentication
+===== Git user authentication
 
 By default, this persistence repository only create commits to local repository. No user authentication is needed to do so. However, if 'Commit To Push' is enabled, user authentication to the remote Git repository is required.
 
@@ -1123,9 +1247,9 @@ Host bitbucket.org
   IdentityFile ~/.ssh/key-for-bitbucket
 ....
 
-=== Switching from other Persistence Provider
+==== Switching from other Flow Persistence Provider
 
-In order to switch the Persistence Provider to use, it is necessary to reset NiFi Registry.
+In order to switch the Flow Persistence Provider, it is necessary to reset NiFi Registry.
 For example, to switch from `FileSystemFlowPersistenceProvider` to `GitFlowPersistenceProvider`, follow these steps:
 
 . Stop version control on all ProcessGroups in NiFi
@@ -1136,7 +1260,7 @@ For example, to switch from `FileSystemFlowPersistenceProvider` to `GitFlowPersi
 . Recreate any buckets
 . Start version control on all ProcessGroups again
 
-=== Data model version of serialized Flow snapshots
+==== Data model version of serialized Flow snapshots
 
 Serialized Flow snapshots saved by these persistence providers have versions, so that the data format and schema can evolve over time. Data model version update is done automatically by NiFi Registry when it reads and stores each Flow content.
 
@@ -1146,6 +1270,78 @@ Here is the data model version histories:
 |*Data model version*|*Since NiFi Registry*|*Description*
 |2|0.2|JSON formatted text file. The root object contains header and Flow content object.
 |1|0.1|Binary format having header bytes at the beginning followed by Flow content represented as XML.
+|====
+
+=== Bundle Persistence Providers
+
+The bundle persistence provider stores the content of extension bundles saved to the registry. NiFi Registry provides `<<FileSystemBundlePersistenceProvider>>` and `<<S3BundlePersistenceProvider>>`.
+
+The XML configuration file looks like below. It has a `extensionBundlePersistenceProvider` element in which the qualified class name of a persistence provider implementation and its configuration properties are defined. See following sections for available configurations for each provider.
+
+.Example extension bundle persistence provider in providers.xml
+[source,xml]
+....
+<extensionBundlePersistenceProvider>
+    <class>persistence-provider-qualified-class-name</class>
+    <property name="property-1">property-value-1</property>
+    <property name="property-2">property-value-2</property>
+    <property name="property-n">property-value-n</property>
+</extensionBundlePersistenceProvider>
+....
+
+==== FileSystemBundlePersistenceProvider
+
+The FileSystemBundlePersistenceProvider stores the content of extension bundles on the local file-system. The bundles are organized in directories according to bucket id, group, artifact, and version.
+
+Example of persisted extension bundles:
+....
+Extension Bundle Storage Directory/
+├── {bucket-id}/
+   └── {group-id}/
+       └── {artifact-id}
+           └── {version}/{artifact-id}-{version}.{extension}
+├── d1beba88-32e9-45d1-bfe9-057cc41f7ce8/
+    └── org.apache.nifi
+        └── nifi-example-nar
+            └── 1.0.0/nifi-example-nar-1.0.0.nar
+            └── 2.0.0/nifi-example-nar-2.0.0.nar
+....
+
+===== Configuration
+
+Qualified class name: `org.apache.nifi.registry.provider.extension.FileSystemBundlePersistenceProvider`
+
+|====
+|*Property*|*Description*
+|`Extension Bundle Storage Directory`|REQUIRED: File system path for a directory where extension bundle contents files are persisted to. If the directory does not exist when NiFi Registry starts, it will be created. If the directory exists, it must be readable and writable from NiFi Registry.
+|====
+
+==== S3BundlePersistenceProvider
+
+The S3BundlePersistenceProvider stores the content of extension bundles in AWS S3 bucket. The bucket is expected to already exist and be accessible to the credentials provided to the persistence providcer.
+
+NOTE: This provider must be added to the classpath by specifying a custom extension directory in nifi-registry.properties, such as nifi.registry.extension.dir.aws=./ext/aws/lib, where ./ext/aws/ contains the contents of the extracted nifi-registry-aws-assembly-<version>-bin.zip.
+
+The key of an extension bundle in the S3 bucket will be the following:
+....
+/{registry-bucket-id}/{group-id}/{artifact-id}/{version}/{artifact-id}-{version}.{extension}
+....
+
+If an optional Key Prefix is specified, then that prefix will be applied to the beginning of the above key.
+
+===== Configuration
+
+Qualified class name: `org.apache.nifi.registry.aws.S3BundlePersistenceProvider`
+
+|====
+|*Property*|*Description*
+|`Region`|REQUIRED: The name of the S3 region where the bucket exists.
+|`Bucket Name`|REQUIRED: The name of an existing bucket to store extension bundles.
+|`Key Prefix`|An optional prefix that if specified will be added to the beginning of all S3 keys.
+|`Credentials Provider`|REQUIRED: Indicates how credentials will be provided, must be a value of DEFAULT_CHAIN or STATIC. DEFAULT_CHAIN will consider in order: Java system properties, environment variables, credential profiles (~/.aws/credentials). STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file.
+|`Access Key`| The access key to use when using STATIC credentials provider.
+|`Secret Access Key`| The secret access key to use when using STATIC credentials provider.
+|`Endpoint URL`| An optional URL that overrides the default AWS S3 endpoint URL. Set this when using an AWS S3 API compatible service hosted at a different URL.
 |====
 
 == Event Hooks
@@ -1210,3 +1406,69 @@ via NiFi Registry’s logback.xml, which by default contains an appender that wr
     </class>
 </eventHookProvider>
 ....
+
+== URL Aliasing
+A versioned item may contain the URL of a registry instance embedded in the content of the item. For example, flows with nested versioning contain the URL of the registry where the nested versioned flow is located. If the location of the registry instances changes, then the content is no longer accurate.
+
+URL aliasing can be used to dynamically handle this situation so that URLs are never written to the stored content, and can be re-written with the correct value when being retrieved by a client.
+
+The aliases are configured in an XML file which can be specified in _<<Alias Properties,nifi-registry.properties>>_.
+
+.Example aliases in registry-aliases.xml
+[source,xml]
+....
+<aliases>
+    <alias>
+        <internal>NIFI_REGISTRY_1</internal>
+        <external>http://registry1.nifi.apache.org:18080</external>
+    </alias>
+    <alias>
+        <internal>NIFI_REGISTRY_2</internal>
+        <external>http://registry2.nifi.apache.org:18080</external>
+    </alias>
+</aliases>
+....
+
+If a flow is saved to registry with two child process groups, each under version control, the incoming flow would contain something like the following:
+....
+"processGroups" : [ {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "178a6657-e1a7-4cce-8f83-4e615e38f57a",
+        "registryUrl" : "http://registry1.nifi.apache.org:18080",
+        "version" : 1
+      },
+      {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "985cb44b-3aec-32be-860f-d2a0f2c72aac",
+        "registryUrl" : "http://registry2.nifi.apache.org:18080",
+        "version" : 1
+      }
+]
+....
+
+With the example aliases configuration above, the URLs would be written to the FlowPersistenceProvider as the following:
+....
+"processGroups" : [ {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "178a6657-e1a7-4cce-8f83-4e615e38f57a",
+        "registryUrl" : "NIFI_REGISTRY_1",
+        "version" : 1
+      },
+      {
+      ...
+      "versionedFlowCoordinates" : {
+        "bucketId" : "ca20e058-f6e7-404c-aee0-e30833e792c7",
+        "flowId" : "985cb44b-3aec-32be-860f-d2a0f2c72aac",
+        "registryUrl" : "NIFI_REGISTRY_2",
+        "version" : 1
+      }
+]
+....
+
+When this flow is retrieved from any API call, the internal values would be rewritten to the external values.

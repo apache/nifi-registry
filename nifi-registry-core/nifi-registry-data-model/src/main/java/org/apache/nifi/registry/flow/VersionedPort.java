@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class VersionedPort extends VersionedComponent {
     private PortType type;
     private Integer concurrentlySchedulableTaskCount;
+    private ScheduledState scheduledState;
 
     @ApiModelProperty("The number of tasks that should be concurrently scheduled for the port.")
     public Integer getConcurrentlySchedulableTaskCount() {
@@ -39,6 +40,15 @@ public class VersionedPort extends VersionedComponent {
 
     public void setType(PortType type) {
         this.type = type;
+    }
+
+    @ApiModelProperty("The scheduled state of the component")
+    public ScheduledState getScheduledState() {
+        return scheduledState;
+    }
+
+    public void setScheduledState(ScheduledState scheduledState) {
+        this.scheduledState = scheduledState;
     }
 
     @Override

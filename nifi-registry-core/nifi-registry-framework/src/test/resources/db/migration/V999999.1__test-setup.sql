@@ -267,21 +267,21 @@ insert into bundle_version (
 -- test data for extensions
 
 insert into extension (
-  id, bundle_version_id, name, display_name, type, content
+  id, bundle_version_id, name, display_name, type, content, has_additional_details
 ) values (
-  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'ExampleProcessor', 'PROCESSOR', '{ "name" : "org.apache.nifi.ExampleProcessor", "type" : "PROCESSOR" }'
+  'e1', 'eb1-v1', 'org.apache.nifi.ExampleProcessor', 'ExampleProcessor', 'PROCESSOR', '{ "name" : "org.apache.nifi.ExampleProcessor", "type" : "PROCESSOR" }', 0
 );
 
 insert into extension (
-  id, bundle_version_id, name, display_name, type, content
+  id, bundle_version_id, name, display_name, type, content, has_additional_details
 ) values (
-  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'ExampleProcessorRestricted', 'PROCESSOR', '{ "name" : "org.apache.nifi.ExampleProcessorRestricted", "type" : "PROCESSOR" }'
+  'e2', 'eb1-v1', 'org.apache.nifi.ExampleProcessorRestricted', 'ExampleProcessorRestricted', 'PROCESSOR', '{ "name" : "org.apache.nifi.ExampleProcessorRestricted", "type" : "PROCESSOR" }', 0
 );
 
 insert into extension (
-  id, bundle_version_id, name, display_name, type, content
+  id, bundle_version_id, name, display_name, type, content, additional_details, has_additional_details
 ) values (
-  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'ExampleService', 'CONTROLLER_SERVICE', '{ "name" : "org.apache.nifi.ExampleService", "type" : "CONTROLLER_SERVICE" }'
+  'e3', 'eb2-v1', 'org.apache.nifi.ExampleService', 'ExampleService', 'CONTROLLER_SERVICE', '{ "name" : "org.apache.nifi.ExampleService", "type" : "CONTROLLER_SERVICE" }', 'extra docs', 1
 );
 
 -- test data for extension restrictions

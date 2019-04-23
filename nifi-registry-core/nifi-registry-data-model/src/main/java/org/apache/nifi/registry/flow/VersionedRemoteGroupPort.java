@@ -17,9 +17,9 @@
 
 package org.apache.nifi.registry.flow;
 
-import java.util.Objects;
-
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.Objects;
 
 public class VersionedRemoteGroupPort extends VersionedComponent {
     private String remoteGroupId;
@@ -28,6 +28,7 @@ public class VersionedRemoteGroupPort extends VersionedComponent {
     private BatchSize batchSize;
     private ComponentType componentType;
     private String targetId;
+    private ScheduledState scheduledState;
 
     @ApiModelProperty("The number of task that may transmit flowfiles to the target port concurrently.")
     public Integer getConcurrentlySchedulableTaskCount() {
@@ -73,6 +74,15 @@ public class VersionedRemoteGroupPort extends VersionedComponent {
 
     public void setTargetId(final String targetId) {
         this.targetId = targetId;
+    }
+
+    @ApiModelProperty("The scheduled state of the component")
+    public ScheduledState getScheduledState() {
+        return scheduledState;
+    }
+
+    public void setScheduledState(ScheduledState scheduledState) {
+        this.scheduledState = scheduledState;
     }
 
     @Override

@@ -26,6 +26,7 @@
 
     <modules>
         <module>nifi-registry-ranger</module>
+        <module>nifi-registry-aws</module>
     </modules>
 
 

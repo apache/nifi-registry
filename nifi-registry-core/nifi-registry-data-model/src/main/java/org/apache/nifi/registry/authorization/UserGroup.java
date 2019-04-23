@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * A user group, used to apply a single set of authorization policies to a group of users.
  */
-@ApiModel("userGroup")
+@ApiModel
 public class UserGroup extends Tenant {
 
     private Set<Tenant> users;

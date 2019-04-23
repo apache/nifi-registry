@@ -29,6 +29,7 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.link.LinkableDocs;
 import org.apache.nifi.registry.link.LinkableEntity;
 import org.springframework.stereotype.Service;
 
@@ -51,12 +52,14 @@ public class LinkService {
     private static final String EXTENSION_BUNDLE_VERSION_PATH = "bundles/{bundleId}/versions/{version}";
     private static final String EXTENSION_BUNDLE_VERSION_CONTENT_PATH = "bundles/{bundleId}/versions/{version}/content";
     private static final String EXTENSION_BUNDLE_VERSION_EXTENSION_PATH = "bundles/{bundleId}/versions/{version}/extensions/{name}";
+    private static final String EXTENSION_BUNDLE_VERSION_EXTENSION_DOCS_PATH = "bundles/{bundleId}/versions/{version}/extensions/{name}/docs";
 
     private static final String EXTENSION_REPO_BUCKET_PATH = "extension-repository/{bucketName}";
     private static final String EXTENSION_REPO_GROUP_PATH = "extension-repository/{bucketName}/{groupId}";
     private static final String EXTENSION_REPO_ARTIFACT_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}";
     private static final String EXTENSION_REPO_VERSION_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}/{version}";
     private static final String EXTENSION_REPO_EXTENSION_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}/{version}/extensions/{name}";
+    private static final String EXTENSION_REPO_EXTENSION_DOCS_PATH = "extension-repository/{bucketName}/{groupId}/{artifactId}/{version}/extensions/{name}/docs";
 
 
     private static final LinkBuilder<Bucket> BUCKET_LINK_BUILDER = (bucket) -> {
@@ -154,6 +157,20 @@ public class LinkService {
         return Link.fromUri(uri).rel("self").build();
     });
 
+    private static final LinkBuilder<ExtensionMetadata> EXTENSION_METADATA_DOCS_LINK_BUILDER = (extensionMetadata -> {
+        if (extensionMetadata == null) {
+            return null;
+        }
+
+        final URI uri = UriBuilder.fromPath(EXTENSION_BUNDLE_VERSION_EXTENSION_DOCS_PATH)
+                .resolveTemplate("bundleId", extensionMetadata.getBundleInfo().getBundleId())
+                .resolveTemplate("version", extensionMetadata.getBundleInfo().getVersion())
+                .resolveTemplate("name", extensionMetadata.getName())
+                .build();
+
+        return Link.fromUri(uri).rel("docs").build();
+    });
+
     // -- Extension Repo LinkBuilders
 
     private static final LinkBuilder<ExtensionRepoBucket> EXTENSION_REPO_BUCKET_LINK_BUILDER = (extensionRepoBucket -> {
@@ -231,6 +248,27 @@ public class LinkService {
         return Link.fromUri(uri).rel("self").build();
     });
 
+    private static final LinkBuilder<ExtensionRepoExtensionMetadata> EXTENSION_REPO_EXTENSION_METADATA_DOCS_LINK_BUILDER = (extensionMetadata -> {
+        if (extensionMetadata == null
+                || extensionMetadata.getExtensionMetadata() == null
+                || extensionMetadata.getExtensionMetadata().getBundleInfo() == null) {
+            return null;
+        }
+
+        final ExtensionMetadata metadata = extensionMetadata.getExtensionMetadata();
+        final BundleInfo bundleInfo = metadata.getBundleInfo();
+
+        final URI uri = UriBuilder.fromPath(EXTENSION_REPO_EXTENSION_DOCS_PATH)
+                .resolveTemplate("bucketName", bundleInfo.getBucketName())
+                .resolveTemplate("groupId", bundleInfo.getGroupId())
+                .resolveTemplate("artifactId", bundleInfo.getArtifactId())
+                .resolveTemplate("version", bundleInfo.getVersion())
+                .resolveTemplate("name", metadata.getName())
+                .build();
+
+        return Link.fromUri(uri).rel("docs").build();
+    });
+
 
     private static final Map<Class,LinkBuilder> LINK_BUILDERS;
     static {
@@ -258,6 +296,15 @@ public class LinkService {
         LINK_BUILDERS = Collections.unmodifiableMap(builderMap);
     }
 
+    private static final Map<Class,LinkBuilder> DOCS_LINK_BUILDERS;
+    static {
+        final Map<Class,LinkBuilder> builderMap = new HashMap<>();
+        builderMap.put(ExtensionMetadata.class, EXTENSION_METADATA_DOCS_LINK_BUILDER);
+        builderMap.put(ExtensionRepoExtensionMetadata.class, EXTENSION_REPO_EXTENSION_METADATA_DOCS_LINK_BUILDER);
+        DOCS_LINK_BUILDERS = Collections.unmodifiableMap(builderMap);
+    }
+
+
     public <E extends LinkableEntity> void populateLinks(final E entity) {
         final LinkBuilder linkBuilder = LINK_BUILDERS.get(entity.getClass());
         if (linkBuilder == null) {
@@ -266,6 +313,17 @@ public class LinkService {
 
         final Link link = linkBuilder.createLink(entity);
         entity.setLink(link);
+
+        if (entity instanceof LinkableDocs) {
+            final LinkBuilder docsLinkBuilder = DOCS_LINK_BUILDERS.get(entity.getClass());
+            if (docsLinkBuilder == null) {
+                throw new IllegalArgumentException("No documentation LinkBuilder found for " + entity.getClass().getCanonicalName());
+            }
+
+            final Link docsLink = docsLinkBuilder.createLink(entity);
+            final LinkableDocs docsEntity = (LinkableDocs) entity;
+            docsEntity.setLinkDocs(docsLink);
+        }
     }
 
     public <E extends LinkableEntity> void populateLinks(final Iterable<E> entities) {
@@ -287,17 +345,21 @@ public class LinkService {
         }
 
         final Link relativeLink = linkBuilder.createLink(entity);
-        final URI relativeUri = relativeLink.getUri();
-
-        final URI fullUri = UriBuilder.fromUri(baseUri)
-                .path(relativeUri.getPath())
-                .build();
-
-        final Link fullLink = Link.fromUri(fullUri)
-                .rel(relativeLink.getRel())
-                .build();
-
+        final Link fullLink = getFullLink(baseUri, relativeLink);
         entity.setLink(fullLink);
+
+        if (entity instanceof LinkableDocs) {
+            final LinkBuilder docsLinkBuilder = DOCS_LINK_BUILDERS.get(entity.getClass());
+            if (docsLinkBuilder == null) {
+                throw new IllegalArgumentException("No documentation LinkBuilder found for " + entity.getClass().getCanonicalName());
+            }
+
+            final Link relativeDocsLink = docsLinkBuilder.createLink(entity);
+            final Link fullDocsLink = getFullLink(baseUri, relativeDocsLink);
+
+            final LinkableDocs docsEntity = (LinkableDocs) entity;
+            docsEntity.setLinkDocs(fullDocsLink);
+        }
     }
 
     public <E extends LinkableEntity> void populateFullLinks(final Iterable<E> entities, final URI baseUri) {
@@ -306,6 +368,18 @@ public class LinkService {
         }
 
         entities.forEach(e -> populateFullLinks(e, baseUri));
+    }
+
+    private Link getFullLink(final URI baseUri, final Link relativeLink) {
+        final URI relativeUri = relativeLink.getUri();
+
+        final URI fullUri = UriBuilder.fromUri(baseUri)
+                .path(relativeUri.getPath())
+                .build();
+
+        return Link.fromUri(fullUri)
+                .rel(relativeLink.getRel())
+                .build();
     }
 
 }

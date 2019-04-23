@@ -191,6 +191,33 @@ public class JerseyExtensionRepoClient extends AbstractJerseyClient implements E
     }
 
     @Override
+    public InputStream getVersionExtensionDocs(final String bucketName, final String groupId, final String artifactId,
+                                         final String version, final String extensionName)
+            throws IOException, NiFiRegistryException {
+
+        validate(bucketName, groupId, artifactId, version);
+
+        if (StringUtils.isBlank(extensionName)) {
+            throw new IllegalArgumentException("Extension name is required");
+        }
+
+        return executeAction("Error retrieving versions for extension repo", () -> {
+            final WebTarget target = extensionRepoTarget
+                    .path("{bucketName}/{groupId}/{artifactId}/{version}/extensions/{extensionName}/docs")
+                    .resolveTemplate("bucketName", bucketName)
+                    .resolveTemplate("groupId", groupId)
+                    .resolveTemplate("artifactId", artifactId)
+                    .resolveTemplate("version", version)
+                    .resolveTemplate("extensionName", extensionName);
+
+            return getRequestBuilder(target)
+                    .accept(MediaType.TEXT_HTML)
+                    .get()
+                    .readEntity(InputStream.class);
+        });
+    }
+
+    @Override
     public InputStream getVersionContent(final String bucketName, final String groupId, final String artifactId, final String version)
             throws IOException, NiFiRegistryException {
 

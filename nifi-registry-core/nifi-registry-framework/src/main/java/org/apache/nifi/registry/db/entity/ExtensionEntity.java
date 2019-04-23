@@ -35,6 +35,9 @@ public class ExtensionEntity {
     // populated during creation if provided, but typically won't be populated on retrieval
     private String additionalDetails;
 
+    // read-only to let consumers know there are additional details that have not be returned, but can be retrieved later
+    private boolean hasAdditionalDetails;
+
     // populated during creation to insert into child tables, but won't be populated on retrieval b/c the
     // content field contains all of this info and will be deserialized into the full extension
     private Set<String> tags;
@@ -48,6 +51,7 @@ public class ExtensionEntity {
     private String groupId;
     private String artifactId;
     private String version;
+    private String systemApiVersion;
     private BundleType bundleType;
 
 
@@ -105,6 +109,14 @@ public class ExtensionEntity {
 
     public void setAdditionalDetails(String additionalDetails) {
         this.additionalDetails = additionalDetails;
+    }
+
+    public boolean getHasAdditionalDetails() {
+        return hasAdditionalDetails;
+    }
+
+    public void setHasAdditionalDetails(boolean hasAdditionalDetails) {
+        this.hasAdditionalDetails = hasAdditionalDetails;
     }
 
     public Set<String> getTags() {
@@ -178,6 +190,14 @@ public class ExtensionEntity {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getSystemApiVersion() {
+        return systemApiVersion;
+    }
+
+    public void setSystemApiVersion(String systemApiVersion) {
+        this.systemApiVersion = systemApiVersion;
     }
 
     public BundleType getBundleType() {

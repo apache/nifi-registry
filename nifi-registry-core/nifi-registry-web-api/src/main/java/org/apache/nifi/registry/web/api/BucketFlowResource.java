@@ -61,7 +61,7 @@ import java.util.SortedSet;
 @Component
 @Path("/buckets/{bucketId}/flows")
 @Api(
-        value = "bucket_flows",
+        value = "bucket flows",
         description = "Create flows scoped to an existing bucket in the registry.",
         authorizations = { @Authorization("Authorization") }
 )
@@ -90,8 +90,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Creates a flow",
-            notes = "The flow id is created by the server and populated in the returned entity.",
+            value = "Create flow",
+            notes = "Creates a flow in the given bucket. The flow id is created by the server and populated in the returned entity.",
             response = VersionedFlow.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -127,7 +127,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets all flows in the given bucket",
+            value = "Get bucket flows",
+            notes = "Retrieves all flows in the given bucket.",
             response = VersionedFlow.class,
             responseContainer = "List",
             extensions = {
@@ -161,7 +162,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets a flow",
+            value = "Get bucket flow",
+            notes = "Retrieves the flow with the given id in the given bucket.",
             response = VersionedFlow.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -197,7 +199,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Updates a flow",
+            value = "Update bucket flow",
+            notes = "Updates the flow with the given id in the given bucket.",
             response = VersionedFlow.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -240,7 +243,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Deletes a flow, including all saved versions of that flow.",
+            value = "Delete bucket flow",
+            notes = "Deletes a flow, including all saved versions of that flow.",
             response = VersionedFlow.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -272,9 +276,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Creates the next version of a flow",
-            notes = "The version number of the object being created must be the next available version integer. " +
-                    "Flow versions are immutable after they are created.",
+            value = "Create flow version",
+            notes = "Creates the next version of a flow. The version number of the object being created must be the " +
+                    "next available version integer. Flow versions are immutable after they are created.",
             response = VersionedFlowSnapshot.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -325,7 +329,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
+            value = "Get bucket flow versions",
+            notes = "Gets summary information for all versions of a flow. Versions are ordered newest->oldest.",
             response = VersionedFlowSnapshotMetadata.class,
             responseContainer = "List",
             extensions = {
@@ -362,7 +367,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get the latest version of a flow",
+            value = "Get latest bucket flow version content",
+            notes = "Gets the latest version of a flow, including the metadata and content of the flow.",
             response = VersionedFlowSnapshot.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -397,7 +403,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Get the metadata for the latest version of a flow",
+            value = "Get latest bucket flow version metadata",
+            notes = "Gets the metadata for the latest version of a flow.",
             response = VersionedFlowSnapshotMetadata.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -431,7 +438,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Gets the given version of a flow",
+            value = "Get bucket flow version",
+            notes = "Gets the given version of a flow, including the metadata and content for the version.",
             response = VersionedFlowSnapshot.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
@@ -468,7 +476,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Returns a list of differences between 2 versions of a flow",
+            value = "Get bucket flow diff",
+            notes = "Computes the differences between two given versions of a flow.",
             response = VersionedFlowDifference.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {

@@ -190,6 +190,26 @@ public interface ExtensionService {
     Extension getExtension(BundleVersion bundleVersion, String name);
 
     /**
+     * Writes the documentation for the extension with the given name and bundle to the given output stream.
+     *
+     * @param bundleVersion the bundle version
+     * @param name the name of the extension
+     * @param outputStream the output stream to write to
+     * @throws IOException if an error occurs writing to the output stream
+     */
+    void writeExtensionDocs(BundleVersion bundleVersion, String name, OutputStream outputStream) throws IOException;
+
+    /**
+     * Writes the additional details documentation for the extension with the given name and bundle to the given output stream.
+     *
+     * @param bundleVersion the bundle version
+     * @param name the name of the extension
+     * @param outputStream the output stream to write to
+     * @throws IOException if an error occurs writing to the output stream
+     */
+    void writeAdditionalDetailsDocs(BundleVersion bundleVersion, String name, OutputStream outputStream) throws IOException;
+
+    /**
      * @return all know tags
      */
     SortedSet<TagCount> getExtensionTags();
