@@ -68,7 +68,7 @@ public class KerberosIdentityProvider extends BasicAuthIdentityProvider {
         }
 
         defaultRealm = configurationContext.getProperty("Default Realm");
-        if (defaultRealm.contains("@")) {
+        if (StringUtils.isNotBlank(defaultRealm) && defaultRealm.contains("@")) {
             throw new SecurityProviderCreationException(String.format("The Default Realm '%s' must not contain \"@\"", defaultRealm));
         }
 
