@@ -1102,6 +1102,54 @@ providing 2 total locations, including `nifi.registry.extension.dir.1`.
 |`nifi.registry.kerberos.spengo.authentication.expiration`|The expiration duration of a successful Kerberos user authentication, if used. The default value is `12 hours`.
 |====
 
+== Metadata Database
+
+The metadata database maintains the knowledge of which buckets exist, and which versioned items belong to which buckets, as well as the version
+history for each item.
+
+Currently NiFi Registry supports H2 or Postgres for the relational database engine (0.1.0 only supports H2).
+
+== H2
+
+H2 is an embedded database that is pre-configured in the default `nifi-registry.properties file`. The contents of the H2 database are stored in a file on the local filesystem.
+
+For NiFi Registry 0.1.0, the location of the H2 database is specified by the property:
+
+`nifi.registry.db.directory=./database`
+
+For NiFi Registry 0.2.0 and forward, the location of the H2 database is specified as part of the JDBC URL property:
+
+`nifi.registry.db.url=jdbc:h2:./database/nifi-registry-primary;`
+
+== Postgres
+
+Postgres provides the option to use an externally located database that also supports high availability.
+
+The following steps are required to use Postgres:
+
+- Download the Postgres JDBC driver and place it somewhere accessible to NiFi Registry
+
+  /path/to/drivers/postgresql-42.2.2.jar
+
+- Create a database inside Postgres
+
+  createdb nifireg
+
+- Create a database user and grant privileges
+
+  psql nifireg
+  CREATE USER nifireg WITH PASSWORD 'changeme';
+  GRANT ALL PRIVILEGES ON DATABASE nifireg to nifireg;
+  \q
+
+- Configure the database properties in nifi-registry.properties
+
+  nifi.registry.db.url=jdbc:postgresql://<POSTGRES-HOSTNAME>/nifireg
+  nifi.registry.db.driver.class=org.postgresql.Driver
+  nifi.registry.db.driver.directory=/path/to/drivers
+  nifi.registry.db.username=nifireg
+  nifi.registry.db.password=changeme
+
 == Persistence Providers
 
 NiFi Registry uses a pluggable persistence provider to store the content of each versioned item. Each type of versioned item, such as a versioned flow or extension bundle, has its own persistence provider.
@@ -1472,3 +1520,43 @@ With the example aliases configuration above, the URLs would be written to the F
 ....
 
 When this flow is retrieved from any API call, the internal values would be rewritten to the external values.
+
+== Backup & Recovery
+
+In order to prevent data loss it is important to consider backup and recovery options. The data that needs to be considered is the following:
+
+ - Metadata Database
+ - Persistence providers
+ - Configuration files
+
+=== Metadata Database
+
+If using H2, the database file should be backed up periodically to an external location. In order to ensure a proper backup, NiFi Registry should be stopped to ensure no write operations are occurring while copying the file.
+
+If using Postgres, backups may be taken on the Postgres database, or Postgres may be configured for high availability such that there is a failover or backup instance.
+
+If starting a brand new NiFi Registry instance, the metadata database can be automatically rebuilt from the information in the `GitFlowPersistenceProvider`. This is a one-time operation during the first start of the application, and is not meant to keep the DB in sync with external changes made in git. This feature only applies to flows and would not be able to restore information about extension bundles.
+
+=== Persistence Providers
+
+Each persistence provider may have its own option for backup & recovery.
+
+==== Flow Persistence
+
+If using the `FileSystemFlowPersistenceProvider`, the directory where flows are stored should be backed up periodically to an external location. In order to ensure a proper backup, NiFi Registry should be stopped to ensure no flows are being written to disk. If using H2 for metadata, H2 should be backed up at the same time to ensure consistency between the flows on disk and the contents in H2.
+
+If using the `GitFlowPersistenceProvider`, the ability to automatically push to a remote may be configured. This provides an automatic backup of the data in the remote repo.
+
+=== Bundle Persistence
+
+If using the `FileSystemBundlePersistenceProvider`, the directory where bundles are stored should be backed up periodically to an external location. In order to ensure a proper backup, NiFi Registry should be stopped to ensure no bundles are being written to disk. If using H2 for metadata, H2 should be backed up at the same time to ensure consistency between the bundles on disk and the contents in H2.
+
+If using the `S3BundlePersistenceProvider`, data will be stored remotely and automatically replicated.
+
+=== Configuration Files
+
+If using NiFi Registry's policy based authorization, the users, groups, and policies are stored in files on disk named `users.xml` and `authorizations.xml`. These files should be periodically backed up to an external location. In order to ensure a proper backup, NiFi Registry should be stopped to ensure no authorization data is being written to disk.
+
+If using Ranger, then all authorization information is stored externally and there is nothing to back up.
+
+
