@@ -1104,14 +1104,15 @@ providing 2 total locations, including `nifi.registry.extension.dir.1`.
 
 == Metadata Database
 
-The metadata database maintains the knowledge of which buckets exist, and which versioned items belong to which buckets, as well as the version
-history for each item.
+The metadata database maintains the knowledge of which buckets exist, which versioned items belong to which buckets, as well as the version history for each item.
 
-Currently NiFi Registry supports H2 or Postgres for the relational database engine (0.1.0 only supports H2).
+Currently, NiFi Registry supports H2 or Postgres for the relational database engine.
+
+NOTE: NiFi Registry 0.1.0 only supports H2.
 
 == H2
 
-H2 is an embedded database that is pre-configured in the default `nifi-registry.properties file`. The contents of the H2 database are stored in a file on the local filesystem.
+H2 is an embedded database that is pre-configured in the default _nifi-registry.properties_ file. The contents of the H2 database are stored in a file on the local filesystem.
 
 For NiFi Registry 0.1.0, the location of the H2 database is specified by the property:
 
@@ -1127,22 +1128,22 @@ Postgres provides the option to use an externally located database that also sup
 
 The following steps are required to use Postgres:
 
-- Download the Postgres JDBC driver and place it somewhere accessible to NiFi Registry
+1. Download the Postgres JDBC driver and place it somewhere accessible to NiFi Registry
 
   /path/to/drivers/postgresql-42.2.2.jar
 
-- Create a database inside Postgres
+2. Create a database inside Postgres
 
   createdb nifireg
 
-- Create a database user and grant privileges
+3. Create a database user and grant privileges
 
   psql nifireg
   CREATE USER nifireg WITH PASSWORD 'changeme';
   GRANT ALL PRIVILEGES ON DATABASE nifireg to nifireg;
   \q
 
-- Configure the database properties in nifi-registry.properties
+4. Configure the database properties in _nifi-registry.properties_
 
   nifi.registry.db.url=jdbc:postgresql://<POSTGRES-HOSTNAME>/nifireg
   nifi.registry.db.driver.class=org.postgresql.Driver
@@ -1235,10 +1236,10 @@ Qualified class name: `org.apache.nifi.registry.provider.flow.git.GitFlowPersist
 |====
 |*Property*|*Description*
 |`Flow Storage Directory`|REQUIRED: File system path for a directory where flow contents files are persisted to. The directory must exist when NiFi registry starts. Also must be initialized as a Git directory. See <<Initialize Git directory>> for detail.
-|`Remote To Push`|When a new flow snapshot is created, this persistence provider updated files in the specified Git directory, then create a commit to the local repository. If `Remote To Push` is defined, it also pushes to the specified remote repository. E.g. `origin`. To define more detailed remote spec such as branch names, use `Refspec`. See
-link:https://git-scm.com/book/en/v2/Git-Internals-The-Refspec[https://git-scm.com/book/en/v2/Git-Internals-The-Refspec^]
-|`Remote Access User`|This user name is used to make push requests to the remote repository when `Remote To Push` is enabled, and the remote repository is accessed by HTTP protocol. If SSH is used, user authentication is done with SSH keys.
-|`Remote Access Password`|Used with `Remote Access User`.
+|`Remote To Push`|When a new flow snapshot is created, this persistence provider updates files in the specified Git directory, then creates a commit to the local repository. If `Remote To Push` is defined, it also pushes to the specified remote repository (e.g. `origin`). To define more detailed remote spec such as branch names, use `Refspec` (see
+link:https://git-scm.com/book/en/v2/Git-Internals-The-Refspec[https://git-scm.com/book/en/v2/Git-Internals-The-Refspec^]).
+|`Remote Access User`|This username is used to make push requests to the remote repository when `Remote To Push` is enabled, and the remote repository is accessed by HTTP protocol. If SSH is used, user authentication is done with SSH keys.
+|`Remote Access Password`|The password for the `Remote Access User`.
 |====
 
 ===== Initialize Git directory
@@ -1339,7 +1340,7 @@ The XML configuration file looks like below. It has a `extensionBundlePersistenc
 
 ==== FileSystemBundlePersistenceProvider
 
-The FileSystemBundlePersistenceProvider stores the content of extension bundles on the local file-system. The bundles are organized in directories according to bucket id, group, artifact, and version.
+The `FileSystemBundlePersistenceProvider` stores the content of extension bundles on the local file system. The bundles are organized in directories according to bucket id, group, artifact, and version.
 
 Example of persisted extension bundles:
 ....
@@ -1366,9 +1367,9 @@ Qualified class name: `org.apache.nifi.registry.provider.extension.FileSystemBun
 
 ==== S3BundlePersistenceProvider
 
-The S3BundlePersistenceProvider stores the content of extension bundles in AWS S3 bucket. The bucket is expected to already exist and be accessible to the credentials provided to the persistence providcer.
+The `S3BundlePersistenceProvider` stores the content of extension bundles in a AWS S3 bucket. The bucket is expected to already exist and be accessible to the credentials provided to the persistence providcer.
 
-NOTE: This provider must be added to the classpath by specifying a custom extension directory in nifi-registry.properties, such as nifi.registry.extension.dir.aws=./ext/aws/lib, where ./ext/aws/ contains the contents of the extracted nifi-registry-aws-assembly-<version>-bin.zip.
+NOTE: This provider must be added to the classpath by specifying a custom extension directory in _nifi-registry.properties_, such as `nifi.registry.extension.dir.aws=./ext/aws/lib`, where `./ext/aws/` contains the contents of the extracted _nifi-registry-aws-assembly-<version>-bin.zip_.
 
 The key of an extension bundle in the S3 bucket will be the following:
 ....
@@ -1386,9 +1387,9 @@ Qualified class name: `org.apache.nifi.registry.aws.S3BundlePersistenceProvider`
 |`Region`|REQUIRED: The name of the S3 region where the bucket exists.
 |`Bucket Name`|REQUIRED: The name of an existing bucket to store extension bundles.
 |`Key Prefix`|An optional prefix that if specified will be added to the beginning of all S3 keys.
-|`Credentials Provider`|REQUIRED: Indicates how credentials will be provided, must be a value of DEFAULT_CHAIN or STATIC. DEFAULT_CHAIN will consider in order: Java system properties, environment variables, credential profiles (~/.aws/credentials). STATIC requires that "Access Key" and "Secret Access Key" be specified directly in this file.
-|`Access Key`| The access key to use when using STATIC credentials provider.
-|`Secret Access Key`| The secret access key to use when using STATIC credentials provider.
+|`Credentials Provider`|REQUIRED: Indicates how credentials will be provided, must be a value of `DEFAULT_CHAIN` or `STATIC`. `DEFAULT_CHAIN` will consider in order: Java system properties, environment variables, credential profiles (`~/.aws/credentials`). `STATIC` requires that `Access Key` and `Secret Access Key` be specified directly in this file.
+|`Access Key`| The access key to use when using `STATIC` credentials provider.
+|`Secret Access Key`| The secret access key to use when using `STATIC` credentials provider.
 |`Endpoint URL`| An optional URL that overrides the default AWS S3 endpoint URL. Set this when using an AWS S3 API compatible service hosted at a different URL.
 |====
 
@@ -1415,12 +1416,12 @@ their purpose are listed below.
 [options="header,footer"]
 |==================================================================================================================================================
 | Property Name | Description
-|`Whitelisted Event Type` | EventTypes the hook provider configured with this property should respond to. If this property is left blank or not provided all events will fire for the configured hook provider. Multiple 'Whitelisted Event Type' can be specified and often are.
-EX: <property name="Whitelisted Event Type 1">CREATE_FLOW</property> and <property name="Whitelisted Event Type 2">UPDATE_FLOW</property> would invoke the configured hook provider for the CREATE_FLOW and UPDATE_FLOW EventTypes.
+|`Whitelisted Event Type` | Event types the hook provider configured with this property should respond to. If this property is left blank or not provided, all events will fire for the configured hook provider. Multiple `Whitelisted Event Type` can be specified and often are. For example,
+`<property name="Whitelisted Event Type 1">CREATE_FLOW</property>` and `<property name="Whitelisted Event Type 2">UPDATE_FLOW</property>` would invoke the configured hook provider for the `CREATE_FLOW` and `UPDATE_FLOW` event types.
 |==================================================================================================================================================
 
 === ScriptEventHookProvider
-Hook provider for invoking a shell script that has been written by a user and placed on a file system that is accessible
+The `ScriptEventHookProvider` invokes a shell script that has been written by a user and placed on a file system that is accessible
 by the NiFi Registry instance that the provider is configured for.
 
 ....
@@ -1444,8 +1445,8 @@ by the NiFi Registry instance that the provider is configured for.
 |==================================================================================================================================================
 
 === LoggingEventHookProvider
-The LoggingEventHookProvider logs a string representation of each event using an SLF4J logger. The logger can be configured
-via NiFi Registry’s logback.xml, which by default contains an appender that writes to a log file named nifi-registry-event.log in the logs directory.
+The `LoggingEventHookProvider` logs a string representation of each event using an SLF4J logger. The logger can be configured
+via NiFi Registry’s _logback.xml_, which by default contains an appender that writes to a log file named _nifi-registry-event.log_ in the `logs` directory.
 
 ....
 <eventHookProvider>
@@ -1498,7 +1499,7 @@ If a flow is saved to registry with two child process groups, each under version
 ]
 ....
 
-With the example aliases configuration above, the URLs would be written to the FlowPersistenceProvider as the following:
+With the example aliases configuration above, the URLs would be written to the flow persistence provider as the following:
 ....
 "processGroups" : [ {
       ...
@@ -1535,7 +1536,7 @@ If using H2, the database file should be backed up periodically to an external l
 
 If using Postgres, backups may be taken on the Postgres database, or Postgres may be configured for high availability such that there is a failover or backup instance.
 
-If starting a brand new NiFi Registry instance, the metadata database can be automatically rebuilt from the information in the `GitFlowPersistenceProvider`. This is a one-time operation during the first start of the application, and is not meant to keep the DB in sync with external changes made in git. This feature only applies to flows and would not be able to restore information about extension bundles.
+If starting a brand new NiFi Registry instance, the metadata database can be automatically rebuilt from the information in the `GitFlowPersistenceProvider`. This is a one-time operation during the first start of the application, and is not meant to keep the DB in sync with external changes made in Git. This feature only applies to flows and would not be able to restore information about extension bundles.
 
 === Persistence Providers
 
@@ -1555,8 +1556,6 @@ If using the `S3BundlePersistenceProvider`, data will be stored remotely and aut
 
 === Configuration Files
 
-If using NiFi Registry's policy based authorization, the users, groups, and policies are stored in files on disk named `users.xml` and `authorizations.xml`. These files should be periodically backed up to an external location. In order to ensure a proper backup, NiFi Registry should be stopped to ensure no authorization data is being written to disk.
+If using NiFi Registry's policy based authorization, the users, groups, and policies are stored in files on disk named _users.xml_ and _authorizations.xml_. These files should be periodically backed up to an external location. In order to ensure a proper backup, NiFi Registry should be stopped to ensure no authorization data is being written to disk.
 
 If using Ranger, then all authorization information is stored externally and there is nothing to back up.
-
-
