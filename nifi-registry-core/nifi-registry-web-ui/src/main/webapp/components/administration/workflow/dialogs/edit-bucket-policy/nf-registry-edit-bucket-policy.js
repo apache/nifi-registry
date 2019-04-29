@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-var rxjs = require('rxjs/Observable');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var ngRouter = require('@angular/router');
+import { Observable } from 'rxjs';
+import { Component, ViewChild } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { ActivatedRoute } from '@angular/router';
+import template from './nf-registry-edit-bucket-policy.html';
 
 /**
  * NfRegistryEditBucketPolicy constructor.
@@ -40,7 +41,7 @@ function NfRegistryEditBucketPolicy(nfRegistryApi, nfRegistryService, activatedR
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.data = data;
-};
+}
 
 NfRegistryEditBucketPolicy.prototype = {
     constructor: NfRegistryEditBucketPolicy,
@@ -52,7 +53,7 @@ NfRegistryEditBucketPolicy.prototype = {
         var self = this;
         this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -61,19 +62,19 @@ NfRegistryEditBucketPolicy.prototype = {
                 var users = response[0];
                 var groups = response[1];
                 users = users.filter(function (user) {
-                    return (self.data.userOrGroup.identity === user.identity) ? true : false;
+                    return (self.data.userOrGroup.identity === user.identity);
                 });
-                if(users.length === 0){
+                if (users.length === 0) {
                     groups = groups.filter(function (group) {
-                        return (self.data.userOrGroup.identity === group.identity) ? true : false;
+                        return (self.data.userOrGroup.identity === group.identity);
                     });
                     self.userOrGroup = groups[0];
-                    self.userOrGroup.type = 'group'
+                    self.userOrGroup.type = 'group';
                 } else {
                     self.userOrGroup = users[0];
-                    self.userOrGroup.type = 'user'
+                    self.userOrGroup.type = 'user';
                 }
-                self.data.userOrGroup.permissions.split(", ").forEach(function(permission) {
+                self.data.userOrGroup.permissions.split(', ').forEach(function (permission) {
                     if (permission === 'read') {
                         self.readCheckbox.checked = true;
                     }
@@ -117,7 +118,8 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -132,7 +134,8 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 }
             });
         } else {
@@ -144,12 +147,12 @@ NfRegistryEditBucketPolicy.prototype = {
                 } else {
                     // resource exists, let's remove it
                     if (self.userOrGroup.type === 'user') {
-                        policy.users = policy.users.filter(function(user) {
-                            return (self.userOrGroup.identity !== user.identity) ? true : false;
+                        policy.users = policy.users.filter(function (user) {
+                            return (self.userOrGroup.identity !== user.identity);
                         });
                     } else {
-                        policy.userGroups = policy.userGroups.filter(function(group) {
-                            return (self.userOrGroup.identity !== group.identity) ? true : false;
+                        policy.userGroups = policy.userGroups.filter(function (group) {
+                            return (self.userOrGroup.identity !== group.identity);
                         });
                     }
                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
@@ -159,10 +162,10 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 }
             });
-
         }
         if (this.writeCheckbox.checked) {
             action = 'write';
@@ -186,7 +189,8 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -201,7 +205,8 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 }
             });
         } else {
@@ -213,12 +218,12 @@ NfRegistryEditBucketPolicy.prototype = {
                 } else {
                     // resource exists, let's remove it
                     if (self.userOrGroup.type === 'user') {
-                        policy.users = policy.users.filter(function(user) {
-                            return (self.userOrGroup.identity !== user.identity) ? true : false;
+                        policy.users = policy.users.filter(function (user) {
+                            return (self.userOrGroup.identity !== user.identity);
                         });
                     } else {
-                        policy.userGroups = policy.userGroups.filter(function(group) {
-                            return (self.userOrGroup.identity !== group.identity) ? true : false;
+                        policy.userGroups = policy.userGroups.filter(function (group) {
+                            return (self.userOrGroup.identity !== group.identity);
                         });
                     }
                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
@@ -228,10 +233,10 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 }
             });
-
         }
         if (this.deleteCheckbox.checked) {
             action = 'delete';
@@ -255,7 +260,8 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -270,7 +276,8 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 }
             });
         } else {
@@ -282,12 +289,12 @@ NfRegistryEditBucketPolicy.prototype = {
                 } else {
                     // resource exists, let's remove it
                     if (self.userOrGroup.type === 'user') {
-                        policy.users = policy.users.filter(function(user) {
-                            return (self.userOrGroup.identity !== user.identity) ? true : false;
+                        policy.users = policy.users.filter(function (user) {
+                            return (self.userOrGroup.identity !== user.identity);
                         });
                     } else {
-                        policy.userGroups = policy.userGroups.filter(function(group) {
-                            return (self.userOrGroup.identity !== group.identity) ? true : false;
+                        policy.userGroups = policy.userGroups.filter(function (group) {
+                            return (self.userOrGroup.identity !== group.identity);
                         });
                     }
                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
@@ -297,10 +304,10 @@ NfRegistryEditBucketPolicy.prototype = {
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
                             });
-                        });
+                        }
+                    );
                 }
             });
-
         }
         this.dialogRef.close({userOrGroup: self.userOrGroup, permissions: permissions});
     },
@@ -331,12 +338,12 @@ NfRegistryEditBucketPolicy.prototype = {
 };
 
 NfRegistryEditBucketPolicy.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-edit-bucket-policy.html!text'),
+    new Component({
+        template,
         queries: {
-            readCheckbox: new ngCore.ViewChild('readCheckbox'),
-            writeCheckbox: new ngCore.ViewChild('writeCheckbox'),
-            deleteCheckbox: new ngCore.ViewChild('deleteCheckbox')
+            readCheckbox: new ViewChild('readCheckbox'),
+            writeCheckbox: new ViewChild('writeCheckbox'),
+            deleteCheckbox: new ViewChild('deleteCheckbox')
         }
     })
 ];
@@ -344,9 +351,9 @@ NfRegistryEditBucketPolicy.annotations = [
 NfRegistryEditBucketPolicy.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngMaterial.MatDialogRef,
-    ngMaterial.MAT_DIALOG_DATA
+    ActivatedRoute,
+    MatDialogRef,
+    MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryEditBucketPolicy;
+export default NfRegistryEditBucketPolicy;

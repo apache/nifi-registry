@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
-var rxjs = require('rxjs/Rx');
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryCreateBucket from 'components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket';
+import { Observable } from 'rxjs';
 
 describe('NfRegistryCreateBucket Component isolated unit tests', function () {
     var comp;
@@ -29,17 +29,17 @@ describe('NfRegistryCreateBucket Component isolated unit tests', function () {
         nfRegistryService = new NfRegistryService();
         nfRegistryApi = new NfRegistryApi();
         comp = new NfRegistryCreateBucket(nfRegistryApi, {
-                openCoaster: function () {
-                }
-            },
-            nfRegistryService, {
-                close: function () {
-                }
-            });
+            openCoaster: function () {
+            }
+        },
+        nfRegistryService, {
+            close: function () {
+            }
+        });
 
         // Spy
         spyOn(nfRegistryApi, 'createBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({name: 'NewBucket'}));
+        }).and.returnValue(Observable.of({name: 'NewBucket'}));
         spyOn(nfRegistryService, 'filterBuckets');
         spyOn(comp.dialogRef, 'close');
     });

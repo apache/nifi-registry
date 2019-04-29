@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var rxjs = require('rxjs/Observable');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var ngRouter = require('@angular/router');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfStorage from 'services/nf-storage.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import nfRegistryAnimations from 'nf-registry.animations';
+import template from './nf-registry-grid-list-viewer.html';
 
 /**
  * NfRegistryBucketGridListViewer constructor.
@@ -38,7 +39,7 @@ function NfRegistryBucketGridListViewer(nfRegistryApi, nfStorage, nfRegistryServ
     this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
-};
+}
 
 NfRegistryBucketGridListViewer.prototype = {
     constructor: NfRegistryBucketGridListViewer,
@@ -57,7 +58,7 @@ NfRegistryBucketGridListViewer.prototype = {
         // subscribe to the route params
         this.$subscription = this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getBuckets(),
                     self.nfRegistryApi.getDroplets(params['bucketId']),
                     self.nfRegistryApi.getBucket(params['bucketId'])
@@ -91,7 +92,6 @@ NfRegistryBucketGridListViewer.prototype = {
                 self.nfRegistryService.setBreadcrumbState('in');
                 self.nfRegistryService.inProgress = false;
             });
-
     },
 
     /**
@@ -106,8 +106,8 @@ NfRegistryBucketGridListViewer.prototype = {
 };
 
 NfRegistryBucketGridListViewer.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-grid-list-viewer.html!text'),
+    new Component({
+        template,
         animations: [nfRegistryAnimations.flyInOutAnimation]
     })
 ];
@@ -116,8 +116,8 @@ NfRegistryBucketGridListViewer.parameters = [
     NfRegistryApi,
     NfStorage,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router
+    ActivatedRoute,
+    Router
 ];
 
-module.exports = NfRegistryBucketGridListViewer;
+export default NfRegistryBucketGridListViewer;

@@ -15,11 +15,18 @@
  * limitations under the License.
  */
 
+import { TestBed } from '@angular/core/testing';
+import {
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting
+} from '@angular/platform-browser-dynamic/testing';
+import { Observable } from 'rxjs';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MomentModule } from 'angular2-moment';
-import { NgModule } from '@angular/core';
 
 import NfRegistryRoutes from 'nf-registry.routes';
+import { APP_BASE_HREF } from '@angular/common';
 import fdsCore from '@flow-design-system/core';
 import NfRegistry from 'nf-registry';
 import NfRegistryApi from 'services/nf-registry.api';
@@ -40,32 +47,45 @@ import NfRegistryTokenInterceptor from 'services/nf-registry.token.interceptor';
 import NfStorage from 'services/nf-storage.service';
 import NfLoginComponent from 'components/login/nf-registry-login';
 import NfUserLoginComponent from 'components/login/dialogs/nf-registry-user-login';
-import NfRegistryCreateBucket from 'components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket';
-import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
-import NfRegistryAddUserToGroups from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
-import NfRegistryAddPolicyToBucket from 'components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket';
-import NfRegistryEditBucketPolicy from 'components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy';
-import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
-import {
-    NfRegistryLoginAuthGuard,
-    NfRegistryResourcesAuthGuard,
-    NfRegistryUsersAdministrationAuthGuard,
-    NfRegistryWorkflowsAdministrationAuthGuard
-} from 'services/nf-registry.auth-guard.service';
 
-function NfRegistryModule() {
-}
+// rxjs Observable debugger;
+var debuggerOn = false;
 
-NfRegistryModule.prototype = {
-    constructor: NfRegistryModule
+/* eslint-disable no-console */
+Observable.prototype.debug = function (message) {
+    return this.do(
+        function (next) {
+            if (debuggerOn) {
+                console.log(message, next);
+            }
+        },
+        function (err) {
+            if (debuggerOn) {
+                console.error('ERROR >>> ', message, err);
+            }
+        },
+        function () {
+            if (debuggerOn) {
+                console.log('Completed.');
+            }
+        }
+    );
 };
 
-NfRegistryModule.annotations = [
-    new NgModule({
+const initTestBed = ({ providers } = { providers: [] }) => {
+    TestBed.resetTestEnvironment();
+
+    TestBed.initTestEnvironment(
+        BrowserDynamicTestingModule,
+        platformBrowserDynamicTesting()
+    );
+
+    const testBedConfigured = TestBed.configureTestingModule({
         imports: [
             MomentModule,
-            fdsCore,
             HttpClientModule,
+            HttpClientTestingModule,
+            fdsCore,
             NfRegistryRoutes
         ],
         declarations: [
@@ -76,14 +96,8 @@ NfRegistryModule.annotations = [
             NfRegistryManageUser,
             NfRegistryManageGroup,
             NfRegistryManageBucket,
-            NfRegistryWorkflowAdministration,
             NfRegistryAddUser,
-            NfRegistryCreateBucket,
-            NfRegistryCreateNewGroup,
-            NfRegistryAddUserToGroups,
-            NfRegistryAddUsersToGroup,
-            NfRegistryAddPolicyToBucket,
-            NfRegistryEditBucketPolicy,
+            NfRegistryWorkflowAdministration,
             NfRegistryGridListViewer,
             NfRegistryBucketGridListViewer,
             NfRegistryDropletGridListViewer,
@@ -91,32 +105,27 @@ NfRegistryModule.annotations = [
             NfLoginComponent,
             NfUserLoginComponent
         ],
-        entryComponents: [
-            NfRegistryAddUser,
-            NfRegistryCreateBucket,
-            NfRegistryCreateNewGroup,
-            NfRegistryAddUserToGroups,
-            NfRegistryAddUsersToGroup,
-            NfRegistryAddPolicyToBucket,
-            NfRegistryEditBucketPolicy,
-            NfUserLoginComponent
-        ],
         providers: [
             NfRegistryService,
-            NfRegistryUsersAdministrationAuthGuard,
-            NfRegistryWorkflowsAdministrationAuthGuard,
-            NfRegistryLoginAuthGuard,
-            NfRegistryResourcesAuthGuard,
             NfRegistryApi,
             NfStorage,
             {
                 provide: HTTP_INTERCEPTORS,
                 useClass: NfRegistryTokenInterceptor,
                 multi: true
-            }
+            },
+            {
+                provide: APP_BASE_HREF,
+                useValue: '/'
+            },
+
+            ...providers
+
         ],
         bootstrap: [NfRegistry]
-    })
-];
+    }).compileComponents();
 
-export default NfRegistryModule;
+    return testBedConfigured;
+};
+
+export default initTestBed;

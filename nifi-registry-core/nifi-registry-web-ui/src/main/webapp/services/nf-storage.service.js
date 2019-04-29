@@ -45,9 +45,8 @@ var checkExpiration = function (entry) {
 
         // return whether the expiration date has passed
         return expires.valueOf() < now.valueOf();
-    } else {
-        return false;
     }
+    return false;
 };
 
 /**
@@ -63,9 +62,8 @@ var getEntry = function (key) {
         // ensure the entry and item are present
         if (isDefinedAndNotNull(entry)) {
             return entry;
-        } else {
-            return null;
         }
+        return null;
     } catch (e) {
         return null;
     }
@@ -76,7 +74,7 @@ var getEntry = function (key) {
  * @constructor
  */
 function NfRegistryStorage() {
-};
+}
 
 NfRegistryStorage.prototype = {
     constructor: NfRegistryStorage,
@@ -93,6 +91,7 @@ NfRegistryStorage.prototype = {
                 // attempt to get the item which will expire if necessary
                 this.getItem(key);
             } catch (e) {
+                // ignore
             }
         }
     },
@@ -151,9 +150,8 @@ NfRegistryStorage.prototype = {
         // if the entry has the specified field return its value
         if (isDefinedAndNotNull(entry['item'])) {
             return entry['item'];
-        } else {
-            return null;
         }
+        return null;
     },
 
     /**
@@ -172,9 +170,8 @@ NfRegistryStorage.prototype = {
         // if the entry has the specified field return its value
         if (isDefinedAndNotNull(entry['expires'])) {
             return entry['expires'];
-        } else {
-            return null;
         }
+        return null;
     },
 
     /**
@@ -196,9 +193,8 @@ NfRegistryStorage.prototype = {
 
             if (isDefinedAndNotNull(payload)) {
                 return payload;
-            } else {
-                return null;
             }
+            return null;
         }
 
         return null;
@@ -216,4 +212,4 @@ NfRegistryStorage.prototype = {
 
 NfRegistryStorage.parameters = [];
 
-module.exports = NfRegistryStorage;
+export default NfRegistryStorage;

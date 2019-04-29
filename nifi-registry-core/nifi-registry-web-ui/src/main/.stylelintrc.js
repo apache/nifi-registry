@@ -15,27 +15,17 @@
  * limitations under the License.
  */
 
-import { TestBed } from '@angular/core/testing';
-import initTestBed from 'nf-registry.testbed-factory';
-import NfRegistry from './nf-registry';
-
-describe('NfRegistry Component', function () {
-    let comp;
-    let fixture;
-
-    beforeEach((done) => {
-        initTestBed()
-            .then(() => {
-                fixture = TestBed.createComponent(NfRegistry);
-                fixture.detectChanges();
-                comp = fixture.componentInstance;
-
-                done();
-            });
-    });
-
-    it('should create component', function () {
-        //assertions
-        expect(comp).toBeDefined();
-    });
-});
+module.exports = {
+    "extends": "stylelint-config-standard",
+    "rules": {
+        "indentation": null,
+        "at-rule-no-unknown": [true, {
+            "ignoreAtRules": ["/include/", "/mixin/"]
+        }],
+        "declaration-empty-line-before": null,
+        "selector-type-no-unknown": [true, {
+            "ignoreTypes": ["/mat-/", "/flow-designer-/", "/fds-/"]
+        }],
+        "font-family-no-missing-generic-family-keyword": null
+    }
+};

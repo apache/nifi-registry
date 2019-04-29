@@ -14,28 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const merge = require('webpack-merge');
 
-import { TestBed } from '@angular/core/testing';
-import initTestBed from 'nf-registry.testbed-factory';
-import NfRegistry from './nf-registry';
+const commonConfig = require('./webpack.common');
+const loaders = require('./webpack.loader');
 
-describe('NfRegistry Component', function () {
-    let comp;
-    let fixture;
+delete commonConfig.entry;
+delete commonConfig.optimization;
+delete commonConfig.devServer;
+delete commonConfig.devtool;
+delete commonConfig.module.rules;
 
-    beforeEach((done) => {
-        initTestBed()
-            .then(() => {
-                fixture = TestBed.createComponent(NfRegistry);
-                fixture.detectChanges();
-                comp = fixture.componentInstance;
+module.exports = merge(commonConfig, {
+    mode: 'none',
 
-                done();
-            });
-    });
-
-    it('should create component', function () {
-        //assertions
-        expect(comp).toBeDefined();
-    });
+    module: {
+        rules: [
+            loaders.tsDev,
+            loaders.nifiFds,
+            loaders.jsDev,
+            loaders.html,
+            loaders.ignoreScss,
+            loaders.images,
+            loaders.fonts,
+            loaders.xlf
+        ]
+    }
 });

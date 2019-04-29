@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-var rxjs = require('rxjs/Observable');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var ngRouter = require('@angular/router');
-var covalentCore = require('@covalent/core');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+import { Observable } from 'rxjs';
+import { Component, ViewChild } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { ActivatedRoute } from '@angular/router';
+import { TdDataTableService } from '@covalent/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import template from './nf-registry-add-policy-to-bucket.html';
 
 /**
  * NfRegistryAddPolicyToBucket constructor.
@@ -53,7 +54,7 @@ function NfRegistryAddPolicyToBucket(nfRegistryApi, tdDataTableService, fdsSnack
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.data = data;
-};
+}
 
 NfRegistryAddPolicyToBucket.prototype = {
     constructor: NfRegistryAddPolicyToBucket,
@@ -65,7 +66,7 @@ NfRegistryAddPolicyToBucket.prototype = {
         var self = this;
         this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -74,12 +75,12 @@ NfRegistryAddPolicyToBucket.prototype = {
                 self.users = response[0];
                 self.users = self.users.filter(function (user) {
                     user.checked = false;
-                    return (self.data.users.indexOf(user.identity) < 0) ? true : false;
+                    return (self.data.users.indexOf(user.identity) < 0);
                 });
                 self.groups = response[1];
                 self.groups = self.groups.filter(function (group) {
                     group.checked = false;
-                    return (self.data.groups.indexOf(group.identity) < 0) ? true : false;
+                    return (self.data.groups.indexOf(group.identity) < 0);
                 });
 
                 self.filterUsersAndGroups();
@@ -95,7 +96,7 @@ NfRegistryAddPolicyToBucket.prototype = {
     filterUsersAndGroups: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
@@ -142,7 +143,8 @@ NfRegistryAddPolicyToBucket.prototype = {
     sortUserAndGroups: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
             this.filterUsersAndGroups(sortBy, sortOrder);
         }
     },
@@ -176,7 +178,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy created!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -186,7 +188,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -200,7 +203,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -210,7 +213,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 }
             });
         }
@@ -235,7 +239,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy created!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -245,7 +249,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -259,7 +264,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -269,7 +274,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 }
             });
         }
@@ -294,7 +300,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy created!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -304,7 +310,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -318,7 +325,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -328,7 +335,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 }
             });
         }
@@ -365,7 +373,7 @@ NfRegistryAddPolicyToBucket.prototype = {
      * @param userOrGroup   The selected user or group.
      * @param type
      */
-    select: function(userOrGroup, type) {
+    select: function (userOrGroup, type) {
         //deselect all
         this.filteredUsers = this.filteredUsers.filter(function (user) {
             user.checked = false;
@@ -384,30 +392,30 @@ NfRegistryAddPolicyToBucket.prototype = {
      * Change event handler for user or group checkboxes
      * @param $event
      */
-    change: function($event){
+    change: function ($event) {
         $event.source.checked = true;
     }
 };
 
 NfRegistryAddPolicyToBucket.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-add-policy-to-bucket.html!text'),
+    new Component({
+        template,
         queries: {
-            readCheckbox: new ngCore.ViewChild('readCheckbox'),
-            writeCheckbox: new ngCore.ViewChild('writeCheckbox'),
-            deleteCheckbox: new ngCore.ViewChild('deleteCheckbox')
+            readCheckbox: new ViewChild('readCheckbox'),
+            writeCheckbox: new ViewChild('writeCheckbox'),
+            deleteCheckbox: new ViewChild('deleteCheckbox')
         }
     })
 ];
 
 NfRegistryAddPolicyToBucket.parameters = [
     NfRegistryApi,
-    covalentCore.TdDataTableService,
-    fdsSnackBarsModule.FdsSnackBarService,
+    TdDataTableService,
+    FdsSnackBarService,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngMaterial.MatDialogRef,
-    ngMaterial.MAT_DIALOG_DATA
+    ActivatedRoute,
+    MatDialogRef,
+    MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryAddPolicyToBucket;
+export default NfRegistryAddPolicyToBucket;

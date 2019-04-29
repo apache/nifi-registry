@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var ngRouter = require('@angular/router');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var rxjs = require('rxjs/Observable');
+import { TdDataTableService } from '@covalent/core';
+import { Router } from '@angular/router';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import NfRegistryApi from 'services/nf-registry.api.js';
+import NfStorage from 'services/nf-storage.service.js';
 
 /**
  * NfRegistryService constructor.
@@ -37,7 +36,7 @@ var rxjs = require('rxjs/Observable');
 function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router, fdsDialogService, fdsSnackBarService) {
     var self = this;
     this.registry = {
-        name: "NiFi Registry",
+        name: 'NiFi Registry',
         // Config is updated later by calling the /config API.
         config: {}
     };
@@ -109,14 +108,14 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             icon: 'fa fa-pencil',
             tooltip: 'Manage Bucket',
             type: 'sidenav',
-            disabled: function(row) {
+            disabled: function (row) {
                 return false;
             }
         }, {
             name: 'Delete',
             icon: 'fa fa-trash',
             tooltip: 'Delete Bucket',
-            disabled: function(row) {
+            disabled: function (row) {
                 return (!row.permissions.canDelete);
             }
         }
@@ -145,17 +144,16 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
         {
             name: 'manage',
             icon: 'fa fa-pencil',
-            tooltip: 'Manage User Policies',
             type: 'sidenav',
             tooltip: 'Manage User',
-            disabled: function(row) {
+            disabled: function (row) {
                 return false;
             }
         }, {
             name: 'delete',
             icon: 'fa fa-trash',
             tooltip: 'Delete User',
-            disabled: function(row) {
+            disabled: function (row) {
                 return (!self.currentUser.resourcePermissions.tenants.canWrite || !row.configurable);
             }
         }
@@ -166,14 +164,14 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             icon: 'fa fa-pencil',
             tooltip: 'Manage User Group Policies',
             type: 'sidenav',
-            disabled: function(row) {
+            disabled: function (row) {
                 return false;
             }
         }, {
             name: 'delete',
             icon: 'fa fa-trash',
             tooltip: 'Delete User Group',
-            disabled: function(row) {
+            disabled: function (row) {
                 return (!self.currentUser.resourcePermissions.tenants.canWrite || !row.configurable);
             }
         }
@@ -322,7 +320,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.usersSearchTerms = [];
 
     //</editor-fold>
-};
+}
 
 NfRegistryService.prototype = {
     constructor: NfRegistryService,
@@ -354,15 +352,17 @@ NfRegistryService.prototype = {
         if (sortByColumn) {
             var label = '';
             switch (sortByColumn.label) {
-                case 'Updated':
-                    label = (sortByColumn.sortOrder === 'ASC') ? 'Oldest (update)' : 'Newest (update)';
-                    break;
-                case 'Name':
-                    label = (sortByColumn.sortOrder === 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
-                    break;
-                case 'Type':
-                    label = (sortByColumn.sortOrder === 'ASC') ? 'Type (a - z)' : 'Type (z - a)';
-                    break;
+            case 'Updated':
+                label = (sortByColumn.sortOrder === 'ASC') ? 'Oldest (update)' : 'Newest (update)';
+                break;
+            case 'Name':
+                label = (sortByColumn.sortOrder === 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
+                break;
+            case 'Type':
+                label = (sortByColumn.sortOrder === 'ASC') ? 'Type (a - z)' : 'Type (z - a)';
+                break;
+            default:
+                break;
             }
             return label;
         }
@@ -377,15 +377,17 @@ NfRegistryService.prototype = {
     generateSortMenuLabels: function (col) {
         var label = '';
         switch (col.label) {
-            case 'Updated':
-                label = (col.sortOrder !== 'ASC') ? 'Oldest (update)' : 'Newest (update)';
-                break;
-            case 'Name':
-                label = (col.sortOrder !== 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
-                break;
-            case 'Type':
-                label = (col.sortOrder !== 'ASC') ? 'Type (a - z)' : 'Type (z - a)';
-                break;
+        case 'Updated':
+            label = (col.sortOrder !== 'ASC') ? 'Oldest (update)' : 'Newest (update)';
+            break;
+        case 'Name':
+            label = (col.sortOrder !== 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
+            break;
+        case 'Type':
+            label = (col.sortOrder !== 'ASC') ? 'Type (a - z)' : 'Type (z - a)';
+            break;
+        default:
+            break;
         }
         return label;
     },
@@ -410,9 +412,9 @@ NfRegistryService.prototype = {
                     if (accept) {
                         self.api.deleteDroplet(droplet.link.href).subscribe(function (response) {
                             self.droplets = self.droplets.filter(function (d) {
-                                return (d.identifier !== droplet.identifier) ? true : false
+                                return (d.identifier !== droplet.identifier);
                             });
-                            var snackBarRef = self.snackBarService.openCoaster({
+                            self.snackBarService.openCoaster({
                                 title: 'Success',
                                 message: 'All versions of this ' + droplet.type.toLowerCase() + ' have been deleted.',
                                 verticalPosition: 'bottom',
@@ -425,7 +427,8 @@ NfRegistryService.prototype = {
                             self.filterDroplets();
                         });
                     }
-                });
+                }
+            );
         }
     },
 
@@ -437,7 +440,7 @@ NfRegistryService.prototype = {
     getDropletSnapshotMetadata: function (droplet) {
         this.api.getDropletSnapshotMetadata(droplet.link.href, true).subscribe(function (snapshotMetadata) {
             droplet.snapshotMetadata = snapshotMetadata;
-        })
+        });
     },
 
     /**
@@ -448,7 +451,9 @@ NfRegistryService.prototype = {
     sortDroplets: function (column) {
         if (column.sortable === true) {
             // toggle column sort order
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
+
             this.filterDroplets(column.name, sortOrder);
             //only one column can be actively sorted so we reset all to inactive
             this.dropletColumns.forEach(function (c) {
@@ -469,7 +474,7 @@ NfRegistryService.prototype = {
     filterDroplets: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
@@ -516,7 +521,7 @@ NfRegistryService.prototype = {
         this.dropletColumns.forEach(function (c) {
             return self.filteredDroplets.forEach(function (r) {
                 return (r[c.name.toLowerCase()]) ? self.autoCompleteDroplets.push(r[c.name.toLowerCase()].toString()) : '';
-            })
+            });
         });
     },
 
@@ -529,41 +534,42 @@ NfRegistryService.prototype = {
     executeBucketAction: function (action, bucket) {
         var self = this;
         switch (action.name.toLowerCase()) {
-            case 'delete':
-                this.dialogService.openConfirm({
-                    title: 'Delete Bucket',
-                    message: 'All items stored in this bucket will be deleted as well.',
-                    cancelButton: 'Cancel',
-                    acceptButton: 'Delete',
-                    acceptButtonColor: 'fds-warn'
-                }).afterClosed().subscribe(
-                    function (accept) {
-                        if (accept) {
-                            self.api.deleteBucket(bucket.identifier).subscribe(function (response) {
-                                self.buckets = self.buckets.filter(function (b) {
-                                    return b.identifier !== bucket.identifier;
-                                });
-                                var snackBarRef = self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.bucket = {};
-                                self.filterBuckets();
-                                self.determineAllBucketsSelectedState();
+        case 'delete':
+            this.dialogService.openConfirm({
+                title: 'Delete Bucket',
+                message: 'All items stored in this bucket will be deleted as well.',
+                cancelButton: 'Cancel',
+                acceptButton: 'Delete',
+                acceptButtonColor: 'fds-warn'
+            }).afterClosed().subscribe(
+                function (accept) {
+                    if (accept) {
+                        self.api.deleteBucket(bucket.identifier).subscribe(function (response) {
+                            self.buckets = self.buckets.filter(function (b) {
+                                return b.identifier !== bucket.identifier;
                             });
-                        }
-                    });
-                break;
-            case 'manage':
-                this.router.navigateByUrl('/nifi-registry/administration/workflow(' + action.type + ':' + action.name + '/bucket/' + bucket.identifier + ')');
-                break;
-            default:
-                break;
+                            self.snackBarService.openCoaster({
+                                title: 'Success',
+                                message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
+                                verticalPosition: 'bottom',
+                                horizontalPosition: 'right',
+                                icon: 'fa fa-check-circle-o',
+                                color: '#1EB475',
+                                duration: 3000
+                            });
+                            self.bucket = {};
+                            self.filterBuckets();
+                            self.determineAllBucketsSelectedState();
+                        });
+                    }
+                }
+            );
+            break;
+        case 'manage':
+            this.router.navigateByUrl('/nifi-registry/administration/workflow(' + action.type + ':' + action.name + '/bucket/' + bucket.identifier + ')');
+            break;
+        default:
+            break;
         }
     },
 
@@ -576,7 +582,7 @@ NfRegistryService.prototype = {
     filterBuckets: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
 
         // if `sortBy` is `undefined` then find the first sortable column in this.bucketColumns
@@ -613,7 +619,7 @@ NfRegistryService.prototype = {
             }
         });
 
-        this.isMultiBucketActionsDisabled = (selected > 0) ? false : true;
+        this.isMultiBucketActionsDisabled = !((selected > 0));
 
         this.getAutoCompleteBuckets();
     },
@@ -639,7 +645,9 @@ NfRegistryService.prototype = {
     sortBuckets: function (column) {
         if (column.sortable === true) {
             // toggle column sort order
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
+
             this.filterBuckets(column.name, sortOrder);
             //only one column can be actively sorted so we reset all to inactive
             this.bucketColumns.forEach(function (c) {
@@ -673,7 +681,7 @@ NfRegistryService.prototype = {
         });
 
         this.disableMultiBucketDeleteAction = disableMultiBucketDeleteAction;
-        this.isMultiBucketActionsDisabled = (selected > 0) ? false : true;
+        this.isMultiBucketActionsDisabled = !((selected > 0));
         return allSelected;
     },
 
@@ -769,7 +777,7 @@ NfRegistryService.prototype = {
                                 self.buckets = self.buckets.filter(function (bucket) {
                                     return bucket.identifier !== filteredBucket.identifier;
                                 });
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'All versions of all items in ' + filteredBucket.name + ' have been deleted.',
                                     verticalPosition: 'bottom',
@@ -784,7 +792,8 @@ NfRegistryService.prototype = {
                     });
                     self.determineAllBucketsSelectedState();
                 }
-            });
+            }
+        );
     },
 
     /**
@@ -795,7 +804,9 @@ NfRegistryService.prototype = {
     sortUsersAndGroups: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
+
             this.filterUsersAndGroups(sortBy, sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
@@ -842,7 +853,7 @@ NfRegistryService.prototype = {
     filterUsersAndGroups: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
@@ -981,6 +992,7 @@ NfRegistryService.prototype = {
         this.userColumns.forEach(function (c) {
             var usersAndGroups = self.filteredUsers.concat(self.filteredUserGroups);
             usersAndGroups.forEach(function (r) {
+                // eslint-disable-next-line no-unused-expressions
                 (r[c.name.toLowerCase()]) ? self.autoCompleteUsersAndGroups.push(r[c.name.toLowerCase()].toString()) : '';
             });
         });
@@ -996,40 +1008,40 @@ NfRegistryService.prototype = {
         var self = this;
         this.user = user;
         switch (action.name.toLowerCase()) {
-            case 'delete':
-                return this.dialogService.openConfirm({
-                    title: 'Delete User',
-                    message: 'This user will lose all access to the registry.',
-                    cancelButton: 'Cancel',
-                    acceptButton: 'Delete',
-                    acceptButtonColor: 'fds-warn'
-                }).afterClosed().subscribe(
-                    function (accept) {
-                        if (accept) {
-                            self.api.deleteUser(user.identifier).subscribe(function (response) {
-                                self.users = self.users.filter(function (u) {
-                                    return u.identifier !== user.identifier;
-                                });
-                                var snackBarRef = self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'User: ' + user.identity + ' has been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.filterUsersAndGroups();
-                                self.determineAllUsersAndGroupsSelectedState();
+        case 'delete':
+            return this.dialogService.openConfirm({
+                title: 'Delete User',
+                message: 'This user will lose all access to the registry.',
+                cancelButton: 'Cancel',
+                acceptButton: 'Delete',
+                acceptButtonColor: 'fds-warn'
+            }).afterClosed().subscribe(
+                function (accept) {
+                    if (accept) {
+                        self.api.deleteUser(user.identifier).subscribe(function (response) {
+                            self.users = self.users.filter(function (u) {
+                                return u.identifier !== user.identifier;
                             });
-                        }
-                    });
-                break;
-            case 'manage':
-                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/user/' + user.identifier + ')');
-                break;
-            default:
-                break;
+                            self.snackBarService.openCoaster({
+                                title: 'Success',
+                                message: 'User: ' + user.identity + ' has been deleted.',
+                                verticalPosition: 'bottom',
+                                horizontalPosition: 'right',
+                                icon: 'fa fa-check-circle-o',
+                                color: '#1EB475',
+                                duration: 3000
+                            });
+                            self.filterUsersAndGroups();
+                            self.determineAllUsersAndGroupsSelectedState();
+                        });
+                    }
+                }
+            );
+        case 'manage':
+            this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/user/' + user.identifier + ')');
+            break;
+        default:
+            break;
         }
     },
 
@@ -1043,40 +1055,41 @@ NfRegistryService.prototype = {
         var self = this;
         this.group = group;
         switch (action.name.toLowerCase()) {
-            case 'delete':
-                this.dialogService.openConfirm({
-                    title: 'Delete Group',
-                    message: 'All policies granted to this group will be deleted as well.',
-                    cancelButton: 'Cancel',
-                    acceptButton: 'Delete',
-                    acceptButtonColor: 'fds-warn'
-                }).afterClosed().subscribe(
-                    function (accept) {
-                        if (accept) {
-                            self.api.deleteUserGroup(group.identifier).subscribe(function (response) {
-                                self.groups = self.groups.filter(function (u) {
-                                    return u.identifier !== group.identifier;
-                                });
-                                var snackBarRef = self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'Group: ' + group.identity + ' has been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.filterUsersAndGroups();
-                                self.determineAllUsersAndGroupsSelectedState();
+        case 'delete':
+            this.dialogService.openConfirm({
+                title: 'Delete Group',
+                message: 'All policies granted to this group will be deleted as well.',
+                cancelButton: 'Cancel',
+                acceptButton: 'Delete',
+                acceptButtonColor: 'fds-warn'
+            }).afterClosed().subscribe(
+                function (accept) {
+                    if (accept) {
+                        self.api.deleteUserGroup(group.identifier).subscribe(function (response) {
+                            self.groups = self.groups.filter(function (u) {
+                                return u.identifier !== group.identifier;
                             });
-                        }
-                    });
-                break;
-            case 'manage':
-                this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/group/' + group.identifier + ')');
-                break;
-            default:
-                break;
+                            self.snackBarService.openCoaster({
+                                title: 'Success',
+                                message: 'Group: ' + group.identity + ' has been deleted.',
+                                verticalPosition: 'bottom',
+                                horizontalPosition: 'right',
+                                icon: 'fa fa-check-circle-o',
+                                color: '#1EB475',
+                                duration: 3000
+                            });
+                            self.filterUsersAndGroups();
+                            self.determineAllUsersAndGroupsSelectedState();
+                        });
+                    }
+                }
+            );
+            break;
+        case 'manage':
+            this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/group/' + group.identifier + ')');
+            break;
+        default:
+            break;
         }
     },
 
@@ -1101,7 +1114,7 @@ NfRegistryService.prototype = {
                                 self.groups = self.groups.filter(function (u) {
                                     return u.identifier !== filteredUserGroup.identifier;
                                 });
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'User group: ' + filteredUserGroup.identity + ' has been deleted.',
                                     verticalPosition: 'bottom',
@@ -1120,7 +1133,7 @@ NfRegistryService.prototype = {
                                 self.users = self.users.filter(function (u) {
                                     return u.identifier !== filteredUser.identifier;
                                 });
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'User: ' + filteredUser.identity + ' has been deleted.',
                                     verticalPosition: 'bottom',
@@ -1135,7 +1148,8 @@ NfRegistryService.prototype = {
                     });
                     self.determineAllUsersAndGroupsSelectedState();
                 }
-            });
+            }
+        );
     },
 
 
@@ -1149,7 +1163,7 @@ NfRegistryService.prototype = {
      */
     experimental_filterData: function (data, searchTerm, ignoreCase) {
         var field = '';
-        if (searchTerm.indexOf(":") > -1) {
+        if (searchTerm.indexOf(':') > -1) {
             field = searchTerm.split(':')[0].trim();
             searchTerm = searchTerm.split(':')[1].trim();
         }
@@ -1177,10 +1191,10 @@ NfRegistryService.prototype = {
 NfRegistryService.parameters = [
     NfRegistryApi,
     NfStorage,
-    covalentCore.TdDataTableService,
-    ngRouter.Router,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService
+    TdDataTableService,
+    Router,
+    FdsDialogService,
+    FdsSnackBarService
 ];
 
-module.exports = NfRegistryService;
+export default NfRegistryService;

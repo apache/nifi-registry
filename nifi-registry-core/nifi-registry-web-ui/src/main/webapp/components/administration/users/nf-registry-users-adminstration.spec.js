@@ -15,123 +15,64 @@
  * limitations under the License.
  */
 
-var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var ngCoreTesting = require('@angular/core/testing');
-var ngCommonHttpTesting = require('@angular/common/http/testing');
-var ngCommon = require('@angular/common');
-var ngRouter = require('@angular/router');
-var ngPlatformBrowser = require('@angular/platform-browser');
-var NfRegistry = require('nifi-registry/nf-registry.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var fdsCore = require('@flow-design-system/core');
-var ngMoment = require('angular2-moment');
-var rxjs = require('rxjs/Rx');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
+import { TestBed, fakeAsync, tick, async } from '@angular/core/testing';
+import initTestBed from 'nf-registry.testbed-factory';
+import { Observable } from 'rxjs';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute } from '@angular/router';
+
+import * as ngPlatformBrowser from '@angular/platform-browser';
+import NfRegistryUsersAdministration from 'components/administration/users/nf-registry-users-administration';
 
 describe('NfRegistryUsersAdministration Component', function () {
-    var comp;
-    var fixture;
-    var de;
-    var el;
-    var nfRegistryService;
-    var nfRegistryApi;
+    let comp;
+    let fixture;
+    let de;
+    let nfRegistryService;
+    let nfRegistryApi;
 
-    beforeEach(function () {
-        ngCoreTesting.TestBed.configureTestingModule({
-            imports: [
-                ngMoment.MomentModule,
-                ngCommonHttp.HttpClientModule,
-                fdsCore,
-                NfRegistryRoutes,
-                ngCommonHttpTesting.HttpClientTestingModule
-            ],
-            declarations: [
-                NfRegistry,
-                NfRegistryExplorer,
-                NfRegistryAdministration,
-                NfRegistryUsersAdministration,
-                NfRegistryManageUser,
-                NfRegistryManageGroup,
-                NfRegistryManageBucket,
-                NfRegistryAddUser,
-                NfRegistryWorkflowAdministration,
-                NfRegistryCreateBucket,
-                NfRegistryGridListViewer,
-                NfRegistryBucketGridListViewer,
-                NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent,
-                NfLoginComponent,
-                NfUserLoginComponent
-            ],
-            entryComponents: [
-                NfRegistryCreateBucket
-            ],
-            providers: [
-                NfRegistryService,
-                NfRegistryApi,
-                NfStorage,
-                {
-                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
-                    useClass: NfRegistryTokenInterceptor,
-                    multi: true
-                },
-                {
-                    provide: ngCommon.APP_BASE_HREF,
-                    useValue: '/'
-                }, {
-                    provide: ngRouter.ActivatedRoute,
-                    useValue: {
-                        params: rxjs.Observable.of({})
-                    }
+    beforeEach((done) => {
+        const providers = [
+            {
+                provide: ActivatedRoute,
+                useValue: {
+                    params: Observable.of({})
                 }
-            ]
-        });
+            }
+        ];
 
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryUsersAdministration);
+        initTestBed({providers})
+            .then(() => {
+                fixture = TestBed.createComponent(NfRegistryUsersAdministration);
 
-        // test instance
-        comp = fixture.componentInstance;
+                // test instance
+                comp = fixture.componentInstance;
 
-        // from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-        nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
-        de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-users-administration-perspective'));
-        el = de.nativeElement;
+                // from the root injector
+                nfRegistryService = TestBed.get(NfRegistryService);
+                nfRegistryApi = TestBed.get(NfRegistryApi);
+                de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-users-administration-perspective'));
 
-        // Spy
-        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryApi, 'getUsers').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "identity": "User #1"
-        }]));
-        spyOn(nfRegistryApi, 'getUserGroups').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
-            "identifier": "5e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "identity": "Group #1"}]));
-        spyOn(nfRegistryService, 'filterUsersAndGroups');
+                // Spy
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'getUsers').and.callFake(function () {
+                }).and.returnValue(Observable.of([{
+                    'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+                    'identity': 'User #1'
+                }]));
+                spyOn(nfRegistryApi, 'getUserGroups').and.callFake(function () {
+                }).and.returnValue(Observable.of([{
+                    'identifier': '5e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+                    'identity': 'Group #1'}]));
+                spyOn(nfRegistryService, 'filterUsersAndGroups');
+
+                done();
+            });
     });
 
-    it('should have a defined component', ngCoreTesting.async(function () {
+    it('should have a defined component', async(function () {
         fixture.detectChanges();
         fixture.whenStable().then(function () { // wait for async getBuckets
             fixture.detectChanges();
@@ -150,7 +91,7 @@ describe('NfRegistryUsersAdministration Component', function () {
     }));
 
     it('should open a dialog to create a new user', function () {
-        spyOn(comp.dialog, 'open')
+        spyOn(comp.dialog, 'open');
         fixture.detectChanges();
 
         // the function to test
@@ -161,7 +102,7 @@ describe('NfRegistryUsersAdministration Component', function () {
     });
 
     it('should open a dialog to create a new group', function () {
-        spyOn(comp.dialog, 'open')
+        spyOn(comp.dialog, 'open');
         fixture.detectChanges();
 
         // the function to test
@@ -171,10 +112,10 @@ describe('NfRegistryUsersAdministration Component', function () {
         expect(comp.dialog.open).toHaveBeenCalled();
     });
 
-    it('should destroy the component', ngCoreTesting.fakeAsync(function () {
+    it('should destroy the component', fakeAsync(function () {
         fixture.detectChanges();
         // wait for async getBucket call
-        ngCoreTesting.tick();
+        tick();
         fixture.detectChanges();
 
         // The function to test

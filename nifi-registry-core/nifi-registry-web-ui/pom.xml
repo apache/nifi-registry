@@ -26,10 +26,8 @@
     <version>0.5.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <properties>
-        <staging.dir>${project.build.directory}/tmp</staging.dir>
-        <registry.filter>registry-min.properties</registry.filter>
         <frontend.source>${basedir}/src/main</frontend.source>
-        <frontend.dependency.configs>${basedir}/src/main/frontend</frontend.dependency.configs>
+        <frontend.dependency.configs>${basedir}/src/main</frontend.dependency.configs>
         <frontend.working.dir>${project.build.directory}/frontend-working-directory</frontend.working.dir>
         <frontend.assets>${project.build.directory}/${project.build.finalName}/node_modules</frontend.assets>
     </properties>
@@ -44,67 +42,27 @@
             pages will not be pre-compiled and will instead be filtered
             when the war is built.
         -->
-        <filters>
-            <filter>src/main/resources/filters/${registry.filter}</filter>
-        </filters>
         <plugins>
-            <!--
-                Precompile jsp's and add entries into the web.xml - the web.xml
-                is automatically places in ${project.build.directory}. Do not
-                precompile index.jsp, etc.
-                These jsp's need to have the artifacts version filtered in to
-                eliminate browser caching issues and set up the proper includes.
-                Since the webResource filter occurs after the precompilation we
-                must exclude them here.
-            -->
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jspc-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jspc</goal>
-                        </goals>
-                        <configuration>
-                            <keepSources>true</keepSources>
-                            <useProvidedScope>true</useProvidedScope>
-                            <excludes>
-                                **/index.jsp
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <!--
+                        By default the maven-war-plugin automatically includes everything
+                        from it's warSourceDirectory. Other plugins will be responsible for
+                        getting the desired content into the staging area. Set the warSourceDirectory
+                        to something that doesn't exist to bypass including everything
+                        from src/main/webapp (the default).
+                    -->
+                    <warSourceDirectory>${basedir}/src/main/war</warSourceDirectory>
+                    <webXml>${basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
-                    <!--
-                        Filter the web.xml that was generated from jspc to specify the
-                        NiFi Registry base directory. The plugin configuration is
-                        specified here while the execution's are defined below in the
-                        profiles to bind to the appropriate phase.
-                    -->
-                    <execution>
-                        <id>copy-web-xml</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${staging.dir}/WEB-INF</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>web.xml</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
                     <!--
                         Copy build and test configs into frontend working directory.
                     -->
@@ -121,7 +79,13 @@
                                     <directory>${frontend.dependency.configs}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>*</include>
+                                        <include>karma*.js</include>
+                                        <include>*.json</include>
+                                        <include>webpack.*.js</include>
+                                        <include>*-loader.js</include>
+                                        <include>.eslintignore</include>
+                                        <include>.eslintrc.js</include>
+                                        <include>.stylelintrc.js</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -145,12 +109,36 @@
                                     <includes>
                                         <include>locale/**/*</include>
                                         <include>webapp/**/*</include>
-                                        <include>platform/**/*</include>
                                     </includes>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
+
+                    <!--
+                        Copy license files
+                    -->
+                    <execution>
+                        <id>copy-license-files</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${frontend.working.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.source}/resources/META-INF</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
                     <!--
                         Stage client side node_modules dependencies for inclusion in .war.
                     -->
@@ -195,29 +183,6 @@
                         </configuration>
                     </execution>
                     <!--
-                        Stage client side styles.
-                    -->
-                    <execution>
-                        <id>copy-webapp-client-side-styles</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}/css</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}/webapp/css</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-
-                    <!--
                         Stage the final bundle of JS to be included in the .war
                     -->
                     <execution>
@@ -231,62 +196,24 @@
                             </outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${frontend.working.dir}/webapp</directory>
+                                    <directory>${frontend.working.dir}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>nf-registry.bundle.*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!--
-                        Stage the localization files to be included in the .war
-                    -->
-                    <execution>
-                        <id>copy-localization</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}/locale</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>*</include>
+                                        <include>nf-registry.bundle.min.*.js*</include>
+                                        <include>vendor.min.*.js*</include>
+                                        <include>nf-registry.style.min.*.css*</include>
+                                        <include>vendor.min.*.css*</include>
+                                        <include>index.html</include>
+                                        <include>assets/**/*</include>
+                                        <include>registry-favicon.png</include>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
                                     </includes>
                                 </resource>
                             </resources>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <!--
-                Tell the war plugin where to find the filtered web.xml and
-                filter the head portion of the pages. The correct includes and
-                project version is filtered into these jsp's as a browser cache
-                buster.
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webXml>${staging.dir}/WEB-INF/web.xml</webXml>
-                    <webResources>
-                        <resource>
-                            <directory>src/main/webapp/WEB-INF/pages</directory>
-                            <targetPath>WEB-INF/pages</targetPath>
-                            <includes>
-                                <include>index.jsp</include>
-                            </includes>
-                            <filtering>true</filtering>
-                        </resource>
-                    </webResources>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -324,30 +251,16 @@
                         </configuration>
                     </execution>
                     <!--
-                        Compile nifi registry web ui SASS into css and gzip compress it.
-                    -->
-                    <execution>
-                        <id>grunt-compile-web-ui-sass</id>
-                        <goals>
-                            <goal>grunt</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <arguments>compile-web-ui-styles</arguments>
-                            <workingDirectory>${frontend.working.dir}</workingDirectory>
-                        </configuration>
-                    </execution>
-                    <!--
                         Bundle, minify, and gzip compress all the javascript.
                     -->
                     <execution>
-                        <id>grunt-package-web-ui</id>
+                        <id>package-web-ui</id>
                         <goals>
-                            <goal>grunt</goal>
+                            <goal>npm</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>bundle-web-ui</arguments>
+                            <arguments>run build:webapp:bundle:production</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>
@@ -359,11 +272,14 @@
                 <configuration>
                     <excludes combine.children="append">
                         <exclude>nbactions.xml</exclude>
-                        <exclude>src/main/frontend/package.json</exclude>
-                        <exclude>src/main/frontend/package-lock.json</exclude>
+                        <exclude>src/main/package.json</exclude>
+                        <exclude>src/main/package-lock.json</exclude>
                         <exclude>src/main/platform/core/README.md</exclude>
-                        <exclude>src/main/frontend/karma-test-shim.js</exclude>
-                        <exclude>src/main/webapp/systemjs-angular-loader.js</exclude>
+                        <exclude>src/main/karma-test-shim.js</exclude>
+                        <exclude>src/main/node_modules/**/*</exclude>
+                        <exclude>src/main/**/*.min.*</exclude>
+                        <exclude>src/main/coverage/**/*</exclude>
+                        <exclude>src/main/.eslintignore</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -424,9 +340,6 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <properties>
-                <registry.filter>registry.properties</registry.filter>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -461,8 +374,6 @@
                                                 <include>superagent/**/*</include>
                                                 <include>querystring/**/*</include>
                                                 <include>tslib/**/*</include>
-                                                <include>systemjs/**/*</include>
-                                                <include>systemjs-plugin-text/**/*</include>
                                                 <include>jquery/**/*</include>
                                                 <include>roboto-fontface/**/*</include>
                                             </includes>

@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
+import { TdDataTableService } from '@covalent/core';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
+import template from './nf-registry-manage-group.html';
 
 /**
  * NfRegistryManageGroup constructor.
@@ -40,11 +41,11 @@ var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration
  */
 function NfRegistryManageGroup(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
     // local state
-    this.sortBy;
-    this.sortOrder;
+    this.sortBy = null;
+    this.sortOrder = null;
     this.filteredUsers = [];
     this.usersSearchTerms = [];
-    this._groupname = '';
+    this.groupname = '';
     this.manageGroupPerspective = 'membership';
     this.usersColumns = [
         {
@@ -65,7 +66,7 @@ function NfRegistryManageGroup(nfRegistryApi, nfRegistryService, tdDataTableServ
     this.dialogService = fdsDialogService;
     this.snackBarService = fdsSnackBarService;
     this.dataTableService = tdDataTableService;
-};
+}
 
 NfRegistryManageGroup.prototype = {
     constructor: NfRegistryManageGroup,
@@ -84,7 +85,7 @@ NfRegistryManageGroup.prototype = {
                 if (!response.status || response.status === 200) {
                     self.nfRegistryService.sidenav.open();
                     self.nfRegistryService.group = response;
-                    self._groupname = response.identity;
+                    self.groupname = response.identity;
                     self.filterUsers();
                 } else if (response.status === 404) {
                     self.router.navigateByUrl('/nifi-registry/administration/users');
@@ -118,7 +119,8 @@ NfRegistryManageGroup.prototype = {
     toggleGroupManageBucketsPrivileges: function ($event, policyAction) {
         var self = this;
         if ($event.checked) {
-            for (var resource in this.nfRegistryService.BUCKETS_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.BUCKETS_PRIVS) {
                 if (this.nfRegistryService.BUCKETS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.BUCKETS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -135,7 +137,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
@@ -150,7 +153,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -159,7 +163,8 @@ NfRegistryManageGroup.prototype = {
             }
         } else {
             // Remove the current group from the administrator resources
-            for (var resource in this.nfRegistryService.BUCKETS_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.BUCKETS_PRIVS) {
                 if (this.nfRegistryService.BUCKETS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.BUCKETS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -169,7 +174,7 @@ NfRegistryManageGroup.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current group and update it
                                     policy.userGroups = policy.userGroups.filter(function (group) {
-                                        return (group.identifier !== self.nfRegistryService.group.identifier) ? true : false;
+                                        return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
@@ -178,7 +183,8 @@ NfRegistryManageGroup.prototype = {
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.group = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -197,7 +203,8 @@ NfRegistryManageGroup.prototype = {
     toggleGroupManageTenantsPrivileges: function ($event, policyAction) {
         var self = this;
         if ($event.checked) {
-            for (var resource in this.nfRegistryService.TENANTS_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.TENANTS_PRIVS) {
                 if (this.nfRegistryService.TENANTS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.TENANTS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -214,7 +221,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
@@ -229,7 +237,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -238,7 +247,8 @@ NfRegistryManageGroup.prototype = {
             }
         } else {
             // Remove the current group from the administrator resources
-            for (var resource in this.nfRegistryService.TENANTS_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.TENANTS_PRIVS) {
                 if (this.nfRegistryService.TENANTS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.TENANTS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -248,7 +258,7 @@ NfRegistryManageGroup.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current group and update it
                                     policy.userGroups = policy.userGroups.filter(function (group) {
-                                        return (group.identifier !== self.nfRegistryService.group.identifier) ? true : false;
+                                        return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
@@ -257,7 +267,8 @@ NfRegistryManageGroup.prototype = {
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.group = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -276,7 +287,8 @@ NfRegistryManageGroup.prototype = {
     toggleGroupManagePoliciesPrivileges: function ($event, policyAction) {
         var self = this;
         if ($event.checked) {
-            for (var resource in this.nfRegistryService.POLICIES_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.POLICIES_PRIVS) {
                 if (this.nfRegistryService.POLICIES_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.POLICIES_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -293,7 +305,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
@@ -308,7 +321,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -317,7 +331,8 @@ NfRegistryManageGroup.prototype = {
             }
         } else {
             // Remove the current group from the administrator resources
-            for (var resource in this.nfRegistryService.POLICIES_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.POLICIES_PRIVS) {
                 if (this.nfRegistryService.POLICIES_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.POLICIES_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -327,7 +342,7 @@ NfRegistryManageGroup.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current group and update it
                                     policy.userGroups = policy.userGroups.filter(function (group) {
-                                        return (group.identifier !== self.nfRegistryService.group.identifier) ? true : false;
+                                        return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
@@ -336,7 +351,8 @@ NfRegistryManageGroup.prototype = {
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.group = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -355,7 +371,8 @@ NfRegistryManageGroup.prototype = {
     toggleGroupManageProxyPrivileges: function ($event, policyAction) {
         var self = this;
         if ($event.checked) {
-            for (var resource in this.nfRegistryService.PROXY_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.PROXY_PRIVS) {
                 if (this.nfRegistryService.PROXY_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.PROXY_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -372,7 +389,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
@@ -387,7 +405,8 @@ NfRegistryManageGroup.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -396,7 +415,8 @@ NfRegistryManageGroup.prototype = {
             }
         } else {
             // Remove the current group from the administrator resources
-            for (var resource in this.nfRegistryService.PROXY_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.PROXY_PRIVS) {
                 if (this.nfRegistryService.PROXY_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.PROXY_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -406,7 +426,7 @@ NfRegistryManageGroup.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current group and update it
                                     policy.userGroups = policy.userGroups.filter(function (group) {
-                                        return (group.identifier !== self.nfRegistryService.group.identifier) ? true : false;
+                                        return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
@@ -415,7 +435,8 @@ NfRegistryManageGroup.prototype = {
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.group = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -439,7 +460,7 @@ NfRegistryManageGroup.prototype = {
             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier)
                 .subscribe(function (response) {
                     self.nfRegistryService.group = response;
-                    self._groupname = response.identity;
+                    self.groupname = response.identity;
                     self.filterUsers();
                 });
         });
@@ -455,9 +476,9 @@ NfRegistryManageGroup.prototype = {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
             if (this.sortOrder === undefined) {
-                sortOrder = 'ASC'
+                sortOrder = 'ASC';
             } else {
-                sortOrder = this.sortOrder
+                sortOrder = this.sortOrder;
             }
         }
         // if `sortBy` is `undefined` then find the first sortable column in `usersColumns`
@@ -478,7 +499,7 @@ NfRegistryManageGroup.prototype = {
                     }
                 }
             } else {
-                sortBy = this.sortBy
+                sortBy = this.sortBy;
             }
         }
 
@@ -500,7 +521,8 @@ NfRegistryManageGroup.prototype = {
     sortUsers: function (column) {
         if (column.sortable) {
             this.sortBy = column.name;
-            this.sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            this.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = this.sortOrder;
             this.filterUsers(this.sortBy, this.sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
@@ -520,9 +542,7 @@ NfRegistryManageGroup.prototype = {
     removeUserFromGroup: function (user) {
         var self = this;
         var users = this.nfRegistryService.group.users.filter(function (u) {
-            if (u.identifier !== user.identifier) {
-                return u;
-            }
+            return u.identifier !== user.identifier;
         });
 
         this.nfRegistryApi.updateUserGroup(this.nfRegistryService.group.identifier, this.nfRegistryService.group.identity, users).subscribe(function (response) {
@@ -531,7 +551,7 @@ NfRegistryManageGroup.prototype = {
                     self.nfRegistryService.group = response;
                     self.filterUsers();
                 });
-            var snackBarRef = self.snackBarService.openCoaster({
+            self.snackBarService.openCoaster({
                 title: 'Success',
                 message: 'The user has been removed from the ' + self.nfRegistryService.group.identity + ' group.',
                 verticalPosition: 'bottom',
@@ -554,11 +574,11 @@ NfRegistryManageGroup.prototype = {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.group = response;
                 self.nfRegistryService.groups.filter(function (group) {
-                    if (self.nfRegistryService.group.identifier === group.identifier) {
-                        group.identity = response.identity;
-                    }
+                    return self.nfRegistryService.group.identifier === group.identifier;
+                }).forEach(function (group) {
+                    group.identity = response.identity;
                 });
-                var snackBarRef = self.snackBarService.openCoaster({
+                self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'This group name has been updated.',
                     verticalPosition: 'bottom',
@@ -568,7 +588,7 @@ NfRegistryManageGroup.prototype = {
                     duration: 3000
                 });
             } else if (response.status === 409) {
-                self._groupname = self.nfRegistryService.group.identity;
+                self.groupname = self.nfRegistryService.group.identity;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: 'This group already exists. Please enter a different identity/group name.',
@@ -583,27 +603,27 @@ NfRegistryManageGroup.prototype = {
      * Determine if 'Special Privileges' can be edited.
      * @returns {boolean}
      */
-    canEditSpecialPrivileges: function() {
+    canEditSpecialPrivileges: function () {
         return this.nfRegistryService.currentUser.resourcePermissions.policies.canWrite
                 && this.nfRegistryService.registry.config.supportsConfigurableAuthorizer;
     }
 };
 
 NfRegistryManageGroup.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-manage-group.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryManageGroup.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    covalentCore.TdDataTableService,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    ngMaterial.MatDialog
+    TdDataTableService,
+    FdsDialogService,
+    FdsSnackBarService,
+    ActivatedRoute,
+    Router,
+    MatDialog
 ];
 
-module.exports = NfRegistryManageGroup;
+export default NfRegistryManageGroup;

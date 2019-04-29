@@ -15,42 +15,15 @@
  * limitations under the License.
  */
 
-#nf-registry-droplet-filter-clear-grouping-button-container {
-    height: 36px;
-    line-height: 36px;
-}
+require('babel-polyfill');
 
-#nf-registry-droplet-filter-clear-grouping-button-container i {
-    color: $red2;
-}
+// /*global jasmine, __karma__, window*/
+Error.stackTraceLimit = 0; // "No stacktrace"" is usually best for app testing.
 
-#droplet-sort-by-field {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: end;
-    width: 105px;
-}
+// Uncomment to get full stacktrace output. Sometimes helpful, usually not.
+// Error.stackTraceLimit = Infinity; //
 
-#nifi-registry-explorer-grid-list-viewer-droplet-container-details {
-    position: relative;
-}
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
 
-#nifi-registry-explorer-grid-list-viewer-droplet-container-details-change-log {
-    position: relative;
-    top: 10px;
-    left: 0;
-    max-height: 500px;
-    overflow: auto;
-}
-
-button.nf-registry-change-log-refresh.mat-icon-button {
-    position: absolute;
-    top: 36px;
-}
-
-.nf-registry-droplet-description {
-    max-height: 316px;
-    overflow: auto;
-    margin-bottom: 0;
-}
+var webappContext = require.context('./webapp', true, /spec\.js$/);
+webappContext.keys().forEach(webappContext);

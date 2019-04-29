@@ -14,17 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var rxjs = require('rxjs/Observable');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var ngRouter = require('@angular/router');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var ngMaterial = require('@angular/material');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
+
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import { Observable } from 'rxjs';
+import nfRegistryAnimations from 'nf-registry.animations';
+import NfStorage from 'services/nf-storage.service';
+import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
+import NfRegistryAddUser from 'components/administration/users/dialogs/add-user/nf-registry-add-user';
+import template from './nf-registry-users-administration.html';
 
 /**
  * NfRegistryUsersAdministration constructor.
@@ -47,7 +49,7 @@ function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryServi
     this.dialogService = fdsDialogService;
     this.dialog = matDialog;
     this.router = router;
-};
+}
 
 NfRegistryUsersAdministration.prototype = {
     constructor: NfRegistryUsersAdministration,
@@ -61,7 +63,7 @@ NfRegistryUsersAdministration.prototype = {
         this.$subscription = this.route.params
             .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'users';
-                return new rxjs.Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -93,8 +95,10 @@ NfRegistryUsersAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
-        this.nfRegistryService.users = this.nfRegistryService.filteredUsers = [];
-        this.nfRegistryService.groups = this.nfRegistryService.filteredUserGroups = [];
+        this.nfRegistryService.users = [];
+        this.nfRegistryService.filteredUsers = [];
+        this.nfRegistryService.groups = [];
+        this.nfRegistryService.filteredUserGroups = [];
         this.nfRegistryService.allUsersAndGroupsSelected = false;
         this.$subscription.unsubscribe();
     },
@@ -128,8 +132,8 @@ NfRegistryUsersAdministration.prototype = {
 };
 
 NfRegistryUsersAdministration.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-users-administration.html!text'),
+    new Component({
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
@@ -141,10 +145,10 @@ NfRegistryUsersAdministration.parameters = [
     NfRegistryApi,
     NfStorage,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    fdsDialogsModule.FdsDialogService,
-    ngMaterial.MatDialog
+    ActivatedRoute,
+    Router,
+    FdsDialogService,
+    MatDialog
 ];
 
-module.exports = NfRegistryUsersAdministration;
+export default NfRegistryUsersAdministration;

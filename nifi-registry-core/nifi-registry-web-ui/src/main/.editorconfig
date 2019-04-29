@@ -13,14 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-nf.registry.script.tags=<script src="nifi-registry/node_modules/systemjs/dist/system.src.js"></script>\n\
-<script src="nifi-registry/systemjs.spec.config.js?${project.version}"></script>\n\
-<script>\n\
-// bootstrap the app\n\
-System.import('nifi-registry/nf-registry-bootstrap.js?${project.version}').catch(function(err) {\n\
-console.error(err);\n\
-});\n\
-</script>
-nf.registry.style.tags=<link rel="stylesheet" href="nifi-registry/node_modules/@covalent/core/common/platform.css?${project.version}">\n\
-<link rel="stylesheet" href='nifi-registry/node_modules/@nifi-fds/core/common/styles/css/flow-design-system.min.css?${project.version}'/>\n\
-<link rel="stylesheet" href='nifi-registry/css/nf-registry.min.css?${project.version}'/>
+# Editor configuration, see https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.md]
+max_line_length = off
+trim_trailing_whitespace = false

@@ -16,28 +16,28 @@
  */
 
 body {
-  background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+  background: $grey12 url('/nifi-registry/assets/images/registry-logo-web-app.svg') no-repeat center center;
   background-size: 40%;
 }
 
 #nifi-registry-login-perspective {
-  background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+  background: $grey12 url('/nifi-registry/assets/images/registry-logo-web-app.svg') no-repeat center center;
   background-size: 40%;
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 #nifi-registry-not-found-perspective {
-  background: $grey12 url('/nifi-registry/images/registry-logo-web-app.svg') no-repeat center center;
+  background: $grey12 url('/nifi-registry/assets/images/registry-logo-web-app.svg') no-repeat center center;
   background-size: 40%;
   position: absolute;
-  top: 0px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 #nf-registry-app-container {
@@ -57,7 +57,7 @@ body {
   width: 14px;
   position: relative;
   left: 9px;
-  color: #FFFFFF;
+  color: #fff;
   font-size: 9px;
   text-align: center;
   line-height: 14px;
@@ -65,7 +65,6 @@ body {
 
 #nifi-registry-toolbar {
   min-width: 1045px;
-  background-color: #FFFFFF;
   position: absolute;
   z-index: 1000;
   background: $grey11;
@@ -77,11 +76,17 @@ body {
   margin: 0;
 }
 
-#nifi-registry-toolbar .mat-select-value-text, #nifi-registry-toolbar .mat-select-arrow {
+#nifi-registry-toolbar .mat-select-value-text,
+#nifi-registry-toolbar .mat-select-arrow {
   color: white;
 }
 
-#nifi-registry-toolbar span, #nifi-registry-toolbar .link {
+body[fds] .td-chip span {
+    font-size: 10px;
+}
+
+#nifi-registry-toolbar span,
+#nifi-registry-toolbar .link {
   color: $grey5;
   font-weight: lighter;
 }
@@ -89,9 +94,9 @@ body {
 #nf-registry-perspectives-container {
   position: absolute;
   top: 64px;
-  left: 0px;
-  right: 0px;
-  bottom: 0px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   min-height: 370px;
   min-width: 1045px;
   overflow: auto;
@@ -133,14 +138,14 @@ mat-sidenav {
   position: absolute;
   bottom: 60px;
   top: 80px;
-  right: 0px;
-  left: 0px;
+  right: 0;
+  left: 0;
   overflow: auto;
 }
 
 .field-header {
   font-size: 11px;
-  color: #999999;
+  color: #999;
   font-weight: 300;
   margin-bottom: 6px;
   text-transform: uppercase;
@@ -157,10 +162,6 @@ body[fds] .md-title {
 
 body[fds] .md-subhead {
   font-weight: lighter;
-}
-
-body[fds] .td-chip span {
-  font-size: 10px;
 }
 
 body[fds] div .td-data-table {

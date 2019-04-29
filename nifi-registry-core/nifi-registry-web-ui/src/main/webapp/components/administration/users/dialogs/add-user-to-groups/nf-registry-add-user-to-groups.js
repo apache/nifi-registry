@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngCore = require('@angular/core');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngMaterial = require('@angular/material');
-var $ = require('jquery');
+import { TdDataTableService } from '@covalent/core';
+import NfRegistryApi from 'services/nf-registry.api';
+import { Component } from '@angular/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import NfRegistryService from 'services/nf-registry.service';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import $ from 'jquery';
+
+import template from './nf-registry-add-user-to-groups.html';
 
 /**
  * NfRegistryAddUserToGroups constructor.
@@ -59,7 +61,7 @@ function NfRegistryAddUserToGroups(nfRegistryApi, tdDataTableService, nfRegistry
             width: 100
         }
     ];
-};
+}
 
 NfRegistryAddUserToGroups.prototype = {
     constructor: NfRegistryAddUserToGroups,
@@ -73,12 +75,12 @@ NfRegistryAddUserToGroups.prototype = {
         // filter out any groups that
         // 1) that are not configurable
         self.groups = self.groups.filter(function (group) {
-            return (group.configurable) ? true : false
+            return !!(group.configurable);
         });
         // 2) the user already belongs to
         this.data.user.userGroups.forEach(function (userGroup) {
             self.groups = self.groups.filter(function (group) {
-                return (group.identifier !== userGroup.identifier) ? true : false
+                return (group.identifier !== userGroup.identifier);
             });
         });
 
@@ -96,7 +98,7 @@ NfRegistryAddUserToGroups.prototype = {
     filterGroups: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
@@ -134,7 +136,8 @@ NfRegistryAddUserToGroups.prototype = {
     sortUserGroups: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
             this.filterGroups(sortBy, sortOrder);
         }
     },
@@ -215,7 +218,7 @@ NfRegistryAddUserToGroups.prototype = {
             selectedGroup.users.push(self.data.user);
             self.nfRegistryApi.updateUserGroup(selectedGroup.identifier, selectedGroup.identity, selectedGroup.users).subscribe(function (group) {
                 self.dialogRef.close();
-                var snackBarRef = self.snackBarService.openCoaster({
+                self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'User has been added to the ' + group.identity + ' group.',
                     verticalPosition: 'bottom',
@@ -237,18 +240,18 @@ NfRegistryAddUserToGroups.prototype = {
 };
 
 NfRegistryAddUserToGroups.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-add-user-to-groups.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryAddUserToGroups.parameters = [
     NfRegistryApi,
-    covalentCore.TdDataTableService,
+    TdDataTableService,
     NfRegistryService,
-    ngMaterial.MatDialogRef,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngMaterial.MAT_DIALOG_DATA
+    MatDialogRef,
+    FdsSnackBarService,
+    MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryAddUserToGroups;
+export default NfRegistryAddUserToGroups;

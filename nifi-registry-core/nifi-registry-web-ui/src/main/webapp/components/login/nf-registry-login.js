@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var ngMaterial = require('@angular/material');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
+
+import { Component } from '@angular/core';
+import { MatDialog } from '@angular/material';
+import NfRegistryService from 'services/nf-registry.service';
+import nfRegistryAnimations from 'nf-registry.animations';
+import NfUserLoginComponent from 'components/login/dialogs/nf-registry-user-login';
+import template from './nf-registry-login.html';
 
 /**
  * NfLoginComponent constructor.
@@ -30,7 +32,7 @@ function NfLoginComponent(nfRegistryService, matDialog) {
     // Services
     this.nfRegistryService = nfRegistryService;
     this.dialog = matDialog;
-};
+}
 
 NfLoginComponent.prototype = {
     constructor: NfLoginComponent,
@@ -47,8 +49,8 @@ NfLoginComponent.prototype = {
 };
 
 NfLoginComponent.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-login.html!text'),
+    new Component({
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
@@ -58,7 +60,7 @@ NfLoginComponent.annotations = [
 
 NfLoginComponent.parameters = [
     NfRegistryService,
-    ngMaterial.MatDialog
+    MatDialog
 ];
 
-module.exports = NfLoginComponent;
+export default NfLoginComponent;

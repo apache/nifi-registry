@@ -15,38 +15,16 @@
  * limitations under the License.
  */
 
-var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var ngCoreTesting = require('@angular/core/testing');
-var ngCommonHttpTesting = require('@angular/common/http/testing');
-var ngCommon = require('@angular/common');
-var NfRegistry = require('nifi-registry/nf-registry.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var fdsCore = require('@flow-design-system/core');
-var ngMoment = require('angular2-moment');
-var rxjs = require('rxjs/Rx');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var ngRouter = require('@angular/router');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
+import { TestBed } from '@angular/core/testing';
+import initTestBed from 'nf-registry.testbed-factory';
+import { Observable } from 'rxjs';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import { Router } from '@angular/router';
+import fdsDialogsModule from '@flow-design-system/dialogs';
 
 describe('NfRegistry Service isolated unit tests', function () {
-    var nfRegistryService;
+    let nfRegistryService;
 
     beforeEach(function () {
         nfRegistryService = new NfRegistryService({}, {}, {}, {});
@@ -65,7 +43,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         nfRegistryService.dropletColumns[0].active = true;
 
         // The function to test
-        var label = nfRegistryService.getSortByLabel();
+        const label = nfRegistryService.getSortByLabel();
 
         //assertions
         expect(label).toBe('Name (z - a)');
@@ -77,7 +55,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         nfRegistryService.dropletColumns[0].sortOrder = 'ASC';
 
         // The function to test
-        var label = nfRegistryService.getSortByLabel();
+        const label = nfRegistryService.getSortByLabel();
 
         //assertions
         expect(label).toBe('Name (a - z)');
@@ -89,7 +67,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         nfRegistryService.dropletColumns[1].active = true;
 
         // The function to test
-        var label = nfRegistryService.getSortByLabel();
+        const label = nfRegistryService.getSortByLabel();
 
         //assertions
         expect(label).toBe('Newest (update)');
@@ -102,7 +80,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         nfRegistryService.dropletColumns[1].sortOrder = 'ASC';
 
         // The function to test
-        var label = nfRegistryService.getSortByLabel();
+        const label = nfRegistryService.getSortByLabel();
 
         //assertions
         expect(label).toBe('Oldest (update)');
@@ -110,7 +88,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
     it('should generate the sort menu\'s `Name (a - z)` label', function () {
         // The function to test
-        var label = nfRegistryService.generateSortMenuLabels({name: 'name', label: 'Name', sortable: true});
+        const label = nfRegistryService.generateSortMenuLabels({name: 'name', label: 'Name', sortable: true});
 
         //assertions
         expect(label).toBe('Name (a - z)');
@@ -118,7 +96,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
     it('should generate the sort menu\'s `Name (z - a)` label', function () {
         // The function to test
-        var label = nfRegistryService.generateSortMenuLabels({
+        const label = nfRegistryService.generateSortMenuLabels({
             name: 'name',
             label: 'Name',
             sortable: true,
@@ -131,7 +109,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
     it('should generate the sort menu\'s `Oldest (update)` label', function () {
         // The function to test
-        var label = nfRegistryService.generateSortMenuLabels({name: 'updated', label: 'Updated', sortable: true});
+        const label = nfRegistryService.generateSortMenuLabels({name: 'updated', label: 'Updated', sortable: true});
 
         //assertions
         expect(label).toBe('Oldest (update)');
@@ -139,7 +117,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
     it('should generate the sort menu\'s `Newest (update)` label', function () {
         // The function to test
-        var label = nfRegistryService.generateSortMenuLabels({
+        const label = nfRegistryService.generateSortMenuLabels({
             name: 'updated',
             label: 'Updated',
             sortable: true,
@@ -156,14 +134,14 @@ describe('NfRegistry Service isolated unit tests', function () {
         });
 
         // object to be updated by the test
-        var column = {name: 'name', label: 'Name', sortable: true};
+        const column = {name: 'name', label: 'Name', sortable: true};
 
         // The function to test
         nfRegistryService.sortDroplets(column);
 
         //assertions
         expect(column.active).toBe(true);
-        var filterDropletsCall = nfRegistryService.filterDroplets.calls.first();
+        const filterDropletsCall = nfRegistryService.filterDroplets.calls.first();
         expect(filterDropletsCall.args[0]).toBe('name');
         expect(filterDropletsCall.args[1]).toBe('ASC');
         expect(nfRegistryService.activeDropletColumn).toBe(column);
@@ -175,14 +153,14 @@ describe('NfRegistry Service isolated unit tests', function () {
         });
 
         // object to be updated by the test
-        var column = {name: 'name', label: 'Bucket Name', sortable: true};
+        const column = {name: 'name', label: 'Bucket Name', sortable: true};
 
         // The function to test
         nfRegistryService.sortBuckets(column);
 
         //assertions
         expect(column.active).toBe(true);
-        var filterBucketsCall = nfRegistryService.filterBuckets.calls.first();
+        const filterBucketsCall = nfRegistryService.filterBuckets.calls.first();
         expect(filterBucketsCall.args[0]).toBe('name');
         expect(filterBucketsCall.args[1]).toBe('ASC');
     });
@@ -193,7 +171,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         });
 
         // object to be updated by the test
-        var column = {
+        const column = {
             name: 'identity',
             label: 'Display Name',
             sortable: true
@@ -204,7 +182,7 @@ describe('NfRegistry Service isolated unit tests', function () {
 
         //assertions
         expect(column.active).toBe(true);
-        var filterUsersAndGroupsCall = nfRegistryService.filterUsersAndGroups.calls.first();
+        const filterUsersAndGroupsCall = nfRegistryService.filterUsersAndGroups.calls.first();
         expect(filterUsersAndGroupsCall.args[0]).toBe('identity');
         expect(filterUsersAndGroupsCall.args[1]).toBe('ASC');
     });
@@ -282,7 +260,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         }];
 
         // The function to test
-        var allSelected = nfRegistryService.allFilteredBucketsSelected();
+        const allSelected = nfRegistryService.allFilteredBucketsSelected();
 
         //assertions
         expect(allSelected).toBe(false);
@@ -304,7 +282,7 @@ describe('NfRegistry Service isolated unit tests', function () {
         }];
 
         // The function to test
-        var allSelected = nfRegistryService.allFilteredBucketsSelected();
+        const allSelected = nfRegistryService.allFilteredBucketsSelected();
 
         //assertions
         expect(allSelected).toBe(true);
@@ -665,8 +643,8 @@ describe('NfRegistry Service isolated unit tests', function () {
         }];
 
         // The function to test
-        var selectedGroups = nfRegistryService.getSelectedGroups();
-        var selectedUsers = nfRegistryService.getSelectedUsers();
+        const selectedGroups = nfRegistryService.getSelectedGroups();
+        const selectedUsers = nfRegistryService.getSelectedUsers();
 
         //assertions
         expect(selectedUsers.length).toBe(2);
@@ -675,75 +653,39 @@ describe('NfRegistry Service isolated unit tests', function () {
 });
 
 describe('NfRegistry Service w/ Angular testing utils', function () {
-    var nfRegistryService;
-    var nfRegistryApi;
+    let nfRegistryService;
+    let nfRegistryApi;
 
-    beforeEach(function () {
-        ngCoreTesting.TestBed.configureTestingModule({
-            imports: [
-                ngMoment.MomentModule,
-                ngCommonHttp.HttpClientModule,
-                fdsCore,
-                NfRegistryRoutes,
-                ngCommonHttpTesting.HttpClientTestingModule
-            ],
-            declarations: [
-                NfRegistry,
-                NfRegistryExplorer,
-                NfRegistryAdministration,
-                NfRegistryUsersAdministration,
-                NfRegistryManageUser,
-                NfRegistryManageGroup,
-                NfRegistryManageBucket,
-                NfRegistryAddUser,
-                NfRegistryWorkflowAdministration,
-                NfRegistryGridListViewer,
-                NfRegistryBucketGridListViewer,
-                NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent,
-                NfLoginComponent,
-                NfUserLoginComponent
-            ],
-            providers: [
-                NfRegistryService,
-                NfRegistryApi,
-                NfStorage,
-                {
-                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
-                    useClass: NfRegistryTokenInterceptor,
-                    multi: true
-                },
-                {
-                    provide: ngCommon.APP_BASE_HREF,
-                    useValue: '/'
-                }
-            ],
-            bootstrap: [NfRegistry]
-        });
-        // from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-        nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
+    beforeEach((done) => {
+        initTestBed()
+            .then(() => {
+                // from the root injector
+                nfRegistryService = TestBed.get(NfRegistryService);
+                nfRegistryApi = TestBed.get(NfRegistryApi);
 
-        // Spy
-        spyOn(nfRegistryApi.http, 'get').and.callFake(function () {
-        });
-        spyOn(nfRegistryApi.http, 'post').and.callFake(function () {
-        });
-        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({}));
+                // Spy
+                spyOn(nfRegistryApi.http, 'get').and.callFake(function () {
+                });
+                spyOn(nfRegistryApi.http, 'post').and.callFake(function () {
+                });
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
+                }).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
+                }).and.returnValue(Observable.of({}));
+
+                done();
+            });
     });
 
     it('should retrieve the snapshot metadata for the given droplet.', function () {
         //Spy
         spyOn(nfRegistryApi, 'getDropletSnapshotMetadata').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             version: 999
         }]));
 
         // object to be updated by the test
-        var droplet = {link: {href: 'test/id'}};
+        const droplet = {link: {href: 'test/id'}};
 
         // The function to test
         nfRegistryService.getDropletSnapshotMetadata(droplet);
@@ -752,7 +694,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(droplet.snapshotMetadata[0].version).toBe(999);
         expect(nfRegistryApi.getDropletSnapshotMetadata).toHaveBeenCalled();
         expect(nfRegistryApi.getDropletSnapshotMetadata.calls.count()).toBe(1);
-        var getDropletSnapshotMetadataCall = nfRegistryApi.getDropletSnapshotMetadata.calls.first()
+        const getDropletSnapshotMetadataCall = nfRegistryApi.getDropletSnapshotMetadata.calls.first();
         expect(getDropletSnapshotMetadataCall.args[0]).toBe('test/id');
         expect(getDropletSnapshotMetadataCall.args[1]).toBe(true);
     });
@@ -764,11 +706,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         //Spy
         spyOn(nfRegistryService.dialogService, 'openConfirm').and.returnValue({
             afterClosed: function () {
-                return rxjs.Observable.of(true);
+                return Observable.of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteDroplet').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
         spyOn(nfRegistryService, 'filterDroplets').and.callFake(function () {
         });
 
@@ -782,9 +724,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         //assertions
         expect(nfRegistryService.droplets.length).toBe(0);
         expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
-        var openConfirmCall = nfRegistryService.dialogService.openConfirm.calls.first()
+        const openConfirmCall = nfRegistryService.dialogService.openConfirm.calls.first();
         expect(openConfirmCall.args[0].title).toBe('Delete testtype');
-        var deleteDropletCall = nfRegistryApi.deleteDroplet.calls.first()
+        const deleteDropletCall = nfRegistryApi.deleteDroplet.calls.first();
         expect(deleteDropletCall.args[0]).toBe('testhref');
     });
 
@@ -837,7 +779,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `delete` action on a bucket.', function () {
         // from the root injector
-        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
@@ -845,14 +787,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return rxjs.Observable.of(true);
+                return Observable.of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
-        var bucket = {identifier: '999'};
+        const bucket = {identifier: '999'};
 
         // set up the bucket to be deleted
         nfRegistryService.buckets = [bucket, {identifier: 1}];
@@ -870,26 +812,26 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `manage` action on a bucket.', function () {
         // from the root injector
-        var router = ngCoreTesting.TestBed.get(ngRouter.Router);
+        const router = TestBed.get(Router);
 
         //Spy
         spyOn(router, 'navigateByUrl').and.callFake(function () {
         });
 
         // object to be updated by the test
-        var bucket = {identifier: '999'};
+        const bucket = {identifier: '999'};
 
         // The function to test
         nfRegistryService.executeBucketAction({name: 'manage', type: 'sidenav'}, bucket);
 
         //assertions
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
+        const navigateByUrlCall = router.navigateByUrl.calls.first();
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:manage/bucket/999)');
     });
 
     it('should execute a `delete` action on a user.', function () {
         // from the root injector
-        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
@@ -897,14 +839,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return rxjs.Observable.of(true);
+                return Observable.of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
-        var user = {identifier: '999'};
+        const user = {identifier: '999'};
 
         // set up the user to be deleted
         nfRegistryService.users = [user, {identifier: 1}];
@@ -922,26 +864,26 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `manage` action on a user.', function () {
         // from the root injector
-        var router = ngCoreTesting.TestBed.get(ngRouter.Router);
+        const router = TestBed.get(Router);
 
         //Spy
         spyOn(router, 'navigateByUrl').and.callFake(function () {
         });
 
         // object to be updated by the test
-        var user = {identifier: '999'};
+        const user = {identifier: '999'};
 
         // The function to test
         nfRegistryService.executeUserAction({name: 'manage', type: 'sidenav'}, user);
 
         //assertions
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
+        const navigateByUrlCall = router.navigateByUrl.calls.first();
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:manage/user/999)');
     });
 
     it('should execute a `delete` action on a group.', function () {
         // from the root injector
-        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
@@ -949,14 +891,14 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return rxjs.Observable.of(true);
+                return Observable.of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteUserGroup').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
-        var group = {identifier: '999'};
+        const group = {identifier: '999'};
 
         // set up the user to be deleted
         nfRegistryService.groups = [group, {identifier: 1}];
@@ -974,20 +916,20 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `manage` action on a group.', function () {
         // from the root injector
-        var router = ngCoreTesting.TestBed.get(ngRouter.Router);
+        const router = TestBed.get(Router);
 
         //Spy
         spyOn(router, 'navigateByUrl').and.callFake(function () {
         });
 
         // object to be updated by the test
-        var group = {identifier: '999'};
+        const group = {identifier: '999'};
 
         // The function to test
         nfRegistryService.executeGroupAction({name: 'manage', type: 'sidenav'}, group);
 
         //assertions
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
+        const navigateByUrlCall = router.navigateByUrl.calls.first();
         expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:manage/group/999)');
     });
 
@@ -1063,7 +1005,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should delete all selected buckets.', function () {
         // from the root injector
-        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
@@ -1073,17 +1015,18 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return rxjs.Observable.of(true);
+                return Observable.of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 999, link: null}));
+        }).and.returnValue(Observable.of({identifier: 999, link: null}));
 
         // object to be updated by the test
-        var bucket = {identifier: 999, checked: true};
+        const bucket = {identifier: 999, checked: true};
 
         // set up the bucket to be deleted
-        nfRegistryService.buckets = nfRegistryService.filteredBuckets = [bucket, {identifier: 1}];
+        nfRegistryService.buckets = [bucket, {identifier: 1}];
+        nfRegistryService.filteredBuckets = nfRegistryService.buckets;
 
         // The function to test
         nfRegistryService.deleteSelectedBuckets();
@@ -1102,7 +1045,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should delete all selected users and groups.', function () {
         // from the root injector
-        var dialogService = ngCoreTesting.TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
@@ -1112,21 +1055,23 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return rxjs.Observable.of(true);
+                return Observable.of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteUserGroup').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 999, link: null}));
+        }).and.returnValue(Observable.of({identifier: 999, link: null}));
         spyOn(nfRegistryApi, 'deleteUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 99, link: null}));
+        }).and.returnValue(Observable.of({identifier: 99, link: null}));
 
         // object to be updated by the test
-        var group = {identifier: 999, checked: true};
-        var user = {identifier: 999, checked: true};
+        const group = {identifier: 999, checked: true};
+        const user = {identifier: 999, checked: true};
 
         // set up the group to be deleted
-        nfRegistryService.groups = nfRegistryService.filteredUserGroups = [group, {identifier: 1}];
-        nfRegistryService.users = nfRegistryService.filteredUsers = [user, {identifier: 12}];
+        nfRegistryService.groups = [group, {identifier: 1}];
+        nfRegistryService.filteredUserGroups = nfRegistryService.groups;
+        nfRegistryService.users = [user, {identifier: 12}];
+        nfRegistryService.filteredUsers = nfRegistryService.users;
 
         // The function to test
         nfRegistryService.deleteSelectedUsersAndGroups();

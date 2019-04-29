@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var ngRouter = require('@angular/router');
-var ngMaterial = require('@angular/material');
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfStorage from 'services/nf-storage.service';
+import NfRegistryCreateBucket from 'components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket';
+import nfRegistryAnimations from 'nf-registry.animations';
+import { ActivatedRoute } from '@angular/router';
+import { MatDialog } from '@angular/material';
+import template from './nf-registry-workflow-administration.html';
 
 /**
  * NfRegistryWorkflowAdministration constructor.
@@ -40,7 +41,7 @@ function NfRegistryWorkflowAdministration(nfRegistryApi, nfStorage, nfRegistrySe
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialog = matDialog;
-};
+}
 
 NfRegistryWorkflowAdministration.prototype = {
     constructor: NfRegistryWorkflowAdministration,
@@ -68,7 +69,8 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
-        this.nfRegistryService.buckets = this.nfRegistryService.filteredBuckets = [];
+        this.nfRegistryService.buckets = [];
+        this.nfRegistryService.filteredBuckets = [];
         this.nfRegistryService.allBucketsSelected = false;
         this.$subscription.unsubscribe();
     },
@@ -84,8 +86,8 @@ NfRegistryWorkflowAdministration.prototype = {
 };
 
 NfRegistryWorkflowAdministration.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-workflow-administration.html!text'),
+    new Component({
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
@@ -97,8 +99,8 @@ NfRegistryWorkflowAdministration.parameters = [
     NfRegistryApi,
     NfStorage,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngMaterial.MatDialog
+    ActivatedRoute,
+    MatDialog
 ];
 
-module.exports = NfRegistryWorkflowAdministration;
+export default NfRegistryWorkflowAdministration;

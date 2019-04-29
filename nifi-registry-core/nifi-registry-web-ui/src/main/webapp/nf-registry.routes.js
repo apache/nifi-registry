@@ -15,22 +15,28 @@
  * limitations under the License.
  */
 
-var ngRouter = require('@angular/router');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
+import { RouterModule } from '@angular/router';
+import NfPageNotFoundComponent from 'components/page-not-found/nf-registry-page-not-found';
+import NfLoginComponent from 'components/login/nf-registry-login';
+import NfRegistryExplorer from 'components/explorer/nf-registry-explorer';
+import NfRegistryAdministration from 'components/administration/nf-registry-administration';
+import NfRegistryUsersAdministration from 'components/administration/users/nf-registry-users-administration';
+import NfRegistryManageUser from 'components/administration/users/sidenav/manage-user/nf-registry-manage-user';
+import NfRegistryManageGroup from 'components/administration/users/sidenav/manage-group/nf-registry-manage-group';
+import NfRegistryManageBucket from 'components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket';
+import NfRegistryWorkflowAdministration from 'components/administration/workflow/nf-registry-workflow-administration';
+import NfRegistryGridListViewer from 'components/explorer/grid-list/registry/nf-registry-grid-list-viewer';
+import NfRegistryBucketGridListViewer from 'components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer';
+import NfRegistryDropletGridListViewer from 'components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer';
+import {
+    NfRegistryLoginAuthGuard,
+    NfRegistryResourcesAuthGuard,
+    NfRegistryUsersAdministrationAuthGuard,
+    NfRegistryWorkflowsAdministrationAuthGuard
+} from 'services/nf-registry.auth-guard.service';
 
-var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
+// eslint-disable-next-line new-cap
+const NfRegistryRoutes = new RouterModule.forRoot([{
     path: 'nifi-registry/explorer',
     component: NfRegistryExplorer,
     children: [
@@ -42,22 +48,22 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
         {
             path: 'grid-list',
             component: NfRegistryGridListViewer,
-            canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]
+            canActivate: [NfRegistryResourcesAuthGuard]
         }, {
             path: 'grid-list/buckets/:bucketId',
             component: NfRegistryBucketGridListViewer,
-            canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]
+            canActivate: [NfRegistryResourcesAuthGuard]
         },
         {
             path: 'grid-list/buckets/:bucketId/:dropletType/:dropletId',
             component: NfRegistryDropletGridListViewer,
-            canActivate: [nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard]
+            canActivate: [NfRegistryResourcesAuthGuard]
         }
     ]
 }, {
     path: 'nifi-registry/login',
     component: NfLoginComponent,
-    canActivate: [nfRegistryAuthGuardService.NfRegistryLoginAuthGuard]
+    canActivate: [NfRegistryLoginAuthGuard]
 }, {
     path: 'nifi-registry/administration',
     component: NfRegistryAdministration,
@@ -68,11 +74,11 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
     }, {
         path: 'users',
         component: NfRegistryUsersAdministration,
-        canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard]
+        canActivate: [NfRegistryUsersAdministrationAuthGuard]
     }, {
         path: 'workflow',
         component: NfRegistryWorkflowAdministration,
-        canActivate: [nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard]
+        canActivate: [NfRegistryWorkflowsAdministrationAuthGuard]
     }]
 }, {
     path: 'nifi-registry/explorer/grid-list/buckets',
@@ -91,18 +97,18 @@ var NfRegistryRoutes = new ngRouter.RouterModule.forRoot([{
 }, {
     path: 'manage/user/:userId',
     component: NfRegistryManageUser,
-    canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard],
+    canActivate: [NfRegistryUsersAdministrationAuthGuard],
     outlet: 'sidenav'
 }, {
     path: 'manage/group/:groupId',
     component: NfRegistryManageGroup,
-    canActivate: [nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard],
+    canActivate: [NfRegistryUsersAdministrationAuthGuard],
     outlet: 'sidenav'
 }, {
     path: 'manage/bucket/:bucketId',
     component: NfRegistryManageBucket,
-    canActivate: [nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard],
+    canActivate: [NfRegistryWorkflowsAdministrationAuthGuard],
     outlet: 'sidenav'
 }]);
 
-module.exports = NfRegistryRoutes;
+export default NfRegistryRoutes;

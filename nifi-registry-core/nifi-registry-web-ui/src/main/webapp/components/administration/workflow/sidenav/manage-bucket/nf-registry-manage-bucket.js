@@ -15,17 +15,18 @@
  * limitations under the License.
  */
 
-var rxjs = require('rxjs/Observable');
-var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var NfRegistryEditBucketPolicy = require('nifi-registry/components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy.js');
-var NfRegistryAddPolicyToBucket = require('nifi-registry/components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket.js');
+import { Observable } from 'rxjs';
+import { TdDataTableService } from '@covalent/core';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import NfRegistryAddPolicyToBucket from 'components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket';
+import NfRegistryEditBucketPolicy from 'components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy';
+import template from './nf-registry-manage-bucket.html';
 
 /**
  * NfRegistryManageBucket constructor.
@@ -42,8 +43,8 @@ var NfRegistryAddPolicyToBucket = require('nifi-registry/components/administrati
  */
 function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
     // local state
-    this.sortBy;
-    this.sortOrder;
+    this.sortBy = null;
+    this.sortOrder = null;
     this.bucketPoliciesColumns = [
         {
             name: 'identity',
@@ -80,7 +81,7 @@ function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableSer
     this.dialogService = fdsDialogService;
     this.snackBarService = fdsSnackBarService;
     this.dataTableService = tdDataTableService;
-};
+}
 
 NfRegistryManageBucket.prototype = {
     constructor: NfRegistryManageBucket,
@@ -92,7 +93,7 @@ NfRegistryManageBucket.prototype = {
         var self = this;
         this.$subscription = this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getBucket(params['bucketId']),
                     self.nfRegistryApi.getPolicies()
                 );
@@ -108,19 +109,17 @@ NfRegistryManageBucket.prototype = {
                         if (!response[1].status || response[1].status === 200) {
                             var policies = response[1];
                             policies.forEach(function (policy) {
-                                if (policy.resource.indexOf("/buckets/" + self.nfRegistryService.bucket.identifier) >= 0) {
+                                if (policy.resource.indexOf('/buckets/' + self.nfRegistryService.bucket.identifier) >= 0) {
                                     self.bucketPolicies.push(policy);
                                     policy.users.forEach(function (user) {
                                         var userActionsForBucket = self.userPerms[user.identity] || [];
                                         userActionsForBucket.push(policy.action);
                                         self.userPerms[user.identity] = userActionsForBucket;
-
                                     });
                                     policy.userGroups.forEach(function (group) {
                                         var groupActionsForBucket = self.groupPerms[group.identity] || [];
                                         groupActionsForBucket.push(policy.action);
                                         self.groupPerms[group.identity] = groupActionsForBucket;
-
                                     });
                                 }
                             });
@@ -172,7 +171,7 @@ NfRegistryManageBucket.prototype = {
                         } else {
                             self.groupPerms[dialogResult.userOrGroup.identity] = dialogResult.permissions;
                         }
-                        var snackBarRef = self.snackBarService.openCoaster({
+                        self.snackBarService.openCoaster({
                             title: 'Success',
                             message: 'The policy has been created for this user/group.',
                             verticalPosition: 'bottom',
@@ -210,7 +209,7 @@ NfRegistryManageBucket.prototype = {
                         } else {
                             self.groupPerms[dialogResult.userOrGroup.identity] = dialogResult.permissions;
                         }
-                        var snackBarRef = self.snackBarService.openCoaster({
+                        self.snackBarService.openCoaster({
                             title: 'Success',
                             message: 'The policy has been updated for this user/group.',
                             verticalPosition: 'bottom',
@@ -235,9 +234,9 @@ NfRegistryManageBucket.prototype = {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
             if (this.sortOrder === undefined) {
-                sortOrder = 'ASC'
+                sortOrder = 'ASC';
             } else {
-                sortOrder = this.sortOrder
+                sortOrder = this.sortOrder;
             }
         }
         // if `sortBy` is `undefined` then find the first sortable column in `bucketPoliciesColumns`
@@ -258,16 +257,17 @@ NfRegistryManageBucket.prototype = {
                     }
                 }
             } else {
-                sortBy = this.sortBy
+                sortBy = this.sortBy;
             }
         }
 
         var newUserPermsData = [];
         this.userIdentitiesWithPolicies = [];
+        // eslint-disable-next-line no-restricted-syntax
         for (var identity in this.userPerms) {
             if (this.userPerms.hasOwnProperty(identity)) {
                 this.userIdentitiesWithPolicies.push(identity);
-                newUserPermsData.push({identity: identity, permissions: this.userPerms[identity].join(", ")});
+                newUserPermsData.push({identity: identity, permissions: this.userPerms[identity].join(', ')});
             }
         }
 
@@ -280,10 +280,11 @@ NfRegistryManageBucket.prototype = {
 
         var newGroupPermsData = [];
         this.groupIdentitiesWithPolicies = [];
+        // eslint-disable-next-line no-restricted-syntax
         for (var identity in this.groupPerms) {
             if (this.groupPerms.hasOwnProperty(identity)) {
                 this.groupIdentitiesWithPolicies.push(identity);
-                newGroupPermsData.push({identity: identity, permissions: this.groupPerms[identity].join(", ")});
+                newGroupPermsData.push({identity: identity, permissions: this.groupPerms[identity].join(', ')});
             }
         }
 
@@ -303,7 +304,9 @@ NfRegistryManageBucket.prototype = {
     sortBuckets: function (column) {
         if (column.sortable) {
             this.sortBy = column.name;
-            this.sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            this.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = this.sortOrder;
+
             this.filterPolicies(this.sortBy, this.sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
@@ -338,10 +341,10 @@ NfRegistryManageBucket.prototype = {
                             } else {
                                 // resource exists, let's filter out the current group and update it
                                 policy.users = policy.users.filter(function (user) {
-                                    return (user.identity !== userOrGroup.identity) ? true : false;
+                                    return (user.identity !== userOrGroup.identity);
                                 });
                                 policy.userGroups = policy.userGroups.filter(function (group) {
-                                    return (group.identity !== userOrGroup.identity) ? true : false;
+                                    return (group.identity !== userOrGroup.identity);
                                 });
                                 self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                     policy.resource, policy.users, policy.userGroups).subscribe(
@@ -356,24 +359,22 @@ NfRegistryManageBucket.prototype = {
                                             self.groupIdentitiesWithPolicies = [];
                                             var policies = response;
                                             policies.forEach(function (policy) {
-                                                if (policy.resource.indexOf("/buckets/" + self.nfRegistryService.bucket.identifier) >= 0) {
+                                                if (policy.resource.indexOf('/buckets/' + self.nfRegistryService.bucket.identifier) >= 0) {
                                                     self.bucketPolicies.push(policy);
                                                     policy.users.forEach(function (user) {
                                                         var userActionsForBucket = self.userPerms[user.identity] || [];
                                                         userActionsForBucket.push(policy.action);
                                                         self.userPerms[user.identity] = userActionsForBucket;
-
                                                     });
                                                     policy.userGroups.forEach(function (group) {
                                                         var groupActionsForBucket = self.groupPerms[group.identity] || [];
                                                         groupActionsForBucket.push(policy.action);
                                                         self.groupPerms[group.identity] = groupActionsForBucket;
-
                                                     });
                                                 }
                                             });
                                             self.filterPolicies(this.sortBy, this.sortOrder);
-                                            var snackBarRef = self.snackBarService.openCoaster({
+                                            self.snackBarService.openCoaster({
                                                 title: 'Success',
                                                 message: 'All permissions granted by this policy have be removed for this user/group.',
                                                 verticalPosition: 'bottom',
@@ -383,12 +384,14 @@ NfRegistryManageBucket.prototype = {
                                                 duration: 3000
                                             });
                                         });
-                                    });
+                                    }
+                                );
                             }
                         });
                     });
                 }
-            });
+            }
+        );
     },
 
     /**
@@ -406,11 +409,11 @@ NfRegistryManageBucket.prototype = {
                 self.nfRegistryService.bucket = response;
                 // update the bucket identity in the buckets table
                 self.nfRegistryService.buckets.filter(function (bucket) {
-                    if (self.nfRegistryService.bucket.identifier === bucket.identifier) {
-                        bucket.name = response.name;
-                    }
+                    return self.nfRegistryService.bucket.identifier === bucket.identifier;
+                }).forEach(function (bucket) {
+                    bucket.name = response.name;
                 });
-                var snackBarRef = self.snackBarService.openCoaster({
+                self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'This bucket name has been updated.',
                     verticalPosition: 'bottom',
@@ -454,7 +457,7 @@ NfRegistryManageBucket.prototype = {
         }).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.bucket = response;
-                var snackBarRef = self.snackBarService.openCoaster({
+                self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'Bundle settings have been updated.',
                     verticalPosition: 'bottom',
@@ -463,8 +466,8 @@ NfRegistryManageBucket.prototype = {
                     color: '#1EB475',
                     duration: 3000
                 });
-            }  else if (response.status === 400) {
-                self.allowBundleRedeploy = !event.checked
+            } else if (response.status === 400) {
+                self.allowBundleRedeploy = !event.checked;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
@@ -486,20 +489,20 @@ NfRegistryManageBucket.prototype = {
 };
 
 NfRegistryManageBucket.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-manage-bucket.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryManageBucket.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    covalentCore.TdDataTableService,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    ngMaterial.MatDialog
+    TdDataTableService,
+    FdsDialogService,
+    FdsSnackBarService,
+    ActivatedRoute,
+    Router,
+    MatDialog
 ];
 
-module.exports = NfRegistryManageBucket;
+export default NfRegistryManageBucket;

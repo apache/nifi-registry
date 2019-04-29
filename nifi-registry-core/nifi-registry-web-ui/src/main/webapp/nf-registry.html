@@ -22,7 +22,7 @@ limitations under the License.
     </mat-sidenav>
     <div id="nf-registry-app-container">
         <mat-toolbar id="nifi-registry-toolbar">
-            <img id="nifi-registry-logo" src="nifi-registry/images/registry-logo-web-app.svg">
+            <img id="nifi-registry-logo" src="nifi-registry/assets/images/registry-logo-web-app.svg">
             <div *ngIf="nfRegistryService.perspective !== 'login' && nfRegistryService.perspective !== 'not-found'" fxFlex="1 1 auto" class="pad-left-xl" [@flyInOut]="nfRegistryService.breadCrumbState">
                 <span class="pointer" routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">{{nfRegistryService.registry.name}}</span>
                 <mat-menu #availableRegistriesMenu="matMenu" [overlapTrigger]="false">

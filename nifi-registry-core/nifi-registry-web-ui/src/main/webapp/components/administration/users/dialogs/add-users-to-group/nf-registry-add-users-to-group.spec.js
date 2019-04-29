@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
-var rxjs = require('rxjs/Rx');
-var covalentCore = require('@covalent/core');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import { Observable } from 'rxjs';
+import { TdDataTableService } from '@covalent/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
 
 describe('NfRegistryAddUsersToGroup Component isolated unit tests', function () {
     var comp;
@@ -36,8 +36,8 @@ describe('NfRegistryAddUsersToGroup Component isolated unit tests', function () 
         nfRegistryService.users = [{identifier: 2, identity: 'User 1', checked: true}];
 
         nfRegistryApi = new NfRegistryApi();
-        snackBarService = new fdsSnackBarsModule.FdsSnackBarService();
-        dataTableService = new covalentCore.TdDataTableService();
+        snackBarService = new FdsSnackBarService();
+        dataTableService = new TdDataTableService();
         comp = new NfRegistryAddUsersToGroup(nfRegistryApi, dataTableService, nfRegistryService, {
             close: function () {
             }
@@ -45,7 +45,7 @@ describe('NfRegistryAddUsersToGroup Component isolated unit tests', function () 
 
         // Spy
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 1, identity: 'Group 1'}));
+        }).and.returnValue(Observable.of({identifier: 1, identity: 'Group 1'}));
         spyOn(comp.dialogRef, 'close');
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(comp, 'filterUsers').and.callThrough();

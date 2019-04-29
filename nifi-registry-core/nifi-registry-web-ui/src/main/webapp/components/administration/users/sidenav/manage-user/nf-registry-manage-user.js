@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
+import { TdDataTableService } from '@covalent/core';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import NfRegistryAddUserToGroups from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
+import template from './nf-registry-manage-user.html';
 
 /**
  * NfRegistryManageUser constructor.
@@ -40,11 +41,11 @@ var NfRegistryAddUserToGroups = require('nifi-registry/components/administration
  */
 function NfRegistryManageUser(nfRegistryApi, nfRegistryService, tdDataTableService, fdsDialogService, fdsSnackBarService, activatedRoute, router, matDialog) {
     // local state
-    this.sortBy;
-    this.sortOrder;
+    this.sortBy = null;
+    this.sortOrder = null;
     this.filteredUserGroups = [];
     this.userGroupsSearchTerms = [];
-    this._username = '';
+    this.username = '';
     this.manageUserPerspective = 'membership';
     this.userGroupsColumns = [
         {
@@ -65,7 +66,7 @@ function NfRegistryManageUser(nfRegistryApi, nfRegistryService, tdDataTableServi
     this.dialogService = fdsDialogService;
     this.snackBarService = fdsSnackBarService;
     this.dataTableService = tdDataTableService;
-};
+}
 
 NfRegistryManageUser.prototype = {
     constructor: NfRegistryManageUser,
@@ -84,7 +85,7 @@ NfRegistryManageUser.prototype = {
                 if (!response.status || response.status === 200) {
                     self.nfRegistryService.sidenav.open();
                     self.nfRegistryService.user = response;
-                    self._username = response.identity;
+                    self.username = response.identity;
                     self.filterGroups(this.sortBy, this.sortOrder);
                 } else if (response.status === 404) {
                     self.router.navigateByUrl('/nifi-registry/administration/users');
@@ -117,8 +118,9 @@ NfRegistryManageUser.prototype = {
      */
     toggleUserManageBucketsPrivileges: function ($event, policyAction) {
         var self = this;
-        if($event.checked) {
-            for (var resource in this.nfRegistryService.BUCKETS_PRIVS) {
+        if ($event.checked) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.BUCKETS_PRIVS) {
                 if (this.nfRegistryService.BUCKETS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.BUCKETS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -130,12 +132,13 @@ NfRegistryManageUser.prototype = {
                                             // can manage buckets privileges created and granted!!!...now update the view
                                             response.users.forEach(function (user) {
                                                 if (user.identifier === self.nfRegistryService.user.identifier) {
-                                                    self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function(response) {
+                                                    self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
                                                         self.nfRegistryService.user = response;
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
@@ -145,12 +148,13 @@ NfRegistryManageUser.prototype = {
                                             // can manage buckets privileges updated!!!...now update the view
                                             response.users.forEach(function (user) {
                                                 if (user.identifier === self.nfRegistryService.user.identifier) {
-                                                    self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function(response) {
+                                                    self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
                                                         self.nfRegistryService.user = response;
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -159,7 +163,8 @@ NfRegistryManageUser.prototype = {
             }
         } else {
             // Remove the current user from the /buckets resources
-            for (var resource in this.nfRegistryService.BUCKETS_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.BUCKETS_PRIVS) {
                 if (this.nfRegistryService.BUCKETS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.BUCKETS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -169,23 +174,23 @@ NfRegistryManageUser.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
-                                        return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
+                                        return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
-                                            self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function(response) {
+                                            self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.user = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
                     });
                 }
             }
-
         }
     },
 
@@ -197,8 +202,9 @@ NfRegistryManageUser.prototype = {
      */
     toggleUserManageTenantsPrivileges: function ($event, policyAction) {
         var self = this;
-        if($event.checked) {
-            for (var resource in this.nfRegistryService.TENANTS_PRIVS) {
+        if ($event.checked) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.TENANTS_PRIVS) {
                 if (this.nfRegistryService.TENANTS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.TENANTS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -215,7 +221,8 @@ NfRegistryManageUser.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
@@ -230,7 +237,8 @@ NfRegistryManageUser.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -239,7 +247,8 @@ NfRegistryManageUser.prototype = {
             }
         } else {
             // Remove the current user from the administrator resources
-            for (var resource in this.nfRegistryService.TENANTS_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.TENANTS_PRIVS) {
                 if (this.nfRegistryService.TENANTS_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.TENANTS_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -249,7 +258,7 @@ NfRegistryManageUser.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
-                                        return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
+                                        return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
@@ -258,14 +267,14 @@ NfRegistryManageUser.prototype = {
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.user = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
                     });
                 }
             }
-
         }
     },
 
@@ -277,8 +286,9 @@ NfRegistryManageUser.prototype = {
      */
     toggleUserManagePoliciesPrivileges: function ($event, policyAction) {
         var self = this;
-        if($event.checked) {
-            for (var resource in this.nfRegistryService.POLICIES_PRIVS) {
+        if ($event.checked) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.POLICIES_PRIVS) {
                 if (this.nfRegistryService.POLICIES_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.POLICIES_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -295,7 +305,8 @@ NfRegistryManageUser.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
@@ -310,7 +321,8 @@ NfRegistryManageUser.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -319,7 +331,8 @@ NfRegistryManageUser.prototype = {
             }
         } else {
             // Remove the current user from the administrator resources
-            for (var resource in this.nfRegistryService.POLICIES_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.POLICIES_PRIVS) {
                 if (this.nfRegistryService.POLICIES_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.POLICIES_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -329,7 +342,7 @@ NfRegistryManageUser.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
-                                        return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
+                                        return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
@@ -338,14 +351,14 @@ NfRegistryManageUser.prototype = {
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.user = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
                     });
                 }
             }
-
         }
     },
 
@@ -357,8 +370,9 @@ NfRegistryManageUser.prototype = {
      */
     toggleUserManageProxyPrivileges: function ($event, policyAction) {
         var self = this;
-        if($event.checked) {
-            for (var resource in this.nfRegistryService.PROXY_PRIVS) {
+        if ($event.checked) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.PROXY_PRIVS) {
                 if (this.nfRegistryService.PROXY_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.PROXY_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -375,7 +389,8 @@ NfRegistryManageUser.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 } else {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
@@ -390,7 +405,8 @@ NfRegistryManageUser.prototype = {
                                                     });
                                                 }
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
@@ -399,7 +415,8 @@ NfRegistryManageUser.prototype = {
             }
         } else {
             // Remove the current user from the administrator resources
-            for (var resource in this.nfRegistryService.PROXY_PRIVS) {
+            // eslint-disable-next-line no-restricted-syntax
+            for (const resource in this.nfRegistryService.PROXY_PRIVS) {
                 if (this.nfRegistryService.PROXY_PRIVS.hasOwnProperty(resource)) {
                     this.nfRegistryService.PROXY_PRIVS[resource].forEach(function (action) {
                         if (!policyAction || (action === policyAction)) {
@@ -409,8 +426,8 @@ NfRegistryManageUser.prototype = {
                                 } else {
                                     // resource exists, let's filter out the current user and update it
                                     policy.users = policy.users.filter(function (user) {
-                                        return (user.identifier !== self.nfRegistryService.user.identifier) ? true : false;
-                                    })
+                                        return (user.identifier !== self.nfRegistryService.user.identifier);
+                                    });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
                                         policy.resource, policy.users, policy.userGroups).subscribe(
                                         function (response) {
@@ -418,14 +435,14 @@ NfRegistryManageUser.prototype = {
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
                                                 self.nfRegistryService.user = response;
                                             });
-                                        });
+                                        }
+                                    );
                                 }
                             });
                         }
                     });
                 }
             }
-
         }
     },
 
@@ -443,7 +460,7 @@ NfRegistryManageUser.prototype = {
             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                 .subscribe(function (response) {
                     self.nfRegistryService.user = response;
-                    self._username = response.identity;
+                    self.username = response.identity;
                     self.filterGroups(this.sortBy, this.sortOrder);
                 });
         });
@@ -459,9 +476,9 @@ NfRegistryManageUser.prototype = {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
             if (this.sortOrder === undefined) {
-                sortOrder = 'ASC'
+                sortOrder = 'ASC';
             } else {
-                sortOrder = this.sortOrder
+                sortOrder = this.sortOrder;
             }
         }
         // if `sortBy` is `undefined` then find the first sortable column in `userGroupsColumns`
@@ -482,7 +499,7 @@ NfRegistryManageUser.prototype = {
                     }
                 }
             } else {
-                sortBy = this.sortBy
+                sortBy = this.sortBy;
             }
         }
 
@@ -504,7 +521,8 @@ NfRegistryManageUser.prototype = {
     sortGroups: function (column) {
         if (column.sortable) {
             this.sortBy = column.name;
-            this.sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            this.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = this.sortOrder;
             this.filterGroups(this.sortBy, this.sortOrder);
 
             //only one column can be actively sorted so we reset all to inactive
@@ -527,17 +545,15 @@ NfRegistryManageUser.prototype = {
             if (!response.error) {
                 var fullGroup = response;
                 var users = fullGroup.users.filter(function (user) {
-                    if (self.nfRegistryService.user.identifier !== user.identifier) {
-                        return user;
-                    }
-                })
+                    return self.nfRegistryService.user.identifier !== user.identifier;
+                });
                 self.nfRegistryApi.updateUserGroup(fullGroup.identifier, fullGroup.identity, users).subscribe(function (response) {
                     self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                         .subscribe(function (response) {
                             self.nfRegistryService.user = response;
                             self.filterGroups(this.sortBy, this.sortOrder);
                         });
-                    var snackBarRef = self.snackBarService.openCoaster({
+                    self.snackBarService.openCoaster({
                         title: 'Success',
                         message: 'This user has been removed from the ' + group.identity + ' group.',
                         verticalPosition: 'bottom',
@@ -559,14 +575,14 @@ NfRegistryManageUser.prototype = {
     updateUserName: function (username) {
         var self = this;
         this.nfRegistryApi.updateUser(this.nfRegistryService.user.identifier, username).subscribe(function (response) {
-            if(!response.status || response.status === 200) {
+            if (!response.status || response.status === 200) {
                 self.nfRegistryService.user = response;
-                self.nfRegistryService.users.filter(function(user) {
-                    if (self.nfRegistryService.user.identifier === user.identifier){
-                        user.identity = response.identity;
-                    }
+                self.nfRegistryService.users.filter(function (user) {
+                    return self.nfRegistryService.user.identifier === user.identifier;
+                }).forEach(function (user) {
+                    user.identity = response.identity;
                 });
-                var snackBarRef = self.snackBarService.openCoaster({
+                self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'This user name has been updated.',
                     verticalPosition: 'bottom',
@@ -576,7 +592,7 @@ NfRegistryManageUser.prototype = {
                     duration: 3000
                 });
             } else if (response.status === 409) {
-                self._username = self.nfRegistryService.user.identity;
+                self.username = self.nfRegistryService.user.identity;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: 'This user already exists. Please enter a different identity/user name.',
@@ -591,10 +607,10 @@ NfRegistryManageUser.prototype = {
      * Determine disabled state of 'Add to Groups' button
      * @returns {boolean}
      */
-    canAddNonConfigurableUserToGroup: function() {
+    canAddNonConfigurableUserToGroup: function () {
         var disabled = true;
         this.nfRegistryService.groups.forEach(function (userGroup) {
-            if(userGroup.configurable === true){
+            if (userGroup.configurable === true) {
                 disabled = false;
             }
         });
@@ -605,7 +621,7 @@ NfRegistryManageUser.prototype = {
      * Determine if 'Special Privileges' can be edited.
      * @returns {boolean}
      */
-    canEditSpecialPrivileges: function() {
+    canEditSpecialPrivileges: function () {
         return this.nfRegistryService.currentUser.resourcePermissions.policies.canWrite
                 && !(this.nfRegistryService.currentUser.identity === this.nfRegistryService.user.identity)
                 && this.nfRegistryService.registry.config.supportsConfigurableAuthorizer;
@@ -614,20 +630,20 @@ NfRegistryManageUser.prototype = {
 };
 
 NfRegistryManageUser.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-manage-user.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryManageUser.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    covalentCore.TdDataTableService,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    ngMaterial.MatDialog
+    TdDataTableService,
+    FdsDialogService,
+    FdsSnackBarService,
+    ActivatedRoute,
+    Router,
+    MatDialog
 ];
 
-module.exports = NfRegistryManageUser;
+export default NfRegistryManageUser;

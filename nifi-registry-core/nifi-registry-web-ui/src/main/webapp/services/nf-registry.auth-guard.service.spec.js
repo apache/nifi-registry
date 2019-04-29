@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var rxjs = require('rxjs/Rx');
+import {
+    NfRegistryWorkflowsAdministrationAuthGuard,
+    NfRegistryUsersAdministrationAuthGuard,
+    NfRegistryResourcesAuthGuard,
+    NfRegistryLoginAuthGuard
+} from 'services/nf-registry.auth-guard.service';
+import NfRegistryService from 'services/nf-registry.service';
+import NfStorage from 'services/nf-storage.service';
+import { Observable } from 'rxjs';
 
 describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated unit tests', function () {
     var nfRegistryService;
-    var nfRegistryUsersAdministrationAuthGuard;
-    var nfRegistryWorkflowsAdministrationAuthGuard;
-    var nfRegistryLoginAuthGuard;
     var nfRegistryResourcesAuthGuard;
     var nfRegistryApi;
     var nfStorage;
@@ -52,19 +54,19 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
         // Spy
         spyOn(router, 'navigateByUrl');
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({}));
+        }).and.returnValue(Observable.of({}));
         spyOn(dialogService, 'openConfirm');
     });
 
     it('should navigate to test url (registry security not configured) ', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: true
         }));
         spyOn(nfStorage, 'getItem').and.callFake(function () {
         }).and.returnValue(true);
 
-        nfRegistryResourcesAuthGuard = new nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
+        nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
         nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
@@ -79,13 +81,13 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
 
     it('should navigate to test url (registry security configured and we know who you are) ', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false
         }));
         spyOn(nfStorage, 'hasItem').and.callFake(function () {
         }).and.returnValue(true);
 
-        nfRegistryResourcesAuthGuard = new nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
+        nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
         nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
@@ -99,11 +101,11 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
 
     it('should navigate to login', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false
         }));
 
-        nfRegistryResourcesAuthGuard = new nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
+        nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
         nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
@@ -115,14 +117,14 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
 
     it('should navigate to login (error loading current user)', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             error: {
                 status: 401
             }
         }));
         spyOn(nfStorage, 'removeItem');
 
-        nfRegistryResourcesAuthGuard = new nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
@@ -136,10 +138,7 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
 
 describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit tests', function () {
     var nfRegistryService;
-    var nfRegistryUsersAdministrationAuthGuard;
-    var nfRegistryWorkflowsAdministrationAuthGuard;
     var nfRegistryLoginAuthGuard;
-    var nfRegistryResourcesAuthGuard;
     var nfRegistryApi;
     var nfStorage;
     var router;
@@ -166,16 +165,16 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
         // Spy
         spyOn(router, 'navigateByUrl');
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({}));
+        }).and.returnValue(Observable.of({}));
         spyOn(dialogService, 'openConfirm');
     });
 
     it('should navigate to base nifi-registry url', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: true
         }));
-        nfRegistryLoginAuthGuard = new nfRegistryAuthGuardService.NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
+        nfRegistryLoginAuthGuard = new NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
         nfRegistryLoginAuthGuard.canActivate({}, {url: 'test'});
@@ -188,10 +187,10 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
 
     it('should navigate to test url', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false
         }));
-        nfRegistryLoginAuthGuard = new nfRegistryAuthGuardService.NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
+        nfRegistryLoginAuthGuard = new NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
         nfRegistryLoginAuthGuard.canActivate({}, {url: 'test'});
@@ -206,9 +205,6 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
 describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard isolated unit tests', function () {
     var nfRegistryService;
     var nfRegistryUsersAdministrationAuthGuard;
-    var nfRegistryWorkflowsAdministrationAuthGuard;
-    var nfRegistryLoginAuthGuard;
-    var nfRegistryResourcesAuthGuard;
     var nfRegistryApi;
     var nfStorage;
     var router;
@@ -235,18 +231,18 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         // Spy
         spyOn(router, 'navigateByUrl');
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({}));
+        }).and.returnValue(Observable.of({}));
         spyOn(dialogService, 'openConfirm');
     });
 
     it('should navigate to login', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             error: {
                 status: 401
             }
         }));
-        nfRegistryUsersAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -259,10 +255,10 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
 
     it('should deny access (registry security not configured) and navigate to administration workflow perspective', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: true
         }));
-        nfRegistryUsersAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -280,7 +276,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
 
     it('should deny access (non-admin) and navigate to explorer perspective', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -310,7 +306,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
                 }
             }
         }));
-        nfRegistryUsersAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -328,7 +324,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
 
     it('should deny access (no tenants permissions) and navigate to explorer perspective', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -358,7 +354,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
                 }
             }
         }));
-        nfRegistryUsersAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -376,7 +372,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
 
     it('should deny access (no tenants permissions) and navigate to test url', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -406,7 +402,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
                 }
             }
         }));
-        nfRegistryUsersAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -420,10 +416,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
 
 describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGuard isolated unit tests', function () {
     var nfRegistryService;
-    var nfRegistryUsersAdministrationAuthGuard;
     var nfRegistryWorkflowsAdministrationAuthGuard;
-    var nfRegistryLoginAuthGuard;
-    var nfRegistryResourcesAuthGuard;
     var nfRegistryApi;
     var nfStorage;
     var router;
@@ -450,18 +443,18 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         // Spy
         spyOn(router, 'navigateByUrl');
         spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({}));
+        }).and.returnValue(Observable.of({}));
         spyOn(dialogService, 'openConfirm');
     });
 
     it('should navigate to login', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             error: {
                 status: 401
             }
         }));
-        nfRegistryWorkflowsAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -474,10 +467,10 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
 
     it('should (registry security not configured) navigate to test url', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: true
         }));
-        nfRegistryWorkflowsAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -490,7 +483,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
 
     it('should deny access (non-admin) and navigate to explorer perspective', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -520,7 +513,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
                 }
             }
         }));
-        nfRegistryWorkflowsAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -538,7 +531,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
 
     it('should deny access (no buckets permissions) and navigate to users administration perspective', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -568,7 +561,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
                 }
             }
         }));
-        nfRegistryWorkflowsAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
@@ -586,7 +579,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
 
     it('should deny access (no tenants permissions) and navigate to test url', function () {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             anonymous: false,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -616,7 +609,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
                 }
             }
         }));
-        nfRegistryWorkflowsAdministrationAuthGuard = new nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
+        nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
         nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
