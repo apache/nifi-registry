@@ -48,34 +48,6 @@
             <filter>src/main/resources/filters/${registry.filter}</filter>
         </filters>
         <plugins>
-            <!--
-                Precompile jsp's and add entries into the web.xml - the web.xml
-                is automatically places in ${project.build.directory}. Do not
-                precompile index.jsp, etc.
-                These jsp's need to have the artifacts version filtered in to
-                eliminate browser caching issues and set up the proper includes.
-                Since the webResource filter occurs after the precompilation we
-                must exclude them here.
-            -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jspc-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jspc</goal>
-                        </goals>
-                        <configuration>
-                            <keepSources>true</keepSources>
-                            <useProvidedScope>true</useProvidedScope>
-                            <excludes>
-                                **/index.jsp
-                            </excludes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -121,7 +93,11 @@
                                     <directory>${frontend.dependency.configs}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>*</include>
+                                        <include>Gruntfile.js</include>
+                                        <include>karma*.js</include>
+                                        <include>*.json</include>
+                                        <include>webpack.*.js</include>
+                                        <include>*-loader.js</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -145,7 +121,6 @@
                                     <includes>
                                         <include>locale/**/*</include>
                                         <include>webapp/**/*</include>
-                                        <include>platform/**/*</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -195,29 +170,6 @@
                         </configuration>
                     </execution>
                     <!--
-                        Stage client side styles.
-                    -->
-                    <execution>
-                        <id>copy-webapp-client-side-styles</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}/css</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}/webapp/css</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>*</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-
-                    <!--
                         Stage the final bundle of JS to be included in the .war
                     -->
                     <execution>
@@ -231,10 +183,13 @@
                             </outputDirectory>
                             <resources>
                                 <resource>
-                                    <directory>${frontend.working.dir}/webapp</directory>
+                                    <directory>${frontend.working.dir}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>nf-registry.bundle.*</include>
+                                        <include>nf-registry.bundle.min.*.js</include>
+                                        <include>vendor.min.*.js</include>
+                                        <include>nf-registry.style.min.*.css</include>
+                                        <include>index.html</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -264,29 +219,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <!--
-                Tell the war plugin where to find the filtered web.xml and
-                filter the head portion of the pages. The correct includes and
-                project version is filtered into these jsp's as a browser cache
-                buster.
-            -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-                    <webXml>${staging.dir}/WEB-INF/web.xml</webXml>
-                    <webResources>
-                        <resource>
-                            <directory>src/main/webapp/WEB-INF/pages</directory>
-                            <targetPath>WEB-INF/pages</targetPath>
-                            <includes>
-                                <include>index.jsp</include>
-                            </includes>
-                            <filtering>true</filtering>
-                        </resource>
-                    </webResources>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -324,20 +256,6 @@
                         </configuration>
                     </execution>
                     <!--
-                        Compile nifi registry web ui SASS into css and gzip compress it.
-                    -->
-                    <execution>
-                        <id>grunt-compile-web-ui-sass</id>
-                        <goals>
-                            <goal>grunt</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <arguments>compile-web-ui-styles</arguments>
-                            <workingDirectory>${frontend.working.dir}</workingDirectory>
-                        </configuration>
-                    </execution>
-                    <!--
                         Bundle, minify, and gzip compress all the javascript.
                     -->
                     <execution>
@@ -347,7 +265,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>bundle-web-ui</arguments>
+                            <arguments>prod-bundle-web-ui</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>

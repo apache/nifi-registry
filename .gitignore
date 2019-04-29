@@ -15,3 +15,15 @@ nb-configuration.xml
 *~
 
 /bin/
+
+# Node JS
+node_modules/
+
+*.min.js
+*.min.css
+*.min.*.js
+*.min.*.css
+*.map
+nifi-registry-core/nifi-registry-web-ui/src/main/index.html
+nifi-registry-core/nifi-registry-web-ui/src/main/coverage
+nifi-registry-core/nifi-registry-web-ui/src/main/.cache-loader

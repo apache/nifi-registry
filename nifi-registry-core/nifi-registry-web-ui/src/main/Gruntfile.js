@@ -14,65 +14,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const webpackConfig = require('./webpack.prod');
 
 module.exports = function (grunt) {
     // load all grunt tasks matching the ['grunt-*', '@*/grunt-*'] patterns
     require('load-grunt-tasks')(grunt);
 
     grunt.initConfig({
-        sass: {
-            options: {
-                implementation: require('node-sass'),
-                outputStyle: 'compressed',
-                sourceMap: true
+        watch: {
+            theme: {
+                files: [
+                    'webapp/theming/**/*.scss'
+                ],
+                tasks: ['compile-web-ui-styles']
             },
-            minifyWebUi: {
-                files: [{
-                    './webapp/css/nf-registry.min.css': ['./webapp/theming/nf-registry.scss']
-                }]
+            webapp: {
+                files: [
+                    'webapp/**/*.js',
+                    'webapp/**/*.ts',
+                    'webapp/**/*.html'
+                ],
+                tasks: ['dev-bundle-web-ui']
             }
         },
-        systemjs: {
+        webpack: {
+            prod: Object.assign({
+                mode: 'production',
+                devtool: 'source-map'
+            }, webpackConfig),
+            dev: Object.assign({}, webpackConfig)
+        },
+        browserSync: {
+            bsFiles: {
+                src: [
+                    'nf-registry.bundle.min.js'
+                ]
+            },
             options: {
-                sfx: true,
-                minify: true, // Comment out this line when developing
-                sourceMaps: true,
-                build: {
-                    lowResSourceMaps: true
+                port: 8080,
+                watchTask: true,
+                server: {
+                    baseDir: './'
                 }
-            },
-            bundleWebUi: {
-                options: {
-                    configFile: "./webapp/systemjs.builder.config.js"
-                },
-                files: [{
-                    "src": "./webapp/nf-registry-bootstrap.js",
-                    "dest": "./webapp/nf-registry.bundle.min.js"
-                }]
-            }
-        },
-        compress: {
-            options: {
-                mode: 'gzip'
-            },
-            webUi: {
-                files: [{
-                    expand: true,
-                    src: ['./webapp/nf-registry.bundle.min.js'],
-                    dest: './',
-                    ext: '.bundle.min.js.gz'
-                }]
-            },
-            webUiStyles: {
-                files: [{
-                    expand: true,
-                    src: ['./webapp/css/nf-registry.min.css'],
-                    dest: './',
-                    ext: '.min.css.gz'
-                }]
             }
         }
     });
-    grunt.registerTask('compile-web-ui-styles', ['sass:minifyWebUi', 'compress:webUiStyles']);
-    grunt.registerTask('bundle-web-ui', ['systemjs:bundleWebUi', 'compress:webUi']);
+
+    grunt.registerTask('dev-bundle-web-ui', ['webpack:dev']);
+    grunt.registerTask('prod-bundle-web-ui', ['webpack:prod']);
+    grunt.registerTask('default', ['dev-bundle-web-ui', 'browserSync', 'watch']);
 };
