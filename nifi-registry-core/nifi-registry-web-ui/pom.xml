@@ -29,7 +29,7 @@
         <staging.dir>${project.build.directory}/tmp</staging.dir>
         <registry.filter>registry-min.properties</registry.filter>
         <frontend.source>${basedir}/src/main</frontend.source>
-        <frontend.dependency.configs>${basedir}/src/main/frontend</frontend.dependency.configs>
+        <frontend.dependency.configs>${basedir}/src/main</frontend.dependency.configs>
         <frontend.working.dir>${project.build.directory}/frontend-working-directory</frontend.working.dir>
         <frontend.assets>${project.build.directory}/${project.build.finalName}/node_modules</frontend.assets>
     </properties>
@@ -359,10 +359,10 @@
                 <configuration>
                     <excludes combine.children="append">
                         <exclude>nbactions.xml</exclude>
-                        <exclude>src/main/frontend/package.json</exclude>
-                        <exclude>src/main/frontend/package-lock.json</exclude>
+                        <exclude>src/main/package.json</exclude>
+                        <exclude>src/main/package-lock.json</exclude>
                         <exclude>src/main/platform/core/README.md</exclude>
-                        <exclude>src/main/frontend/karma-test-shim.js</exclude>
+                        <exclude>src/main/karma-test-shim.js</exclude>
                         <exclude>src/main/webapp/systemjs-angular-loader.js</exclude>
                     </excludes>
                 </configuration>
