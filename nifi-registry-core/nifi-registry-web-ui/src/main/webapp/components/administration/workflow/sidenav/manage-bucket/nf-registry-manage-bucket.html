@@ -42,7 +42,7 @@ limitations under the License.
             </button>
         </div>
         <div class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-            <div class="pad-bottom-md">
+            <div class="pad-bottom-sm">
                 <span class="md-card-title">Bundle Settings</span>
             </div>
             <div>
@@ -50,9 +50,8 @@ limitations under the License.
                               [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite"
                               [(checked)]="nfRegistryService.bucket.allowBundleRedeploy"
                               [(ngModel)]="allowBundleRedeploy"
-                              (change)="toggleBucketBundleRedeploy($event)"
-                              matTooltip="Allows released bundles in this bucket to be overwritten">
-                    Allow bundle overwrite
+                              (change)="toggleBucketBundleRedeploy($event)">
+                    Allow bundle overwrite<i matTooltip="Allows released bundles in this bucket to be overwritten" class="pad-left-sm fa fa-question-circle-o help-icon"></i>
                 </mat-checkbox>
             </div>
         </div>
@@ -137,12 +136,14 @@ limitations under the License.
             </div>
         </div>
         <div class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-            <div class="pad-bottom-md">
+            <div class="pad-bottom-sm">
                 <span class="md-card-title">About</span>
             </div>
             <div>
                 <span class="field-header">Bucket Identifier</span>
-                <p class="ellipsis" matTooltip="{{nfRegistryService.bucket.identifier}}">{{nfRegistryService.bucket.identifier}}</p>
+                <div>
+                    <span class="ellipsis" matTooltip="{{nfRegistryService.bucket.identifier}}">{{nfRegistryService.bucket.identifier}}</span>
+                </div>
             </div>
         </div>
     </div>
