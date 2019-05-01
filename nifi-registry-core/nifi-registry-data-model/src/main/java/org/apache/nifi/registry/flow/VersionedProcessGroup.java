@@ -42,6 +42,8 @@ public class VersionedProcessGroup extends VersionedComponent {
     private Map<String, String> variables = new HashMap<>();
     private Map<String,ExternalControllerServiceReference> externalControllerServices;
 
+    private String parameterContextName;
+
     @ApiModelProperty("The child Process Groups")
     public Set<VersionedProcessGroup> getProcessGroups() {
         return processGroups;
@@ -154,4 +156,14 @@ public class VersionedProcessGroup extends VersionedComponent {
     public void setExternalControllerServices(Map<String, ExternalControllerServiceReference> externalControllerServices) {
         this.externalControllerServices = externalControllerServices;
     }
+
+    @ApiModelProperty("The name of the parameter context used by this process group")
+    public String getParameterContextName() {
+        return parameterContextName;
+    }
+
+    public void setParameterContextName(String parameterContextName) {
+        this.parameterContextName = parameterContextName;
+    }
+
 }

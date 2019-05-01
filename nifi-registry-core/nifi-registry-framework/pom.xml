@@ -156,6 +156,7 @@
                         <exclude>src/test/resources/serialization/ver1.snapshot</exclude>
                         <exclude>src/test/resources/serialization/ver2.snapshot</exclude>
                         <exclude>src/test/resources/serialization/ver3.snapshot</exclude>
+                        <exclude>src/test/resources/serialization/ver9999.snapshot</exclude>
                         <exclude>src/test/resources/extensions/ConsumeKafkaRecord_1_0.json</exclude>
                     </excludes>
                 </configuration>

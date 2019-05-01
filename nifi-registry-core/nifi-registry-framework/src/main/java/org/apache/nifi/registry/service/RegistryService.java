@@ -37,10 +37,10 @@ import org.apache.nifi.registry.extension.bundle.BundleType;
 import org.apache.nifi.registry.extension.bundle.BundleVersion;
 import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
 import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
-import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
 import org.apache.nifi.registry.extension.component.TagCount;
+import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
@@ -62,7 +62,8 @@ import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
 import org.apache.nifi.registry.provider.extension.StandardBundleCoordinate;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
-import org.apache.nifi.registry.serialization.Serializer;
+import org.apache.nifi.registry.serialization.FlowContent;
+import org.apache.nifi.registry.serialization.FlowContentSerializer;
 import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
@@ -111,7 +112,7 @@ public class RegistryService {
     private final MetadataService metadataService;
     private final FlowPersistenceProvider flowPersistenceProvider;
     private final BundlePersistenceProvider bundlePersistenceProvider;
-    private final Serializer<VersionedProcessGroup> processGroupSerializer;
+    private final FlowContentSerializer flowContentSerializer;
     private final ExtensionService extensionService;
     private final Validator validator;
     private final RegistryUrlAliasService registryUrlAliasService;
@@ -124,14 +125,14 @@ public class RegistryService {
     public RegistryService(final MetadataService metadataService,
                            final FlowPersistenceProvider flowPersistenceProvider,
                            final BundlePersistenceProvider bundlePersistenceProvider,
-                           final Serializer<VersionedProcessGroup> processGroupSerializer,
+                           final FlowContentSerializer flowContentSerializer,
                            final ExtensionService extensionService,
                            final Validator validator,
                            final RegistryUrlAliasService registryUrlAliasService) {
         this.metadataService = Validate.notNull(metadataService);
         this.flowPersistenceProvider = Validate.notNull(flowPersistenceProvider);
         this.bundlePersistenceProvider = Validate.notNull(bundlePersistenceProvider);
-        this.processGroupSerializer = Validate.notNull(processGroupSerializer);
+        this.flowContentSerializer = Validate.notNull(flowContentSerializer);
         this.extensionService = Validate.notNull(extensionService);
         this.validator = Validate.notNull(validator);
         this.registryUrlAliasService = Validate.notNull(registryUrlAliasService);
@@ -688,7 +689,14 @@ public class RegistryService {
             // serialize the snapshot
             final ByteArrayOutputStream out = new ByteArrayOutputStream();
             registryUrlAliasService.setInternal(flowSnapshot.getFlowContents());
-            processGroupSerializer.serialize(flowSnapshot.getFlowContents(), out);
+
+            final FlowContent flowContent = new FlowContent();
+            flowContent.setFlowSnapshot(flowSnapshot);
+
+            // temporarily remove the metadata so it isn't serialized, but then put it back for returning the response
+            flowSnapshot.setSnapshotMetadata(null);
+            flowContentSerializer.serializeFlowContent(flowContent, out);
+            flowSnapshot.setSnapshotMetadata(snapshotMetadata);
 
             // save the serialized snapshot to the persistence provider
             final Bucket bucket = BucketMappings.map(existingBucket);
@@ -772,9 +780,9 @@ public class RegistryService {
                     + flowEntity.getId() + " and version " + version);
         }
 
-        // deserialize the contents
+        // deserialize the content
         final InputStream input = new ByteArrayInputStream(serializedSnapshot);
-        final VersionedProcessGroup flowContents = processGroupSerializer.deserialize(input);
+        final VersionedFlowSnapshot snapshot = deserializeFlowContent(input);
 
         // map entities to data model
         final Bucket bucket = BucketMappings.map(bucketEntity);
@@ -782,13 +790,27 @@ public class RegistryService {
         final VersionedFlowSnapshotMetadata snapshotMetadata = FlowMappings.map(bucketEntity, snapshotEntity);
 
         // create the snapshot to return
-        final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
-        registryUrlAliasService.setExternal(flowContents);
-        snapshot.setFlowContents(flowContents);
+        registryUrlAliasService.setExternal(snapshot.getFlowContents());
         snapshot.setSnapshotMetadata(snapshotMetadata);
         snapshot.setFlow(versionedFlow);
         snapshot.setBucket(bucket);
         return snapshot;
+    }
+
+    private VersionedFlowSnapshot deserializeFlowContent(final InputStream input) {
+        // attempt to read the version header from the serialized content
+        final int dataModelVersion = flowContentSerializer.readDataModelVersion(input);
+
+        // determine how to do deserialize based on the data model version
+        if (flowContentSerializer.isProcessGroupVersion(dataModelVersion)) {
+            final VersionedProcessGroup processGroup = flowContentSerializer.deserializeProcessGroup(dataModelVersion, input);
+            final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
+            snapshot.setFlowContents(processGroup);
+            return snapshot;
+        } else {
+            final FlowContent flowContent = flowContentSerializer.deserializeFlowContent(dataModelVersion, input);
+            return flowContent.getFlowSnapshot();
+        }
     }
 
     /**
@@ -1009,9 +1031,12 @@ public class RegistryService {
 
             // deserialize the contents
             final InputStream inputA = new ByteArrayInputStream(serializedSnapshotA);
-            final VersionedProcessGroup flowContentsA = processGroupSerializer.deserialize(inputA);
+            final VersionedFlowSnapshot snapshotA = deserializeFlowContent(inputA);
+            final VersionedProcessGroup flowContentsA = snapshotA.getFlowContents();
+
             final InputStream inputB = new ByteArrayInputStream(serializedSnapshotB);
-            final VersionedProcessGroup flowContentsB = processGroupSerializer.deserialize(inputB);
+            final VersionedFlowSnapshot snapshotB = deserializeFlowContent(inputB);
+            final VersionedProcessGroup flowContentsB = snapshotB.getFlowContents();
 
             final ComparableDataFlow comparableFlowA = new StandardComparableDataFlow(String.format("Version %d", older), flowContentsA);
             final ComparableDataFlow comparableFlowB = new StandardComparableDataFlow(String.format("Version %d", newer), flowContentsB);
@@ -1021,13 +1046,13 @@ public class RegistryService {
                     null, new ConciseEvolvingDifferenceDescriptor());
             final FlowComparison flowComparison = flowComparator.compare();
 
-            VersionedFlowDifference result = new VersionedFlowDifference();
+            final VersionedFlowDifference result = new VersionedFlowDifference();
             result.setBucketId(bucketIdentifier);
             result.setFlowId(flowIdentifier);
             result.setVersionA(older);
             result.setVersionB(newer);
 
-            Set<ComponentDifferenceGroup> differenceGroups = getStringComponentDifferenceGroupMap(flowComparison.getDifferences());
+            final Set<ComponentDifferenceGroup> differenceGroups = getStringComponentDifferenceGroupMap(flowComparison.getDifferences());
             result.setComponentDifferenceGroups(differenceGroups);
 
             return result;

@@ -18,6 +18,7 @@ package org.apache.nifi.registry.serialization.jackson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.nifi.registry.serialization.SerializationConstants;
 import org.apache.nifi.registry.serialization.SerializationException;
 import org.apache.nifi.registry.serialization.VersionedSerializer;
 import org.slf4j.Logger;
@@ -29,8 +30,6 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
-
-import static org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer.MAX_HEADER_BYTES;
 
 /**
  * A Serializer that uses Jackson for serializing/deserializing.
@@ -80,7 +79,7 @@ public abstract class JacksonSerializer<T> implements VersionedSerializer<T> {
 
     @Override
     public int readDataModelVersion(InputStream input) throws SerializationException {
-        final byte[] headerBytes = new byte[MAX_HEADER_BYTES];
+        final byte[] headerBytes = new byte[SerializationConstants.MAX_HEADER_BYTES];
         final int readHeaderBytes;
         try {
             readHeaderBytes = input.read(headerBytes);
