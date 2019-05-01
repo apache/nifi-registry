@@ -14,19 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.serialization.jackson;
+package org.apache.nifi.registry.serialization;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.serialization.SerializationException;
+import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 
 /**
- * A Jackson serializer for VersionedProcessGroups.
+ * Wrapper element to contain everything that is serialized for a given version of a flow.
  */
-public class JacksonVersionedProcessGroupSerializer extends JacksonSerializer<VersionedProcessGroup> {
+public class FlowContent {
 
-    @Override
-    TypeReference<SerializationContainer<VersionedProcessGroup>> getDeserializeTypeRef() throws SerializationException {
-        return new TypeReference<SerializationContainer<VersionedProcessGroup>>() {};
+    private VersionedFlowSnapshot flowSnapshot;
+
+    public VersionedFlowSnapshot getFlowSnapshot() {
+        return flowSnapshot;
+    }
+
+    public void setFlowSnapshot(VersionedFlowSnapshot flowSnapshot) {
+        this.flowSnapshot = flowSnapshot;
     }
 }

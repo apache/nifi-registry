@@ -17,16 +17,16 @@
 package org.apache.nifi.registry.serialization.jackson;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.serialization.FlowContent;
 import org.apache.nifi.registry.serialization.SerializationException;
 
 /**
- * A Jackson serializer for VersionedProcessGroups.
+ * A Jackson serializer for FlowContent.
  */
-public class JacksonVersionedProcessGroupSerializer extends JacksonSerializer<VersionedProcessGroup> {
+public class JacksonFlowContentSerializer extends JacksonSerializer<FlowContent> {
 
     @Override
-    TypeReference<SerializationContainer<VersionedProcessGroup>> getDeserializeTypeRef() throws SerializationException {
-        return new TypeReference<SerializationContainer<VersionedProcessGroup>>() {};
+    TypeReference<SerializationContainer<FlowContent>> getDeserializeTypeRef() throws SerializationException {
+        return new TypeReference<SerializationContainer<org.apache.nifi.registry.serialization.FlowContent>>() {};
     }
 }

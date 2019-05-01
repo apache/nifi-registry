@@ -25,6 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -47,12 +48,20 @@ public class VersionedFlowSnapshot {
     @NotNull
     private VersionedProcessGroup flowContents;
 
+    // optional map of external controller service references
+    private Map<String,ExternalControllerServiceReference> externalControllerServices;
+
+    // optional parameter contexts mapped by their name
+    private Map<String,VersionedParameterContext> parameterContexts;;
+
+    // optional encoding version that clients may specify to track how the flow contents are encoded
+    private String flowEncodingVersion;
+
     // read-only, only populated from retrieval of a snapshot
     private VersionedFlow flow;
 
     // read-only, only populated from retrieval of a snapshot
     private Bucket bucket;
-
 
     @ApiModelProperty(value = "The metadata for this snapshot", required = true)
     public VersionedFlowSnapshotMetadata getSnapshotMetadata() {
@@ -72,6 +81,15 @@ public class VersionedFlowSnapshot {
         this.flowContents = flowContents;
     }
 
+    @ApiModelProperty("The information about controller services that exist outside this versioned flow, but are referenced by components within the versioned flow.")
+    public Map<String, ExternalControllerServiceReference> getExternalControllerServices() {
+        return externalControllerServices;
+    }
+
+    public void setExternalControllerServices(Map<String, ExternalControllerServiceReference> externalControllerServices) {
+        this.externalControllerServices = externalControllerServices;
+    }
+
     @ApiModelProperty(value = "The flow this snapshot is for", readOnly = true)
     public VersionedFlow getFlow() {
         return flow;
@@ -88,6 +106,26 @@ public class VersionedFlowSnapshot {
 
     public void setBucket(Bucket bucket) {
         this.bucket = bucket;
+    }
+
+    @ApiModelProperty(value = "The parameter contexts referenced by process groups in the flow contents. " +
+            "The mapping is from the name of the context to the context instance, and it is expected that any " +
+            "context in this map is referenced by at least one process group in this flow.")
+    public Map<String,VersionedParameterContext> getParameterContexts() {
+        return parameterContexts;
+    }
+
+    public void setParameterContexts(Map<String,VersionedParameterContext> parameterContexts) {
+        this.parameterContexts = parameterContexts;
+    }
+
+    @ApiModelProperty(value = "The optional encoding version of the flow contents.")
+    public String getFlowEncodingVersion() {
+        return flowEncodingVersion;
+    }
+
+    public void setFlowEncodingVersion(String flowEncodingVersion) {
+        this.flowEncodingVersion = flowEncodingVersion;
     }
 
     /**

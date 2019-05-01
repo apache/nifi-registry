@@ -31,8 +31,8 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
-import org.apache.nifi.registry.serialization.Serializer;
-import org.apache.nifi.registry.serialization.VersionedProcessGroupSerializer;
+import org.apache.nifi.registry.serialization.FlowContent;
+import org.apache.nifi.registry.serialization.FlowContentSerializer;
 import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.extension.StandardExtensionService;
@@ -77,7 +77,7 @@ public class TestRegistryService {
     private MetadataService metadataService;
     private FlowPersistenceProvider flowPersistenceProvider;
     private BundlePersistenceProvider bundlePersistenceProvider;
-    private Serializer<VersionedProcessGroup> snapshotSerializer;
+    private FlowContentSerializer flowContentSerializer;
     private ExtensionService extensionService;
     private Validator validator;
     private RegistryUrlAliasService registryUrlAliasService;
@@ -89,7 +89,7 @@ public class TestRegistryService {
         metadataService = mock(MetadataService.class);
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
         bundlePersistenceProvider = mock(BundlePersistenceProvider.class);
-        snapshotSerializer = mock(VersionedProcessGroupSerializer.class);
+        flowContentSerializer = mock(FlowContentSerializer.class);
         extensionService = mock(StandardExtensionService.class);
         registryUrlAliasService = mock(RegistryUrlAliasService.class);
 
@@ -97,7 +97,7 @@ public class TestRegistryService {
         validator = validatorFactory.getValidator();
 
         registryService = new RegistryService(metadataService, flowPersistenceProvider, bundlePersistenceProvider,
-                snapshotSerializer, extensionService, validator, registryUrlAliasService);
+                flowContentSerializer, extensionService, validator, registryUrlAliasService);
     }
 
     // ---------------------- Test Bucket methods ---------------------------------------------
@@ -800,7 +800,7 @@ public class TestRegistryService {
         assertNotNull(createdSnapshot.getFlow());
         assertNotNull(createdSnapshot.getBucket());
 
-        verify(snapshotSerializer, times(1)).serialize(eq(snapshot.getFlowContents()), any(OutputStream.class));
+        verify(flowContentSerializer, times(1)).serializeFlowContent(any(FlowContent.class), any(OutputStream.class));
         verify(flowPersistenceProvider, times(1)).saveFlowContent(any(), any());
         verify(metadataService, times(1)).createFlowSnapshot(any(FlowSnapshotEntity.class));
     }
@@ -1150,8 +1150,10 @@ public class TestRegistryService {
                 existingSnapshot.getVersion()
         )).thenReturn(new byte[10]);
 
-        final VersionedFlowSnapshot snapshotToDeserialize = createSnapshot();
-        when(snapshotSerializer.deserialize(any(InputStream.class))).thenReturn(snapshotToDeserialize.getFlowContents());
+        final FlowContent flowContent = new FlowContent();
+        flowContent.setFlowSnapshot(createSnapshot());
+        when(flowContentSerializer.readDataModelVersion(any(InputStream.class))).thenReturn(3);
+        when(flowContentSerializer.deserializeFlowContent(eq(3), any(InputStream.class))).thenReturn(flowContent);
 
         final VersionedFlowSnapshot returnedSnapshot = registryService.getFlowSnapshot(
                 existingBucket.getId(), existingSnapshot.getFlowId(), existingSnapshot.getVersion());
@@ -1253,7 +1255,9 @@ public class TestRegistryService {
 
         final VersionedProcessGroup pgA = createVersionedProcessGroupA();
         final VersionedProcessGroup pgB = createVersionedProcessGroupB();
-        when(snapshotSerializer.deserialize(any())).thenReturn(pgA, pgB);
+        when(flowContentSerializer.readDataModelVersion(any(InputStream.class))).thenReturn(2);
+        when(flowContentSerializer.isProcessGroupVersion(eq(2))).thenReturn(true);
+        when(flowContentSerializer.deserializeProcessGroup(eq(2),any())).thenReturn(pgA, pgB);
 
         final VersionedFlowDifference diff = registryService.getFlowDiff(
                 "bucketIdentifier", "flowIdentifier", 1, 2);
@@ -1274,7 +1278,9 @@ public class TestRegistryService {
 
         final VersionedProcessGroup pgA = createVersionedProcessGroupA();
         final VersionedProcessGroup pgB = createVersionedProcessGroupB();
-        when(snapshotSerializer.deserialize(any())).thenReturn(pgA, pgB);
+        when(flowContentSerializer.readDataModelVersion(any(InputStream.class))).thenReturn(2);
+        when(flowContentSerializer.isProcessGroupVersion(eq(2))).thenReturn(true);
+        when(flowContentSerializer.deserializeProcessGroup(eq(2),any())).thenReturn(pgA, pgB);
 
         // getFlowDiff orders the changes in ascending order of version number regardless of param order
         final VersionedFlowDifference diff = registryService.getFlowDiff(

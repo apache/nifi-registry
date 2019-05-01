@@ -14,19 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.nifi.registry.serialization.jackson;
+package org.apache.nifi.registry.flow;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.nifi.registry.flow.VersionedProcessGroup;
-import org.apache.nifi.registry.serialization.SerializationException;
+import io.swagger.annotations.ApiModelProperty;
 
-/**
- * A Jackson serializer for VersionedProcessGroups.
- */
-public class JacksonVersionedProcessGroupSerializer extends JacksonSerializer<VersionedProcessGroup> {
+import java.util.Set;
 
-    @Override
-    TypeReference<SerializationContainer<VersionedProcessGroup>> getDeserializeTypeRef() throws SerializationException {
-        return new TypeReference<SerializationContainer<VersionedProcessGroup>>() {};
+public class VersionedParameterContext {
+
+    private String name;
+    private Set<VersionedParameter> parameters;
+
+    @ApiModelProperty("The name of the context")
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @ApiModelProperty("The parameters in the context")
+    public Set<VersionedParameter> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(Set<VersionedParameter> parameters) {
+        this.parameters = parameters;
     }
 }

@@ -60,9 +60,12 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersion;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.flow.ExternalControllerServiceReference;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.flow.VersionedParameter;
+import org.apache.nifi.registry.flow.VersionedParameterContext;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
@@ -86,12 +89,15 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -270,6 +276,9 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final VersionedFlow snapshotFlow = flow1;
 
         final VersionedFlowSnapshot snapshot1 = createSnapshot(snapshotClient, snapshotFlow, 1);
+        assertNotNull(snapshot1);
+        assertNotNull(snapshot1.getSnapshotMetadata());
+        assertEquals(snapshotFlow.getIdentifier(), snapshot1.getSnapshotMetadata().getFlowIdentifier());
         LOGGER.info("Created snapshot # 1 with version " + snapshot1.getSnapshotMetadata().getVersion());
 
         final VersionedFlowSnapshot snapshot2 = createSnapshot(snapshotClient, snapshotFlow, 2);
@@ -803,6 +812,78 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         LOGGER.info("!!! SUCCESS !!!");
 
+    }
+
+    @Test
+    public void testFlowSnapshotsWithParameterContextAndEncodingVersion() throws IOException, NiFiRegistryException {
+        // Create a bucket
+        final Bucket bucket = new Bucket();
+        bucket.setName("Test Bucket");
+
+        final Bucket createdBucket = client.getBucketClient().create(bucket);
+        assertNotNull(createdBucket);
+
+        // Create the flow
+        final VersionedFlow flow = new VersionedFlow();
+        flow.setName("My Flow");
+        flow.setBucketIdentifier(createdBucket.getIdentifier());
+
+        final VersionedFlow createdFlow = client.getFlowClient().create(flow);
+        assertNotNull(createdFlow);
+
+        // Create a param context
+        final VersionedParameter param1 = new VersionedParameter();
+        param1.setName("Param 1");
+        param1.setValue("Param 1 Value");
+        param1.setDescription("Description");
+
+        final VersionedParameter param2 = new VersionedParameter();
+        param2.setName("Param 2");
+        param2.setValue("Param 2 Value");
+        param2.setDescription("Description");
+        param2.setSensitive(true);
+
+        final VersionedParameterContext context1 = new VersionedParameterContext();
+        context1.setName("Parameter Context 1");
+        context1.setParameters(new HashSet<>(Arrays.asList(param1, param2)));
+
+        final Map<String,VersionedParameterContext> contexts = new HashMap<>();
+        contexts.put(context1.getName(), context1);
+
+        // Create an external controller service reference
+        final ExternalControllerServiceReference serviceReference = new ExternalControllerServiceReference();
+        serviceReference.setName("External Service 1");
+        serviceReference.setIdentifier(UUID.randomUUID().toString());
+
+        final Map<String,ExternalControllerServiceReference> serviceReferences = new HashMap<>();
+        serviceReferences.put(serviceReference.getIdentifier(), serviceReference);
+
+        // Create the snapshot
+        final VersionedFlowSnapshot snapshot = buildSnapshot(createdFlow, 1);
+        snapshot.setFlowEncodingVersion("2.0.0");
+        snapshot.setParameterContexts(contexts);
+        snapshot.setExternalControllerServices(serviceReferences);
+
+        final VersionedFlowSnapshot createdSnapshot = client.getFlowSnapshotClient().create(snapshot);
+        assertNotNull(createdSnapshot);
+        assertNotNull(createdSnapshot.getFlowEncodingVersion());
+        assertNotNull(createdSnapshot.getParameterContexts());
+        assertNotNull(createdSnapshot.getExternalControllerServices());
+        assertEquals(snapshot.getFlowEncodingVersion(), createdSnapshot.getFlowEncodingVersion());
+        assertEquals(1, createdSnapshot.getParameterContexts().size());
+        assertEquals(1, createdSnapshot.getExternalControllerServices().size());
+
+        // Retrieve the snapshot
+        final VersionedFlowSnapshot retrievedSnapshot = client.getFlowSnapshotClient().get(
+                createdSnapshot.getSnapshotMetadata().getFlowIdentifier(),
+                createdSnapshot.getSnapshotMetadata().getVersion());
+        assertNotNull(retrievedSnapshot);
+        assertNotNull(retrievedSnapshot.getFlowEncodingVersion());
+        assertNotNull(retrievedSnapshot.getParameterContexts());
+        assertNotNull(retrievedSnapshot.getExternalControllerServices());
+        assertEquals(snapshot.getFlowEncodingVersion(), retrievedSnapshot.getFlowEncodingVersion());
+        assertEquals(1, retrievedSnapshot.getParameterContexts().size());
+        assertEquals(1, retrievedSnapshot.getExternalControllerServices().size());
     }
 
     private void checkExtensionMetadata(Collection<ExtensionMetadata> extensions) {
