@@ -44,7 +44,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
 
     this.documentation = {
         link: 'nifi-registry-docs/documentation'
-    }
+    };
     this.redirectUrl = '/nifi-registry/explorer/grid-list';
 
     // Services
@@ -84,6 +84,11 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
         {
             name: 'modifiedTimestamp',
             label: 'Updated',
+            sortable: true
+        },
+        {
+            name: 'type',
+            label: 'Type',
             sortable: true
         }
     ];
@@ -355,6 +360,9 @@ NfRegistryService.prototype = {
                 case 'Name':
                     label = (sortByColumn.sortOrder === 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
                     break;
+                case 'Type':
+                    label = (sortByColumn.sortOrder === 'ASC') ? 'Type (a - z)' : 'Type (z - a)';
+                    break;
             }
             return label;
         }
@@ -374,6 +382,9 @@ NfRegistryService.prototype = {
                 break;
             case 'Name':
                 label = (col.sortOrder !== 'ASC') ? 'Name (a - z)' : 'Name (z - a)';
+                break;
+            case 'Type':
+                label = (col.sortOrder !== 'ASC') ? 'Type (a - z)' : 'Type (z - a)';
                 break;
         }
         return label;
