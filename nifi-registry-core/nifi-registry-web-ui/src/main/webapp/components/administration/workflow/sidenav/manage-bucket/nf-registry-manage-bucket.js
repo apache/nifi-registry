@@ -421,6 +421,7 @@ NfRegistryManageBucket.prototype = {
                 });
             } else if (response.status === 409) {
                 self.bucketname = self.nfRegistryService.bucket.name;
+                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: 'This bucket already exists. Please enter a different identity/bucket name.',
