@@ -61,5 +61,10 @@ module.exports = {
     'nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js': path.resolve(__dirname, 'webapp/components/administration/workflow/nf-registry-workflow-administration.js'),
     'nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js': path.resolve(__dirname, 'webapp/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js'),
     'nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js': path.resolve(__dirname, 'webapp/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js'),
-    'nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js': path.resolve(__dirname, 'webapp/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js')
+    'nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js': path.resolve(__dirname, 'webapp/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js'),
+
+    'nf-registry.testbed-factory': path.resolve(__dirname, 'webapp/nf-registry.testbed-factory.js'),
+
+    'components': path.resolve(__dirname, 'webapp/components'),
+    'services': path.resolve(__dirname, 'webapp/services'),
 };

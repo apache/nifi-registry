@@ -15,16 +15,20 @@
  * limitations under the License.
  */
 
+const webpackConfig = require('./webpack.dev');
+const path = require('path');
+
+delete webpackConfig.entry;
+delete webpackConfig.optimization;
+
 module.exports = function (config) {
 
-    var appBase = 'webapp/';       // app JS and map files
-
     config.set({
-        basePath: '',
-        browserNoActivityTimeout: 9999999, //default 10000
-        browserDisconnectTimeout: 999999, // default 2000
-        browserDisconnectTolerance: 1, // default 0
-        captureTimeout: 999999,
+        basePath: './',
+        browserNoActivityTimeout: 300000, //default 10000
+        browserDisconnectTimeout: 180000, // default 2000
+        browserDisconnectTolerance: 3, // default 0
+        captureTimeout: 180000,
         frameworks: ['jasmine'],
         customLaunchers: {
             Chrome_travis_ci: {
@@ -33,123 +37,65 @@ module.exports = function (config) {
             }
         },
         plugins: [
-            require('karma-jasmine'),
-            require('karma-chrome-launcher'),
-            require('karma-jasmine-html-reporter'),
-            require('karma-spec-reporter'),
-            require('karma-coverage')
+            'karma-jasmine',
+            'karma-chrome-launcher',
+            'karma-jasmine-html-reporter',
+            'karma-spec-reporter',
+            'karma-coverage',
+            'karma-webpack',
+            'karma-coverage-istanbul-reporter'
         ],
-
-        client: {
-            builtPaths: [appBase], // add more spec base paths as needed
-            clearContext: false // leave Jasmine Spec Runner output visible in browser
-        },
 
         files: [
-            // System.js for module loading
-            'node_modules/systemjs/dist/system.src.js',
+            // Zone JS
+            {pattern: 'node_modules/zone.js/dist/zone.min.js', included: true, watched: false},
+            {pattern: 'node_modules/zone.js/dist/proxy.min.js', included: true, watched: false},
+            {pattern: 'node_modules/zone.js/dist/sync-test.js', included: true, watched: false},
+            {pattern: 'node_modules/zone.js/dist/jasmine-patch.min.js', included: true, watched: false},
+            {pattern: 'node_modules/zone.js/dist/async-test.js', included: true, watched: false},
+            {pattern: 'node_modules/zone.js/dist/fake-async-test.js', included: true, watched: false},
 
-            // Polyfills
-            'node_modules/core-js/client/shim.js',
+            // Including spec files for running
+            {pattern: 'karma-test-shim.js', included: true, watched: true}
 
-            // zone.js
-            'node_modules/zone.js/dist/zone.js',
-            'node_modules/zone.js/dist/long-stack-trace-zone.js',
-            'node_modules/zone.js/dist/proxy.js',
-            'node_modules/zone.js/dist/sync-test.js',
-            'node_modules/zone.js/dist/jasmine-patch.js',
-            'node_modules/zone.js/dist/async-test.js',
-            'node_modules/zone.js/dist/fake-async-test.js',
-
-            // others
-            'node_modules/hammerjs/hammer.js',
-            'node_modules/moment/moment.js',
-            'node_modules/superagent/superagent.js',
-            'node_modules/tslib/tslib.js',
-
-            // RxJs
-            {pattern: 'node_modules/rxjs/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/rxjs/**/*.js.map', included: false, watched: false},
-
-            // Paths loaded via module imports:
-            {pattern: 'node_modules/systemjs/**/*.js.map', included: false, watched: false},
-            {pattern: 'node_modules/@angular/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/@angular/**/*.js.map', included: false, watched: false},
-            {pattern: 'node_modules/@covalent/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/@covalent/**/*.js.map', included: false, watched: false},
-            {pattern: 'node_modules/@nifi-fds/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/jquery/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/roboto-fontface/**/*.ttf', included: false, watched: false},
-            {pattern: 'node_modules/angular2-moment/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/angular2-moment/**/*.js.map', included: false, watched: false},
-            {pattern: 'node_modules/querystring/**/*.js', included: false, watched: false},
-            {pattern: 'node_modules/systemjs-plugin-text/text.js', included: false, watched: false},
-
-            {pattern: appBase + 'systemjs.spec.config.js', included: false, watched: false},
-            'karma-test-shim.js', // optionally extend SystemJS mapping e.g., with barrels
-
-            // Include the Flow Design System (which includes the Teradata Covalent and
-            // Angular Material themes) in the test suite.
-            {
-                pattern: 'node_modules/@nifi-fds/core/common/styles/css/*.min.css',
-                included: true,
-                watched: true,
-                served: true
-            },
-            {
-                pattern: 'node_modules/@nifi-fds/core/**/*.html',
-                included: true,
-                watched: true,
-                served: true
-            },
-
-            // Include the Nifi Registry styles (currently built based off of the
-            // @nifi-fds/core/common/styles/_globalVars.scss)
-            {
-                pattern: 'webapp/css/*.css',
-                included: true,
-                watched: true
-            },
-            {
-                pattern: 'webapp/**/*.html',
-                included: true,
-                watched: true,
-                served: true
-            },
-
-            // Images
-            {pattern: '**/*.svg', watched: false, included: true, served: true},
-
-            // Paths for debugging with source maps in dev tools
-            {pattern: 'node_modules/@nifi-fds/core/**/*.css.map', included: false, watched: false},
-            {pattern: appBase + '**/*.js.map', included: false, watched: false},
-            {pattern: appBase + '**/*.css.map', included: false, watched: false},
-            {pattern: appBase + '**/*.js', included: false, watched: false}
         ],
 
-        // Proxied base paths for loading assets
-        proxies: {
-            // required for modules fetched by SystemJS
-            '/base/nifi-registry/node_modules/': '/base/node_modules/',
-            '/base/systemjs-angular-loader.js': '/base/webapp/systemjs-angular-loader.js',
-            '/base/nifi-registry/': '/base/webapp/',
-            '/nifi-registry/images/': '/base/webapp/images/',
-            '/nifi-registry/explorer/nifi-registry/images/': '/base/webapp/images/',
-            '/nifi-registry/explorer/grid-list/buckets/nifi-registry/images/': '/base/webapp/images/'
+        webpack: webpackConfig,
+
+        webpackServer: {
+            noInfo: true
         },
 
         exclude: [],
+
         preprocessors: {
-            'webapp/**/!(*spec|*mock|*stub|*config|*extras).js': 'coverage'
+            'karma-test-shim.js': ['webpack'],
+            'webapp/**/!(*spec|*mock|*stub|*config|*extras).js': ['webpack'],
         },
-        reporters: ['kjhtml', 'spec', 'coverage'],
-        coverageReporter: {
-            type: 'html',
-            dir: 'coverage/'
+
+        // Try Websocket for a faster transmission first. Fallback to polling if necessary.
+        transports: ['websocket', 'polling'],
+
+        reporters: ['spec', 'coverage-istanbul'],
+
+        coverageIstanbulReporter: {
+            reports: [ 'html', 'text-summary' ],
+
+            dir: path.join(__dirname, 'coverage'),
+
+            fixWebpackSourcePaths: true,
+
+            'report-config': {
+                html: {
+                    subdir: 'html'
+                }
+            }
         },
+
         specReporter: {
             failFast: false
         },
+
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,
@@ -174,3 +120,4 @@ module.exports = function (config) {
         });
     }
 }
+

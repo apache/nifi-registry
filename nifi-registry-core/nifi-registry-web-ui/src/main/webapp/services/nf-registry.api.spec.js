@@ -15,90 +15,37 @@
  * limitations under the License.
  */
 
-var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var ngCoreTesting = require('@angular/core/testing');
-var ngCommonHttpTesting = require('@angular/common/http/testing');
-var ngCommon = require('@angular/common');
-var NfRegistry = require('nifi-registry/nf-registry.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var fdsCore = require('@flow-design-system/core');
-var ngMoment = require('angular2-moment');
-var rxjs = require('rxjs/Rx');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
-var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
+import { TestBed, inject } from '@angular/core/testing';
+import initTestBed from 'nf-registry.testbed-factory';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import { HttpTestingController } from '@angular/common/http/testing';
+import nfRegistryAuthGuardService  from 'services/nf-registry.auth-guard.service';
 
 describe('NfRegistry API w/ Angular testing utils', function () {
-    var nfRegistryApi;
-    var nfRegistryService;
+    let nfRegistryApi;
+    let nfRegistryService;
+    let req;
 
-    beforeEach(function () {
-        ngCoreTesting.TestBed.configureTestingModule({
-            imports: [
-                ngMoment.MomentModule,
-                ngCommonHttpTesting.HttpClientTestingModule,
-                fdsCore,
-                NfRegistryRoutes,
-            ],
-            declarations: [
-                NfRegistry,
-                NfRegistryExplorer,
-                NfRegistryAdministration,
-                NfRegistryUsersAdministration,
-                NfRegistryManageUser,
-                NfRegistryManageGroup,
-                NfRegistryManageBucket,
-                NfRegistryAddUser,
-                NfRegistryWorkflowAdministration,
-                NfRegistryGridListViewer,
-                NfRegistryBucketGridListViewer,
-                NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent,
-                NfLoginComponent,
-                NfUserLoginComponent
-            ],
-            providers: [
-                NfRegistryService,
-                nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
-                nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
-                nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
-                nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard,
-                NfRegistryApi,
-                NfStorage,
-                {
-                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
-                    useClass: NfRegistryTokenInterceptor,
-                    multi: true
-                },
-                {
-                    provide: ngCommon.APP_BASE_HREF,
-                    useValue: '/'
-                }
-            ],
-            bootstrap: [NfRegistry]
-        });
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-        nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
+    const providers = [
+        nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
+        nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
+        nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
+        nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard
+    ];
+
+    beforeEach((done) => {
+        initTestBed({providers})
+            .then(() => {
+                nfRegistryApi = TestBed.get(NfRegistryApi);
+                
+                // NfRegistryService from the root injector
+                nfRegistryService = TestBed.get(NfRegistryService);
+                done();
+            })
     });
 
-    it('should POST to exchange tickets.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should POST to exchange tickets.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.nfStorage, 'setItem').and.callThrough();
 
@@ -120,7 +67,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should load jwt from local storage.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should load jwt from local storage.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.nfStorage, 'hasItem').and.callFake(function () {
             return true;
@@ -135,7 +82,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
     }));
 
-    it('should fail to POST to exchange tickets.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to POST to exchange tickets.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.nfStorage, 'hasItem').and.callFake(function () {
             return false;
@@ -156,7 +103,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET to load the current user.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET to load the current user.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.loadCurrentUser().subscribe(function (response) {
             expect(response.identifier).toBe(123);
@@ -177,7 +124,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET droplet snapshot metadata.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET droplet snapshot metadata.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDropletSnapshotMetadata('flow/test').subscribe(function (response) {
         });
@@ -196,7 +143,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET droplet snapshot metadata.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET droplet snapshot metadata.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -221,7 +168,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET droplet by type and ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET droplet by type and ID.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc').subscribe(function (response) {
             expect(response.identifier).toEqual('2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
@@ -254,7 +201,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET droplet by type and ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET droplet by type and ID.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
             return {
@@ -285,7 +232,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET all droplets across all buckets.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET all droplets across all buckets.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplets().subscribe(function (response) {
             expect(response.length).toBe(2);
@@ -335,7 +282,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET all droplets across all buckets.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET all droplets across all buckets.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplets().subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/items: 401 GET droplet mock error');
@@ -352,7 +299,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET all droplets across a single bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET all droplets across a single bucket.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplets('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response.length).toBe(1);
@@ -385,7 +332,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET all droplets across a single bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET all droplets across a single bucket.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplets('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error');
@@ -402,7 +349,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should DELETE a droplet.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should DELETE a droplet.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.deleteDroplet('flows/1234').subscribe(function (response) {
         });
@@ -418,7 +365,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to DELETE a droplet.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to DELETE a droplet.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -444,7 +391,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should POST to create a new bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should POST to create a new bucket.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.createBucket('test').subscribe(function (response) {
             expect(response.identifier).toBe('1234');
@@ -462,7 +409,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to POST to create a new bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to POST to create a new bucket.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -488,7 +435,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should DELETE a bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should DELETE a bucket.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.deleteBucket('1234').subscribe(function (response) {
         });
@@ -503,7 +450,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to DELETE a bucket.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to DELETE a bucket.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -528,7 +475,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET bucket by ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET bucket by ID.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response.identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
@@ -548,7 +495,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET bucket by ID.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET bucket by ID.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
             return {
@@ -579,7 +526,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET metadata for all buckets in the registry for which the client is authorized.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET metadata for all buckets in the registry for which the client is authorized.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getBuckets().subscribe(function (response) {
             expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
@@ -599,7 +546,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET metadata for all buckets in the registry for which the client is authorized.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET metadata for all buckets in the registry for which the client is authorized.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -625,7 +572,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should PUT to update a bucket name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should PUT to update a bucket name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateBucket({
             'identifier' : '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
@@ -649,7 +596,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to PUT to update a bucket name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to PUT to update a bucket name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateBucket({
             'identifier' : '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
@@ -670,7 +617,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET user by id.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET user by id.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
             expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
@@ -690,7 +637,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET user by id.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET user by id.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -716,7 +663,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should POST to add a new user.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should POST to add a new user.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.addUser('test').subscribe(function (response) {
             expect(response.identifier).toBe('1234');
@@ -735,7 +682,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to POST to add a new user.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to POST to add a new user.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -761,7 +708,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should PUT to update a user name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should PUT to update a user name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'user #1').subscribe(function (response) {
             expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
@@ -781,7 +728,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to PUT to update a user name.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to PUT to update a user name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'user #1').subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error');
@@ -798,7 +745,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET users.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET users.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getUsers().subscribe(function (response) {
             expect(response[0].identity).toEqual('User #1');
@@ -818,7 +765,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail GET users.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail GET users.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -844,7 +791,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should DELETE users.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should DELETE users.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.deleteUser(123).subscribe(function (response) {
             expect(response.identity).toEqual('User #1');
@@ -864,7 +811,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to DELETE users.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to DELETE users.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -890,7 +837,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET user groups.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET user groups.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getUserGroups().subscribe(function (response) {
             expect(response[0].identity).toEqual('Group #1');
@@ -910,7 +857,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET user groups.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET user groups.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -936,7 +883,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET resource policies by resource identifier.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET resource policies by resource identifier.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getResourcePoliciesById('read', '/buckets', '123').subscribe(function (response) {
             expect(response[0].identifier).toEqual('123');
@@ -955,7 +902,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET resource policies by resource identifier.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET resource policies by resource identifier.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -976,7 +923,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET policy action resource.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getPolicyActionResource('read', '/buckets').subscribe(function (response) {
             expect(response[0].identifier).toEqual('123');
@@ -995,7 +942,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET policy action resource.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1016,7 +963,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should PUT policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should PUT policy action resource.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.putPolicyActionResource('123', 'read', '/buckets', [], []).subscribe(function (response) {
             expect(response[0].identifier).toEqual('123');
@@ -1035,7 +982,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to PUT policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to PUT policy action resource.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1061,7 +1008,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should POST policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should POST policy action resource.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.postPolicyActionResource('read', '/buckets', [], []).subscribe(function (response) {
             expect(response[0].identifier).toEqual('123');
@@ -1080,7 +1027,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to POST policy action resource.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to POST policy action resource.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1106,7 +1053,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should POST to login.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should POST to login.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.postToLogin('username', 'password').subscribe(function (response) {
             expect(response).toEqual('abc');
@@ -1123,7 +1070,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to POST to login.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to POST to login.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1149,7 +1096,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET all access policies.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET all access policies.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getPolicies().subscribe(function (response) {
             expect(response[0].identifier).toEqual('123');
@@ -1170,7 +1117,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET all access policies.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET all access policies.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getPolicies().subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies: 401 GET policies mock error');
@@ -1187,7 +1134,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should GET a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should GET a user group.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getUserGroup(123).subscribe(function (response) {
             expect(response.identity).toEqual('Group #1');
@@ -1207,7 +1154,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to GET a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to GET a user group.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1233,7 +1180,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should DELETE a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should DELETE a user group.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.deleteUserGroup(123).subscribe(function (response) {
             expect(response.identity).toEqual('Group #1');
@@ -1253,7 +1200,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to DELETE a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to DELETE a user group.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1279,7 +1226,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should POST to create a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should POST to create a user group.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.createNewGroup(123, 'Group #1', [{
             identity: 'User #1',
@@ -1305,7 +1252,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to POST to create a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to POST to create a user group.', inject([HttpTestingController], function (httpMock) {
         // Spy
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
         });
@@ -1334,7 +1281,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should PUT to update a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should PUT to update a user group.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateUserGroup(123, 'Group #1', [{
             identity: 'User #1',
@@ -1360,7 +1307,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         httpMock.verify();
     }));
 
-    it('should fail to PUT to update a user group.', ngCoreTesting.inject([ngCommonHttpTesting.HttpTestingController], function (httpMock) {
+    it('should fail to PUT to update a user group.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateUserGroup('123', 'Group #1', [{
             identity: 'User #1',

@@ -15,87 +15,27 @@
  * limitations under the License.
  */
 
-var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var ngCoreTesting = require('@angular/core/testing');
-var ngCommon = require('@angular/common');
-var NfRegistry = require('nifi-registry/nf-registry.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var fdsCore = require('@flow-design-system/core');
-var ngMoment = require('angular2-moment');
-var ngHttp = require('@angular/http');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
+import { TestBed } from '@angular/core/testing';
+import initTestBed from 'nf-registry.testbed-factory';
+import NfRegistry from './nf-registry';
+import NfRegistryService from 'services/nf-registry.service';
 
 describe('NfRegistry Component', function () {
-    var comp;
-    var fixture;
-    var nfRegistryService;
+    let comp;
+    let fixture;
+    let nfRegistryService;
 
-    beforeEach(function () {
-        ngCoreTesting.TestBed.configureTestingModule({
-            imports: [
-                ngMoment.MomentModule,
-                ngHttp.HttpModule,
-                ngHttp.JsonpModule,
-                ngCommonHttp.HttpClientModule,
-                fdsCore,
-                NfRegistryRoutes
-            ],
-            declarations: [
-                NfRegistry,
-                NfRegistryExplorer,
-                NfRegistryAdministration,
-                NfRegistryUsersAdministration,
-                NfRegistryManageUser,
-                NfRegistryManageGroup,
-                NfRegistryManageBucket,
-                NfRegistryAddUser,
-                NfRegistryWorkflowAdministration,
-                NfRegistryGridListViewer,
-                NfRegistryBucketGridListViewer,
-                NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent,
-                NfLoginComponent,
-                NfUserLoginComponent
-            ],
-            providers: [
-                NfRegistryService,
-                NfRegistryApi,
-                NfStorage,
-                {
-                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
-                    useClass: NfRegistryTokenInterceptor,
-                    multi: true
-                },
-                {
-                    provide: ngCommon.APP_BASE_HREF,
-                    useValue: '/'
-                }
-            ],
-            bootstrap: [NfRegistry]
-        });
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistry);
-        fixture.detectChanges();
-        comp = fixture.componentInstance;
+    beforeEach((done) => {
+        initTestBed()
+            .then(() => {
+                fixture = TestBed.createComponent(NfRegistry);
+                fixture.detectChanges();
+                comp = fixture.componentInstance;
 
-        // NfRegistryService from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
+                // NfRegistryService from the root injector
+                nfRegistryService = TestBed.get(NfRegistryService);
+                done();
+            })
     });
 
     it('should create component', function () {

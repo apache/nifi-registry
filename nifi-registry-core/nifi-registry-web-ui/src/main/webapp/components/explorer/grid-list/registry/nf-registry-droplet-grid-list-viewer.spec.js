@@ -15,112 +15,62 @@
  * limitations under the License.
  */
 
-var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var ngCoreTesting = require('@angular/core/testing');
-var ngCommon = require('@angular/common');
-var ngRouter = require('@angular/router');
-var NfRegistry = require('nifi-registry/nf-registry.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var fdsCore = require('@flow-design-system/core');
-var ngMoment = require('angular2-moment');
-var rxjs = require('rxjs/Rx');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import initTestBed from 'nf-registry.testbed-factory';
+import { Observable } from 'rxjs';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute } from '@angular/router';
+
+import NfRegistryDropletGridListViewer from 'components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer';
 
 describe('NfRegistryDropletGridListViewer Component', function () {
-    var comp;
-    var fixture;
-    var nfRegistryService;
-    var nfRegistryApi;
+    let comp;
+    let fixture;
+    let nfRegistryService;
+    let nfRegistryApi;
 
-    beforeEach(function () {
-        ngCoreTesting.TestBed.configureTestingModule({
-            imports: [
-                ngMoment.MomentModule,
-                ngCommonHttp.HttpClientModule,
-                fdsCore,
-                NfRegistryRoutes
-            ],
-            declarations: [
-                NfRegistry,
-                NfRegistryExplorer,
-                NfRegistryAdministration,
-                NfRegistryUsersAdministration,
-                NfRegistryManageUser,
-                NfRegistryManageGroup,
-                NfRegistryManageBucket,
-                NfRegistryAddUser,
-                NfRegistryWorkflowAdministration,
-                NfRegistryGridListViewer,
-                NfRegistryBucketGridListViewer,
-                NfRegistryDropletGridListViewer,
-                NfPageNotFoundComponent,
-                NfLoginComponent,
-                NfUserLoginComponent
-            ],
-            providers: [
-                NfRegistryService,
-                NfRegistryApi,
-                NfStorage,
-                {
-                    provide: ngCommonHttp.HTTP_INTERCEPTORS,
-                    useClass: NfRegistryTokenInterceptor,
-                    multi: true
-                },
-                {
-                    provide: ngCommon.APP_BASE_HREF,
-                    useValue: '/'
-                }, {
-                    provide: ngRouter.ActivatedRoute,
-                    useValue: {
-                        params: rxjs.Observable.of({
-                            bucketId: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-                            dropletId: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
-                            dropletType: 'flow'
-                        })
-                    }
+    beforeEach((done) => {
+        const providers = [
+            {
+                provide: ActivatedRoute,
+                useValue: {
+                    params: Observable.of({
+                        bucketId: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+                        dropletId: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+                        dropletType: 'flow'
+                    })
                 }
-            ]
-        });
+            }
+        ];
+        
+        initTestBed({providers})
+            .then(() => {
+                fixture = TestBed.createComponent(NfRegistryDropletGridListViewer);
 
-        fixture = ngCoreTesting.TestBed.createComponent(NfRegistryDropletGridListViewer);
+                // test instance
+                comp = fixture.componentInstance;
 
-        // test instance
-        comp = fixture.componentInstance;
+                // from the root injector
+                nfRegistryService = TestBed.get(NfRegistryService);
+                nfRegistryApi = TestBed.get(NfRegistryApi);
 
-        // from the root injector
-        nfRegistryService = ngCoreTesting.TestBed.get(NfRegistryService);
-        nfRegistryApi = ngCoreTesting.TestBed.get(NfRegistryApi);
+                // because the NfRegistryDropletGridListViewer component is a nested route component we need to set up the nfRegistryService service manually
+                nfRegistryService.perspective = 'explorer';
+                nfRegistryService.explorerViewType = 'grid-list';
 
-        // because the NfRegistryDropletGridListViewer component is a nested route component we need to set up the nfRegistryService service manually
-        nfRegistryService.perspective = 'explorer';
-        nfRegistryService.explorerViewType = 'grid-list';
-
-        //Spy
-        spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(rxjs.Observable.of({}));
-        spyOn(nfRegistryService, 'filterDroplets');
+                //Spy
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryService, 'filterDroplets');
+               
+                done();
+            });
     });
 
-    it('should have a defined component', ngCoreTesting.fakeAsync(function () {
+    it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
             "name": "Flow #1",
             "description": "This is flow #1",
@@ -137,17 +87,17 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }]));
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
             "name": "Flow #1",
             "description": "This is flow #1",
@@ -166,7 +116,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, getDroplet, and getDroplets calls
         fixture.detectChanges();
         // wait for async getBuckets, getBucket, getDroplet, and getDroplets calls
-        ngCoreTesting.tick();
+        tick();
         // 2nd change detection completes after the getBuckets, getBucket, getDroplet, and getDroplets calls
         fixture.detectChanges();
 
@@ -184,33 +134,33 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         expect(nfRegistryService.filterDroplets).toHaveBeenCalled();
         expect(nfRegistryService.filterDroplets.calls.count()).toBe(1);
 
-        var getDropletsCall = nfRegistryApi.getDroplets.calls.first();
+        const getDropletsCall = nfRegistryApi.getDroplets.calls.first();
         expect(getDropletsCall.args[0]).toBe('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
 
-        var getDropletCall = nfRegistryApi.getDroplet.calls.first();
+        const getDropletCall = nfRegistryApi.getDroplet.calls.first();
         expect(getDropletCall.args[0]).toBe('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(getDropletCall.args[1]).toBe('flow');
         expect(getDropletCall.args[2]).toBe('2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
 
-        var getBucketCall = nfRegistryApi.getBucket.calls.first()
+        const getBucketCall = nfRegistryApi.getBucket.calls.first();
         expect(getBucketCall.args[0]).toBe('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
     }));
 
-    it('should FAIL to get buckets, get bucket, get droplets, and get droplet and then redirect to view all buckets', ngCoreTesting.fakeAsync(function () {
+    it('should FAIL to get buckets, get bucket, get droplets, and get droplet and then redirect to view all buckets', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             status: 404
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -218,19 +168,19 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, and getDroplets calls
         fixture.detectChanges();
         // wait for async getBuckets, getBucket, and getDroplets calls
-        ngCoreTesting.tick();
+        tick();
         // 2nd change detection completes after the getBuckets, getBucket, and getDroplets calls
         fixture.detectChanges();
 
         //assertions
-        var routerCall = comp.router.navigateByUrl.calls.first();
+        const routerCall = comp.router.navigateByUrl.calls.first();
         expect(routerCall.args[0]).toBe('/nifi-registry/explorer/grid-list');
         expect(comp.router.navigateByUrl.calls.count()).toBe(2);
     }));
 
-    it('should destroy the component', ngCoreTesting.fakeAsync(function () {
+    it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
             "name": "Flow #1",
             "description": "This is flow #1",
@@ -247,17 +197,17 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }]));
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({
+        }).and.returnValue(Observable.of({
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
             "name": "Flow #1",
             "description": "This is flow #1",
@@ -276,7 +226,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, getDroplet, and getDroplets calls
         fixture.detectChanges();
         // wait for async getBuckets, getBucket, getDroplet, and getDroplets calls
-        ngCoreTesting.tick();
+        tick();
         // 2nd change detection completes after the getBuckets, getBucket, getDroplet, and getDroplets calls
         fixture.detectChanges();
 

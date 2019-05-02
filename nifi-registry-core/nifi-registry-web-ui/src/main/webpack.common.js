@@ -96,10 +96,10 @@ module.exports = {
                         loader: 'cache-loader'
                     },
                     {
-                        loader: path.resolve(__dirname, 'systemjs-text-to-html-loader')
+                        loader: path.resolve(__dirname, 'angular-url-loader')
                     },
                     {
-                        loader: path.resolve(__dirname, 'angular-url-loader')
+                        loader: path.resolve(__dirname, 'systemjs-text-to-html-loader')
                     },
                     {
                         loader: 'babel-loader',
