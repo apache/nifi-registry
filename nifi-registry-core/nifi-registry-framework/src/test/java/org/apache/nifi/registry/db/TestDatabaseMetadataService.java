@@ -415,7 +415,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals("Example processors bundle", entity.getDescription());
         assertNotNull(entity.getCreated());
         assertNotNull(entity.getModified());
-        assertEquals(BucketItemEntityType.EXTENSION_BUNDLE, entity.getType());
+        assertEquals(BucketItemEntityType.BUNDLE, entity.getType());
         assertEquals("3", entity.getBucketId());
 
         assertEquals(BundleType.NIFI_NAR, entity.getBundleType());

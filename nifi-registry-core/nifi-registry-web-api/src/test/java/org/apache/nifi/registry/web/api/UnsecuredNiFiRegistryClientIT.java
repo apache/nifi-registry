@@ -752,7 +752,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // verify 3 bundle items
         final List<BucketItem> extensionBundleItems = allItems.stream()
-                .filter(i -> i.getType() == BucketItemType.Extension_Bundle)
+                .filter(i -> i.getType() == BucketItemType.Bundle)
                 .collect(Collectors.toList());
         assertEquals(3, extensionBundleItems.size());
 

@@ -53,7 +53,7 @@ public class Bundle extends BucketItem {
     private long versionCount;
 
     public Bundle() {
-        super(BucketItemType.Extension_Bundle);
+        super(BucketItemType.Bundle);
     }
 
     @ApiModelProperty(value = "The type of the extension bundle")

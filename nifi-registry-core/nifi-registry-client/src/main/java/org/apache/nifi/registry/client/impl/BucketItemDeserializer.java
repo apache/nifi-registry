@@ -66,7 +66,7 @@ public class BucketItemDeserializer extends StdDeserializer<BucketItem[]> {
                     final VersionedFlow versionedFlow = jsonParser.getCodec().treeToValue(node, VersionedFlow.class);
                     bucketItems.add(versionedFlow);
                     break;
-                case Extension_Bundle:
+                case Bundle:
                     final Bundle bundle = jsonParser.getCodec().treeToValue(node, Bundle.class);
                     bucketItems.add(bundle);
                     break;

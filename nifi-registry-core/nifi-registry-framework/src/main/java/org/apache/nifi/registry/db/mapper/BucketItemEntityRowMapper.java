@@ -40,7 +40,7 @@ public class BucketItemEntityRowMapper implements RowMapper<BucketItemEntity> {
             case FLOW:
                 item = new FlowEntity();
                 break;
-            case EXTENSION_BUNDLE:
+            case BUNDLE:
                 final BundleEntity bundleEntity = new BundleEntity();
                 bundleEntity.setBundleType(BundleType.valueOf(rs.getString("BUNDLE_TYPE")));
                 bundleEntity.setGroupId(rs.getString("BUNDLE_GROUP_ID"));

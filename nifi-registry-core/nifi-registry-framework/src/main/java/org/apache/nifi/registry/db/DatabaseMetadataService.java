@@ -192,7 +192,7 @@ public class DatabaseMetadataService implements MetadataService {
                     final FlowEntity flowEntity = (FlowEntity) item;
                     flowEntity.setSnapshotCount(snapshotCount);
                 }
-            } else if (item.getType() == BucketItemEntityType.EXTENSION_BUNDLE) {
+            } else if (item.getType() == BucketItemEntityType.BUNDLE) {
                 final Long versionCount = extensionBundleVersionCounts.get(item.getId());
                 if (versionCount != null) {
                     final BundleEntity bundleEntity = (BundleEntity) item;
