@@ -61,7 +61,7 @@ public class ExtensionMappings {
         entity.setDescription(bundle.getDescription());
         entity.setCreated(new Date(bundle.getCreatedTimestamp()));
         entity.setModified(new Date(bundle.getModifiedTimestamp()));
-        entity.setType(BucketItemEntityType.EXTENSION_BUNDLE);
+        entity.setType(BucketItemEntityType.BUNDLE);
         entity.setBucketId(bundle.getBucketIdentifier());
 
         entity.setGroupId(bundle.getGroupId());

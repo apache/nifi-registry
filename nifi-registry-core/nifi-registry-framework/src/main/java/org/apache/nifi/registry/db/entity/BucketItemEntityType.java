@@ -23,7 +23,7 @@ public enum BucketItemEntityType {
 
     FLOW(Values.FLOW),
 
-    EXTENSION_BUNDLE(Values.EXTENSION_BUNDLE);
+    BUNDLE(Values.BUNDLE);
 
 
     private final String value;
@@ -40,7 +40,7 @@ public enum BucketItemEntityType {
     // need these constants to reference from @DiscriminatorValue
     public static class Values {
         public static final String FLOW = "FLOW";
-        public static final String EXTENSION_BUNDLE = "EXTENSION_BUNDLE";
+        public static final String BUNDLE = "BUNDLE";
     }
 
 }

@@ -86,7 +86,7 @@ insert into bucket_item (
   'Example processors bundle',
   parsedatetime('2018-11-02 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   parsedatetime('2018-11-02 12:56:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
-  'EXTENSION_BUNDLE',
+  'BUNDLE',
   '3'
 );
 
@@ -155,7 +155,7 @@ insert into bucket_item (
   'Example services bundle',
   parsedatetime('2018-11-02 12:57:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   parsedatetime('2018-11-02 12:57:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
-  'EXTENSION_BUNDLE',
+  'BUNDLE',
   '3'
 );
 
@@ -224,7 +224,7 @@ insert into bucket_item (
   'Example service API bundle',
   parsedatetime('2018-11-02 12:58:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
   parsedatetime('2017-11-02 12:58:00.000 UTC', 'yyyy-MM-dd hh:mm:ss.SSS z'),
-  'EXTENSION_BUNDLE',
+  'BUNDLE',
   '3'
 );
 

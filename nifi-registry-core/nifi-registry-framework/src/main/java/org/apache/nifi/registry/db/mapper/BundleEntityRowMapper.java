@@ -38,7 +38,7 @@ public class BundleEntityRowMapper implements RowMapper<BundleEntity> {
         entity.setModified(rs.getTimestamp("MODIFIED"));
         entity.setBucketId(rs.getString("BUCKET_ID"));
         entity.setBucketName(rs.getString("BUCKET_NAME"));
-        entity.setType(BucketItemEntityType.EXTENSION_BUNDLE);
+        entity.setType(BucketItemEntityType.BUNDLE);
 
         // BundleEntity fields
         entity.setBundleType(BundleType.valueOf(rs.getString("BUNDLE_TYPE")));

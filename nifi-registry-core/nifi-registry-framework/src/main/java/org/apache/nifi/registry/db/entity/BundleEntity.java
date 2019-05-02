@@ -27,7 +27,7 @@ public class BundleEntity extends BucketItemEntity {
     private long versionCount;
 
     public BundleEntity() {
-        setType(BucketItemEntityType.EXTENSION_BUNDLE);
+        setType(BucketItemEntityType.BUNDLE);
     }
 
     public BundleType getBundleType() {
@@ -64,8 +64,8 @@ public class BundleEntity extends BucketItemEntity {
 
     @Override
     public void setType(BucketItemEntityType type) {
-        if (BucketItemEntityType.EXTENSION_BUNDLE != type) {
-            throw new IllegalStateException("Must set type to " + BucketItemEntityType.Values.EXTENSION_BUNDLE);
+        if (BucketItemEntityType.BUNDLE != type) {
+            throw new IllegalStateException("Must set type to " + BucketItemEntityType.Values.BUNDLE);
         }
         super.setType(type);
     }
