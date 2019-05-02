@@ -102,7 +102,8 @@ NfRegistryManageBucket.prototype = {
                     self.nfRegistryService.sidenav.open();
                     var bucket = response[0];
                     self.nfRegistryService.bucket = bucket;
-                    self.bucketname = response[0].name;
+                    self.bucketname = bucket.name;
+                    self.allowBundleRedeploy = bucket.allowBundleRedeploy;
                     if (!self.nfRegistryService.currentUser.anonymous) {
                         if (!response[1].status || response[1].status === 200) {
                             var policies = response[1];
@@ -163,6 +164,7 @@ NfRegistryManageBucket.prototype = {
                 .subscribe(function (response) {
                     self.nfRegistryService.bucket = response;
                     self.bucketname = response.name;
+                    self.allowBundleRedeploy = response.allowBundleRedeploy;
 
                     if (dialogResult) {
                         if (dialogResult.userOrGroup.type === 'user') {
@@ -200,6 +202,7 @@ NfRegistryManageBucket.prototype = {
                 .subscribe(function (response) {
                     self.nfRegistryService.bucket = response;
                     self.bucketname = response.name;
+                    self.allowBundleRedeploy = response.allowBundleRedeploy;
 
                     if (dialogResult) {
                         if (dialogResult.userOrGroup.type === 'user') {
@@ -426,6 +429,7 @@ NfRegistryManageBucket.prototype = {
                 });
             } else if (response.status === 400) {
                 self.bucketname = self.nfRegistryService.bucket.name;
+                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
@@ -459,7 +463,7 @@ NfRegistryManageBucket.prototype = {
                     duration: 3000
                 });
             }  else if (response.status === 400) {
-                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
+                self.allowBundleRedeploy = !event.checked
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,

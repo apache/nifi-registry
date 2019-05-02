@@ -23,7 +23,7 @@ limitations under the License.
         </button>
     </div>
     <div class="sidenav-content">
-        <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
+        <div class="pad-left-md pad-right-md" flex fxLayoutAlign="start center">
             <mat-input-container flex>
                 <input #bucketnameInput
                        matInput
@@ -41,21 +41,20 @@ limitations under the License.
                 Save
             </button>
         </div>
-        <div class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <div class="pad-top-md pad-left-md pad-right-md">
             <div class="pad-bottom-sm">
                 <span class="md-card-title">Bundle Settings</span>
             </div>
             <div>
                 <mat-checkbox #bundleRedeployCheckbox
                               [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite"
-                              [(checked)]="nfRegistryService.bucket.allowBundleRedeploy"
                               [(ngModel)]="allowBundleRedeploy"
                               (change)="toggleBucketBundleRedeploy($event)">
                     Allow bundle overwrite<i matTooltip="Allows released bundles in this bucket to be overwritten" class="pad-left-sm fa fa-question-circle-o help-icon"></i>
                 </mat-checkbox>
             </div>
         </div>
-        <div *ngIf="!nfRegistryService.currentUser.anonymous || nfRegistryService.currentUser.resourcePermissions.policies.canRead" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <div *ngIf="!nfRegistryService.currentUser.anonymous || nfRegistryService.currentUser.resourcePermissions.policies.canRead" class="pad-top-md pad-left-md pad-right-md">
             <div flex fxLayout="row" fxLayoutAlign="space-between center">
                 <span class="md-card-title">Policies ({{userIdentitiesWithPolicies.length + groupIdentitiesWithPolicies.length}})</span>
                 <button color="fds-secondary"
@@ -135,7 +134,7 @@ limitations under the License.
                 </div>
             </div>
         </div>
-        <div class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
+        <div class="pad-top-md pad-left-md pad-right-md">
             <div class="pad-bottom-sm">
                 <span class="md-card-title">About</span>
             </div>
