@@ -24,7 +24,7 @@ limitations under the License.
                       (add)="nfRegistryService.usersSearchAdd($event)"
                       (remove)="nfRegistryService.usersSearchRemove($event)"></td-chips>
             <div matTooltip="{{(!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite) ? 'You do not have permission. Please contact your system administrator.': ''}}">
-                <button id="add-user-button" class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()" [disabled]="!canEditUsers()">
+                <button data-automation-id="add-user-button" class="push-top-sm push-right-sm" color="fds-secondary" mat-raised-button (click)="addUser()" [disabled]="!canEditUsers()">
                     Add User
                 </button>
             </div>

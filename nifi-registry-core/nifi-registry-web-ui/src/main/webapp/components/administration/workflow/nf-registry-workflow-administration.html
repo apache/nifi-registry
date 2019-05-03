@@ -24,7 +24,7 @@ limitations under the License.
                       (add)="nfRegistryService.bucketsSearchAdd($event)"
                       (remove)="nfRegistryService.bucketsSearchRemove($event)"></td-chips>
             <div matTooltip="{{(!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite) ? 'You do not have permission. Please contact your system administrator.': ''}}">
-                <button id = "new-bucket-button"
+                <button data-automation-id = "new-bucket-button"
                         class="push-top-sm push-right-sm"
                         color="fds-secondary"
                         mat-raised-button
@@ -116,7 +116,7 @@ limitations under the License.
         </div>
         <div class="mat-padding" *ngIf="nfRegistryService.filteredBuckets.length === 0" layout="row"
              layout-align="center center">
-            <h3 id="no-buckets-message">No results to display.</h3>
+            <h3 data-automation-id="no-buckets-message">No results to display.</h3>
         </div>
     </div>
 </div>
