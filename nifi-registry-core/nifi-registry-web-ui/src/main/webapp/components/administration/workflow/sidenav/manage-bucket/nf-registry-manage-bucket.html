@@ -18,7 +18,7 @@ limitations under the License.
 <div fxFill>
     <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-sm pad-bottom-md pad-left-md pad-right-md">
         <span class="md-card-title">{{nfRegistryService.bucket.name}}</span>
-        <button mat-icon-button id="nf-registry-manage-bucket-close-side-nav" (click)="closeSideNav()">
+        <button mat-icon-button data-automation-id="nf-registry-manage-bucket-close-side-nav" (click)="closeSideNav()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
@@ -34,7 +34,7 @@ limitations under the License.
             </mat-input-container>
             <button [disabled]="nfRegistryService.bucket.name === bucketname"
                     (click)="updateBucketName(bucketnameInput.value)"
-                    id="nf-registry-manage-bucket-save-side-nav"
+                    data-automation-id="nf-registry-manage-bucket-save-side-nav"
                     class="input-button"
                     color="fds-regular"
                     mat-raised-button>
