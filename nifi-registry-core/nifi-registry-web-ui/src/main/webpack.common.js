@@ -18,7 +18,6 @@
 const webpack = require('webpack');
 const path = require('path');
 const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const webpackAlias = require('./webpack.alias');
@@ -116,17 +115,6 @@ module.exports = {
                 ]
             },
             {
-                test: /\.(svg|png)$/i,
-                include: [
-                    path.resolve(__dirname, 'webapp')
-                ],
-                use: [
-                    {
-                        loader: 'url-loader',
-                    }
-                ]
-            },
-            {
                 test: /\.html$/,
                 include: [
                     path.resolve(__dirname, 'node_modules/@nifi-fds/core'),
@@ -161,6 +149,29 @@ module.exports = {
                         loader: 'sass-loader'
                     }
                 ]
+            },
+            {
+                test: /\.(svg|png)$/i,
+                include: [
+                    path.resolve(__dirname, 'webapp')
+                ],
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'images/'
+                    }
+                }]
+            },
+            {
+                test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'fonts/'
+                    }
+                }]
             }
         ]
     },
@@ -174,12 +185,7 @@ module.exports = {
         }),
 
         // Fix style only entry generating an extra js file
-        new FixStyleOnlyEntriesPlugin(),
+        new FixStyleOnlyEntriesPlugin()
 
-        // Create HTML files to serve your webpack bundles
-        new HtmlWebpackPlugin({
-            template: 'webapp/template.html',
-            filename: 'index.html'
-        })
     ]
 };

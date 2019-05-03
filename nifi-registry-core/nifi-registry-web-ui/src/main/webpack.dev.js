@@ -19,6 +19,7 @@ const webpack = require('webpack');
 const path = require('path');
 const merge = require('webpack-merge');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const commonConfig = require('./webpack.common');
 
@@ -34,7 +35,42 @@ module.exports = merge(commonConfig, {
         filename: '[name].js'
     },
 
+    // "webpack-dev-server" configuration
+    devServer: {
+        // Open the browser after server had been started
+        open: true,
+
+        historyApiFallback: true,
+
+        // The bundled files will be available in the browser under this path.
+        publicPath: '/nifi-registry/',
+
+        // Tell the server where to serve content from
+        contentBase: [
+            path.join(__dirname, './')
+        ],
+
+        // Enable Hot Module Replacement feature
+        hot: true,
+
+        // The filename that is considered the index file.
+        index: path.join(__dirname, 'index.html'),
+
+        // Specify a port number to listen for requests on
+        port: 8080,
+
+        // Proxying URLs
+        proxy: {
+            '/nifi-registry-api': 'http://localhost:18080'
+        },
+
+        stats: 'verbose'
+    },
+
     plugins: [
+        // Hot Module Replacement
+        new webpack.HotModuleReplacementPlugin(),
+
         // Source map generation
         new webpack.SourceMapDevToolPlugin({
             filename: '[file].map'
@@ -44,5 +80,12 @@ module.exports = merge(commonConfig, {
             filename: '[name].css',
             chunkFilename: '[name].css'
         }),
+
+        // Create HTML files to serve your webpack bundles
+        new HtmlWebpackPlugin({
+            template: 'webapp/template.dev.html',
+            filename: 'index.html',
+            favicon: path.resolve(__dirname, 'webapp/images/registry-favicon.png')
+        })
     ]
 });

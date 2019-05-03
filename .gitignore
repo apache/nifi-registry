@@ -19,6 +19,7 @@ nb-configuration.xml
 # Node JS
 node_modules/
 
+# Ignore files/folders generated as part of the webpack build process too
 *.min.js
 *.min.css
 *.min.*.js
@@ -26,4 +27,7 @@ node_modules/
 *.map
 nifi-registry-core/nifi-registry-web-ui/src/main/index.html
 nifi-registry-core/nifi-registry-web-ui/src/main/coverage
+nifi-registry-core/nifi-registry-web-ui/src/main/fonts
+nifi-registry-core/nifi-registry-web-ui/src/main/images
+nifi-registry-core/nifi-registry-web-ui/src/main/*.png
 nifi-registry-core/nifi-registry-web-ui/src/main/.cache-loader

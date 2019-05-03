@@ -19,6 +19,8 @@ const merge = require('webpack-merge');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
 
 const commonConfig = require('./webpack.common');
 
@@ -49,6 +51,13 @@ module.exports = merge(commonConfig, {
         new MiniCssExtractPlugin({
             filename: '[name].[contenthash].css',
             chunkFilename: '[name].[contenthash].css'
+        }),
+
+        // Create HTML files to serve your webpack bundles
+        new HtmlWebpackPlugin({
+            template: 'webapp/template.html',
+            filename: 'index.html',
+            favicon: path.resolve(__dirname, 'webapp/images/registry-favicon.png')
         })
     ]
 });

@@ -29,6 +29,16 @@ var NfRegistryModule = require('nifi-registry/nf-registry.module.js');
 var ngPlatformBrowserDynamic = require('@angular/platform-browser-dynamic');
 var ngCore = require('@angular/core');
 
+// import all of the static files we need resolved via the webpack file-loader
+import 'font-awesome/fonts/fontawesome-webfont.woff2';
+import 'font-awesome/fonts/fontawesome-webfont.woff';
+import 'font-awesome/fonts/fontawesome-webfont.ttf';
+import '@covalent/core/common/styles/font/MaterialIcons-Regular.woff2';
+import '@covalent/core/common/styles/font/MaterialIcons-Regular.woff';
+import '@covalent/core/common/styles/font/MaterialIcons-Regular.ttf';
+import 'images/registry-logo-web-app.svg';
+import 'images/registry-background-logo.svg';
+
 // Comment out this line when developing to assert for unidirectional data flow
 ngCore.enableProdMode();
 

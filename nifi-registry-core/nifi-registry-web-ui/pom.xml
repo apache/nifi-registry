@@ -93,7 +93,6 @@
                                     <directory>${frontend.dependency.configs}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>Gruntfile.js</include>
                                         <include>karma*.js</include>
                                         <include>*.json</include>
                                         <include>webpack.*.js</include>
@@ -189,7 +188,10 @@
                                         <include>nf-registry.bundle.min.*.js</include>
                                         <include>vendor.min.*.js</include>
                                         <include>nf-registry.style.min.*.css</include>
+                                        <include>vendor.min.*.css</include>
                                         <include>index.html</include>
+                                        <include>fonts/**/*</include>
+                                        <include>registry-favicon.png</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -259,13 +261,13 @@
                         Bundle, minify, and gzip compress all the javascript.
                     -->
                     <execution>
-                        <id>grunt-package-web-ui</id>
+                        <id>package-web-ui</id>
                         <goals>
-                            <goal>grunt</goal>
+                            <goal>npm</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>prod-bundle-web-ui</arguments>
+                            <arguments>run build:webapp:bundle:production</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>

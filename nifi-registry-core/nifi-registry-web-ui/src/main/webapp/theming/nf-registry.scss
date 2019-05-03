@@ -20,12 +20,14 @@
  * <link href='/stylesheets/nifi-flow-registry.css' media='screen, projection' rel='stylesheet' type='text/css' /> */
 
 // Path overrides
-$fa-font-path: 'node_modules/font-awesome/fonts';
-$mat-font-url: 'node_modules/@covalent/core/common/styles/font/';
+$fa-font-path: './fonts';
+$mat-font-url: './fonts/';
 
 @import '~@nifi-fds/core/common/styles/globalVars';
 @import '~@nifi-fds/core/theming/all-theme';
+
 @import '~@covalent/core/common/platform.scss';
+
 @import '~font-awesome/scss/font-awesome';
 
 @import 'structureElements';

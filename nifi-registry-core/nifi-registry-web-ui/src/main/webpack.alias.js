@@ -67,4 +67,5 @@ module.exports = {
 
     'components': path.resolve(__dirname, 'webapp/components'),
     'services': path.resolve(__dirname, 'webapp/services'),
+    'images': path.resolve(__dirname, 'webapp/images')
 };
