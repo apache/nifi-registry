@@ -72,6 +72,20 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.tsx?$/,
+                include: [
+                    path.resolve(__dirname, 'webapp'),
+                ],
+                use: [
+                    {
+                        loader: 'cache-loader'
+                    },
+                    {
+                        loader: 'ts-loader'
+                    }
+                ]
+            },
+            {
                 test: /\.js$/,
                 include: [
                     path.resolve(__dirname, 'node_modules/@nifi-fds/core')
@@ -93,12 +107,6 @@ module.exports = {
                 use: [
                     {
                         loader: 'cache-loader'
-                    },
-                    {
-                        loader: path.resolve(__dirname, 'angular-url-loader')
-                    },
-                    {
-                        loader: path.resolve(__dirname, 'systemjs-text-to-html-loader')
                     },
                     {
                         loader: 'babel-loader',

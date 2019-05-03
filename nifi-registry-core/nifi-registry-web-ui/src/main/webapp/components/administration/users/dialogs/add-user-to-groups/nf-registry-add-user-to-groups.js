@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngCore = require('@angular/core');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngMaterial = require('@angular/material');
-var $ = require('jquery');
+import { TdDataTableService } from '@covalent/core';
+import NfRegistryApi from 'services/nf-registry.api';
+import { Component } from '@angular/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import NfRegistryService from 'services/nf-registry.service';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import $ from 'jquery';
+
+import template from './nf-registry-add-user-to-groups.html';
 
 /**
  * NfRegistryAddUserToGroups constructor.
@@ -237,18 +239,18 @@ NfRegistryAddUserToGroups.prototype = {
 };
 
 NfRegistryAddUserToGroups.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-add-user-to-groups.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryAddUserToGroups.parameters = [
     NfRegistryApi,
-    covalentCore.TdDataTableService,
+    TdDataTableService,
     NfRegistryService,
-    ngMaterial.MatDialogRef,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngMaterial.MAT_DIALOG_DATA
+    MatDialogRef,
+    FdsSnackBarService,
+    MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryAddUserToGroups;
+export default NfRegistryAddUserToGroups;

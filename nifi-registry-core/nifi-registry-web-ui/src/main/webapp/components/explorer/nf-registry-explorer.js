@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
+
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import nfRegistryAnimations from 'nf-registry.animations';
+import template from './nf-registry-explorer.html';
 
 /**
  * NfRegistryExplorer constructor.
@@ -54,8 +56,8 @@ NfRegistryExplorer.prototype = {
 };
 
 NfRegistryExplorer.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-explorer.html!text'),
+    new Component({
+        template: template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
@@ -67,4 +69,4 @@ NfRegistryExplorer.parameters = [
     NfRegistryService
 ];
 
-module.exports = NfRegistryExplorer;
+export default NfRegistryExplorer;

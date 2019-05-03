@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var ngCommonHttp = require('@angular/common/http');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var rxjs = require('rxjs/Observable');
+import NfStorage from 'services/nf-storage.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { Observable } from 'rxjs';
+
 var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
 
@@ -67,7 +68,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -93,7 +94,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -117,7 +118,7 @@ NfRegistryApi.prototype = {
                 return response || [];
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -145,7 +146,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -168,7 +169,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -191,7 +192,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -215,7 +216,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -241,7 +242,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -260,7 +261,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -283,7 +284,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -335,7 +336,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -356,7 +357,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -378,7 +379,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -401,7 +402,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -423,7 +424,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -446,7 +447,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -469,7 +470,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -498,7 +499,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -521,7 +522,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -538,7 +539,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -557,7 +558,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -575,7 +576,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -608,7 +609,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -639,7 +640,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of(error);
+                return Observable.of(error);
             });
     },
 
@@ -654,7 +655,7 @@ NfRegistryApi.prototype = {
         var self = this;
 
         var encodedCredentials = btoa(username + ":" + password);
-        var headers = new ngCommonHttp.HttpHeaders({
+        var headers = new HttpHeaders({
             'Authorization': 'Basic ' + encodedCredentials
         });
 
@@ -680,7 +681,7 @@ NfRegistryApi.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-                return rxjs.Observable.of('');
+                return Observable.of('');
             });
     },
 
@@ -692,7 +693,7 @@ NfRegistryApi.prototype = {
     ticketExchange: function () {
         var self = this;
         if (this.nfStorage.hasItem('jwt')) {
-            return rxjs.Observable.of(self.nfStorage.getItem('jwt'));
+            return Observable.of(self.nfStorage.getItem('jwt'));
         } else {
             return this.http.post(config.urls.kerberos, null, {responseType: 'text'})
                 .map(function (jwt) {
@@ -705,7 +706,7 @@ NfRegistryApi.prototype = {
                     return jwt;
                 })
                 .catch(function (error) {
-                    return rxjs.Observable.of('');
+                    return Observable.of('');
                 });
         }
     },
@@ -723,7 +724,7 @@ NfRegistryApi.prototype = {
                 return response;
             })
             .catch(function (error) {
-                return rxjs.Observable.of({
+                return Observable.of({
                     error: error,
                     resourcePermissions: {
                         anyTopLevelResource: {
@@ -769,7 +770,7 @@ NfRegistryApi.prototype = {
             })
             .catch(function (error) {
                 // If failed, return an empty object.
-                return rxjs.Observable.of({});
+                return Observable.of({});
             });
     }
 
@@ -777,8 +778,8 @@ NfRegistryApi.prototype = {
 
 NfRegistryApi.parameters = [
     NfStorage,
-    ngCommonHttp.HttpClient,
-    fdsDialogsModule.FdsDialogService
+    HttpClient,
+    FdsDialogService
 ];
 
-module.exports = NfRegistryApi;
+export default NfRegistryApi;

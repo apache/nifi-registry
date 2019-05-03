@@ -15,13 +15,15 @@
  * limitations under the License.
  */
 
-var ngCore = require('@angular/core');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngRouter = require('@angular/router');
+import { Component, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import NfRegistryService from 'services/nf-registry.service';
+import NfStorage from 'services/nf-storage.service';
+import nfRegistryAnimations from 'nf-registry.animations';
+import NfRegistryApi from 'services/nf-registry.api';
+import { Router } from '@angular/router';
+import template from './nf-registry.html';
+
 var MILLIS_PER_SECOND = 1000;
 
 /**
@@ -80,23 +82,23 @@ NfRegistry.prototype = {
 };
 
 NfRegistry.annotations = [
-    new ngCore.Component({
+    new Component({
         selector: 'nf-registry-app',
-        template: require('./nf-registry.html!text'),
+        template: template,
         queries: {
-            sidenav: new ngCore.ViewChild('sidenav')
+            sidenav: new ViewChild('sidenav')
         },
         animations: [nfRegistryAnimations.flyInOutAnimation]
     })
 ];
 
 NfRegistry.parameters = [
-    ngCommonHttp.HttpClient,
+    HttpClient,
     NfStorage,
     NfRegistryService,
     NfRegistryApi,
-    ngCore.ChangeDetectorRef,
-    ngRouter.Router
+    ChangeDetectorRef,
+    Router
 ];
 
-module.exports = NfRegistry;
+export default NfRegistry;

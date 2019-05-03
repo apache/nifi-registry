@@ -20,7 +20,12 @@ import initTestBed from 'nf-registry.testbed-factory';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { HttpTestingController } from '@angular/common/http/testing';
-import nfRegistryAuthGuardService  from 'services/nf-registry.auth-guard.service';
+import {
+    NfRegistryUsersAdministrationAuthGuard,
+    NfRegistryLoginAuthGuard,
+    NfRegistryResourcesAuthGuard,
+    NfRegistryWorkflowsAdministrationAuthGuard
+} from 'services/nf-registry.auth-guard.service';
 
 describe('NfRegistry API w/ Angular testing utils', function () {
     let nfRegistryApi;
@@ -28,10 +33,10 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     let req;
 
     const providers = [
-        nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
-        nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
-        nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
-        nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard
+        NfRegistryUsersAdministrationAuthGuard,
+        NfRegistryWorkflowsAdministrationAuthGuard,
+        NfRegistryLoginAuthGuard,
+        NfRegistryResourcesAuthGuard
     ];
 
     beforeEach((done) => {

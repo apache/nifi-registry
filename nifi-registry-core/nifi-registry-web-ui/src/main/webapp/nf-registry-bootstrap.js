@@ -15,19 +15,21 @@
  * limitations under the License.
  */
 
-require('core-js');
-require('zone.js');
-require('hammerjs');
-require('switchMap');
+import 'core-js';
+import 'zone.js';
+import 'hammerjs';
+
 // patch Observable with appropriate methods
-require('rxjs/add/operator/map');
-require('rxjs/add/operator/catch');
-require('rxjs/add/observable/of');
-require('rxjs/add/observable/forkJoin');
-var $ = require('jquery');
-var NfRegistryModule = require('nifi-registry/nf-registry.module.js');
-var ngPlatformBrowserDynamic = require('@angular/platform-browser-dynamic');
-var ngCore = require('@angular/core');
+import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/of';
+import 'rxjs/add/observable/forkJoin';
+
+import $ from 'jquery';
+import NfRegistryModule from 'nf-registry.module';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { enableProdMode, TRANSLATIONS, TRANSLATIONS_FORMAT, LOCALE_ID } from '@angular/core';
 
 // import all of the static files we need resolved via the webpack file-loader
 import 'font-awesome/fonts/fontawesome-webfont.woff2';
@@ -40,7 +42,7 @@ import 'images/registry-logo-web-app.svg';
 import 'images/registry-background-logo.svg';
 
 // Comment out this line when developing to assert for unidirectional data flow
-ngCore.enableProdMode();
+enableProdMode();
 
 // Get the locale id from the global
 var locale = navigator.language;
@@ -49,7 +51,7 @@ var providers = [];
 
 // No locale or U.S. English: no translation providers so go ahead and bootstrap the app
 if (!locale || locale === 'en-US') {
-    ngPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
+    platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
 } else { //load the translation providers and bootstrap the module
     var translationFile = './nifi-registry/messages.' + locale + '.xlf';
 
@@ -58,12 +60,12 @@ if (!locale || locale === 'en-US') {
     }).done(function (translations) {
         // add providers if translation file for locale is loaded
         if (translations) {
-            providers.push({provide: ngCore.TRANSLATIONS, useValue: translations});
-            providers.push({provide: ngCore.TRANSLATIONS_FORMAT, useValue: 'xlf'});
-            providers.push({provide: ngCore.LOCALE_ID, useValue: locale});
+            providers.push({provide: TRANSLATIONS, useValue: translations});
+            providers.push({provide: TRANSLATIONS_FORMAT, useValue: 'xlf'});
+            providers.push({provide: LOCALE_ID, useValue: locale});
         }
-        ngPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
+        platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
     }).fail(function () {
-        ngPlatformBrowserDynamic.platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
+        platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
     });
 }

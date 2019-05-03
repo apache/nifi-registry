@@ -15,13 +15,12 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var ngRouter = require('@angular/router');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var rxjs = require('rxjs/Observable');
+import { TdDataTableService } from '@covalent/core';
+import { Router } from '@angular/router';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import NfRegistryApi from 'services/nf-registry.api.js';
+import NfStorage from 'services/nf-storage.service.js';
 
 /**
  * NfRegistryService constructor.
@@ -1177,10 +1176,10 @@ NfRegistryService.prototype = {
 NfRegistryService.parameters = [
     NfRegistryApi,
     NfStorage,
-    covalentCore.TdDataTableService,
-    ngRouter.Router,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService
+    TdDataTableService,
+    Router,
+    FdsDialogService,
+    FdsSnackBarService
 ];
 
-module.exports = NfRegistryService;
+export default NfRegistryService;

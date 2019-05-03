@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var nfRegistryAnimations = require('nifi-registry/nf-registry.animations.js');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var ngRouter = require('@angular/router');
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import nfRegistryAnimations from 'nf-registry.animations';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { Router } from '@angular/router';
+import template from './nf-registry-page-not-found.html';
 
 /**
  * NfLoginComponent constructor.
@@ -57,8 +58,8 @@ NfPageNotFoundComponent.prototype = {
 };
 
 NfPageNotFoundComponent.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-page-not-found.html!text'),
+    new Component({
+        template: template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
@@ -68,8 +69,8 @@ NfPageNotFoundComponent.annotations = [
 
 NfPageNotFoundComponent.parameters = [
     NfRegistryService,
-    fdsDialogsModule.FdsDialogService,
-    ngRouter.Router
+    FdsDialogService,
+    Router
 ];
 
-module.exports = NfPageNotFoundComponent;
+export default NfPageNotFoundComponent;

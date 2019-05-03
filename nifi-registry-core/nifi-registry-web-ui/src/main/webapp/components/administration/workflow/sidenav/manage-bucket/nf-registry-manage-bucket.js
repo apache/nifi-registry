@@ -15,17 +15,18 @@
  * limitations under the License.
  */
 
-var rxjs = require('rxjs/Observable');
-var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var NfRegistryEditBucketPolicy = require('nifi-registry/components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy.js');
-var NfRegistryAddPolicyToBucket = require('nifi-registry/components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket.js');
+import { Observable } from 'rxjs';
+import { TdDataTableService } from '@covalent/core';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import NfRegistryAddPolicyToBucket from 'components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket';
+import NfRegistryEditBucketPolicy from 'components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy';
+import template from './nf-registry-manage-bucket.html';
 
 /**
  * NfRegistryManageBucket constructor.
@@ -92,7 +93,7 @@ NfRegistryManageBucket.prototype = {
         var self = this;
         this.$subscription = this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return new Observable.forkJoin(
                     self.nfRegistryApi.getBucket(params['bucketId']),
                     self.nfRegistryApi.getPolicies()
                 );
@@ -486,20 +487,20 @@ NfRegistryManageBucket.prototype = {
 };
 
 NfRegistryManageBucket.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-manage-bucket.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryManageBucket.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    covalentCore.TdDataTableService,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    ngMaterial.MatDialog
+    TdDataTableService,
+    FdsDialogService,
+    FdsSnackBarService,
+    ActivatedRoute,
+    Router,
+    MatDialog
 ];
 
-module.exports = NfRegistryManageBucket;
+export default NfRegistryManageBucket;

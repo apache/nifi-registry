@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-var rxjs = require('rxjs/Observable');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var ngRouter = require('@angular/router');
+import { Observable } from 'rxjs';
+import { Component, ViewChild } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { ActivatedRoute } from '@angular/router';
+import template from './nf-registry-edit-bucket-policy.html';
 
 /**
  * NfRegistryEditBucketPolicy constructor.
@@ -52,7 +53,7 @@ NfRegistryEditBucketPolicy.prototype = {
         var self = this;
         this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return new Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -331,12 +332,12 @@ NfRegistryEditBucketPolicy.prototype = {
 };
 
 NfRegistryEditBucketPolicy.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-edit-bucket-policy.html!text'),
+    new Component({
+        template: template,
         queries: {
-            readCheckbox: new ngCore.ViewChild('readCheckbox'),
-            writeCheckbox: new ngCore.ViewChild('writeCheckbox'),
-            deleteCheckbox: new ngCore.ViewChild('deleteCheckbox')
+            readCheckbox: new ViewChild('readCheckbox'),
+            writeCheckbox: new ViewChild('writeCheckbox'),
+            deleteCheckbox: new ViewChild('deleteCheckbox')
         }
     })
 ];
@@ -344,9 +345,9 @@ NfRegistryEditBucketPolicy.annotations = [
 NfRegistryEditBucketPolicy.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngMaterial.MatDialogRef,
-    ngMaterial.MAT_DIALOG_DATA
+    ActivatedRoute,
+    MatDialogRef,
+    MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryEditBucketPolicy;
+export default NfRegistryEditBucketPolicy;

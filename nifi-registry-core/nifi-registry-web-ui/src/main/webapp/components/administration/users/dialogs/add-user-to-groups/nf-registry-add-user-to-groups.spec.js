@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
-var rxjs = require('rxjs/Rx');
-var covalentCore = require('@covalent/core');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryAddUserToGroups
+    from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
+import { Observable } from 'rxjs';
+import { TdDataTableService } from '@covalent/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
 
 describe('NfRegistryAddUserToGroups Component isolated unit tests', function () {
     var comp;
@@ -36,8 +37,8 @@ describe('NfRegistryAddUserToGroups Component isolated unit tests', function () 
         nfRegistryService.groups = [{identifier: 1, identity: 'Group 1', configurable: true, checked: true, users: []}];
 
         nfRegistryApi = new NfRegistryApi();
-        snackBarService = new fdsSnackBarsModule.FdsSnackBarService();
-        dataTableService = new covalentCore.TdDataTableService();
+        snackBarService = new FdsSnackBarService();
+        dataTableService = new TdDataTableService();
         comp = new NfRegistryAddUserToGroups(nfRegistryApi, dataTableService, nfRegistryService, {
             close: function () {
             }
@@ -45,9 +46,9 @@ describe('NfRegistryAddUserToGroups Component isolated unit tests', function () 
 
         // Spy
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 1, identity: 'Group 1'}));
+        }).and.returnValue(Observable.of({identifier: 1, identity: 'Group 1'}));
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of({identifier: 1, identity: 'Group 1'}));
+        }).and.returnValue(Observable.of({identifier: 1, identity: 'Group 1'}));
         spyOn(comp.dialogRef, 'close');
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(comp, 'filterGroups').and.callThrough();

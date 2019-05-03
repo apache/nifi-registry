@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
-var ngRouter = require('@angular/router');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
+import NfRegistryService from 'services/nf-registry.service';
+import NfStorage from 'services/nf-storage.service';
+import { Router } from '@angular/router';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import NfRegistryApi from 'services/nf-registry.api';
 
 /**
  * NfRegistryUsersAdministrationAuthGuard constructor.
@@ -120,8 +120,8 @@ NfRegistryUsersAdministrationAuthGuard.parameters = [
     NfRegistryService,
     NfRegistryApi,
     NfStorage,
-    ngRouter.Router,
-    fdsDialogsModule.FdsDialogService
+    Router,
+    FdsDialogService
 ];
 
 /**
@@ -217,8 +217,8 @@ NfRegistryWorkflowsAdministrationAuthGuard.parameters = [
     NfRegistryService,
     NfRegistryApi,
     NfStorage,
-    ngRouter.Router,
-    fdsDialogsModule.FdsDialogService
+    Router,
+    FdsDialogService
 ];
 
 /**
@@ -283,7 +283,7 @@ NfRegistryLoginAuthGuard.parameters = [
     NfRegistryService,
     NfRegistryApi,
     NfStorage,
-    ngRouter.Router
+    Router
 ];
 
 /**
@@ -361,12 +361,12 @@ NfRegistryResourcesAuthGuard.parameters = [
     NfRegistryService,
     NfRegistryApi,
     NfStorage,
-    ngRouter.Router
+    Router
 ];
 
-module.exports = {
-    NfRegistryUsersAdministrationAuthGuard: NfRegistryUsersAdministrationAuthGuard,
-    NfRegistryWorkflowsAdministrationAuthGuard: NfRegistryWorkflowsAdministrationAuthGuard,
-    NfRegistryLoginAuthGuard: NfRegistryLoginAuthGuard,
-    NfRegistryResourcesAuthGuard: NfRegistryResourcesAuthGuard
+export {
+    NfRegistryUsersAdministrationAuthGuard,
+    NfRegistryWorkflowsAdministrationAuthGuard,
+    NfRegistryLoginAuthGuard,
+    NfRegistryResourcesAuthGuard
 };

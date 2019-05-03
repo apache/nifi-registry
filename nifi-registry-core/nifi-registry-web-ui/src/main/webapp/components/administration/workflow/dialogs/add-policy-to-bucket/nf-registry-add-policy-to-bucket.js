@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-var rxjs = require('rxjs/Observable');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var ngRouter = require('@angular/router');
-var covalentCore = require('@covalent/core');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+import { Observable } from 'rxjs';
+import { Component, ViewChild } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
+import { ActivatedRoute } from '@angular/router';
+import { TdDataTableService } from '@covalent/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import template from './nf-registry-add-policy-to-bucket.html';
 
 /**
  * NfRegistryAddPolicyToBucket constructor.
@@ -65,7 +66,7 @@ NfRegistryAddPolicyToBucket.prototype = {
         var self = this;
         this.route.params
             .switchMap(function (params) {
-                return new rxjs.Observable.forkJoin(
+                return new Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -390,24 +391,24 @@ NfRegistryAddPolicyToBucket.prototype = {
 };
 
 NfRegistryAddPolicyToBucket.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-add-policy-to-bucket.html!text'),
+    new Component({
+        template: template,
         queries: {
-            readCheckbox: new ngCore.ViewChild('readCheckbox'),
-            writeCheckbox: new ngCore.ViewChild('writeCheckbox'),
-            deleteCheckbox: new ngCore.ViewChild('deleteCheckbox')
+            readCheckbox: new ViewChild('readCheckbox'),
+            writeCheckbox: new ViewChild('writeCheckbox'),
+            deleteCheckbox: new ViewChild('deleteCheckbox')
         }
     })
 ];
 
 NfRegistryAddPolicyToBucket.parameters = [
     NfRegistryApi,
-    covalentCore.TdDataTableService,
-    fdsSnackBarsModule.FdsSnackBarService,
+    TdDataTableService,
+    FdsSnackBarService,
     NfRegistryService,
-    ngRouter.ActivatedRoute,
-    ngMaterial.MatDialogRef,
-    ngMaterial.MAT_DIALOG_DATA
+    ActivatedRoute,
+    MatDialogRef,
+    MAT_DIALOG_DATA
 ];
 
-module.exports = NfRegistryAddPolicyToBucket;
+export default NfRegistryAddPolicyToBucket;

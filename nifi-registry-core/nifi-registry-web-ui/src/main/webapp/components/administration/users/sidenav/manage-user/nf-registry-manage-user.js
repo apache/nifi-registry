@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
+import { TdDataTableService } from '@covalent/core';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import NfRegistryAddUserToGroups from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
+import template from './nf-registry-manage-user.html';
 
 /**
  * NfRegistryManageUser constructor.
@@ -614,20 +615,20 @@ NfRegistryManageUser.prototype = {
 };
 
 NfRegistryManageUser.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-manage-user.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryManageUser.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    covalentCore.TdDataTableService,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    ngMaterial.MatDialog
+    TdDataTableService,
+    FdsDialogService,
+    FdsSnackBarService,
+    ActivatedRoute,
+    Router,
+    MatDialog
 ];
 
-module.exports = NfRegistryManageUser;
+export default NfRegistryManageUser;

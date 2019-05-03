@@ -14,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+
+import { Component, ViewChild } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialogRef } from '@angular/material';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import template from './nf-registry-create-bucket.html';
 
 /**
  * NfRegistryCreateBucket constructor.
@@ -88,19 +90,19 @@ NfRegistryCreateBucket.prototype = {
 };
 
 NfRegistryCreateBucket.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-create-bucket.html!text'),
+    new Component({
+        template: template,
         queries: {
-            newBucketInput: new ngCore.ViewChild('newBucketInput')
+            newBucketInput: new ViewChild('newBucketInput')
         }
     })
 ];
 
 NfRegistryCreateBucket.parameters = [
     NfRegistryApi,
-    fdsSnackBarsModule.FdsSnackBarService,
+    FdsSnackBarService,
     NfRegistryService,
-    ngMaterial.MatDialogRef
+    MatDialogRef
 ];
 
-module.exports = NfRegistryCreateBucket;
+export default NfRegistryCreateBucket;

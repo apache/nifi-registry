@@ -15,51 +15,57 @@
  * limitations under the License.
  */
 
-var ngCore = require('@angular/core');
-var ngMoment = require('angular2-moment');
-var NfRegistryRoutes = require('nifi-registry/nf-registry.routes.js');
-var NfRegistry = require('nifi-registry/nf-registry.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfPageNotFoundComponent = require('nifi-registry/components/page-not-found/nf-registry-page-not-found.js');
-var NfLoginComponent = require('nifi-registry/components/login/nf-registry-login.js');
-var NfUserLoginComponent = require('nifi-registry/components/login/dialogs/nf-registry-user-login.js');
-var NfRegistryExplorer = require('nifi-registry/components/explorer/nf-registry-explorer.js');
-var NfRegistryAdministration = require('nifi-registry/components/administration/nf-registry-administration.js');
-var NfRegistryUsersAdministration = require('nifi-registry/components/administration/users/nf-registry-users-administration.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
-var NfRegistryEditBucketPolicy = require('nifi-registry/components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy.js');
-var NfRegistryAddPolicyToBucket = require('nifi-registry/components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket.js');
-var NfRegistryAddUserToGroups = require('nifi-registry/components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups.js');
-var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
-var NfRegistryManageUser = require('nifi-registry/components/administration/users/sidenav/manage-user/nf-registry-manage-user.js');
-var NfRegistryManageGroup = require('nifi-registry/components/administration/users/sidenav/manage-group/nf-registry-manage-group.js');
-var NfRegistryManageBucket = require('nifi-registry/components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket.js');
-var NfRegistryWorkflowAdministration = require('nifi-registry/components/administration/workflow/nf-registry-workflow-administration.js');
-var NfRegistryCreateBucket = require('nifi-registry/components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket.js');
-var NfRegistryGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-grid-list-viewer.js');
-var NfRegistryBucketGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer.js');
-var NfRegistryDropletGridListViewer = require('nifi-registry/components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer.js');
-var fdsCore = require('@flow-design-system/core');
-var ngCommonHttp = require('@angular/common/http');
-var NfRegistryTokenInterceptor = require('nifi-registry/services/nf-registry.token.interceptor.js');
-var nfRegistryAuthGuardService = require('nifi-registry/services/nf-registry.auth-guard.service.js');
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MomentModule } from 'angular2-moment';
+import { NgModule } from '@angular/core';
+
+import NfRegistryRoutes from 'nf-registry.routes';
+import fdsCore from '@flow-design-system/core';
+import NfRegistry from 'nf-registry';
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import NfPageNotFoundComponent from 'components/page-not-found/nf-registry-page-not-found';
+import NfRegistryExplorer from 'components/explorer/nf-registry-explorer';
+import NfRegistryAdministration from 'components/administration/nf-registry-administration';
+import NfRegistryUsersAdministration from 'components/administration/users/nf-registry-users-administration';
+import NfRegistryAddUser from 'components/administration/users/dialogs/add-user/nf-registry-add-user';
+import NfRegistryManageGroup from 'components/administration/users/sidenav/manage-group/nf-registry-manage-group';
+import NfRegistryManageUser from 'components/administration/users/sidenav/manage-user/nf-registry-manage-user';
+import NfRegistryManageBucket from 'components/administration/workflow/sidenav/manage-bucket/nf-registry-manage-bucket';
+import NfRegistryWorkflowAdministration from 'components/administration/workflow/nf-registry-workflow-administration';
+import NfRegistryGridListViewer from 'components/explorer/grid-list/registry/nf-registry-grid-list-viewer';
+import NfRegistryBucketGridListViewer from 'components/explorer/grid-list/registry/nf-registry-bucket-grid-list-viewer';
+import NfRegistryDropletGridListViewer from 'components/explorer/grid-list/registry/nf-registry-droplet-grid-list-viewer';
+import NfRegistryTokenInterceptor from 'services/nf-registry.token.interceptor';
+import NfStorage from 'services/nf-storage.service';
+import NfLoginComponent from 'components/login/nf-registry-login';
+import NfUserLoginComponent from 'components/login/dialogs/nf-registry-user-login';
+import NfRegistryCreateBucket from 'components/administration/workflow/dialogs/create-bucket/nf-registry-create-bucket';
+import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
+import NfRegistryAddUserToGroups from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
+import NfRegistryAddPolicyToBucket from 'components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket';
+import NfRegistryEditBucketPolicy from 'components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy';
+import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
+import {
+    NfRegistryLoginAuthGuard,
+    NfRegistryResourcesAuthGuard,
+    NfRegistryUsersAdministrationAuthGuard,
+    NfRegistryWorkflowsAdministrationAuthGuard
+} from 'services/nf-registry.auth-guard.service';
 
 function NfRegistryModule() {
-};
+}
 
 NfRegistryModule.prototype = {
     constructor: NfRegistryModule
 };
 
 NfRegistryModule.annotations = [
-    new ngCore.NgModule({
+    new NgModule({
         imports: [
-            ngMoment.MomentModule,
+            MomentModule,
             fdsCore,
-            ngCommonHttp.HttpClientModule,
+            HttpClientModule,
             NfRegistryRoutes
         ],
         declarations: [
@@ -97,14 +103,14 @@ NfRegistryModule.annotations = [
         ],
         providers: [
             NfRegistryService,
-            nfRegistryAuthGuardService.NfRegistryUsersAdministrationAuthGuard,
-            nfRegistryAuthGuardService.NfRegistryWorkflowsAdministrationAuthGuard,
-            nfRegistryAuthGuardService.NfRegistryLoginAuthGuard,
-            nfRegistryAuthGuardService.NfRegistryResourcesAuthGuard,
+            NfRegistryUsersAdministrationAuthGuard,
+            NfRegistryWorkflowsAdministrationAuthGuard,
+            NfRegistryLoginAuthGuard,
+            NfRegistryResourcesAuthGuard,
             NfRegistryApi,
             NfStorage,
             {
-                provide: ngCommonHttp.HTTP_INTERCEPTORS,
+                provide: HTTP_INTERCEPTORS,
                 useClass: NfRegistryTokenInterceptor,
                 multi: true
             }
@@ -113,4 +119,4 @@ NfRegistryModule.annotations = [
     })
 ];
 
-module.exports = NfRegistryModule;
+export default NfRegistryModule;

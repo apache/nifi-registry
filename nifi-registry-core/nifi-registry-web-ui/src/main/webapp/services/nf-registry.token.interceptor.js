@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-var NfStorage = require('nifi-registry/services/nf-storage.service.js');
+import NfStorage from 'services/nf-storage.service';
 
 /**
  * NfRegistryTokenInterceptor constructor.
@@ -50,4 +50,4 @@ NfRegistryTokenInterceptor.parameters = [
     NfStorage
 ];
 
-module.exports = NfRegistryTokenInterceptor;
+export default NfRegistryTokenInterceptor;

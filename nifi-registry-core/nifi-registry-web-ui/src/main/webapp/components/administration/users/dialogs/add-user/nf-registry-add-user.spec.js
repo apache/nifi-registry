@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryAddUser = require('nifi-registry/components/administration/users/dialogs/add-user/nf-registry-add-user.js');
-var rxjs = require('rxjs/Rx');
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryAddUser from 'components/administration/users/dialogs/add-user/nf-registry-add-user';
+import { Observable } from 'rxjs';
 
 describe('NfRegistryAddUser Component isolated unit tests', function () {
     var comp;
@@ -41,7 +41,7 @@ describe('NfRegistryAddUser Component isolated unit tests', function () {
 
         // Spy
         spyOn(nfRegistryApi, 'addUser').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'identity': 'New User #1'
         }]));

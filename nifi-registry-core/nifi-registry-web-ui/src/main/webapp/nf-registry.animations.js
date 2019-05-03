@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-var ngAnimate = require('@angular/animations');
+import * as ngAnimate from '@angular/animations';
 
 /**
  * NfAnimations constructor.
@@ -130,4 +130,4 @@ NfAnimations.prototype = {
 
 };
 
-module.exports = new NfAnimations();
+export default new NfAnimations();

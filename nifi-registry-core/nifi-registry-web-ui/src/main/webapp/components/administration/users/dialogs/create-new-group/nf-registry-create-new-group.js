@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+import NfRegistryApi from 'services/nf-registry.api';
+import { Component, ViewChild } from '@angular/core';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import NfRegistryService from 'services/nf-registry.service';
+import { MatDialogRef } from '@angular/material';
+import template from './nf-registry-create-new-group.html';
 
 /**
  * NfRegistryCreateNewGroup constructor.
@@ -90,19 +91,19 @@ NfRegistryCreateNewGroup.prototype = {
 };
 
 NfRegistryCreateNewGroup.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-create-new-group.html!text'),
+    new Component({
+        template: template,
         queries: {
-            createNewGroupInput: new ngCore.ViewChild('createNewGroupInput')
+            createNewGroupInput: new ViewChild('createNewGroupInput')
         }
     })
 ];
 
 NfRegistryCreateNewGroup.parameters = [
     NfRegistryApi,
-    fdsSnackBarsModule.FdsSnackBarService,
+    FdsSnackBarService,
     NfRegistryService,
-    ngMaterial.MatDialogRef
+    MatDialogRef
 ];
 
-module.exports = NfRegistryCreateNewGroup;
+export default NfRegistryCreateNewGroup;

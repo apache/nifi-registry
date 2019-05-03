@@ -21,15 +21,14 @@ import {
     platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
 import { Observable } from 'rxjs';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MomentModule } from 'angular2-moment';
 
-import NfRegistryRoutes from './nf-registry.routes';
+import NfRegistryRoutes from 'nf-registry.routes';
 import { APP_BASE_HREF } from '@angular/common';
 import fdsCore from '@flow-design-system/core';
-import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import NfRegistry from './nf-registry';
+import NfRegistry from 'nf-registry';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import NfPageNotFoundComponent from 'components/page-not-found/nf-registry-page-not-found';

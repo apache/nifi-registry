@@ -216,4 +216,4 @@ NfRegistryStorage.prototype = {
 
 NfRegistryStorage.parameters = [];
 
-module.exports = NfRegistryStorage;
+export default NfRegistryStorage;

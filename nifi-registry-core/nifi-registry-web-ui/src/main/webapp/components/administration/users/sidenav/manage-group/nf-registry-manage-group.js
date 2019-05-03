@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-var covalentCore = require('@covalent/core');
-var fdsDialogsModule = require('@flow-design-system/dialogs');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var ngRouter = require('@angular/router');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var NfRegistryAddUsersToGroup = require('nifi-registry/components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group.js');
+import { TdDataTableService } from '@covalent/core';
+import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { Component } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialog } from '@angular/material';
+import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
+import template from './nf-registry-manage-group.html';
 
 /**
  * NfRegistryManageGroup constructor.
@@ -590,20 +591,20 @@ NfRegistryManageGroup.prototype = {
 };
 
 NfRegistryManageGroup.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-manage-group.html!text')
+    new Component({
+        template: template
     })
 ];
 
 NfRegistryManageGroup.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    covalentCore.TdDataTableService,
-    fdsDialogsModule.FdsDialogService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngRouter.ActivatedRoute,
-    ngRouter.Router,
-    ngMaterial.MatDialog
+    TdDataTableService,
+    FdsDialogService,
+    FdsSnackBarService,
+    ActivatedRoute,
+    Router,
+    MatDialog
 ];
 
-module.exports = NfRegistryManageGroup;
+export default NfRegistryManageGroup;

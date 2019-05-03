@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryCreateNewGroup = require('nifi-registry/components/administration/users/dialogs/create-new-group/nf-registry-create-new-group.js');
-var rxjs = require('rxjs/Rx');
+import NfRegistryApi from 'services/nf-registry.api';
+import NfRegistryService from 'services/nf-registry.service';
+import { Observable } from 'rxjs';
+import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
 
 describe('NfRegistryCreateNewGroup Component isolated unit tests', function () {
     var comp;
@@ -40,7 +40,7 @@ describe('NfRegistryCreateNewGroup Component isolated unit tests', function () {
 
         // Spy
         spyOn(nfRegistryApi, 'createNewGroup').and.callFake(function () {
-        }).and.returnValue(rxjs.Observable.of([{
+        }).and.returnValue(Observable.of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'identity': 'New Group #1'
         }]));

@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-var ngCore = require('@angular/core');
-var NfRegistryService = require('nifi-registry/services/nf-registry.service.js');
-var NfRegistryApi = require('nifi-registry/services/nf-registry.api.js');
-var ngMaterial = require('@angular/material');
-var fdsSnackBarsModule = require('@flow-design-system/snackbars');
+import { Component, ViewChild } from '@angular/core';
+import NfRegistryService from 'services/nf-registry.service';
+import NfRegistryApi from 'services/nf-registry.api';
+import { MatDialogRef } from '@angular/material';
+import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import template from './nf-registry-add-user.html';
 
 /**
  * NfRegistryAddUser constructor.
@@ -89,10 +90,10 @@ NfRegistryAddUser.prototype = {
 };
 
 NfRegistryAddUser.annotations = [
-    new ngCore.Component({
-        template: require('./nf-registry-add-user.html!text'),
+    new Component({
+        template: template,
         queries: {
-            newUserInput: new ngCore.ViewChild('newUserInput')
+            newUserInput: new ViewChild('newUserInput')
         }
     })
 ];
@@ -100,8 +101,8 @@ NfRegistryAddUser.annotations = [
 NfRegistryAddUser.parameters = [
     NfRegistryApi,
     NfRegistryService,
-    fdsSnackBarsModule.FdsSnackBarService,
-    ngMaterial.MatDialogRef
+    FdsSnackBarService,
+    MatDialogRef
 ];
 
-module.exports = NfRegistryAddUser;
+export default NfRegistryAddUser;
