@@ -38,7 +38,7 @@ function NfRegistryGridListViewer(nfRegistryService, nfRegistryApi, activatedRou
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.nfStorage = nfStorage;
-};
+}
 
 NfRegistryGridListViewer.prototype = {
     constructor: NfRegistryGridListViewer,
@@ -58,6 +58,7 @@ NfRegistryGridListViewer.prototype = {
         // subscribe to the route params
         this.$subscription = this.route.params
             .switchMap(function (params) {
+                // eslint-disable-next-line new-cap
                 return new Observable.forkJoin(self.nfRegistryApi.getDroplets(),
                     self.nfRegistryApi.getBuckets());
             })

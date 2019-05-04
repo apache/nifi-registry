@@ -24,8 +24,6 @@ import NfRegistryApi from 'services/nf-registry.api';
 import { Router } from '@angular/router';
 import template from './nf-registry.html';
 
-var MILLIS_PER_SECOND = 1000;
-
 /**
  * NfRegistry constructor.
  *
@@ -44,7 +42,7 @@ function NfRegistry(http, nfStorage, nfRegistryService, nfRegistryApi, changeDet
     this.nfRegistryApi = nfRegistryApi;
     this.cd = changeDetectorRef;
     this.router = router;
-};
+}
 
 NfRegistry.prototype = {
     constructor: NfRegistry,
@@ -73,7 +71,7 @@ NfRegistry.prototype = {
     /**
      * Invalidate old tokens and route to login page
      */
-    logout: function() {
+    logout: function () {
         delete this.nfRegistryService.currentUser.identity;
         delete this.nfRegistryService.currentUser.anonymous;
         this.nfStorage.removeItem('jwt');

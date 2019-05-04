@@ -36,7 +36,7 @@ describe('NfRegistryExplorer Component', function () {
 
                 // from the root injector
                 nfRegistryService = TestBed.get(NfRegistryService);
-                
+
                 done();
             });
     });

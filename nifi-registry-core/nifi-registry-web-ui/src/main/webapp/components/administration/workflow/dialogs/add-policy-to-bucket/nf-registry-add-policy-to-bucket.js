@@ -54,7 +54,7 @@ function NfRegistryAddPolicyToBucket(nfRegistryApi, tdDataTableService, fdsSnack
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.data = data;
-};
+}
 
 NfRegistryAddPolicyToBucket.prototype = {
     constructor: NfRegistryAddPolicyToBucket,
@@ -66,6 +66,7 @@ NfRegistryAddPolicyToBucket.prototype = {
         var self = this;
         this.route.params
             .switchMap(function (params) {
+                // eslint-disable-next-line new-cap
                 return new Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
@@ -75,12 +76,12 @@ NfRegistryAddPolicyToBucket.prototype = {
                 self.users = response[0];
                 self.users = self.users.filter(function (user) {
                     user.checked = false;
-                    return (self.data.users.indexOf(user.identity) < 0) ? true : false;
+                    return (self.data.users.indexOf(user.identity) < 0);
                 });
                 self.groups = response[1];
                 self.groups = self.groups.filter(function (group) {
                     group.checked = false;
-                    return (self.data.groups.indexOf(group.identity) < 0) ? true : false;
+                    return (self.data.groups.indexOf(group.identity) < 0);
                 });
 
                 self.filterUsersAndGroups();
@@ -96,7 +97,7 @@ NfRegistryAddPolicyToBucket.prototype = {
     filterUsersAndGroups: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
@@ -143,7 +144,8 @@ NfRegistryAddPolicyToBucket.prototype = {
     sortUserAndGroups: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
             this.filterUsersAndGroups(sortBy, sortOrder);
         }
     },
@@ -177,7 +179,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy created!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -187,7 +189,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -201,7 +204,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -211,7 +214,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 }
             });
         }
@@ -236,7 +240,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy created!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -246,7 +250,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -260,7 +265,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -270,7 +275,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 }
             });
         }
@@ -295,7 +301,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy created!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -305,7 +311,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 } else {
                     // resource exists, let's update it
                     if (self.userOrGroup.type === 'user') {
@@ -319,7 +326,7 @@ NfRegistryAddPolicyToBucket.prototype = {
                             // policy updated!!!...now update the view
                             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier).subscribe(function (response) {
                                 self.nfRegistryService.bucket = response;
-                                var snackBarRef = self.snackBarService.openCoaster({
+                                self.snackBarService.openCoaster({
                                     title: 'Success',
                                     message: 'Policy created.',
                                     verticalPosition: 'bottom',
@@ -329,7 +336,8 @@ NfRegistryAddPolicyToBucket.prototype = {
                                     duration: 3000
                                 });
                             });
-                        });
+                        }
+                    );
                 }
             });
         }
@@ -366,7 +374,7 @@ NfRegistryAddPolicyToBucket.prototype = {
      * @param userOrGroup   The selected user or group.
      * @param type
      */
-    select: function(userOrGroup, type) {
+    select: function (userOrGroup, type) {
         //deselect all
         this.filteredUsers = this.filteredUsers.filter(function (user) {
             user.checked = false;
@@ -385,7 +393,7 @@ NfRegistryAddPolicyToBucket.prototype = {
      * Change event handler for user or group checkboxes
      * @param $event
      */
-    change: function($event){
+    change: function ($event) {
         $event.source.checked = true;
     }
 };

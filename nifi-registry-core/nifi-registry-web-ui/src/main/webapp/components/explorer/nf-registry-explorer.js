@@ -29,7 +29,7 @@ import template from './nf-registry-explorer.html';
 function NfRegistryExplorer(nfRegistryService) {
     //Services
     this.nfRegistryService = nfRegistryService;
-};
+}
 
 NfRegistryExplorer.prototype = {
     constructor: NfRegistryExplorer,

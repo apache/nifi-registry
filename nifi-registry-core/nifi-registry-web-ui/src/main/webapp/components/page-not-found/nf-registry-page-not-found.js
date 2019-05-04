@@ -33,7 +33,7 @@ function NfPageNotFoundComponent(nfRegistryService, fdsDialogService, router) {
     this.nfRegistryService = nfRegistryService;
     this.dialogService = fdsDialogService;
     this.router = router;
-};
+}
 
 NfPageNotFoundComponent.prototype = {
     constructor: NfPageNotFoundComponent,
@@ -53,7 +53,8 @@ NfPageNotFoundComponent.prototype = {
                 if (accept) {
                     self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
                 }
-            });
+            }
+        );
     }
 };
 

@@ -18,12 +18,10 @@
 import { TestBed } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
 import NfRegistry from './nf-registry';
-import NfRegistryService from 'services/nf-registry.service';
 
 describe('NfRegistry Component', function () {
     let comp;
     let fixture;
-    let nfRegistryService;
 
     beforeEach((done) => {
         initTestBed()
@@ -32,10 +30,8 @@ describe('NfRegistry Component', function () {
                 fixture.detectChanges();
                 comp = fixture.componentInstance;
 
-                // NfRegistryService from the root injector
-                nfRegistryService = TestBed.get(NfRegistryService);
                 done();
-            })
+            });
     });
 
     it('should create component', function () {

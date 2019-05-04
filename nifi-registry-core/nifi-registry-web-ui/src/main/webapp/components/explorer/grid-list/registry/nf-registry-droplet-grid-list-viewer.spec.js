@@ -43,7 +43,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
                 }
             }
         ];
-        
+
         initTestBed({providers})
             .then(() => {
                 fixture = TestBed.createComponent(NfRegistryDropletGridListViewer);
@@ -63,7 +63,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
                 spyOn(nfRegistryService, 'filterDroplets');
-               
+
                 done();
             });
     });
@@ -71,19 +71,19 @@ describe('NfRegistryDropletGridListViewer Component', function () {
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
         }).and.returnValue(Observable.of({
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Flow #1',
+            'description': 'This is flow #1',
+            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'createdTimestamp': 1505931890999,
+            'modifiedTimestamp': 1505931890999,
+            'type': 'FLOW',
+            'snapshotMetadata': null,
+            'link': {
+                'params': {
+                    'rel': 'self'
                 },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
             }
         }));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
@@ -98,19 +98,19 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Flow #1',
+            'description': 'This is flow #1',
+            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'createdTimestamp': 1505931890999,
+            'modifiedTimestamp': 1505931890999,
+            'type': 'FLOW',
+            'snapshotMetadata': null,
+            'link': {
+                'params': {
+                    'rel': 'self'
                 },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
             }
         }]));
         // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, getDroplet, and getDroplets calls
@@ -181,19 +181,19 @@ describe('NfRegistryDropletGridListViewer Component', function () {
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
         }).and.returnValue(Observable.of({
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Flow #1',
+            'description': 'This is flow #1',
+            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'createdTimestamp': 1505931890999,
+            'modifiedTimestamp': 1505931890999,
+            'type': 'FLOW',
+            'snapshotMetadata': null,
+            'link': {
+                'params': {
+                    'rel': 'self'
                 },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
             }
         }));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
@@ -208,19 +208,19 @@ describe('NfRegistryDropletGridListViewer Component', function () {
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Flow #1',
+            'description': 'This is flow #1',
+            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'createdTimestamp': 1505931890999,
+            'modifiedTimestamp': 1505931890999,
+            'type': 'FLOW',
+            'snapshotMetadata': null,
+            'link': {
+                'params': {
+                    'rel': 'self'
                 },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
             }
         }]));
         // 1st change detection triggers ngOnInit which makes getBuckets, getBucket, getDroplet, and getDroplets calls

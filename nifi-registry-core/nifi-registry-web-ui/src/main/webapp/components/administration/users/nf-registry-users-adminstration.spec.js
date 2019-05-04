@@ -29,7 +29,6 @@ describe('NfRegistryUsersAdministration Component', function () {
     let comp;
     let fixture;
     let de;
-    let el;
     let nfRegistryService;
     let nfRegistryApi;
 
@@ -54,20 +53,19 @@ describe('NfRegistryUsersAdministration Component', function () {
                 nfRegistryService = TestBed.get(NfRegistryService);
                 nfRegistryApi = TestBed.get(NfRegistryApi);
                 de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-users-administration-perspective'));
-                el = de.nativeElement;
 
                 // Spy
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
                 spyOn(nfRegistryApi, 'getUsers').and.callFake(function () {
                 }).and.returnValue(Observable.of([{
-                    "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-                    "identity": "User #1"
+                    'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+                    'identity': 'User #1'
                 }]));
                 spyOn(nfRegistryApi, 'getUserGroups').and.callFake(function () {
                 }).and.returnValue(Observable.of([{
-                    "identifier": "5e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-                    "identity": "Group #1"}]));
+                    'identifier': '5e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+                    'identity': 'Group #1'}]));
                 spyOn(nfRegistryService, 'filterUsersAndGroups');
 
                 done();
@@ -104,7 +102,7 @@ describe('NfRegistryUsersAdministration Component', function () {
     });
 
     it('should open a dialog to create a new group', function () {
-        spyOn(comp.dialog, 'open')
+        spyOn(comp.dialog, 'open');
         fixture.detectChanges();
 
         // the function to test

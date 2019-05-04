@@ -1025,7 +1025,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         const bucket = {identifier: 999, checked: true};
 
         // set up the bucket to be deleted
-        nfRegistryService.buckets = nfRegistryService.filteredBuckets = [bucket, {identifier: 1}];
+        nfRegistryService.buckets = [bucket, {identifier: 1}];
+        nfRegistryService.filteredBuckets = nfRegistryService.buckets;
 
         // The function to test
         nfRegistryService.deleteSelectedBuckets();
@@ -1067,8 +1068,10 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         const user = {identifier: 999, checked: true};
 
         // set up the group to be deleted
-        nfRegistryService.groups = nfRegistryService.filteredUserGroups = [group, {identifier: 1}];
-        nfRegistryService.users = nfRegistryService.filteredUsers = [user, {identifier: 12}];
+        nfRegistryService.groups = [group, {identifier: 1}];
+        nfRegistryService.filteredUserGroups = nfRegistryService.groups;
+        nfRegistryService.users = [user, {identifier: 12}];
+        nfRegistryService.filteredUsers = nfRegistryService.users;
 
         // The function to test
         nfRegistryService.deleteSelectedUsersAndGroups();

@@ -41,7 +41,7 @@ function NfRegistryWorkflowAdministration(nfRegistryApi, nfStorage, nfRegistrySe
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialog = matDialog;
-};
+}
 
 NfRegistryWorkflowAdministration.prototype = {
     constructor: NfRegistryWorkflowAdministration,
@@ -69,7 +69,8 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
-        this.nfRegistryService.buckets = this.nfRegistryService.filteredBuckets = [];
+        this.nfRegistryService.buckets = [];
+        this.nfRegistryService.filteredBuckets = [];
         this.nfRegistryService.allBucketsSelected = false;
         this.$subscription.unsubscribe();
     },

@@ -189,7 +189,7 @@ describe('NfRegistryManageBucket Component', function () {
                         }
                     });
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -248,7 +248,7 @@ describe('NfRegistryManageBucket Component', function () {
                         }
                     });
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -307,7 +307,7 @@ describe('NfRegistryManageBucket Component', function () {
                         }
                     });
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -366,7 +366,7 @@ describe('NfRegistryManageBucket Component', function () {
                         }
                     });
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -465,7 +465,7 @@ describe('NfRegistryManageBucket Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -537,7 +537,7 @@ describe('NfRegistryManageBucket Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -594,7 +594,7 @@ describe('NfRegistryManageBucket Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
@@ -651,7 +651,7 @@ describe('NfRegistryManageBucket Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {

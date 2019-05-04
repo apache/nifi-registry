@@ -60,7 +60,7 @@ function NfRegistryAddUsersToGroup(nfRegistryApi, tdDataTableService, nfRegistry
             width: 100
         }
     ];
-};
+}
 
 NfRegistryAddUsersToGroup.prototype = {
     constructor: NfRegistryAddUsersToGroup,
@@ -73,7 +73,7 @@ NfRegistryAddUsersToGroup.prototype = {
 
         this.data.group.users.forEach(function (groupUser) {
             self.users = self.users.filter(function (user) {
-                return (user.identifier !== groupUser.identifier) ? true : false
+                return (user.identifier !== groupUser.identifier);
             });
         });
 
@@ -91,7 +91,7 @@ NfRegistryAddUsersToGroup.prototype = {
     filterUsers: function (sortBy, sortOrder) {
         // if `sortOrder` is `undefined` then use 'ASC'
         if (sortOrder === undefined) {
-            sortOrder = 'ASC'
+            sortOrder = 'ASC';
         }
         // if `sortBy` is `undefined` then find the first sortable column in `dropletColumns`
         if (sortBy === undefined) {
@@ -129,7 +129,8 @@ NfRegistryAddUsersToGroup.prototype = {
     sortUsers: function (column) {
         if (column.sortable) {
             var sortBy = column.name;
-            var sortOrder = column.sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            var sortOrder = (column.sortOrder === 'ASC') ? 'DESC' : 'ASC';
+            column.sortOrder = sortOrder;
             this.filterUsers(sortBy, sortOrder);
         }
     },
@@ -204,13 +205,13 @@ NfRegistryAddUsersToGroup.prototype = {
     addSelectedUsersToGroup: function () {
         var self = this;
         this.filteredUsers.filter(function (filteredUser) {
-            if(filteredUser.checked) {
-                self.data.group.users.push(filteredUser);
-            }
+            return filteredUser.checked;
+        }).forEach(function (filteredUser) {
+            self.data.group.users.push(filteredUser);
         });
         this.nfRegistryApi.updateUserGroup(self.data.group.identifier, self.data.group.identity, self.data.group.users).subscribe(function (group) {
             self.dialogRef.close();
-            var snackBarRef = self.snackBarService.openCoaster({
+            self.snackBarService.openCoaster({
                 title: 'Success',
                 message: 'Selected users have been added to the ' + self.data.group.identity + ' group.',
                 verticalPosition: 'bottom',

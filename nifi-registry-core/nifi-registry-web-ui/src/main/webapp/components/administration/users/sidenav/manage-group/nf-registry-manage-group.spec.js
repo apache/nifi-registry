@@ -1891,7 +1891,7 @@ describe('NfRegistryManageGroup Component', function () {
                 afterClosed: function () {
                     return Observable.of({});
                 }
-            }
+            };
         });
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
         }).and.returnValue(Observable.of({
@@ -2168,7 +2168,7 @@ describe('NfRegistryManageGroup Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
@@ -2268,7 +2268,7 @@ describe('NfRegistryManageGroup Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {

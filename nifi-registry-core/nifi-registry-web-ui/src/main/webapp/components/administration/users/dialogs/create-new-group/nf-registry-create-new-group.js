@@ -39,7 +39,7 @@ function NfRegistryCreateNewGroup(nfRegistryApi, fdsSnackBarService, nfRegistryS
     this.dialogRef = matDialogRef;
     // local state
     this.keepDialogOpen = false;
-};
+}
 
 NfRegistryCreateNewGroup.prototype = {
     constructor: NfRegistryCreateNewGroup,

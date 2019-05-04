@@ -29,14 +29,14 @@ describe('NfRegistryCreateNewGroup Component isolated unit tests', function () {
         nfRegistryService = new NfRegistryService();
         nfRegistryApi = new NfRegistryApi();
         comp = new NfRegistryCreateNewGroup(nfRegistryApi, {
-                openCoaster: function () {
-                }
-            },
-            nfRegistryService,
-            {
-                close: function () {
-                }
-            });
+            openCoaster: function () {
+            }
+        },
+        nfRegistryService,
+        {
+            close: function () {
+            }
+        });
 
         // Spy
         spyOn(nfRegistryApi, 'createNewGroup').and.callFake(function () {

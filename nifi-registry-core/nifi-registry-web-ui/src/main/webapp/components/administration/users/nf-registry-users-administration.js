@@ -49,7 +49,7 @@ function NfRegistryUsersAdministration(nfRegistryApi, nfStorage, nfRegistryServi
     this.dialogService = fdsDialogService;
     this.dialog = matDialog;
     this.router = router;
-};
+}
 
 NfRegistryUsersAdministration.prototype = {
     constructor: NfRegistryUsersAdministration,
@@ -63,6 +63,7 @@ NfRegistryUsersAdministration.prototype = {
         this.$subscription = this.route.params
             .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'users';
+                // eslint-disable-next-line new-cap
                 return new Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
@@ -95,8 +96,10 @@ NfRegistryUsersAdministration.prototype = {
      */
     ngOnDestroy: function () {
         this.nfRegistryService.adminPerspective = '';
-        this.nfRegistryService.users = this.nfRegistryService.filteredUsers = [];
-        this.nfRegistryService.groups = this.nfRegistryService.filteredUserGroups = [];
+        this.nfRegistryService.users = [];
+        this.nfRegistryService.filteredUsers = [];
+        this.nfRegistryService.groups = [];
+        this.nfRegistryService.filteredUserGroups = [];
         this.nfRegistryService.allUsersAndGroupsSelected = false;
         this.$subscription.unsubscribe();
     },

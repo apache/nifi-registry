@@ -36,7 +36,7 @@ function NfRegistryUserLogin(nfRegistryApi, nfRegistryService, matDialogRef, nfR
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.nfRegistryLoginAuthGuard = nfRegistryLoginAuthGuard;
-};
+}
 
 NfRegistryUserLogin.prototype = {
     constructor: NfRegistryUserLogin,
@@ -49,8 +49,8 @@ NfRegistryUserLogin.prototype = {
      */
     login: function (username, password) {
         var self = this;
-        this.nfRegistryApi.postToLogin(username.value, password.value).subscribe(function(response){
-            if(response || response.status === 200) {
+        this.nfRegistryApi.postToLogin(username.value, password.value).subscribe(function (response) {
+            if (response || response.status === 200) {
                 //successful login
                 self.dialogRef.close();
                 self.nfRegistryService.currentUser.anonymous = false;

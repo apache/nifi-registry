@@ -39,7 +39,7 @@ function NfRegistryCreateBucket(nfRegistryApi, fdsSnackBarService, nfRegistrySer
     this.dialogRef = matDialogRef;
     // local state
     this.keepDialogOpen = false;
-};
+}
 
 NfRegistryCreateBucket.prototype = {
     constructor: NfRegistryCreateBucket,
@@ -71,7 +71,7 @@ NfRegistryCreateBucket.prototype = {
             } else {
                 self.dialogRef.close();
             }
-        })
+        });
     },
 
     /**

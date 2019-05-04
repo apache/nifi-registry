@@ -31,7 +31,7 @@ function NfRegistryAdministration(nfRegistryService, router) {
     //Services
     this.router = router;
     this.nfRegistryService = nfRegistryService;
-};
+}
 
 NfRegistryAdministration.prototype = {
     constructor: NfRegistryAdministration,
@@ -40,7 +40,6 @@ NfRegistryAdministration.prototype = {
      * Initialize the component.
      */
     ngOnInit: function () {
-        var self = this;
         this.nfRegistryService.perspective = 'administration';
         this.nfRegistryService.setBreadcrumbState('in');
     },
@@ -58,7 +57,7 @@ NfRegistryAdministration.prototype = {
      *
      * @param $event
      */
-    navigateToAdminPerspective: function($event) {
+    navigateToAdminPerspective: function ($event) {
         this.router.navigateByUrl('nifi-registry/administration/' + $event.value);
     },
 
@@ -67,17 +66,15 @@ NfRegistryAdministration.prototype = {
      *
      * @returns {*}
      */
-    getUserTooltip: function() {
-        if(this.nfRegistryService.currentUser.anonymous) {
+    getUserTooltip: function () {
+        if (this.nfRegistryService.currentUser.anonymous) {
             return 'Please configure NiFi Registry security to enable.';
         }
-        else {
-            if(!this.nfRegistryService.currentUser.resourcePermissions.tenants.canRead) {
-                return 'You do not have permission. Please contact your System Administrator.'
-            } else {
-                return 'Manage NiFi Registry users and groups.'
-            }
+
+        if (!this.nfRegistryService.currentUser.resourcePermissions.tenants.canRead) {
+            return 'You do not have permission. Please contact your System Administrator.';
         }
+        return 'Manage NiFi Registry users and groups.';
     }
 };
 

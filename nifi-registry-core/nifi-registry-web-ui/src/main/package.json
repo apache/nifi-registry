@@ -21,6 +21,7 @@
     "test": "karma start karma.conf.js --single-run",
     "test:dev": "karma start karma.conf.js",
     "eslint": "./node_modules/.bin/eslint './webapp/**/*.js'",
+    "eslint:fix": "./node_modules/.bin/eslint './webapp/**/*.js' --fix",
     "stylelint": "./node_modules/.bin/stylelint './webapp/theming/**/*.scss'",
     "lint": "npm run eslint && npm run stylelint",
     "lint:production": "../../target/frontend-working-directory/node/node ../../target/frontend-working-directory/node/node_modules/npm/bin/npm-cli.js run eslint --scripts-prepend-node-path && ../../target/frontend-working-directory/node/node ../../target/frontend-working-directory/node/node_modules/npm/bin/npm-cli.js run stylelint --scripts-prepend-node-path",

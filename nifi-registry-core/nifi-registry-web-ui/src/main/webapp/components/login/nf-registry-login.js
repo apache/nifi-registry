@@ -32,7 +32,7 @@ function NfLoginComponent(nfRegistryService, matDialog) {
     // Services
     this.nfRegistryService = nfRegistryService;
     this.dialog = matDialog;
-};
+}
 
 NfLoginComponent.prototype = {
     constructor: NfLoginComponent,

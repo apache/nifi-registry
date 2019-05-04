@@ -39,7 +39,7 @@ function NfRegistryBucketGridListViewer(nfRegistryApi, nfStorage, nfRegistryServ
     this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
-};
+}
 
 NfRegistryBucketGridListViewer.prototype = {
     constructor: NfRegistryBucketGridListViewer,
@@ -58,6 +58,7 @@ NfRegistryBucketGridListViewer.prototype = {
         // subscribe to the route params
         this.$subscription = this.route.params
             .switchMap(function (params) {
+                // eslint-disable-next-line new-cap
                 return new Observable.forkJoin(
                     self.nfRegistryApi.getBuckets(),
                     self.nfRegistryApi.getDroplets(params['bucketId']),
@@ -92,7 +93,6 @@ NfRegistryBucketGridListViewer.prototype = {
                 self.nfRegistryService.setBreadcrumbState('in');
                 self.nfRegistryService.inProgress = false;
             });
-
     },
 
     /**

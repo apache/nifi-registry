@@ -18,7 +18,6 @@
 import { TestBed, inject } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
 import NfRegistryApi from 'services/nf-registry.api';
-import NfRegistryService from 'services/nf-registry.service';
 import { HttpTestingController } from '@angular/common/http/testing';
 import {
     NfRegistryUsersAdministrationAuthGuard,
@@ -26,10 +25,10 @@ import {
     NfRegistryResourcesAuthGuard,
     NfRegistryWorkflowsAdministrationAuthGuard
 } from 'services/nf-registry.auth-guard.service';
+import { Observable } from 'rxjs';
 
 describe('NfRegistry API w/ Angular testing utils', function () {
     let nfRegistryApi;
-    let nfRegistryService;
     let req;
 
     const providers = [
@@ -43,11 +42,8 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         initTestBed({providers})
             .then(() => {
                 nfRegistryApi = TestBed.get(NfRegistryApi);
-                
-                // NfRegistryService from the root injector
-                nfRegistryService = TestBed.get(NfRegistryService);
                 done();
-            })
+            });
     });
 
     it('should POST to exchange tickets.', inject([HttpTestingController], function (httpMock) {
@@ -211,9 +207,9 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return rxjs.Observable.of(true);
+                    return Observable.of(true);
                 }
-            }
+            };
         });
 
         // api call
@@ -505,9 +501,9 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return rxjs.Observable.of(true);
+                    return Observable.of(true);
                 }
-            }
+            };
         });
 
         // api call
@@ -580,9 +576,9 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     it('should PUT to update a bucket name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateBucket({
-            'identifier' : '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'name' : 'Bucket #1',
-            'allowBundleRedeploy' : false
+            'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name': 'Bucket #1',
+            'allowBundleRedeploy': false
         }).subscribe(function (response) {
             expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
             expect(response[0].name).toEqual('Bucket #1');
@@ -604,9 +600,9 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     it('should fail to PUT to update a bucket name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateBucket({
-            'identifier' : '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'name' : 'Bucket #1',
-            'allowBundleRedeploy' : false
+            'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'name': 'Bucket #1',
+            'allowBundleRedeploy': false
         }).subscribe(function (response) {
             expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error');
         });
@@ -1114,7 +1110,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         // Next, fulfill the request by transmitting a response.
         req.flush([
             {
-                "identifier": "123",
+                'identifier': '123',
             }
         ]);
 

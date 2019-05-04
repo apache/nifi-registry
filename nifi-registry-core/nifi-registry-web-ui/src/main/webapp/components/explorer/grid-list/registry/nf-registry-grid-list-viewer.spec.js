@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-import { TestBed, fakeAsync, tick, async } from '@angular/core/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
 import { Observable } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
@@ -71,19 +71,19 @@ describe('NfRegistryGridListViewer Component', function () {
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Flow #1',
+            'description': 'This is flow #1',
+            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'createdTimestamp': 1505931890999,
+            'modifiedTimestamp': 1505931890999,
+            'type': 'FLOW',
+            'snapshotMetadata': null,
+            'link': {
+                'params': {
+                    'rel': 'self'
                 },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
             }
         }]));
         // 1st change detection triggers ngOnInit which makes getBuckets and getDroplets calls
@@ -112,19 +112,19 @@ describe('NfRegistryGridListViewer Component', function () {
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
         }).and.returnValue(Observable.of([{
-            "identifier": "2e04b4fb-9513-47bb-aa74-1ae34616bfdc",
-            "name": "Flow #1",
-            "description": "This is flow #1",
-            "bucketIdentifier": "2f7f9e54-dc09-4ceb-aa58-9fe581319cdc",
-            "createdTimestamp": 1505931890999,
-            "modifiedTimestamp": 1505931890999,
-            "type": "FLOW",
-            "snapshotMetadata": null,
-            "link": {
-                "params": {
-                    "rel": "self"
+            'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+            'name': 'Flow #1',
+            'description': 'This is flow #1',
+            'bucketIdentifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
+            'createdTimestamp': 1505931890999,
+            'modifiedTimestamp': 1505931890999,
+            'type': 'FLOW',
+            'snapshotMetadata': null,
+            'link': {
+                'params': {
+                    'rel': 'self'
                 },
-                "href": "flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc"
+                'href': 'flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc'
             }
         }]));
         // 1st change detection triggers ngOnInit which makes getBuckets and getDroplets calls

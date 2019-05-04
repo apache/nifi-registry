@@ -28,7 +28,6 @@ describe('NfRegistryWorkflowAdministration Component', function () {
     let comp;
     let fixture;
     let de;
-    let el;
     let nfRegistryService;
     let nfRegistryApi;
 
@@ -41,7 +40,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 }
             }
         ];
-        
+
         initTestBed({providers})
             .then(() => {
                 fixture = TestBed.createComponent(NfRegistryWorkflowAdministration);
@@ -53,7 +52,6 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 nfRegistryService = TestBed.get(NfRegistryService);
                 nfRegistryApi = TestBed.get(NfRegistryApi);
                 de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-workflow-administration-perspective-buckets-container'));
-                el = de.nativeElement;
 
                 // Spy
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));

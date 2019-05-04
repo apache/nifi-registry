@@ -39,7 +39,7 @@ function NfRegistryAddUser(nfRegistryApi, nfRegistryService, fdsSnackBarService,
     this.dialogRef = matDialogRef;
     // local state
     this.keepDialogOpen = false;
-};
+}
 
 NfRegistryAddUser.prototype = {
     constructor: NfRegistryAddUser,

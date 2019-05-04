@@ -25,8 +25,7 @@ import NfStorage from 'services/nf-storage.service';
  */
 function NfRegistryTokenInterceptor(nfStorage) {
     this.nfStorage = nfStorage;
-};
-
+}
 NfRegistryTokenInterceptor.prototype = {
     constructor: NfRegistryTokenInterceptor,
 
@@ -37,9 +36,9 @@ NfRegistryTokenInterceptor.prototype = {
      * @param next          angular HttpHandler.
      * @returns {Observable HTTPEvent}
      */
-    intercept: function(request, next) {
+    intercept: function (request, next) {
         var token = this.nfStorage.getItem('jwt');
-        if(token) {
+        if (token) {
             request = request.clone({headers: request.headers.set('Authorization', 'Bearer ' + token)});
         }
         return next.handle(request);

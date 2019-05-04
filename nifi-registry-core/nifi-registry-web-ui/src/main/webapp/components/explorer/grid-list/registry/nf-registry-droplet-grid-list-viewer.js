@@ -40,7 +40,7 @@ function NfRegistryDropletGridListViewer(nfRegistryApi, nfStorage, nfRegistrySer
     this.nfStorage = nfStorage;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
-};
+}
 
 NfRegistryDropletGridListViewer.prototype = {
     constructor: NfRegistryDropletGridListViewer,
@@ -56,6 +56,7 @@ NfRegistryDropletGridListViewer.prototype = {
         // subscribe to the route params
         this.$subscription = this.route.params
             .switchMap(function (params) {
+                // eslint-disable-next-line new-cap
                 return new Observable.forkJoin(
                     self.nfRegistryApi.getDroplet(params['bucketId'], params['dropletType'], params['dropletId']),
                     self.nfRegistryApi.getBucket(params['bucketId']),

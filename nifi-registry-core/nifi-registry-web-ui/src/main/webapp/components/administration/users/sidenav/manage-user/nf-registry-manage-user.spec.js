@@ -39,7 +39,7 @@ describe('NfRegistryManageUser Component', function () {
                 }
             }
         ];
-        
+
         initTestBed({providers})
             .then(() => {
                 fixture = TestBed.createComponent(NfRegistryManageUser);
@@ -97,7 +97,7 @@ describe('NfRegistryManageUser Component', function () {
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
                 }).and.returnValue(Observable.of({}));
 
-                done();                
+                done();
             });
     });
 
@@ -1422,7 +1422,7 @@ describe('NfRegistryManageUser Component', function () {
                 afterClosed: function () {
                     return Observable.of({});
                 }
-            }
+            };
         });
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
         }).and.returnValue(Observable.of({
@@ -1621,7 +1621,7 @@ describe('NfRegistryManageUser Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
@@ -1690,7 +1690,7 @@ describe('NfRegistryManageUser Component', function () {
                 afterClosed: function () {
                     return Observable.of(true);
                 }
-            }
+            };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {

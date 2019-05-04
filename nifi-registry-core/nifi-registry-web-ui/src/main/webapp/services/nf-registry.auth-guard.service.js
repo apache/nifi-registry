@@ -37,7 +37,7 @@ function NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi
     this.nfStorage = nfStorage;
     this.router = router;
     this.dialogService = fdsDialogService;
-};
+}
 
 NfRegistryUsersAdministrationAuthGuard.prototype = {
     constructor: NfRegistryUsersAdministrationAuthGuard,
@@ -85,18 +85,16 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                                 acceptButtonColor: 'fds-warn'
                             });
                             self.router.navigateByUrl('/nifi-registry/explorer');
+                        } else if (currentUser.resourcePermissions.tenants.canRead) {
+                            self.router.navigateByUrl(url);
                         } else {
-                            if (currentUser.resourcePermissions.tenants.canRead) {
-                                self.router.navigateByUrl(url);
-                            } else {
-                                self.dialogService.openConfirm({
-                                    title: 'Access denied',
-                                    message: 'Please contact your system administrator.',
-                                    acceptButton: 'Ok',
-                                    acceptButtonColor: 'fds-warn'
-                                });
-                                self.router.navigateByUrl('/nifi-registry/explorer');
-                            }
+                            self.dialogService.openConfirm({
+                                title: 'Access denied',
+                                message: 'Please contact your system administrator.',
+                                acceptButton: 'Ok',
+                                acceptButtonColor: 'fds-warn'
+                            });
+                            self.router.navigateByUrl('/nifi-registry/explorer');
                         }
                     } else {
                         // registry security not configured, redirect to workflow perspective
@@ -140,7 +138,7 @@ function NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistr
     this.nfStorage = nfStorage;
     this.router = router;
     this.dialogService = fdsDialogService;
-};
+}
 
 NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
     constructor: NfRegistryWorkflowsAdministrationAuthGuard,
@@ -188,18 +186,16 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                                 acceptButtonColor: 'fds-warn'
                             });
                             self.router.navigateByUrl('/nifi-registry/explorer');
+                        } else if (currentUser.resourcePermissions.buckets.canRead) {
+                            self.router.navigateByUrl(url);
                         } else {
-                            if (currentUser.resourcePermissions.buckets.canRead) {
-                                self.router.navigateByUrl(url);
-                            } else {
-                                self.dialogService.openConfirm({
-                                    title: 'Access denied',
-                                    message: 'Please contact your system administrator.',
-                                    acceptButton: 'Ok',
-                                    acceptButtonColor: 'fds-warn'
-                                });
-                                self.router.navigateByUrl('/nifi-registry/administration/users');
-                            }
+                            self.dialogService.openConfirm({
+                                title: 'Access denied',
+                                message: 'Please contact your system administrator.',
+                                acceptButton: 'Ok',
+                                acceptButtonColor: 'fds-warn'
+                            });
+                            self.router.navigateByUrl('/nifi-registry/administration/users');
                         }
                     } else {
                         // registry security not configured, allow access to workflow perspective
@@ -235,7 +231,7 @@ function NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, r
     this.nfRegistryApi = nfRegistryApi;
     this.nfStorage = nfStorage;
     this.router = router;
-};
+}
 
 NfRegistryLoginAuthGuard.prototype = {
     constructor: NfRegistryLoginAuthGuard,
@@ -264,13 +260,11 @@ NfRegistryLoginAuthGuard.prototype = {
                     }
                     self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
                     self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
+                } else if (self.nfRegistryService.currentUser.anonymous) {
+                    self.router.navigateByUrl('/nifi-registry');
                 } else {
-                    if(self.nfRegistryService.currentUser.anonymous){
-                        self.router.navigateByUrl('/nifi-registry');
-                    } else {
-                        self.nfRegistryService.currentUser.anonymous = true;
-                        self.router.navigateByUrl(url);
-                    }
+                    self.nfRegistryService.currentUser.anonymous = true;
+                    self.router.navigateByUrl(url);
                 }
             });
         });
@@ -300,7 +294,7 @@ function NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorag
     this.nfRegistryApi = nfRegistryApi;
     this.nfStorage = nfStorage;
     this.router = router;
-};
+}
 
 NfRegistryResourcesAuthGuard.prototype = {
     constructor: NfRegistryResourcesAuthGuard,
@@ -334,7 +328,7 @@ NfRegistryResourcesAuthGuard.prototype = {
                 } else {
                     self.nfRegistryService.currentUser = currentUser;
                     if (!currentUser || currentUser.anonymous === false) {
-                        if(self.nfStorage.hasItem('jwt')){
+                        if (self.nfStorage.hasItem('jwt')) {
                             self.nfRegistryService.currentUser.canLogout = true;
                             self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
                             self.router.navigateByUrl(url);

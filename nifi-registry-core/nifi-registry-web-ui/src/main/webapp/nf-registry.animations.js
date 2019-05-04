@@ -23,7 +23,7 @@ import * as ngAnimate from '@angular/animations';
  * @constructor
  */
 function NfAnimations() {
-};
+}
 
 NfAnimations.prototype = {
     constructor: NfAnimations,
@@ -35,8 +35,7 @@ NfAnimations.prototype = {
         ngAnimate.state('*',
             ngAnimate.style({
                 opacity: 1
-            })
-        ),
+            })),
         ngAnimate.transition(':enter', [
             ngAnimate.style({
                 opacity: 0
@@ -58,8 +57,7 @@ NfAnimations.prototype = {
             ngAnimate.style({
                 opacity: 1,
                 transform: 'translateX(0)'
-            })
-        ),
+            })),
         ngAnimate.transition(':enter', [
             ngAnimate.style({
                 opacity: 0,
@@ -83,8 +81,7 @@ NfAnimations.prototype = {
             ngAnimate.style({
                 opacity: 1,
                 transform: 'translateY(0)'
-            })
-        ),
+            })),
         ngAnimate.transition(':enter', [
             ngAnimate.style({
                 opacity: 0,
@@ -105,8 +102,7 @@ NfAnimations.prototype = {
      */
     flyInOutAnimation: ngAnimate.trigger('flyInOut', [
         ngAnimate.state('in',
-            ngAnimate.style({transform: 'translateX(0)'})
-        ),
+            ngAnimate.style({transform: 'translateX(0)'})),
         ngAnimate.transition('void => *', [
             ngAnimate.style({transform: 'translateX(100%)'}),
             ngAnimate.animate('0.4s 0.1s ease-in')
@@ -119,8 +115,7 @@ NfAnimations.prototype = {
      */
     fadeInOutAnimation: ngAnimate.trigger('fadeInOut', [
         ngAnimate.state('in',
-            ngAnimate.style({opacity: 1})
-        ),
+            ngAnimate.style({opacity: 1})),
         ngAnimate.transition('void => *', [
             ngAnimate.style({opacity: 0}),
             ngAnimate.animate('0.5s 0.1s ease-in')

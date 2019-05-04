@@ -97,6 +97,9 @@
                                         <include>*.json</include>
                                         <include>webpack.*.js</include>
                                         <include>*-loader.js</include>
+                                        <include>.eslintignore</include>
+                                        <include>.eslintrc.js</include>
+                                        <include>.stylelintrc.js</include>
                                     </includes>
                                 </resource>
                             </resources>
@@ -283,7 +286,6 @@
                         <exclude>src/main/package-lock.json</exclude>
                         <exclude>src/main/platform/core/README.md</exclude>
                         <exclude>src/main/karma-test-shim.js</exclude>
-                        <exclude>src/main/webapp/systemjs-angular-loader.js</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -381,8 +383,6 @@
                                                 <include>superagent/**/*</include>
                                                 <include>querystring/**/*</include>
                                                 <include>tslib/**/*</include>
-                                                <include>systemjs/**/*</include>
-                                                <include>systemjs-plugin-text/**/*</include>
                                                 <include>jquery/**/*</include>
                                                 <include>roboto-fontface/**/*</include>
                                             </includes>
