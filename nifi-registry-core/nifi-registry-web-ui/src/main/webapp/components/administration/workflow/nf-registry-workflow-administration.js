@@ -87,7 +87,7 @@ NfRegistryWorkflowAdministration.prototype = {
 
 NfRegistryWorkflowAdministration.annotations = [
     new Component({
-        template: template,
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

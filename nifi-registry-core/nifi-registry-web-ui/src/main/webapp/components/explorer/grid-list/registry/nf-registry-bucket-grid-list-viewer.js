@@ -58,8 +58,7 @@ NfRegistryBucketGridListViewer.prototype = {
         // subscribe to the route params
         this.$subscription = this.route.params
             .switchMap(function (params) {
-                // eslint-disable-next-line new-cap
-                return new Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getBuckets(),
                     self.nfRegistryApi.getDroplets(params['bucketId']),
                     self.nfRegistryApi.getBucket(params['bucketId'])
@@ -108,7 +107,7 @@ NfRegistryBucketGridListViewer.prototype = {
 
 NfRegistryBucketGridListViewer.annotations = [
     new Component({
-        template: template,
+        template,
         animations: [nfRegistryAnimations.flyInOutAnimation]
     })
 ];

@@ -91,7 +91,7 @@ NfRegistryCreateBucket.prototype = {
 
 NfRegistryCreateBucket.annotations = [
     new Component({
-        template: template,
+        template,
         queries: {
             newBucketInput: new ViewChild('newBucketInput')
         }

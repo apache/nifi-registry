@@ -82,7 +82,7 @@ NfRegistry.prototype = {
 NfRegistry.annotations = [
     new Component({
         selector: 'nf-registry-app',
-        template: template,
+        template,
         queries: {
             sidenav: new ViewChild('sidenav')
         },

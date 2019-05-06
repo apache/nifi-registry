@@ -63,8 +63,7 @@ NfRegistryUsersAdministration.prototype = {
         this.$subscription = this.route.params
             .switchMap(function (params) {
                 self.nfRegistryService.adminPerspective = 'users';
-                // eslint-disable-next-line new-cap
-                return new Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -134,7 +133,7 @@ NfRegistryUsersAdministration.prototype = {
 
 NfRegistryUsersAdministration.annotations = [
     new Component({
-        template: template,
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

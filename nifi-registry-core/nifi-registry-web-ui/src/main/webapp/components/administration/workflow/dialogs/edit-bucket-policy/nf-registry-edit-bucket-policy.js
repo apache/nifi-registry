@@ -53,8 +53,7 @@ NfRegistryEditBucketPolicy.prototype = {
         var self = this;
         this.route.params
             .switchMap(function (params) {
-                // eslint-disable-next-line new-cap
-                return new Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getUsers(),
                     self.nfRegistryApi.getUserGroups()
                 );
@@ -340,7 +339,7 @@ NfRegistryEditBucketPolicy.prototype = {
 
 NfRegistryEditBucketPolicy.annotations = [
     new Component({
-        template: template,
+        template,
         queries: {
             readCheckbox: new ViewChild('readCheckbox'),
             writeCheckbox: new ViewChild('writeCheckbox'),

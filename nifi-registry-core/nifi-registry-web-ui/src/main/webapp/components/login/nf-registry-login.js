@@ -50,7 +50,7 @@ NfLoginComponent.prototype = {
 
 NfLoginComponent.annotations = [
     new Component({
-        template: template,
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

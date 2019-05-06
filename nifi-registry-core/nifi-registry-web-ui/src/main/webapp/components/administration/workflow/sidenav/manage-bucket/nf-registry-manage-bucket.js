@@ -93,8 +93,7 @@ NfRegistryManageBucket.prototype = {
         var self = this;
         this.$subscription = this.route.params
             .switchMap(function (params) {
-                // eslint-disable-next-line new-cap
-                return new Observable.forkJoin(
+                return Observable.forkJoin(
                     self.nfRegistryApi.getBucket(params['bucketId']),
                     self.nfRegistryApi.getPolicies()
                 );

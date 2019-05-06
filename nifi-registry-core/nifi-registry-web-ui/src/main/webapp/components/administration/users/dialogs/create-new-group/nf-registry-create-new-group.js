@@ -92,7 +92,7 @@ NfRegistryCreateNewGroup.prototype = {
 
 NfRegistryCreateNewGroup.annotations = [
     new Component({
-        template: template,
+        template,
         queries: {
             createNewGroupInput: new ViewChild('createNewGroupInput')
         }

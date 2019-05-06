@@ -91,7 +91,7 @@ NfRegistryAddUser.prototype = {
 
 NfRegistryAddUser.annotations = [
     new Component({
-        template: template,
+        template,
         queries: {
             newUserInput: new ViewChild('newUserInput')
         }

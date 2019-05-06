@@ -20,7 +20,6 @@
     <servlet>
         <servlet-name>Login</servlet-name>
         <jsp-file>/index.html</jsp-file>
-        <!--<jsp-file>/WEB-INF/pages/index.jsp</jsp-file>-->
     </servlet>
     <servlet-mapping>
         <servlet-name>Login</servlet-name>
@@ -31,7 +30,6 @@
     <servlet>
         <servlet-name>Administration</servlet-name>
         <jsp-file>/index.html</jsp-file>
-        <!--<jsp-file>/WEB-INF/pages/index.jsp</jsp-file>-->
     </servlet>
     <servlet-mapping>
         <servlet-name>Administration</servlet-name>
@@ -42,7 +40,6 @@
     <servlet>
         <servlet-name>Explorer</servlet-name>
         <jsp-file>/index.html</jsp-file>
-        <!--<jsp-file>/WEB-INF/pages/index.jsp</jsp-file>-->
     </servlet>
     <servlet-mapping>
         <servlet-name>Explorer</servlet-name>
@@ -51,8 +48,6 @@
 
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
-        <jsp-file>/index.html</jsp-file>
-        <!--<welcome-file>/WEB-INF/pages/index.jsp</welcome-file>-->
     </welcome-file-list>
 </web-app>
 

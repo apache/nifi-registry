@@ -60,7 +60,7 @@ NfPageNotFoundComponent.prototype = {
 
 NfPageNotFoundComponent.annotations = [
     new Component({
-        template: template,
+        template,
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
