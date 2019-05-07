@@ -45,6 +45,22 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <!--
+                        By default the maven-war-plugin automatically includes everything
+                        from it's warSourceDirectory. Other plugins will be responsible for
+                        getting the desired content into the staging area. Set the warSourceDirectory
+                        to something that doesn't exist to bypass including everything
+                        from src/main/webapp (the default).
+                    -->
+                    <warSourceDirectory>${basedir}/src/main/war</warSourceDirectory>
+                    <webXml>${basedir}/src/main/webapp/WEB-INF/web.xml</webXml>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <!--
@@ -218,9 +234,6 @@
                                         <include>LICENSE</include>
                                         <include>NOTICE</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>webapp/**/*</exclude>
-                                    </excludes>
                                 </resource>
                             </resources>
                         </configuration>

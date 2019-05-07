@@ -51,7 +51,7 @@ const locale = navigator.language.toLowerCase();
 const providers = [];
 
 // No locale or U.S. English: no translation providers so go ahead and bootstrap the app
-if (!locale || locale === 'en-US') {
+if (!locale || locale === 'en-us') {
     bootstrapModule();
 } else { //load the translation providers and bootstrap the module
     var translationFile = './nifi-registry/assets/locale/messages.' + locale + '.xlf';
