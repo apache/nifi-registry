@@ -55,9 +55,11 @@ NOTE: The minimum recommended screen size is 1080px X 445px.
 
 *Flow*: A process group level NiFi dataflow that has been placed under version control and saved to the Registry.
 
-*Bucket*: A container that stores and organizes flows.
+*Bundle*: A binary artifact containing one or more extensions that can be run in NiFi or MiNiFi.
 
-*Policy*: Defines a user or group's ability to import, view, commit changes and/or delete flows.
+*Bucket*: A container that stores and organizes versioned items, such as flows and bundles.
+
+*Policy*: Defines a user or group's ability to perform a given action.
 
 
 [[User_Interface]]
@@ -363,3 +365,58 @@ image::remove_user_from_group.png["Remove User From Group"]
 === Other Group Level Actions
 
 Editing group names, deleting groups, adding policies to/deleting policies from groups and granting special privileges to groups follow similar procedures described earlier for corresponding user level actions.
+
+== Manage Bundles
+
+Bundles can be managed through the REST API.
+
+=== Upload Bundle
+
+A bundle can be uploaded to a bucket by making a `POST` request to the following REST end-point:
+
+  /nifi-registry-api/buckets/<bucketId>/bundles/<bundleType>
+
+Replacing `bucketId` with the id of the bucket where the bundle is being uploaded to, and `bundleType` with the type of bundle being uploaded. Currently the only supported bundle type is a NiFi Archive (NAR) which can be specified as `nifi-nar`.
+
+The `Content-Type` of the request is expected to be `multipart/form-data`. An example of using `curl` to upload `my-processors-1.0.0.nar` would be the following:
+
+  curl -v -F file=@/path/to/my-processors-1.0.0.nar http://localhost:18080/nifi-registry-api/buckets/de8e08c9-592d-4e10-affe-b3752698f1d9/bundles/nifi-nar
+
+NOTE: In order to upload a NAR to NiFi Registry, it must contain the file 'META-INF/docs/extension-manifest.xml' which is produced by the NAR Maven plugin, starting with version 1.3.0.
+
+=== Download Bundle
+
+There are two ways to download a bundle.
+
+==== Bundle Coordinates
+
+A bundle can be downloaded by using the combination of the bucket name and bundle coordinates, where bundle coordinates are the group, artifact, and version of the bundle.
+
+To download a bundle by it's coordinates, a `GET` request can be made to the following end-point:
+
+  /nifi-registry-api/extension-repository/{bucketName}/{groupId}/{artifactId}/{version}/content
+
+The `Content-Type` of the response is `application/octet-stream`.
+
+An example of using `curl` to download `my-processors-1.0.0.nar` from the `Test` bucket would be the following:
+
+  curl http://localhost:18080/nifi-registry-api/extension-repository/Test/com.test/my-processors/1.0.0/content > my-processors-1.0.0.nar
+
+
+==== Bundle Id
+
+A bundle can be downloaded by using the combination of it's unique id and version. The unique id is an id assigned to the bundle when the first version of the bundle is uploaded to NiFi Registry. This id is returned in the response of a successful upload.
+
+To download a bundle by it's id and version, a `GET` request can be made to the following end-point:
+
+  /nifi-registry-api/bundles/{bundleId}/versions/{version}/content
+
+The `Content-Type` of the response is `application/octet-stream`.
+
+An example of using `curl` to download `my-processors-1.0.0.nar` by id and version would be the following:
+
+  curl http://localhost:18080/nifi-registry-api/bundles/3db78035-e3ba-4cbf-820e-022f292bd68c/versions/1.0.0/content > my-processors-1.0.0.nar
+
+=== Additional Actions
+
+For additional actions that can be performed related to bundles, please consult the REST API documentation.
