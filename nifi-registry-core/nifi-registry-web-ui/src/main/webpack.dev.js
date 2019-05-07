@@ -20,6 +20,7 @@ const path = require('path');
 const merge = require('webpack-merge');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
 
 const commonConfig = require('./webpack.common');
 
@@ -86,6 +87,36 @@ module.exports = merge(commonConfig, {
             template: 'webapp/template.dev.html',
             filename: 'index.html',
             favicon: path.resolve(__dirname, 'webapp/images/registry-favicon.png')
+        }),
+
+        // generate a file with all bundled packages licenses' in it. This can be used to ad to the LICENSE file
+        new LicenseWebpackPlugin({
+            outputFilename: '../../target/thirdPartyLicenses.txt',
+            unacceptableLicenseTest: (licenseType) => (licenseType === 'GPL' || licenseType === 'AGPL' || licenseType === 'LGPL' || licenseType === 'NGPL'),
+            renderLicenses: (modules) => {
+                const licTextArray = modules.map((lic) => {
+                    if (lic.licenseText && lic.licenseId) {
+                        const license = lic.licenseText.replace(/\n/gm, '\n\t');
+                        const licText =`This product bundles '${lic.packageJson.name}' which is available under a(n) ${lic.licenseId} license.\n\n\t${license}`;
+
+                        return licText;
+                    } else {
+                        console.log('\n**********************\n');
+                        console.log(lic.packageJson);
+                        if (lic.packageJson.license) {
+                            const missingLicenseText = `*** No license text found ***\n`
+                            const licText =`This product bundles '${lic.packageJson.name}' which is available under a(n) ${lic.packageJson.license} license.\n\t${missingLicenseText}`;
+
+                            return licText
+                        } else {
+                            return `\n\n!!! No license information found for ${lic.packageJson.name} !!!\n\n`;
+                        }
+
+                    }
+                });
+
+                return licTextArray.join('\n\n');
+            }
         })
     ]
 });
