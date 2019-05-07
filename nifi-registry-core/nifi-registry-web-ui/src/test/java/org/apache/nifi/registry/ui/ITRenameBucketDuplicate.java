@@ -1,9 +1,32 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.nifi.registry.ui;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.*;
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoAlertPresentException;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -133,8 +156,12 @@ public class ITRenameBucketDuplicate {
         // wait for duplicate bucket error dialog
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("div.cdk-overlay-pane")));
 
-         // select OK button
-        WebElement selectOKButton = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("fds-confirm-dialog > fds-dialog > div > div.fds-dialog-actions.ng-star-inserted > fds-dialog-actions > button")));
+
+        // confirm OK button exists
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("fds-confirm-dialog > fds-dialog > div > div.fds-dialog-actions.ng-star-inserted > fds-dialog-actions > button")));
+
+        // select OK button
+        WebElement selectOKButton = driver.findElement(By.cssSelector("fds-confirm-dialog > fds-dialog > div > div.fds-dialog-actions.ng-star-inserted > fds-dialog-actions > button"));
         Actions actions = new Actions(driver);
         actions.moveToElement(selectOKButton).click().build().perform();
 
@@ -155,16 +182,23 @@ public class ITRenameBucketDuplicate {
 
     @After
     public void tearDown() throws Exception {
-        // wait for side nav
+        // wait for side nav to close
         wait.until(ExpectedConditions.invisibilityOfElementLocated(By.className("mat-sidenav")));
 
         // bucket cleanup
+
+        // confirm all buckets checkbox exists
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#nifi-registry-workflow-administration-buckets-list-container-column-header div.mat-checkbox-inner-container")));
+
         // select all buckets checkbox
-        WebElement selectAllCheckbox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#nifi-registry-workflow-administration-buckets-list-container-column-header div.mat-checkbox-inner-container")));
+        WebElement selectAllCheckbox = driver.findElement(By.cssSelector("#nifi-registry-workflow-administration-buckets-list-container-column-header div.mat-checkbox-inner-container"));
         selectAllCheckbox.click();
 
+        // confirm actions drop down menu exists
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#nifi-registry-workflow-administration-perspective-buckets-container button.mat-fds-primary")));
+
         // select actions drop down
-        WebElement selectActions = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#nifi-registry-workflow-administration-perspective-buckets-container button.mat-fds-primary")));
+        WebElement selectActions = driver.findElement(By.cssSelector("#nifi-registry-workflow-administration-perspective-buckets-container button.mat-fds-primary"));
         selectActions.click();
 
         // select delete
