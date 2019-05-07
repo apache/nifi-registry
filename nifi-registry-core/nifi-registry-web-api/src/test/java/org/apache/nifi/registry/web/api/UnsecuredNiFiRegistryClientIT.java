@@ -60,6 +60,7 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersion;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.flow.ExternalControllerServiceReference;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -96,6 +97,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -848,17 +850,28 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final Map<String,VersionedParameterContext> contexts = new HashMap<>();
         contexts.put(context1.getName(), context1);
 
+        // Create an external controller service reference
+        final ExternalControllerServiceReference serviceReference = new ExternalControllerServiceReference();
+        serviceReference.setName("External Service 1");
+        serviceReference.setIdentifier(UUID.randomUUID().toString());
+
+        final Map<String,ExternalControllerServiceReference> serviceReferences = new HashMap<>();
+        serviceReferences.put(serviceReference.getIdentifier(), serviceReference);
+
         // Create the snapshot
         final VersionedFlowSnapshot snapshot = buildSnapshot(createdFlow, 1);
         snapshot.setFlowEncodingVersion("2.0.0");
         snapshot.setParameterContexts(contexts);
+        snapshot.setExternalControllerServices(serviceReferences);
 
         final VersionedFlowSnapshot createdSnapshot = client.getFlowSnapshotClient().create(snapshot);
         assertNotNull(createdSnapshot);
         assertNotNull(createdSnapshot.getFlowEncodingVersion());
         assertNotNull(createdSnapshot.getParameterContexts());
+        assertNotNull(createdSnapshot.getExternalControllerServices());
         assertEquals(snapshot.getFlowEncodingVersion(), createdSnapshot.getFlowEncodingVersion());
         assertEquals(1, createdSnapshot.getParameterContexts().size());
+        assertEquals(1, createdSnapshot.getExternalControllerServices().size());
 
         // Retrieve the snapshot
         final VersionedFlowSnapshot retrievedSnapshot = client.getFlowSnapshotClient().get(
@@ -867,8 +880,10 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         assertNotNull(retrievedSnapshot);
         assertNotNull(retrievedSnapshot.getFlowEncodingVersion());
         assertNotNull(retrievedSnapshot.getParameterContexts());
+        assertNotNull(retrievedSnapshot.getExternalControllerServices());
         assertEquals(snapshot.getFlowEncodingVersion(), retrievedSnapshot.getFlowEncodingVersion());
         assertEquals(1, retrievedSnapshot.getParameterContexts().size());
+        assertEquals(1, retrievedSnapshot.getExternalControllerServices().size());
     }
 
     private void checkExtensionMetadata(Collection<ExtensionMetadata> extensions) {

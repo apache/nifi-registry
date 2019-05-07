@@ -112,10 +112,9 @@ public class TestFlowContentSerializer {
         serviceReferences.put(serviceReference1.getIdentifier(), serviceReference1);
         serviceReferences.put(serviceReference2.getIdentifier(), serviceReference2);
 
-        processGroup1.setExternalControllerServices(serviceReferences);
-
         final VersionedFlowSnapshot snapshot = new VersionedFlowSnapshot();
         snapshot.setFlowContents(processGroup1);
+        snapshot.setExternalControllerServices(serviceReferences);
 
         final FlowContent flowContent = new FlowContent();
         flowContent.setFlowSnapshot(snapshot);
@@ -140,7 +139,7 @@ public class TestFlowContentSerializer {
         assertEquals(processGroup1.getIdentifier(), deserializedProcessGroup.getIdentifier());
         assertEquals(processGroup1.getName(), deserializedProcessGroup.getName());
 
-        final Map<String,ExternalControllerServiceReference> deserializedServiceReferences = deserializedProcessGroup.getExternalControllerServices();
+        final Map<String,ExternalControllerServiceReference> deserializedServiceReferences = deserializedSnapshot.getExternalControllerServices();
         assertNotNull(deserializedServiceReferences);
         assertEquals(2, deserializedServiceReferences.size());
 
