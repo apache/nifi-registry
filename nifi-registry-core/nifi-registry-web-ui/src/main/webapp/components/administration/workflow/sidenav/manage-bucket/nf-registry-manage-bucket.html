@@ -26,6 +26,7 @@ limitations under the License.
         <div class="pad-left-md pad-right-md" flex fxLayoutAlign="start center">
             <mat-input-container flex>
                 <input #bucketnameInput
+                       data-automation-id="nf-registry-manage-bucket-input-name"
                        matInput
                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite"
                        placeholder="Identity/Bucket Name"
