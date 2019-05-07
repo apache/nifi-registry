@@ -27,7 +27,6 @@ node_modules/
 *.map
 nifi-registry-core/nifi-registry-web-ui/src/main/index.html
 nifi-registry-core/nifi-registry-web-ui/src/main/coverage
-nifi-registry-core/nifi-registry-web-ui/src/main/fonts
-nifi-registry-core/nifi-registry-web-ui/src/main/images
+nifi-registry-core/nifi-registry-web-ui/src/main/assets
 nifi-registry-core/nifi-registry-web-ui/src/main/*.png
 nifi-registry-core/nifi-registry-web-ui/src/main/.cache-loader

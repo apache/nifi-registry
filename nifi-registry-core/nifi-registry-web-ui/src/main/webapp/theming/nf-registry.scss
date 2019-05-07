@@ -20,8 +20,8 @@
  * <link href='/stylesheets/nifi-flow-registry.css' media='screen, projection' rel='stylesheet' type='text/css' /> */
 
 // Path overrides
-$fa-font-path: './fonts';
-$mat-font-url: './fonts/';
+$fa-font-path: './assets/fonts';
+$mat-font-url: './assets/fonts/';
 
 @import '~@nifi-fds/core/common/styles/globalVars';
 @import '~@nifi-fds/core/theming/all-theme';

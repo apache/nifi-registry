@@ -40,32 +40,37 @@ import '@covalent/core/common/styles/font/MaterialIcons-Regular.woff';
 import '@covalent/core/common/styles/font/MaterialIcons-Regular.ttf';
 import 'images/registry-logo-web-app.svg';
 import 'images/registry-background-logo.svg';
+import 'locale/messages.es.xlf';
 
 // Comment out this line when developing to assert for unidirectional data flow
 enableProdMode();
 
 // Get the locale id from the global
-var locale = navigator.language;
+const locale = navigator.language.toLowerCase();
 
-var providers = [];
+const providers = [];
 
 // No locale or U.S. English: no translation providers so go ahead and bootstrap the app
 if (!locale || locale === 'en-US') {
-    platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
+    bootstrapModule();
 } else { //load the translation providers and bootstrap the module
-    var translationFile = './nifi-registry/messages.' + locale + '.xlf';
+    var translationFile = './nifi-registry/assets/locale/messages.' + locale + '.xlf';
 
     $.ajax({
         url: translationFile
     }).done(function (translations) {
         // add providers if translation file for locale is loaded
         if (translations) {
-            providers.push({provide: TRANSLATIONS, useValue: translations});
+            providers.push({provide: TRANSLATIONS, useValue: translations.documentElement.innerHTML});
             providers.push({provide: TRANSLATIONS_FORMAT, useValue: 'xlf'});
             providers.push({provide: LOCALE_ID, useValue: locale});
         }
-        platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
+        bootstrapModule();
     }).fail(function () {
-        platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
+        bootstrapModule();
     });
+}
+
+function bootstrapModule() {
+    platformBrowserDynamic().bootstrapModule(NfRegistryModule, {providers: providers});
 }

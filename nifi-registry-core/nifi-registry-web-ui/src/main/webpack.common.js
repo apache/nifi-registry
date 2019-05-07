@@ -161,7 +161,7 @@ module.exports = {
                     loader: 'file-loader',
                     options: {
                         name: '[name].[ext]',
-                        outputPath: 'images/'
+                        outputPath: 'assets/images/'
                     }
                 }]
             },
@@ -171,7 +171,20 @@ module.exports = {
                     loader: 'file-loader',
                     options: {
                         name: '[name].[ext]',
-                        outputPath: 'fonts/'
+                        outputPath: 'assets/fonts/'
+                    }
+                }]
+            },
+            {
+                test: /\.(xlf)$/i,
+                include: [
+                    path.resolve(__dirname, 'locale')
+                ],
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'assets/locale/'
                     }
                 }]
             }

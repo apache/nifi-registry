@@ -26,8 +26,6 @@
     <version>0.5.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <properties>
-        <staging.dir>${project.build.directory}/tmp</staging.dir>
-        <registry.filter>registry-min.properties</registry.filter>
         <frontend.source>${basedir}/src/main</frontend.source>
         <frontend.dependency.configs>${basedir}/src/main</frontend.dependency.configs>
         <frontend.working.dir>${project.build.directory}/frontend-working-directory</frontend.working.dir>
@@ -44,9 +42,6 @@
             pages will not be pre-compiled and will instead be filtered
             when the war is built.
         -->
-        <filters>
-            <filter>src/main/resources/filters/${registry.filter}</filter>
-        </filters>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -128,6 +123,31 @@
                             </resources>
                         </configuration>
                     </execution>
+
+                    <!--
+                        Copy license files
+                    -->
+                    <execution>
+                        <id>copy-license-files</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${frontend.working.dir}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${frontend.source}/resources/META-INF</directory>
+                                    <filtering>false</filtering>
+                                    <includes>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+
                     <!--
                         Stage client side node_modules dependencies for inclusion in .war.
                     -->
@@ -193,32 +213,14 @@
                                         <include>nf-registry.style.min.*.css</include>
                                         <include>vendor.min.*.css</include>
                                         <include>index.html</include>
-                                        <include>fonts/**/*</include>
+                                        <include>assets/**/*</include>
                                         <include>registry-favicon.png</include>
+                                        <include>LICENSE</include>
+                                        <include>NOTICE</include>
                                     </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!--
-                        Stage the localization files to be included in the .war
-                    -->
-                    <execution>
-                        <id>copy-localization</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}
-                            </outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${frontend.working.dir}/locale</directory>
-                                    <filtering>false</filtering>
-                                    <includes>
-                                        <include>*</include>
-                                    </includes>
+                                    <excludes>
+                                        <exclude>webapp/**/*</exclude>
+                                    </excludes>
                                 </resource>
                             </resources>
                         </configuration>
@@ -346,9 +348,6 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
-            <properties>
-                <registry.filter>registry.properties</registry.filter>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
