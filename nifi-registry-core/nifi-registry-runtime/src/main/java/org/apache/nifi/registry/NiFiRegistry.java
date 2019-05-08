@@ -44,9 +44,11 @@ public class NiFiRegistry {
 
     public static final String NIFI_REGISTRY_PROPERTIES_FILE_PATH_PROPERTY = "nifi.registry.properties.file.path";
     public static final String NIFI_REGISTRY_BOOTSTRAP_FILE_PATH_PROPERTY = "nifi.registry.bootstrap.config.file.path";
+    public static final String NIFI_REGISTRY_BOOTSTRAP_DOCS_DIR_PROPERTY = "nifi.registry.bootstrap.config.docs.dir";
 
     public static final String RELATIVE_BOOTSTRAP_FILE_LOCATION = "conf/bootstrap.conf";
     public static final String RELATIVE_PROPERTIES_FILE_LOCATION = "conf/nifi-registry.properties";
+    public static final String RELATIVE_DOCS_LOCATION = "docs";
 
     private final JettyServer server;
     private final BootstrapListener bootstrapListener;
@@ -104,8 +106,10 @@ public class NiFiRegistry {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
 
+        final String docsDir = System.getProperty(NIFI_REGISTRY_BOOTSTRAP_DOCS_DIR_PROPERTY, RELATIVE_DOCS_LOCATION);
+
         final long startTime = System.nanoTime();
-        server = new JettyServer(properties, masterKeyProvider);
+        server = new JettyServer(properties, masterKeyProvider, docsDir);
 
         if (shutdown) {
             LOGGER.info("NiFi Registry has been shutdown via NiFi Registry Bootstrap. Will not start Controller");

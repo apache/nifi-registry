@@ -78,18 +78,20 @@ public class JettyServer {
 
     private final NiFiRegistryProperties properties;
     private final CryptoKeyProvider masterKeyProvider;
+    private final String docsLocation;
     private final Server server;
 
     private WebAppContext webUiContext;
     private WebAppContext webApiContext;
     private WebAppContext webDocsContext;
 
-    public JettyServer(final NiFiRegistryProperties properties, final CryptoKeyProvider cryptoKeyProvider) {
+    public JettyServer(final NiFiRegistryProperties properties, final CryptoKeyProvider cryptoKeyProvider, final String docsLocation) {
         final QueuedThreadPool threadPool = new QueuedThreadPool(properties.getWebThreads());
         threadPool.setName("NiFi Registry Web Server");
 
         this.properties = properties;
         this.masterKeyProvider = cryptoKeyProvider;
+        this.docsLocation = docsLocation;
         this.server = new Server(threadPool);
 
         // enable the annotation based configuration to ensure the jsp container is initialized properly
@@ -373,7 +375,24 @@ public class JettyServer {
         resourceHandler.setDirectoriesListed(false);
 
         // load the docs directory
-        final File docsDir = Paths.get("docs").toRealPath().toFile();
+        String docsDirectory = docsLocation;
+        if (StringUtils.isBlank(docsDirectory)) {
+            docsDirectory = "docs";
+        }
+
+        File docsDir;
+        try {
+            docsDir = Paths.get(docsDirectory).toRealPath().toFile();
+        } catch (IOException ex) {
+            logger.warn("Directory '" + docsDirectory + "' is missing. Some documentation will be unavailable.");
+            docsDir = new File(docsDirectory).getAbsoluteFile();
+            final boolean made = docsDir.mkdirs();
+            if (!made) {
+                logger.error("Failed to create 'docs' directory!");
+                startUpFailure(new IOException(docsDir.getAbsolutePath() + " could not be created"));
+            }
+        }
+
         final Resource docsResource = Resource.newResource(docsDir);
 
         // load the rest documentation

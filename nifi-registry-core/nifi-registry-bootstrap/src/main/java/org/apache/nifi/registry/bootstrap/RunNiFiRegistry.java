@@ -80,6 +80,7 @@ public class RunNiFiRegistry {
     public static final String DEFAULT_JAVA_CMD = "java";
     public static final String DEFAULT_PID_DIR = "bin";
     public static final String DEFAULT_LOG_DIR = "./logs";
+    public static final String DEFAULT_DOCS_DIR = "./docs";
 
     public static final String GRACEFUL_SHUTDOWN_PROP = "graceful.shutdown.seconds";
     public static final String DEFAULT_GRACEFUL_SHUTDOWN_VALUE = "20";
@@ -827,20 +828,31 @@ public class RunNiFiRegistry {
         final Map<String, String> props = new HashMap<>();
         props.putAll((Map) properties);
 
+        // Determine the working dir for launching the NiFi Registry process
+        // The order of precedence is:
+        // 1) Specified in bootstrap.conf via working.dir
+        // 2) NIFI_REGISTRY_HOME env variable
+        // 3) Parent of bootstrap config file's parent
+
+        final File workingDir;
         final String specifiedWorkingDir = props.get("working.dir");
-        if (specifiedWorkingDir != null) {
-            builder.directory(new File(specifiedWorkingDir));
-        }
-
+        final String nifiRegistryHome = System.getenv("NIFI_REGISTRY_HOME");
         final File bootstrapConfigAbsoluteFile = bootstrapConfigFile.getAbsoluteFile();
-        final File binDir = bootstrapConfigAbsoluteFile.getParentFile();
-        final File workingDir = binDir.getParentFile();
 
-        if (specifiedWorkingDir == null) {
-            builder.directory(workingDir);
+        if (!StringUtils.isBlank(specifiedWorkingDir)) {
+            workingDir = new File(specifiedWorkingDir.trim());
+        } else if (!StringUtils.isBlank(nifiRegistryHome)) {
+            workingDir = new File(nifiRegistryHome.trim());
+        } else {
+            final File binDir = bootstrapConfigAbsoluteFile.getParentFile();
+            workingDir = binDir.getParentFile();
         }
+
+        builder.directory(workingDir);
 
         final String nifiRegistryLogDir = replaceNull(System.getProperty("org.apache.nifi.registry.bootstrap.config.log.dir"), DEFAULT_LOG_DIR).trim();
+
+        final String nifiRegistryDocsDir = replaceNull(props.get("docs.dir"), DEFAULT_DOCS_DIR).trim();
 
         final String libFilename = replaceNull(props.get("lib.dir"), "./lib").trim();
         File libDir = getFile(libFilename, workingDir);
@@ -944,6 +956,7 @@ public class RunNiFiRegistry {
         cmd.add("-Dnifi.registry.properties.file.path=" + nifiRegistryPropsFilename);
         cmd.add("-Dnifi.registry.bootstrap.config.file.path=" + bootstrapConfigFile.getAbsolutePath());
         cmd.add("-Dnifi.registry.bootstrap.listen.port=" + listenPort);
+        cmd.add("-Dnifi.registry.bootstrap.config.docs.dir=" + nifiRegistryDocsDir);
         cmd.add("-Dapp=NiFiRegistry");
         cmd.add("-Dorg.apache.nifi.registry.bootstrap.config.log.dir=" + nifiRegistryLogDir);
         cmd.add("org.apache.nifi.registry.NiFiRegistry");
