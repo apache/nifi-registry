@@ -21,7 +21,7 @@
         <title>NiFi</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7"/>
-        <link rel="shortcut icon" href="../nifi/images/nifi16.ico"/>
+        <link rel="shortcut icon" href="/nifi-registry-docs/images/registry-favicon.png"/>
         <link href="../../css/component-usage.css" rel="stylesheet" type="text/css" />
     </head>
     <body>
