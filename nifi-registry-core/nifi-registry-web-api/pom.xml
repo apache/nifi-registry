@@ -389,14 +389,14 @@
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-client</artifactId>
+            <artifactId>nifi-registry-test</artifactId>
             <version>0.4.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring.boot.version}</version>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-client</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -100,6 +100,7 @@
         <flyway.version>5.2.1</flyway.version>
         <flyway.tests.version>5.1.0</flyway.tests.version>
         <swagger.ui.version>3.12.0</swagger.ui.version>
+        <testcontainers.version>1.11.2</testcontainers.version>
     </properties>
 
     <repositories>

@@ -328,9 +328,9 @@
         </dependency>
         <!-- Test Dependencies -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring.boot.version}</version>
+            <groupId>org.apache.nifi.registry</groupId>
+            <artifactId>nifi-registry-test</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -339,6 +339,14 @@
             <version>${flyway.tests.version}</version>
             <scope>test</scope>
             <exclusions>
+                <exclusion>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-test</artifactId>
+                </exclusion>
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-context</artifactId>

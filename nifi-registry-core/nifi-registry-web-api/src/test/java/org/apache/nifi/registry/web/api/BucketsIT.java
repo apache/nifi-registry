@@ -19,6 +19,7 @@ package org.apache.nifi.registry.web.api;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.ws.rs.client.Entity;
@@ -49,7 +50,10 @@ public class BucketsIT extends UnsecuredITBase {
         assertEquals(0, buckets.length);
     }
 
+    // NOTE: The tests that seed the DB directly from SQL end up with different results for the timestamp depending on
+    // which DB is used, so for now these types of tests only run against H2.
     @Test
+    @IfProfileValue(name="current.database.is.h2", value="true")
     @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:db/clearDB.sql", "classpath:db/BucketsIT.sql"})
     public void testGetBuckets() throws Exception {
 
@@ -58,19 +62,19 @@ public class BucketsIT extends UnsecuredITBase {
         String expected = "[" +
                 "{\"identifier\":\"1\"," +
                 "\"name\":\"Bucket 1\"," +
-                "\"createdTimestamp\":1505091060000," +
+                "\"createdTimestamp\":1505134260000," +
                 "\"description\":\"This is test bucket 1\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1\"}}," +
                 "{\"identifier\":\"2\"," +
                 "\"name\":\"Bucket 2\"," +
-                "\"createdTimestamp\":1505091120000," +
+                "\"createdTimestamp\":1505134320000," +
                 "\"description\":\"This is test bucket 2\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/2\"}}," +
                 "{\"identifier\":\"3\"," +
                 "\"name\":\"Bucket 3\"," +
-                "\"createdTimestamp\":1505091180000," +
+                "\"createdTimestamp\":1505134380000," +
                 "\"description\":\"This is test bucket 3\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/3\"}}" +

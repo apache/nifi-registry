@@ -75,7 +75,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(b.getId(), createdBucket.getId());
         assertEquals(b.getName(), createdBucket.getName());
         assertEquals(b.getDescription(), createdBucket.getDescription());
-        assertEquals(b.getCreated(), createdBucket.getCreated());
+        assertEquals(b.getCreated().getTime(), createdBucket.getCreated().getTime());
         assertFalse(b.isAllowExtensionBundleRedeploy());
     }
 
@@ -256,7 +256,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(flow.getBucketId(), createdFlow.getBucketId());
         assertEquals(flow.getName(), createdFlow.getName());
         assertEquals(flow.getDescription(), createdFlow.getDescription());
-        assertEquals(flow.getCreated(), createdFlow.getCreated());
+        assertEquals(flow.getCreated().getTime(), createdFlow.getCreated().getTime());
         assertEquals(flow.getModified(), createdFlow.getModified());
         assertEquals(flow.getType(), createdFlow.getType());
     }
@@ -360,7 +360,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(flowSnapshot.getFlowId(), createdFlowSnapshot.getFlowId());
         assertEquals(flowSnapshot.getVersion(), createdFlowSnapshot.getVersion());
         assertEquals(flowSnapshot.getComments(), createdFlowSnapshot.getComments());
-        assertEquals(flowSnapshot.getCreated(), createdFlowSnapshot.getCreated());
+        assertEquals(flowSnapshot.getCreated().getTime(), createdFlowSnapshot.getCreated().getTime());
         assertEquals(flowSnapshot.getCreatedBy(), createdFlowSnapshot.getCreatedBy());
     }
 
@@ -627,7 +627,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(bundleVersion.getBuildTag(), createdBundleVersion.getBuildTag());
         assertEquals(bundleVersion.getBuildRevision(), createdBundleVersion.getBuildRevision());
         assertEquals(bundleVersion.getBuiltBy(), createdBundleVersion.getBuiltBy());
-        assertEquals(bundleVersion.getBuilt(), createdBundleVersion.getBuilt());
+        assertEquals(bundleVersion.getBuilt().getTime(), createdBundleVersion.getBuilt().getTime());
     }
 
     @Test

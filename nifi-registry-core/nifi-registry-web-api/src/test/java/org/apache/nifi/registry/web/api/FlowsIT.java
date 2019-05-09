@@ -24,6 +24,7 @@ import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.test.annotation.IfProfileValue;
 import org.springframework.test.context.jdbc.Sql;
 
 import javax.ws.rs.WebApplicationException;
@@ -62,7 +63,10 @@ public class FlowsIT extends UnsecuredITBase {
         assertEquals(0, flows.length);
     }
 
+    // NOTE: The tests that seed the DB directly from SQL end up with different results for the timestamp depending on
+    // which DB is used, so for now these types of tests only run against H2.
     @Test
+    @IfProfileValue(name="current.database.is.h2", value="true")
     public void testGetFlows() throws Exception {
 
         // Given: a few buckets and flows have been populated in the DB (see FlowsIT.sql)
@@ -73,16 +77,16 @@ public class FlowsIT extends UnsecuredITBase {
                 "\"name\":\"Flow 1\"," +
                 "\"description\":\"This is flow 1\"," +
                 "\"bucketIdentifier\":\"1\"," +
-                "\"createdTimestamp\":1505091360000," +
-                "\"modifiedTimestamp\":1505091360000," +
+                "\"createdTimestamp\":1505088000000," +
+                "\"modifiedTimestamp\":1505088000000," +
                 "\"type\":\"Flow\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"link\":{\"params\":{\"rel\":\"self\"},\"href\":\"buckets/1/flows/1\"}}," +
                 "{\"identifier\":\"2\",\"name\":\"Flow 2\"," +
                 "\"description\":\"This is flow 2\"," +
                 "\"bucketIdentifier\":\"1\"," +
-                "\"createdTimestamp\":1505091360000," +
-                "\"modifiedTimestamp\":1505091360000," +
+                "\"createdTimestamp\":1505088000000," +
+                "\"modifiedTimestamp\":1505088000000," +
                 "\"type\":\"Flow\"," +
                 "\"permissions\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"versionCount\":0," +
@@ -265,7 +269,10 @@ public class FlowsIT extends UnsecuredITBase {
         assertEquals(0, flowSnapshots.length);
     }
 
+    // NOTE: The tests that seed the DB directly from SQL end up with different results for the timestamp depending on
+    // which DB is used, so for now these types of tests only run against H2.
     @Test
+    @IfProfileValue(name="current.database.is.h2", value="true")
     public void testGetFlowVersions() throws Exception {
 
         // Given: a bucket "1" with flow "1" with existing snapshots has been populated in the DB (see FlowsIT.sql)
@@ -277,14 +284,14 @@ public class FlowsIT extends UnsecuredITBase {
                 "{\"bucketIdentifier\":\"1\"," +
                 "\"flowIdentifier\":\"1\"," +
                 "\"version\":2," +
-                "\"timestamp\":1505091480000," +
+                "\"timestamp\":1505174400000," +
                 "\"author\" : \"user2\"," +
                 "\"comments\":\"This is flow 1 snapshot 2\"," +
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/2\"}}," +
                 "{\"bucketIdentifier\":\"1\"," +
                 "\"flowIdentifier\":\"1\"," +
                 "\"version\":1," +
-                "\"timestamp\":1505091420000," +
+                "\"timestamp\":1505088000000," +
                 "\"author\" : \"user1\"," +
                 "\"comments\":\"This is flow 1 snapshot 1\"," +
                 "\"link\":{\"params\":{\"rel\":\"content\"},\"href\":\"buckets/1/flows/1/versions/1\"}}" +

@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
+import org.apache.nifi.registry.db.DatabaseProfileValueSource;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -30,6 +31,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.annotation.ProfileValueSourceConfiguration;
 
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
@@ -44,6 +46,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * A base class to simplify creating integration tests against an API application running with an embedded server and volatile DB.
  */
+@ProfileValueSourceConfiguration(DatabaseProfileValueSource.class)
 public abstract class IntegrationTestBase {
 
     private static final String CONTEXT_PATH = "/nifi-registry-api";

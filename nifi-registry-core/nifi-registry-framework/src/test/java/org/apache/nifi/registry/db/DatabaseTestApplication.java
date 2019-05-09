@@ -49,4 +49,5 @@ public class DatabaseTestApplication {
     public NiFiRegistryProperties createNiFiRegistryProperties() {
         return Mockito.mock(NiFiRegistryProperties.class);
     }
+
 }
