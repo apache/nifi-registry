@@ -22,6 +22,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
+import java.util.TimeZone;
+
 @SpringBootApplication
 @ComponentScan(
         excludeFilters = {
@@ -37,4 +39,9 @@ import org.springframework.context.annotation.FilterType;
         })
 public class NiFiRegistryTestApiApplication extends SpringBootServletInitializer {
 
+        // Since H2 uses the JVM's timezone, setting UTC here ensures that the JVM has a consistent timezone set
+        // before the H2 DB is created, regardless of platform (i.e. local build vs Travis)
+        static {
+                TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        }
 }

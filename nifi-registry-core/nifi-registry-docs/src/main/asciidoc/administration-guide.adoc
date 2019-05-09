@@ -1106,7 +1106,7 @@ providing 2 total locations, including `nifi.registry.extension.dir.1`.
 
 The metadata database maintains the knowledge of which buckets exist, which versioned items belong to which buckets, as well as the version history for each item.
 
-Currently, NiFi Registry supports H2 or Postgres for the relational database engine.
+Currently, NiFi Registry supports using H2, Postgres 9.x, and MySQL (5.6, 5.7, 8.0) for the relational database engine.
 
 NOTE: NiFi Registry 0.1.0 only supports H2.
 
@@ -1150,6 +1150,59 @@ The following steps are required to use Postgres:
   nifi.registry.db.driver.directory=/path/to/drivers
   nifi.registry.db.username=nifireg
   nifi.registry.db.password=changeme
+
+== MySQL
+
+MySQL also provides the option to use an externally located database that also supports high availability.
+
+The following steps are required to use MySQL:
+
+1. Download the MySQL JDBC driver and place it somewhere accessible to NiFi Registry
+
+  /path/to/drivers/mysql-connector-java-8.0.16.jar
+
+2. Create a database inside MySQL (enter mysql shell using `mysql -u root -p`
+
+  CREATE DATABASE nifi_registry;
+
+3. Create a database user and grant privileges (for remote users, use `nifireg'@'<IP-ADDRESS>`, or `nifireg'@'%` for any remote host)
+
+  GRANT ALL PRIVILEGES ON nifi_registry.* TO 'nifireg'@'localhost' IDENTIFIED BY 'changeme';
+
+4. Configure the database properties in _nifi-registry.properties_
+
+  nifi.registry.db.url=jdbc:mysql://<MYSQL-HOSTNAME>/nifi_registry
+  nifi.registry.db.driver.class=com.mysql.cj.jdbc.Driver
+  nifi.registry.db.driver.directory=/path/to/drivers
+  nifi.registry.db.username=nifireg
+  nifi.registry.db.password=changeme
+
+== Schema Differences & Limitations
+
+Due to differences across database implementations, there are two versions of the schema for NiFi Registry's metadata database. The original version supports H2 and Postgres, and a second versions supports MySQL.
+
+MySQL has limitations on the maximum size of text columns that are part of an index, or unique key. This means the maximum length of some columns is significantly less when using MySQL vs. H2/Postgres.
+
+NOTE: If choosing to use MySQL it is important to understand these limitations and accept them.
+
+The following tables summarizes the schema differences in column lengths:
+
+|====
+|*Table.Column*|*H2/Postgres*|*MySQL*
+|BUCKET.NAME|1000|767
+|FLOW_SNAPSHOT.CREATED_BY|4096|767
+|SIGNING_KEY.TENANT_IDENTITY|4096|767
+|BUNDLE.GROUP_ID|500|200
+|BUNDLE.ARTIFACT_ID|500|200
+|BUNDLE_VERSION.CREATED_BY|4096|767
+|BUNDLE_VERSION.BUILT_BY|4096|767
+|BUNDLE_VERSION_DEPENDENCY.GROUP_ID|500|200
+|BUNDLE_VERSION_DEPENDENCY.ARTIFACT_ID|500|200
+|EXTENSION_PROVIDED_SERVICE_API.CLASS_NAME|500|200
+|EXTENSION_PROVIDED_SERVICE_API.GROUP_ID|500|200
+|EXTENSION_PROVIDED_SERVICE_API.ARTIFACT_ID|500|200
+|====
+
 
 == Persistence Providers
 

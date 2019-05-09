@@ -13,14 +13,14 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
--- test data for buckets
+-- NOTE: This file is here to keep same version history as the default migrations, but since MySQL came
+-- later, the cascades are part of the original constraints in mysql/V2_Initial.sql
 
-insert into BUCKET (id, name, description, created)
-  values ('1', 'Bucket 1', 'This is test bucket 1', TIMESTAMP'2017-09-11 12:51:00.000');
+--ALTER TABLE BUCKET_ITEM DROP CONSTRAINT FK__BUCKET_ITEM_BUCKET_ID;
+--ALTER TABLE BUCKET_ITEM ADD CONSTRAINT FK__BUCKET_ITEM_BUCKET_ID FOREIGN KEY (BUCKET_ID) REFERENCES BUCKET(ID) ON DELETE CASCADE;
 
-insert into BUCKET (id, name, description, created)
-  values ('2', 'Bucket 2', 'This is test bucket 2', TIMESTAMP'2017-09-11 12:52:00.000');
+--ALTER TABLE FLOW DROP CONSTRAINT FK__FLOW_BUCKET_ITEM_ID;
+--ALTER TABLE FLOW ADD CONSTRAINT FK__FLOW_BUCKET_ITEM_ID FOREIGN KEY (ID) REFERENCES BUCKET_ITEM(ID) ON DELETE CASCADE;
 
-insert into BUCKET (id, name, description, created)
-  values ('3', 'Bucket 3', 'This is test bucket 3', TIMESTAMP'2017-09-11 12:53:00.000');
-
+--ALTER TABLE FLOW_SNAPSHOT DROP CONSTRAINT FK__FLOW_SNAPSHOT_FLOW_ID;
+--ALTER TABLE FLOW_SNAPSHOT ADD CONSTRAINT FK__FLOW_SNAPSHOT_FLOW_ID FOREIGN KEY (FLOW_ID) REFERENCES FLOW(ID) ON DELETE CASCADE;

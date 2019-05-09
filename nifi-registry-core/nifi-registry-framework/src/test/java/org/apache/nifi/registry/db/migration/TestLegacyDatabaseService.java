@@ -54,7 +54,7 @@ public class TestLegacyDatabaseService {
 
         flyway = Flyway.configure()
                 .dataSource(dataSource)
-                .locations("db/original")
+                .locations("db/migration/original")
                 .load();
 
         flyway.migrate();

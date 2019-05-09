@@ -57,7 +57,7 @@ public class DatabaseKeyService implements KeyService {
         Key key = null;
         readLock.lock();
         try {
-            final String sql = "SELECT * FROM signing_key WHERE id = ?";
+            final String sql = "SELECT * FROM SIGNING_KEY WHERE id = ?";
 
             KeyEntity keyEntity;
             try {
@@ -86,7 +86,7 @@ public class DatabaseKeyService implements KeyService {
         Key key;
         writeLock.lock();
         try {
-            final String selectSql = "SELECT * FROM signing_key WHERE tenant_identity = ?";
+            final String selectSql = "SELECT * FROM SIGNING_KEY WHERE tenant_identity = ?";
 
             KeyEntity existingKeyEntity;
             try {
@@ -103,7 +103,7 @@ public class DatabaseKeyService implements KeyService {
                 newKeyEntity.setTenantIdentity(tenantIdentity);
                 newKeyEntity.setKeyValue(UUID.randomUUID().toString());
 
-                final String insertSql = "INSERT INTO signing_key (ID, TENANT_IDENTITY, KEY_VALUE) VALUES (?, ?, ?)";
+                final String insertSql = "INSERT INTO SIGNING_KEY (ID, TENANT_IDENTITY, KEY_VALUE) VALUES (?, ?, ?)";
                 jdbcTemplate.update(insertSql, newKeyEntity.getId(), newKeyEntity.getTenantIdentity(), newKeyEntity.getKeyValue());
 
                 key = KeyMappings.map(newKeyEntity);
@@ -125,7 +125,7 @@ public class DatabaseKeyService implements KeyService {
         writeLock.lock();
         try {
             logger.debug("Deleting key with identity='" + tenantIdentity + "'.");
-            final String deleteSql = "DELETE FROM signing_key WHERE tenant_identity = ?";
+            final String deleteSql = "DELETE FROM SIGNING_KEY WHERE tenant_identity = ?";
             jdbcTemplate.update(deleteSql, tenantIdentity);
         } finally {
             writeLock.unlock();
