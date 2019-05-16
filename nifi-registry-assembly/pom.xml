@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.apache.nifi.registry</groupId>
         <artifactId>nifi-registry</artifactId>
-        <version>0.4.0-SNAPSHOT</version>
+        <version>0.4.0</version>
     </parent>
     <artifactId>nifi-registry-assembly</artifactId>
     <packaging>pom</packaging>
@@ -114,7 +114,7 @@
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-web-docs</artifactId>
             <type>war</type>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>0.4.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.apache.nifi.registry</groupId>
             <artifactId>nifi-registry-docs</artifactId>
-            <version>0.4.0-SNAPSHOT</version>
+            <version>0.4.0</version>
             <classifier>resources</classifier>
             <scope>runtime</scope>
             <type>zip</type>
@@ -165,7 +165,7 @@
 
         <!-- nifi-registry.properties: extension properties -->
         <nifi.registry.extensions.working.directory>./work/extensions</nifi.registry.extensions.working.directory>
-        <nifi.registry.extension.dir.aws></nifi.registry.extension.dir.aws>
+        <nifi.registry.extension.dir.aws />
 
         <!-- nifi-registry.properties: legacy database properties, used to migrate data from old DB to the new DB below -->
         <nifi.registry.db.directory />
@@ -395,7 +395,7 @@
                 <dependency>
                     <groupId>org.apache.nifi.registry</groupId>
                     <artifactId>nifi-registry-ranger-assembly</artifactId>
-                    <version>0.4.0-SNAPSHOT</version>
+                    <version>0.4.0</version>
                     <classifier>bin</classifier>
                     <scope>runtime</scope>
                     <type>zip</type>
@@ -438,7 +438,7 @@
                 <dependency>
                     <groupId>org.apache.nifi.registry</groupId>
                     <artifactId>nifi-registry-aws-assembly</artifactId>
-                    <version>0.4.0-SNAPSHOT</version>
+                    <version>0.4.0</version>
                     <classifier>bin</classifier>
                     <scope>runtime</scope>
                     <type>zip</type>

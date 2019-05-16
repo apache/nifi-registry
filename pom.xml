@@ -24,7 +24,7 @@
     </parent>
     <groupId>org.apache.nifi.registry</groupId>
     <artifactId>nifi-registry</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>0.4.0</version>
     <packaging>pom</packaging>
     <description>Provides a central location for storage and management of shared resources across one or more instances
         of NiFi and/or MiNiFi.
@@ -76,7 +76,7 @@
         <connection>scm:git:git://git.apache.org/nifi-registry.git</connection>
         <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/nifi-registry.git</developerConnection>
         <url>https://git-wip-us.apache.org/repos/asf?p=nifi-registry.git</url>
-        <tag>HEAD</tag>
+        <tag>nifi-registry-0.4.0-RC1</tag>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -201,44 +201,44 @@
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-utils</artifactId>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-bootstrap</artifactId>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-runtime</artifactId>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-security-api</artifactId>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-provider-api</artifactId>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-web-ui</artifactId>
                 <type>war</type>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-web-api</artifactId>
                 <type>war</type>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.nifi.registry</groupId>
                 <artifactId>nifi-registry-resources</artifactId>
-                <version>0.4.0-SNAPSHOT</version>
+                <version>0.4.0</version>
                 <classifier>resources</classifier>
                 <scope>runtime</scope>
                 <type>zip</type>
