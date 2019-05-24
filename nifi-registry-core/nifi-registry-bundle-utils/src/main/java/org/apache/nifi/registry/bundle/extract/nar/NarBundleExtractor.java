@@ -20,20 +20,15 @@ import org.apache.nifi.registry.bundle.extract.BundleException;
 import org.apache.nifi.registry.bundle.extract.BundleExtractor;
 import org.apache.nifi.registry.bundle.extract.nar.docs.ExtensionManifestParser;
 import org.apache.nifi.registry.bundle.extract.nar.docs.JacksonExtensionManifestParser;
-import org.apache.nifi.registry.bundle.model.BundleIdentifier;
 import org.apache.nifi.registry.bundle.model.BundleDetails;
+import org.apache.nifi.registry.bundle.model.BundleIdentifier;
 import org.apache.nifi.registry.extension.bundle.BuildInfo;
 import org.apache.nifi.registry.extension.component.manifest.ExtensionManifest;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
@@ -122,6 +117,11 @@ public class NarBundleExtractor implements BundleExtractor {
         }
     }
 
+    protected long getBuildTime(final String timeStamp) throws ParseException {
+        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BUILT_TIMESTAMP_FORMAT);
+        return simpleDateFormat.parse(timeStamp).getTime();
+    }
+
     private BuildInfo getBuildInfo(final Attributes attributes) {
         final String buildBranch = attributes.getValue(NarManifestEntry.BUILD_BRANCH.getManifestName());
         final String buildTag = attributes.getValue(NarManifestEntry.BUILD_TAG.getManifestName());
@@ -130,16 +130,15 @@ public class NarBundleExtractor implements BundleExtractor {
         final String buildJdk = attributes.getValue(NarManifestEntry.BUILD_JDK.getManifestName());
         final String builtBy = attributes.getValue(NarManifestEntry.BUILT_BY.getManifestName());
 
-        final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(BUILT_TIMESTAMP_FORMAT);
         try {
-            final Date buildDate = simpleDateFormat.parse(buildTimestamp);
+            final long buildTime = getBuildTime(buildTimestamp);
 
             final BuildInfo buildInfo = new BuildInfo();
             buildInfo.setBuildTool(isBlank(buildJdk) ? NA : buildJdk);
             buildInfo.setBuildBranch(isBlank(buildBranch) ? NA : buildBranch);
             buildInfo.setBuildTag(isBlank(buildTag) ? NA : buildTag);
             buildInfo.setBuildRevision(isBlank(buildRevision) ? NA : buildRevision);
-            buildInfo.setBuilt(buildDate.getTime());
+            buildInfo.setBuilt(buildTime);
             buildInfo.setBuiltBy(isBlank(builtBy) ? NA : builtBy);
             buildInfo.setBuildFlags(NA);
             return buildInfo;
