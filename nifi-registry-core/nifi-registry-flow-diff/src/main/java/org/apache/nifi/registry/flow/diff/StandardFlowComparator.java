@@ -17,18 +17,10 @@
 
 package org.apache.nifi.registry.flow.diff;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedConnection;
 import org.apache.nifi.registry.flow.VersionedControllerService;
+import org.apache.nifi.registry.flow.VersionedFlowCoordinates;
 import org.apache.nifi.registry.flow.VersionedFunnel;
 import org.apache.nifi.registry.flow.VersionedLabel;
 import org.apache.nifi.registry.flow.VersionedPort;
@@ -37,6 +29,15 @@ import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
 import org.apache.nifi.registry.flow.VersionedRemoteGroupPort;
 import org.apache.nifi.registry.flow.VersionedRemoteProcessGroup;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class StandardFlowComparator implements FlowComparator {
     private static final String DEFAULT_LOAD_BALANCE_STRATEGY = "DO_NOT_LOAD_BALANCE";
@@ -297,7 +298,11 @@ public class StandardFlowComparator implements FlowComparator {
 
         addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, VersionedProcessGroup::getVersionedFlowCoordinates);
 
-        if (groupA.getVersionedFlowCoordinates() == null && groupB.getVersionedFlowCoordinates() == null) {
+        final VersionedFlowCoordinates groupACoordinates = groupA.getVersionedFlowCoordinates();
+        final VersionedFlowCoordinates groupBCoordinates = groupB.getVersionedFlowCoordinates();
+
+        if ((groupACoordinates == null && groupBCoordinates == null)
+                || (groupACoordinates != null && groupBCoordinates != null && !groupACoordinates.equals(groupBCoordinates)) ) {
             differences.addAll(compareComponents(groupA.getConnections(), groupB.getConnections(), this::compare));
             differences.addAll(compareComponents(groupA.getProcessors(), groupB.getProcessors(), this::compare));
             differences.addAll(compareComponents(groupA.getControllerServices(), groupB.getControllerServices(), this::compare));
