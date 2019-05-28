@@ -20,6 +20,7 @@ package org.apache.nifi.registry.flow.diff;
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedConnection;
 import org.apache.nifi.registry.flow.VersionedControllerService;
+import org.apache.nifi.registry.flow.VersionedFlowCoordinates;
 import org.apache.nifi.registry.flow.VersionedFunnel;
 import org.apache.nifi.registry.flow.VersionedLabel;
 import org.apache.nifi.registry.flow.VersionedPort;
@@ -303,7 +304,11 @@ public class StandardFlowComparator implements FlowComparator {
 
         addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, VersionedProcessGroup::getVersionedFlowCoordinates);
 
-        if (groupA.getVersionedFlowCoordinates() == null && groupB.getVersionedFlowCoordinates() == null) {
+        final VersionedFlowCoordinates groupACoordinates = groupA.getVersionedFlowCoordinates();
+        final VersionedFlowCoordinates groupBCoordinates = groupB.getVersionedFlowCoordinates();
+
+        if ((groupACoordinates == null && groupBCoordinates == null)
+                || (groupACoordinates != null && groupBCoordinates != null && !groupACoordinates.equals(groupBCoordinates)) ) {
             differences.addAll(compareComponents(groupA.getConnections(), groupB.getConnections(), this::compare));
             differences.addAll(compareComponents(groupA.getProcessors(), groupB.getProcessors(), this::compare));
             differences.addAll(compareComponents(groupA.getControllerServices(), groupB.getControllerServices(), this::compare));
