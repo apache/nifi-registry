@@ -17,15 +17,6 @@
 
 package org.apache.nifi.registry.flow.diff;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedConnection;
 import org.apache.nifi.registry.flow.VersionedControllerService;
@@ -37,6 +28,15 @@ import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
 import org.apache.nifi.registry.flow.VersionedRemoteGroupPort;
 import org.apache.nifi.registry.flow.VersionedRemoteProcessGroup;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class StandardFlowComparator implements FlowComparator {
     private static final String DEFAULT_LOAD_BALANCE_STRATEGY = "DO_NOT_LOAD_BALANCE";
@@ -249,7 +249,13 @@ public class StandardFlowComparator implements FlowComparator {
     }
 
     private void compare(final VersionedPort portA, final VersionedPort portB, final Set<FlowDifference> differences) {
-        compareComponents(portA, portB, differences);
+        if (compareComponents(portA, portB, differences)) {
+            return;
+        }
+
+        if (portA != null && portA.isAllowRemoteAccess() && portB != null && portB.isAllowRemoteAccess()) {
+            addIfDifferent(differences, DifferenceType.CONCURRENT_TASKS_CHANGED, portA, portB, VersionedPort::getConcurrentlySchedulableTaskCount);
+        }
     }
 
     private void compare(final VersionedRemoteProcessGroup rpgA, final VersionedRemoteProcessGroup rpgB, final Set<FlowDifference> differences) {
