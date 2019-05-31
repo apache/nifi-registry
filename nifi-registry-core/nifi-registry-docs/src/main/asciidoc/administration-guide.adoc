@@ -686,9 +686,17 @@ Special privilege policies govern the following system level authorizations:
 | Allows users to delete policies
 | `resource="/policies" action="D"`
 
-| Can Proxy Requests
-| Allows users to proxy requests
+| Can Proxy Requests (Read)
+| Allows users to proxy read requests (GET)
+| `resource="/proxy" action="R"`
+
+| Can Proxy Requests (Write)
+| Allows users to proxy write requests (POST, PUT, PATCH)
 | `resource="/proxy" action="W"`
+
+| Can Proxy Requests (Delete)
+| Allows users to proxy delete requests (DELETE)
+| `resource="/proxy" action="D"`
 
 | View Swagger
 | Allows users to access the self-hosted Swagger UI

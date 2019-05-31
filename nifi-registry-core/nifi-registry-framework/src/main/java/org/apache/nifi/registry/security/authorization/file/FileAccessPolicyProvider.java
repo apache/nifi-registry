@@ -131,14 +131,18 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             new ResourceActionPair("/swagger", READ_CODE),
             new ResourceActionPair("/swagger", WRITE_CODE),
             new ResourceActionPair("/swagger", DELETE_CODE),
-            new ResourceActionPair("/proxy", WRITE_CODE)
+            new ResourceActionPair("/proxy", READ_CODE),
+            new ResourceActionPair("/proxy", WRITE_CODE),
+            new ResourceActionPair("/proxy", DELETE_CODE)
     };
 
     /*  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
      *  (and also gets us away from requiring magic strings here) */
     private static final ResourceActionPair[] NIFI_ACCESS_POLICIES = {
             new ResourceActionPair("/buckets", READ_CODE),
-            new ResourceActionPair("/proxy", WRITE_CODE)
+            new ResourceActionPair("/proxy", READ_CODE),
+            new ResourceActionPair("/proxy", WRITE_CODE),
+            new ResourceActionPair("/proxy", DELETE_CODE)
     };
 
     static final String PROP_NIFI_IDENTITY_PREFIX = "NiFi Identity ";

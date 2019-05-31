@@ -128,12 +128,32 @@ limitations under the License.
                 </mat-checkbox>
             </div>
             <mat-checkbox [disabled]="!canEditSpecialPrivileges()"
-                          [checked]="nfRegistryService.group.resourcePermissions.proxy.canWrite"
+                          [checked]="nfRegistryService.group.resourcePermissions.proxy.canRead && nfRegistryService.group.resourcePermissions.proxy.canWrite && nfRegistryService.group.resourcePermissions.proxy.canDelete"
                           (change)="toggleGroupManageProxyPrivileges($event)">
             <span class="description">Can proxy user requests<i
                     matTooltip="Allow a connected system (e.g., NiFi) to process requests of authorized users of that system."
                     class="pad-left-sm fa fa-question-circle-o help-icon"></i></span>
             </mat-checkbox>
+            <div flex fxLayout="row" fxLayoutAlign="space-around center">
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!canEditSpecialPrivileges()"
+                              [(checked)]="nfRegistryService.group.resourcePermissions.proxy.canRead"
+                              (change)="toggleGroupManageProxyPrivileges($event, 'read')">
+                    <span class="description">Read</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!canEditSpecialPrivileges()"
+                              [(checked)]="nfRegistryService.group.resourcePermissions.proxy.canWrite"
+                              (change)="toggleGroupManageProxyPrivileges($event, 'write')">
+                    <span class="description">Write</span>
+                </mat-checkbox>
+                <mat-checkbox class="pad-left-md"
+                              [disabled]="!canEditSpecialPrivileges()"
+                              [(checked)]="nfRegistryService.group.resourcePermissions.proxy.canDelete"
+                              (change)="toggleGroupManageProxyPrivileges($event, 'delete')">
+                    <span class="description">Delete</span>
+                </mat-checkbox>
+            </div>
         </div>
         <mat-button-toggle-group name="nifi-registry-manage-group-perspective" class="pad-left-md tab-toggle-group">
             <mat-button-toggle [checked]="manageGroupPerspective === 'membership'"
