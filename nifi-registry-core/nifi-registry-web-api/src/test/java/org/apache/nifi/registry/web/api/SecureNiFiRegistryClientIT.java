@@ -97,7 +97,7 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getBuckets());
         Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getTenants());
         Assert.assertEquals(fullAccess, currentUser.getResourcePermissions().getPolicies());
-        Assert.assertEquals(new Permissions().withCanWrite(true), currentUser.getResourcePermissions().getProxy());
+        Assert.assertEquals(new Permissions().withCanWrite(true).withCanRead(true).withCanDelete(true), currentUser.getResourcePermissions().getProxy());
     }
 
     @Test

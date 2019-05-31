@@ -65,7 +65,7 @@ public class SecureFileIT extends IntegrationTestBase {
                 "\"buckets\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"tenants\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
                 "\"policies\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}," +
-                "\"proxy\":{\"canRead\":false,\"canWrite\":true,\"canDelete\":false}}" +
+                "\"proxy\":{\"canRead\":true,\"canWrite\":true,\"canDelete\":true}}" +
                 "}";
 
         // When: the /access endpoint is queried

@@ -35,12 +35,17 @@ import org.apache.nifi.registry.security.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
 import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
 import org.apache.nifi.registry.web.security.authentication.exception.UntrustedProxyException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
 public class X509IdentityAuthenticationProvider extends IdentityAuthenticationProvider {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(X509IdentityAuthenticationProvider.class);
 
     private static final Authorizable PROXY_AUTHORIZABLE = new Authorizable() {
         @Override
@@ -63,12 +68,16 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             AuthenticationRequestToken requestToken,
             AuthenticationResponse response) {
 
-        AuthenticationRequest authenticationRequest = requestToken.getAuthenticationRequest();
+        final AuthenticationRequest authenticationRequest = requestToken.getAuthenticationRequest();
 
-        String proxiedEntitiesChain = authenticationRequest.getDetails() != null
-                ? (String)authenticationRequest.getDetails()
-                : null;
+        final Object requestDetails = authenticationRequest.getDetails();
+        if (requestDetails == null || !(requestDetails instanceof X509AuthenticationRequestDetails)) {
+            throw new IllegalStateException("Invalid request details specified");
+        }
 
+        final X509AuthenticationRequestDetails x509RequestDetails = (X509AuthenticationRequestDetails) authenticationRequest.getDetails();
+
+        final String proxiedEntitiesChain = x509RequestDetails.getProxiedEntitiesChain();
         if (StringUtils.isBlank(proxiedEntitiesChain)) {
             return super.buildAuthenticatedToken(requestToken, response);
         }
@@ -97,16 +106,51 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             proxy = createUser(identity, groups, proxy, clientAddress, isAnonymous);
 
             if (chainIter.hasPrevious()) {
-                try {
-                    PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.WRITE, proxy);
-                } catch (final AccessDeniedException e) {
-                    throw new UntrustedProxyException(String.format("Untrusted proxy [%s].", identity));
+                final String httpMethodStr = x509RequestDetails.getHttpMethod().toUpperCase();
+                final HttpMethod httpMethod = HttpMethod.resolve(httpMethodStr);
+                LOGGER.debug("HTTP method is {}", new Object[]{httpMethod});
+
+                switch (httpMethod) {
+                    case POST:
+                    case PUT:
+                    case PATCH:
+                        authorizeWrite(proxy);
+                        break;
+                    case DELETE:
+                        authorizeDelete(proxy);
+                        break;
+                    default:
+                        authorizeRead(proxy);
+                        break;
                 }
             }
         }
 
         return new AuthenticationSuccessToken(new NiFiUserDetails(proxy));
+    }
 
+    private void authorizeRead(final NiFiUser proxy) {
+        try {
+            PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.READ, proxy);
+        } catch (final AccessDeniedException e) {
+            throw new UntrustedProxyException(String.format("Untrusted proxy for read operation [%s].", proxy.getIdentity()));
+        }
+    }
+
+    private void authorizeWrite(final NiFiUser proxy) {
+        try {
+            PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.WRITE, proxy);
+        } catch (final AccessDeniedException e) {
+            throw new UntrustedProxyException(String.format("Untrusted proxy for write operation [%s].", proxy.getIdentity()));
+        }
+    }
+
+    private void authorizeDelete(final NiFiUser proxy) {
+        try {
+            PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.DELETE, proxy);
+        } catch (final AccessDeniedException e) {
+            throw new UntrustedProxyException(String.format("Untrusted proxy for delete operation [%s].", proxy.getIdentity()));
+        }
     }
 
     /**

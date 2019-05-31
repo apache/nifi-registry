@@ -194,7 +194,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
 
     // model for proxy privileges
     this.PROXY_PRIVS = {
-        '/proxy': ['write']
+        '/proxy': ['read', 'write', 'delete']
     };
 
     //<editor-fold desc="application state objects">
