@@ -20,6 +20,8 @@ const TerserJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CompressionPlugin = require('compression-webpack-plugin');
+
 const path = require('path');
 
 const commonConfig = require('./webpack.common');
@@ -58,6 +60,11 @@ module.exports = merge(commonConfig, {
             template: 'webapp/template.html',
             filename: 'index.html',
             favicon: path.resolve(__dirname, 'webapp/images/registry-favicon.png')
+        }),
+
+        // Gzip
+        new CompressionPlugin({
+            test: /\.min\..+\.js$|\.min\..+\.css$/
         })
     ]
 });

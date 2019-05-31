@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const webpackConfig = require('./webpack.dev');
+const webpackConfig = require('./webpack.karma');
 const path = require('path');
 
 delete webpackConfig.entry;

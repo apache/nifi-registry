@@ -21,6 +21,7 @@ const merge = require('webpack-merge');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlugin;
+const CompressionPlugin = require('compression-webpack-plugin');
 
 const commonConfig = require('./webpack.common');
 
@@ -46,6 +47,9 @@ module.exports = merge(commonConfig, {
         // The bundled files will be available in the browser under this path.
         publicPath: '/nifi-registry/',
 
+        // Enable gzip compression for everything served
+        compress: true,
+
         // Tell the server where to serve content from
         contentBase: [
             path.join(__dirname, './')
@@ -58,7 +62,7 @@ module.exports = merge(commonConfig, {
         index: path.join(__dirname, 'index.html'),
 
         // Specify a port number to listen for requests on
-        port: 8080,
+        port: 18081,
 
         // Proxying URLs
         proxy: {
@@ -87,6 +91,11 @@ module.exports = merge(commonConfig, {
             template: 'webapp/template.dev.html',
             filename: 'index.html',
             favicon: path.resolve(__dirname, 'webapp/images/registry-favicon.png')
+        }),
+
+        // Gzip
+        new CompressionPlugin({
+            test: /\.min.js$|\.min.css$/
         }),
 
         // generate a file with all bundled packages licenses' in it. This can be used to ad to the LICENSE file

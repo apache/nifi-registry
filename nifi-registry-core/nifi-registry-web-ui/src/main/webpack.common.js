@@ -21,6 +21,7 @@ const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const webpackAlias = require('./webpack.alias');
+const loaders = require('./webpack.loader');
 
 module.exports = {
     // Deployment target
@@ -71,123 +72,14 @@ module.exports = {
 
     module: {
         rules: [
-            {
-                test: /\.tsx?$/,
-                include: [
-                    path.resolve(__dirname, 'webapp'),
-                ],
-                use: [
-                    {
-                        loader: 'cache-loader'
-                    },
-                    {
-                        loader: 'ts-loader'
-                    }
-                ]
-            },
-            {
-                test: /\.js$/,
-                include: [
-                    path.resolve(__dirname, 'node_modules/@nifi-fds/core')
-                ],
-                use: [
-                    {
-                        loader: 'cache-loader'
-                    },
-                    {
-                        loader: path.resolve(__dirname, 'systemjs-text-to-html-loader')
-                    }
-                ]
-            },
-            {
-                test: /\.js$/,
-                include: [
-                    path.resolve(__dirname, 'webapp')
-                ],
-                use: [
-                    {
-                        loader: 'cache-loader'
-                    },
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: ['@babel/preset-env']
-                        }
-                    }
-                ]
-            },
-            {
-                test: /\.html$/,
-                include: [
-                    path.resolve(__dirname, 'node_modules/@nifi-fds/core'),
-                    path.resolve(__dirname, 'webapp')
-                ],
-                use: [
-                    { loader: 'cache-loader' },
-                    {
-                        loader: 'html-loader',
-                        options: {
-                            attrs: false
-                        }
-                    }
-                ]
-            },
-            {
-                test: /\.scss$/,
-                use: [
-                    {
-                        // Create CSS files separately
-                        loader: MiniCssExtractPlugin.loader
-                    },
-                    {
-                        // Translate CSS into CommonJS
-                        loader: 'css-loader',
-                        options: {
-                            url: false
-                        }
-                    },
-                    {
-                        // Compile Sass to CSS
-                        loader: 'sass-loader'
-                    }
-                ]
-            },
-            {
-                test: /\.(svg|png)$/i,
-                include: [
-                    path.resolve(__dirname, 'webapp')
-                ],
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'assets/images/'
-                    }
-                }]
-            },
-            {
-                test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'assets/fonts/'
-                    }
-                }]
-            },
-            {
-                test: /\.(xlf)$/i,
-                include: [
-                    path.resolve(__dirname, 'locale')
-                ],
-                use: [{
-                    loader: 'file-loader',
-                    options: {
-                        name: '[name].[ext]',
-                        outputPath: 'assets/locale/'
-                    }
-                }]
-            }
+            loaders.ts,
+            loaders.nifiFds,
+            loaders.js,
+            loaders.html,
+            loaders.scss,
+            loaders.images,
+            loaders.fonts,
+            loaders.xlf
         ]
     },
 
@@ -201,6 +93,5 @@ module.exports = {
 
         // Fix style only entry generating an extra js file
         new FixStyleOnlyEntriesPlugin()
-
     ]
 };

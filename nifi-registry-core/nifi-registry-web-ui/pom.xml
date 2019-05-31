@@ -64,31 +64,6 @@
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>
                     <!--
-                        Filter the web.xml that was generated from jspc to specify the
-                        NiFi Registry base directory. The plugin configuration is
-                        specified here while the execution's are defined below in the
-                        profiles to bind to the appropriate phase.
-                    -->
-                    <execution>
-                        <id>copy-web-xml</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${staging.dir}/WEB-INF</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>web.xml</include>
-                                    </includes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                    <!--
                         Copy build and test configs into frontend working directory.
                     -->
                     <execution>
@@ -224,10 +199,10 @@
                                     <directory>${frontend.working.dir}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>nf-registry.bundle.min.*.js</include>
-                                        <include>vendor.min.*.js</include>
-                                        <include>nf-registry.style.min.*.css</include>
-                                        <include>vendor.min.*.css</include>
+                                        <include>nf-registry.bundle.min.*.js*</include>
+                                        <include>vendor.min.*.js*</include>
+                                        <include>nf-registry.style.min.*.css*</include>
+                                        <include>vendor.min.*.css*</include>
                                         <include>index.html</include>
                                         <include>assets/**/*</include>
                                         <include>registry-favicon.png</include>
