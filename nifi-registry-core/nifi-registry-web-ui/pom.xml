@@ -276,6 +276,10 @@
                         <exclude>src/main/package-lock.json</exclude>
                         <exclude>src/main/platform/core/README.md</exclude>
                         <exclude>src/main/karma-test-shim.js</exclude>
+                        <exclude>src/main/node_modules/**/*</exclude>
+                        <exclude>src/main/**/*.min.*</exclude>
+                        <exclude>src/main/coverage/**/*</exclude>
+                        <exclude>src/main/.eslintignore</exclude>
                     </excludes>
                 </configuration>
             </plugin>
