@@ -18,7 +18,6 @@ import { Component } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import nfRegistryAnimations from 'nf-registry.animations';
 import { Router } from '@angular/router';
-import template from './nf-registry-administration.html';
 
 /**
  * NfRegistryAdministration constructor.
@@ -80,7 +79,7 @@ NfRegistryAdministration.prototype = {
 
 NfRegistryAdministration.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-administration.html',
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

@@ -22,7 +22,6 @@ import NfStorage from 'services/nf-storage.service';
 import nfRegistryAnimations from 'nf-registry.animations';
 import NfRegistryApi from 'services/nf-registry.api';
 import { Router } from '@angular/router';
-import template from './nf-registry.html';
 
 /**
  * NfRegistry constructor.
@@ -82,7 +81,7 @@ NfRegistry.prototype = {
 NfRegistry.annotations = [
     new Component({
         selector: 'nf-registry-app',
-        template,
+        templateUrl: './nf-registry.html',
         queries: {
             sidenav: new ViewChild('sidenav')
         },

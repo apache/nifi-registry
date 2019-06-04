@@ -19,7 +19,6 @@ import NfRegistryService from 'services/nf-registry.service';
 import nfRegistryAnimations from 'nf-registry.animations';
 import { FdsDialogService } from '@flow-design-system/dialogs';
 import { Router } from '@angular/router';
-import template from './nf-registry-page-not-found.html';
 
 /**
  * NfLoginComponent constructor.
@@ -60,7 +59,7 @@ NfPageNotFoundComponent.prototype = {
 
 NfPageNotFoundComponent.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-page-not-found.html',
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

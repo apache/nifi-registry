@@ -22,7 +22,6 @@ import NfRegistryCreateBucket from 'components/administration/workflow/dialogs/c
 import nfRegistryAnimations from 'nf-registry.animations';
 import { ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material';
-import template from './nf-registry-workflow-administration.html';
 
 /**
  * NfRegistryWorkflowAdministration constructor.
@@ -87,7 +86,7 @@ NfRegistryWorkflowAdministration.prototype = {
 
 NfRegistryWorkflowAdministration.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-workflow-administration.html',
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

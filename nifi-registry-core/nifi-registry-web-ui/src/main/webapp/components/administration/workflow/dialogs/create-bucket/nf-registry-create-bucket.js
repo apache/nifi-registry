@@ -20,7 +20,6 @@ import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef } from '@angular/material';
 import { FdsSnackBarService } from '@flow-design-system/snackbars';
-import template from './nf-registry-create-bucket.html';
 
 /**
  * NfRegistryCreateBucket constructor.
@@ -91,7 +90,7 @@ NfRegistryCreateBucket.prototype = {
 
 NfRegistryCreateBucket.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-create-bucket.html',
         queries: {
             newBucketInput: new ViewChild('newBucketInput')
         }

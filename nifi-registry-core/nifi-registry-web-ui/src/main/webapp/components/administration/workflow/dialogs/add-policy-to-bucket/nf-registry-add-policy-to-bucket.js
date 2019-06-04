@@ -23,7 +23,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
 import { TdDataTableService } from '@covalent/core';
 import { FdsSnackBarService } from '@flow-design-system/snackbars';
-import template from './nf-registry-add-policy-to-bucket.html';
 
 /**
  * NfRegistryAddPolicyToBucket constructor.
@@ -399,7 +398,7 @@ NfRegistryAddPolicyToBucket.prototype = {
 
 NfRegistryAddPolicyToBucket.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-add-policy-to-bucket.html',
         queries: {
             readCheckbox: new ViewChild('readCheckbox'),
             writeCheckbox: new ViewChild('writeCheckbox'),

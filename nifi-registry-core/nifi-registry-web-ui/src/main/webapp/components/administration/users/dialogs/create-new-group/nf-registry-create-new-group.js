@@ -20,7 +20,6 @@ import { Component, ViewChild } from '@angular/core';
 import { FdsSnackBarService } from '@flow-design-system/snackbars';
 import NfRegistryService from 'services/nf-registry.service';
 import { MatDialogRef } from '@angular/material';
-import template from './nf-registry-create-new-group.html';
 
 /**
  * NfRegistryCreateNewGroup constructor.
@@ -92,7 +91,7 @@ NfRegistryCreateNewGroup.prototype = {
 
 NfRegistryCreateNewGroup.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-create-new-group.html',
         queries: {
             createNewGroupInput: new ViewChild('createNewGroupInput')
         }

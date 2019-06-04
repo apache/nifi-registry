@@ -24,7 +24,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialog } from '@angular/material';
 import NfRegistryAddUserToGroups from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
-import template from './nf-registry-manage-user.html';
 
 /**
  * NfRegistryManageUser constructor.
@@ -631,7 +630,7 @@ NfRegistryManageUser.prototype = {
 
 NfRegistryManageUser.annotations = [
     new Component({
-        template: template
+        templateUrl: './nf-registry-manage-user.html'
     })
 ];
 

@@ -23,8 +23,6 @@ import NfRegistryService from 'services/nf-registry.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import $ from 'jquery';
 
-import template from './nf-registry-add-user-to-groups.html';
-
 /**
  * NfRegistryAddUserToGroups constructor.
  *
@@ -241,7 +239,7 @@ NfRegistryAddUserToGroups.prototype = {
 
 NfRegistryAddUserToGroups.annotations = [
     new Component({
-        template: template
+        templateUrl: './nf-registry-add-user-to-groups.html'
     })
 ];
 

@@ -22,7 +22,6 @@ import { FdsSnackBarService } from '@flow-design-system/snackbars';
 import NfRegistryService from 'services/nf-registry.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import $ from 'jquery';
-import template from './nf-registry-add-users-to-group.html';
 
 /**
  * NfRegistryAddUsersToGroup constructor.
@@ -233,7 +232,7 @@ NfRegistryAddUsersToGroup.prototype = {
 
 NfRegistryAddUsersToGroup.annotations = [
     new Component({
-        template: template
+        templateUrl: './nf-registry-add-users-to-group.html'
     })
 ];
 
