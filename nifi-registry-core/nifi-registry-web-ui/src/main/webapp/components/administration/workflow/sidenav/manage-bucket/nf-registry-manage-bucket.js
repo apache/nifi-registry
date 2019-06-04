@@ -26,7 +26,6 @@ import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialog } from '@angular/material';
 import NfRegistryAddPolicyToBucket from 'components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket';
 import NfRegistryEditBucketPolicy from 'components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy';
-import template from './nf-registry-manage-bucket.html';
 
 /**
  * NfRegistryManageBucket constructor.
@@ -490,7 +489,7 @@ NfRegistryManageBucket.prototype = {
 
 NfRegistryManageBucket.annotations = [
     new Component({
-        template: template
+        templateUrl: './nf-registry-manage-bucket.html'
     })
 ];
 

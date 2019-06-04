@@ -21,7 +21,6 @@ import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
-import template from './nf-registry-edit-bucket-policy.html';
 
 /**
  * NfRegistryEditBucketPolicy constructor.
@@ -339,7 +338,7 @@ NfRegistryEditBucketPolicy.prototype = {
 
 NfRegistryEditBucketPolicy.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-edit-bucket-policy.html',
         queries: {
             readCheckbox: new ViewChild('readCheckbox'),
             writeCheckbox: new ViewChild('writeCheckbox'),

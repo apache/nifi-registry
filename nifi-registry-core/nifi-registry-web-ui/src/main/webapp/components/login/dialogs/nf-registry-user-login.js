@@ -20,7 +20,6 @@ import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef } from '@angular/material';
 import { NfRegistryLoginAuthGuard } from 'services/nf-registry.auth-guard.service';
-import template from './nf-registry-user-login.html';
 
 /**
  * NfRegistryUserLogin constructor.
@@ -62,7 +61,7 @@ NfRegistryUserLogin.prototype = {
 
 NfRegistryUserLogin.annotations = [
     new Component({
-        template: template
+        templateUrl: './nf-registry-user-login.html'
     })
 ];
 

@@ -20,7 +20,6 @@ import { MatDialog } from '@angular/material';
 import NfRegistryService from 'services/nf-registry.service';
 import nfRegistryAnimations from 'nf-registry.animations';
 import NfUserLoginComponent from 'components/login/dialogs/nf-registry-user-login';
-import template from './nf-registry-login.html';
 
 /**
  * NfLoginComponent constructor.
@@ -50,7 +49,7 @@ NfLoginComponent.prototype = {
 
 NfLoginComponent.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-login.html',
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'

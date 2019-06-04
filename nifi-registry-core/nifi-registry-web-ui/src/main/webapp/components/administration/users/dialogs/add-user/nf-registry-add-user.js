@@ -20,7 +20,6 @@ import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef } from '@angular/material';
 import { FdsSnackBarService } from '@flow-design-system/snackbars';
-import template from './nf-registry-add-user.html';
 
 /**
  * NfRegistryAddUser constructor.
@@ -91,7 +90,7 @@ NfRegistryAddUser.prototype = {
 
 NfRegistryAddUser.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-add-user.html',
         queries: {
             newUserInput: new ViewChild('newUserInput')
         }

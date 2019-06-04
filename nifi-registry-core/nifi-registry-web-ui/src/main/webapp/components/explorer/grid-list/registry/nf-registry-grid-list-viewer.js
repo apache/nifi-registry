@@ -22,7 +22,6 @@ import NfRegistryApi from 'services/nf-registry.api';
 import NfStorage from 'services/nf-storage.service';
 import { ActivatedRoute } from '@angular/router';
 import nfRegistryAnimations from 'nf-registry.animations';
-import template from './nf-registry-grid-list-viewer.html';
 
 /**
  * NfRegistryGridListViewer constructor.
@@ -85,7 +84,7 @@ NfRegistryGridListViewer.prototype = {
 
 NfRegistryGridListViewer.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-grid-list-viewer.html',
         animations: [nfRegistryAnimations.flyInOutAnimation]
     })
 ];

@@ -26,7 +26,6 @@ import nfRegistryAnimations from 'nf-registry.animations';
 import NfStorage from 'services/nf-storage.service';
 import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
 import NfRegistryAddUser from 'components/administration/users/dialogs/add-user/nf-registry-add-user';
-import template from './nf-registry-users-administration.html';
 
 /**
  * NfRegistryUsersAdministration constructor.
@@ -133,7 +132,7 @@ NfRegistryUsersAdministration.prototype = {
 
 NfRegistryUsersAdministration.annotations = [
     new Component({
-        template,
+        templateUrl: './nf-registry-users-administration.html',
         animations: [nfRegistryAnimations.slideInLeftAnimation],
         host: {
             '[@routeAnimation]': 'routeAnimation'
