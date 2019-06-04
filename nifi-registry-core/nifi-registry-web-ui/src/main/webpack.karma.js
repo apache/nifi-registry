@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 const merge = require('webpack-merge');
-const path = require('path');
 
 const commonConfig = require('./webpack.common');
 const loaders = require('./webpack.loader');
@@ -33,9 +32,9 @@ module.exports = merge(commonConfig, {
 
     module: {
         rules: [
-            loaders.ts,
+            loaders.tsDev,
             loaders.nifiFds,
-            loaders.js,
+            loaders.jsDev,
             loaders.html,
             loaders.ignoreScss,
             loaders.images,

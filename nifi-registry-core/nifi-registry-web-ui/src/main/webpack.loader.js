@@ -33,6 +33,26 @@ module.exports = {
         ]
     },
 
+    tsDev: {
+        test: /\.tsx?$/,
+        include: [
+            path.resolve(__dirname, 'webapp')
+        ],
+        use: [
+            {
+                loader: 'cache-loader'
+            },
+            {
+                // Instrument TS files with istanbul-lib-instrument for subsequent code coverage reporting
+                loader: 'istanbul-instrumenter-loader',
+                options: { esModules: true }
+            },
+            {
+                loader: 'ts-loader'
+            }
+        ]
+    },
+
     nifiFds: {
         /*
         * Send all js files from @nifi-fds through a custom loader that replaces its usage of inline systemjs text loading
@@ -74,6 +94,28 @@ module.exports = {
         ]
     },
 
+    jsDev: {
+        test: /\.js$/,
+        include: [
+            path.resolve(__dirname, 'webapp')
+        ],
+        use: [
+            {
+                loader: 'cache-loader'
+            },
+            {
+                // Instrument JS files with istanbul-lib-instrument for subsequent code coverage reporting
+                loader: 'istanbul-instrumenter-loader',
+                options: { esModules: true }
+            },
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['@babel/preset-env']
+                }
+            }
+        ]
+    },
     html: {
         test: /\.html$/,
         include: [
