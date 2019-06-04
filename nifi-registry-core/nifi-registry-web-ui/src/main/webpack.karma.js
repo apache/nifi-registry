@@ -18,8 +18,6 @@ const merge = require('webpack-merge');
 
 const commonConfig = require('./webpack.common');
 const loaders = require('./webpack.loader');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 delete commonConfig.entry;
 delete commonConfig.optimization;

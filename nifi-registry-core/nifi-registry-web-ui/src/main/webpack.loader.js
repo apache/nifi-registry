@@ -38,6 +38,10 @@ module.exports = {
         include: [
             path.resolve(__dirname, 'webapp')
         ],
+        // prevent these files/patterns from being included in the coverage report
+        exclude: [
+            /\.spec\.tsx?$/
+        ],
         use: [
             {
                 loader: 'cache-loader'
@@ -98,6 +102,11 @@ module.exports = {
         test: /\.js$/,
         include: [
             path.resolve(__dirname, 'webapp')
+        ],
+        // prevent these files/patterns from being included in the coverage report
+        exclude: [
+            /\.spec\.js$/,
+            path.resolve(__dirname, 'webapp/nf-registry.testbed-factory.js')
         ],
         use: [
             {

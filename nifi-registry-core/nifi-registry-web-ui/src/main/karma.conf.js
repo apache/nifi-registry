@@ -69,8 +69,7 @@ module.exports = function (config) {
         exclude: [],
 
         preprocessors: {
-            'karma-test-shim.js': ['webpack'],
-            'webapp/**/!(*spec|*mock|*stub|*config|*extras).js': ['webpack'],
+            'karma-test-shim.js': ['webpack']
         },
 
         // Try Websocket for a faster transmission first. Fallback to polling if necessary.
