@@ -86,6 +86,10 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
         final List<String> proxyChain = ProxiedEntitiesUtils.tokenizeProxiedEntitiesChain(proxiedEntitiesChain);
         proxyChain.add(response.getIdentity());
 
+        final String httpMethodStr = x509RequestDetails.getHttpMethod().toUpperCase();
+        final HttpMethod httpMethod = HttpMethod.resolve(httpMethodStr);
+        LOGGER.debug("HTTP method is {}", new Object[]{httpMethod});
+
         // add the chain as appropriate to each proxy
         NiFiUser proxy = null;
         for (final ListIterator<String> chainIter = proxyChain.listIterator(proxyChain.size()); chainIter.hasPrevious(); ) {
@@ -106,10 +110,6 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             proxy = createUser(identity, groups, proxy, clientAddress, isAnonymous);
 
             if (chainIter.hasPrevious()) {
-                final String httpMethodStr = x509RequestDetails.getHttpMethod().toUpperCase();
-                final HttpMethod httpMethod = HttpMethod.resolve(httpMethodStr);
-                LOGGER.debug("HTTP method is {}", new Object[]{httpMethod});
-
                 switch (httpMethod) {
                     case POST:
                     case PUT:
