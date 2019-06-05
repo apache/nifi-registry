@@ -46,11 +46,12 @@ NfRegistryCreateBucket.prototype = {
     /**
      * Create a new bucket.
      *
-     * @param newBucketInput     The newBucketInput element.
+     * @param newBucketInput                The newBucketInput element.
+     * @param newBucketPublicReadCheckbox   The newBucketPublicReadCheckbox element.
      */
-    createBucket: function (newBucketInput) {
+    createBucket: function (newBucketInput, newBucketPublicReadCheckbox) {
         var self = this;
-        this.nfRegistryApi.createBucket(newBucketInput.value).subscribe(function (bucket) {
+        this.nfRegistryApi.createBucket(newBucketInput.value, newBucketPublicReadCheckbox.checked).subscribe(function (bucket) {
             if (!bucket.error) {
                 self.nfRegistryService.buckets.push(bucket);
                 self.nfRegistryService.filterBuckets();

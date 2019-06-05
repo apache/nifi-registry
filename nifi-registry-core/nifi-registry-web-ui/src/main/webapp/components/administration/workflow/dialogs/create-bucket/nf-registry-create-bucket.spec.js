@@ -46,7 +46,7 @@ describe('NfRegistryCreateBucket Component isolated unit tests', function () {
 
     it('should create a new bucket and close the dialog', function () {
         // The function to test
-        comp.createBucket({value: 'NewBucket'});
+        comp.createBucket({value: 'NewBucket'}, {checked: false});
 
         //assertions
         expect(comp).toBeDefined();
@@ -61,7 +61,7 @@ describe('NfRegistryCreateBucket Component isolated unit tests', function () {
         comp.keepDialogOpen = true;
 
         // The function to test
-        comp.createBucket({value: 'NewBucket'});
+        comp.createBucket({value: 'NewBucket'}, {checked: false});
 
         //assertions
         expect(comp).toBeDefined();

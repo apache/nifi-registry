@@ -18,15 +18,15 @@ package org.apache.nifi.registry.security.authorization
 
 import org.apache.nifi.registry.extension.ExtensionManager
 import org.apache.nifi.registry.properties.NiFiRegistryProperties
-import org.apache.nifi.registry.security.authorization.file.FileAccessPolicyProvider
-import org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory
+import org.apache.nifi.registry.service.RegistryService
 import spock.lang.Specification
 
 class AuthorizerFactorySpec extends Specification {
 
     def mockProperties = Mock(NiFiRegistryProperties)
     def mockExtensionManager = Mock(ExtensionManager)
+    def mockRegistryService = Mock(RegistryService)
 
     AuthorizerFactory authorizerFactory
 
@@ -35,7 +35,7 @@ class AuthorizerFactorySpec extends Specification {
         mockExtensionManager.getExtensionClassLoader(_) >> this.getClass().getClassLoader()
         mockProperties.getPropertyKeys() >> new HashSet<String>() // Called by IdentityMappingUtil.getIdentityMappings()
 
-        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null)
+        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService)
     }
 
     // runs after every feature method
@@ -88,7 +88,7 @@ class AuthorizerFactorySpec extends Specification {
 
         when: "a bad configuration is provided and getAuthorizer() is called"
         setMockPropsAuthorizersConfig(authorizersConfigFile, selectedAuthorizer)
-        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null)
+        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService)
         authorizerFactory.getAuthorizer()
 
         then: "expect an exception"

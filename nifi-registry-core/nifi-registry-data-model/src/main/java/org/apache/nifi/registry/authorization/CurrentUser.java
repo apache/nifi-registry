@@ -24,6 +24,7 @@ public class CurrentUser {
 
     private String identity;
     private boolean anonymous;
+    private boolean loginSupported;
     private ResourcePermissions resourcePermissions;
 
     @ApiModelProperty(value = "The identity of the current user", readOnly = true)
@@ -42,6 +43,15 @@ public class CurrentUser {
 
     public void setAnonymous(boolean anonymous) {
         this.anonymous = anonymous;
+    }
+
+    @ApiModelProperty(value = "Indicates if the NiFi instance supports logging in")
+    public boolean getLoginSupported() {
+        return loginSupported;
+    }
+
+    public void setLoginSupported(boolean loginSupported) {
+        this.loginSupported = loginSupported;
     }
 
     @ApiModelProperty(value = "The access that the current user has to top level resources", readOnly = true)

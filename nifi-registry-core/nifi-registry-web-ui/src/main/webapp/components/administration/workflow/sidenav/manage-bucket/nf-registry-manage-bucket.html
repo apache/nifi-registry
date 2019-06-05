@@ -42,6 +42,15 @@ limitations under the License.
                 Save
             </button>
         </div>
+        <div class="pad-left-md pad-right-md pad-bottom-sm">
+            <mat-checkbox #bundlePublicReadCheckbox
+                          [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite"
+                          [(ngModel)]="allowPublicRead"
+                          (change)="toggleBucketPublicRead($event)">
+                Make publicly visible<i matTooltip="Allows read access to items in this bucket by unauthenticated users. Overrides any specific policies granting read access."
+                                    class="pad-left-sm fa fa-question-circle-o help-icon"></i>
+            </mat-checkbox>
+        </div>
         <div class="pad-top-md pad-left-md pad-right-md">
             <div class="pad-bottom-sm">
                 <span class="md-card-title">Bundle Settings</span>

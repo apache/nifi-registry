@@ -43,6 +43,8 @@ public class Bucket extends LinkableEntity {
 
     private Boolean allowBundleRedeploy;
 
+    private Boolean allowPublicRead;
+
     private Permissions permissions;
 
     @ApiModelProperty(value = "An ID to uniquely identify this object.", readOnly = true)
@@ -88,6 +90,15 @@ public class Bucket extends LinkableEntity {
 
     public void setAllowBundleRedeploy(final Boolean allowBundleRedeploy) {
         this.allowBundleRedeploy = allowBundleRedeploy;
+    }
+
+    @ApiModelProperty("Indicates if this bucket allows read access to unauthenticated anonymous users")
+    public Boolean isAllowPublicRead() {
+        return allowPublicRead;
+    }
+
+    public void setAllowPublicRead(final Boolean allowPublicRead) {
+        this.allowPublicRead = allowPublicRead;
     }
 
     @ApiModelProperty(value = "The access that the current user has to this bucket.", readOnly = true)

@@ -105,6 +105,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final BucketEntity bucket = metadataService.getBucketById("1");
         assertNotNull(bucket);
         assertFalse(bucket.isAllowExtensionBundleRedeploy());
+        assertFalse(bucket.isAllowPublicRead());
 
         final String updatedName = bucket.getName() + " UPDATED";
         final String updatedDesc = bucket.getDescription() + "DESC";
@@ -112,6 +113,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         bucket.setName(updatedName);
         bucket.setDescription(updatedDesc);
         bucket.setAllowExtensionBundleRedeploy(true);
+        bucket.setAllowPublicRead(true);
 
         metadataService.updateBucket(bucket);
 
@@ -120,6 +122,7 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(updatedName, updatedBucket.getName());
         assertEquals(updatedDesc, updatedBucket.getDescription());
         assertTrue(updatedBucket.isAllowExtensionBundleRedeploy());
+        assertTrue(updatedBucket.isAllowPublicRead());
     }
 
     @Test
@@ -158,6 +161,22 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         final List<BucketEntity> buckets = metadataService.getAllBuckets();
         assertNotNull(buckets);
         assertEquals(6, buckets.size());
+    }
+
+    @Test
+    public void testGetBucketIdsAllowingPublicRead() {
+        final List<BucketEntity> buckets = metadataService.getBucketsAllowingPublicRead();
+        assertNotNull(buckets);
+        assertEquals(0, buckets.size());
+
+        final BucketEntity bucket = metadataService.getBucketById("1");
+        assertNotNull(bucket);
+        bucket.setAllowPublicRead(true);
+        metadataService.updateBucket(bucket);
+
+        final List<BucketEntity> bucketsAfterUpdate = metadataService.getBucketsAllowingPublicRead();
+        assertNotNull(bucketsAfterUpdate);
+        assertEquals(1, bucketsAfterUpdate.size());
     }
 
     //----------------- BucketItems ---------------------------------

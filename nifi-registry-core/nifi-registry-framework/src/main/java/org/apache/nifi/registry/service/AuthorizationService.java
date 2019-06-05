@@ -444,6 +444,7 @@ public class AuthorizationService {
     }
 
     public List<Resource> getAuthorizedResources(RequestAction actionType, ResourceType resourceType) {
+        // get all authorized resources from the authorizable lookup
         final List<Resource> authorizedResources =
                 getAuthorizableResources(resourceType)
                         .stream()
@@ -460,6 +461,16 @@ public class AuthorizationService {
                         })
                         .map(AuthorizationService::resourceToDTO)
                         .collect(Collectors.toList());
+
+        // add any buckets that have been made public for read requests
+        if (actionType == RequestAction.READ && (resourceType == null || resourceType == ResourceType.Bucket)) {
+            final List<Bucket> buckets = registryService.getBucketsAllowingPublicRead();
+            buckets.forEach(b -> {
+                final Resource resourceDto = resourceToDTO(
+                        ResourceFactory.getBucketResource(b.getIdentifier(), b.getName()));
+                authorizedResources.add(resourceDto);
+            });
+        }
 
         return authorizedResources;
     }

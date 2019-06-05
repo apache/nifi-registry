@@ -94,6 +94,13 @@ public interface MetadataService {
      */
     List<BucketEntity> getAllBuckets();
 
+    /**
+     * Retrieves all the buckets allowing public access for read operations.
+     *
+     * @return the set of buckets
+     */
+    List<BucketEntity> getBucketsAllowingPublicRead();
+
     // --------------------------------------------------------------------------------------------
 
     /**

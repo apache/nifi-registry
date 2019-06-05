@@ -76,13 +76,14 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public BucketEntity createBucket(final BucketEntity b) {
-        final String sql = "INSERT INTO BUCKET (ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY) VALUES (?, ?, ?, ?, ?)";
+        final String sql = "INSERT INTO BUCKET (ID, NAME, DESCRIPTION, CREATED, ALLOW_EXTENSION_BUNDLE_REDEPLOY, ALLOW_PUBLIC_READ) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 b.getId(),
                 b.getName(),
                 b.getDescription(),
                 b.getCreated(),
-                b.isAllowExtensionBundleRedeploy() ? 1 : 0);
+                b.isAllowExtensionBundleRedeploy() ? 1 : 0,
+                b.isAllowPublicRead() ? 1 : 0);
         return b;
     }
 
@@ -104,8 +105,20 @@ public class DatabaseMetadataService implements MetadataService {
 
     @Override
     public BucketEntity updateBucket(final BucketEntity bucket) {
-        final String sql = "UPDATE BUCKET SET name = ?, description = ?, allow_extension_bundle_redeploy = ? WHERE id = ?";
-        jdbcTemplate.update(sql, bucket.getName(), bucket.getDescription(), bucket.isAllowExtensionBundleRedeploy() ? 1 : 0, bucket.getId());
+        final String sql = "UPDATE BUCKET SET " +
+                    "name = ?, " +
+                    "description = ?, " +
+                    "allow_extension_bundle_redeploy = ?, " +
+                    "allow_public_read = ? " +
+                "WHERE id = ?";
+
+        jdbcTemplate.update(sql,
+                bucket.getName(),
+                bucket.getDescription(),
+                bucket.isAllowExtensionBundleRedeploy() ? 1 : 0,
+                bucket.isAllowPublicRead() ? 1 : 0,
+                bucket.getId());
+
         return bucket;
     }
 
@@ -132,6 +145,12 @@ public class DatabaseMetadataService implements MetadataService {
     @Override
     public List<BucketEntity> getAllBuckets() {
         final String sql = "SELECT * FROM BUCKET ORDER BY name ASC";
+        return jdbcTemplate.query(sql, new BucketEntityRowMapper());
+    }
+
+    @Override
+    public List<BucketEntity> getBucketsAllowingPublicRead() {
+        final String sql = "SELECT * FROM BUCKET WHERE allow_public_read = 1";
         return jdbcTemplate.query(sql, new BucketEntityRowMapper());
     }
 

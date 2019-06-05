@@ -63,6 +63,7 @@ function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableSer
     this.userPermsSearchTerms = [];
     this.bucketname = '';
     this.allowBundleRedeploy = false;
+    this.allowPublicRead = false;
     this.bucketPolicies = [];
     this.userPerms = {};
     this.groupPerms = {};
@@ -104,6 +105,7 @@ NfRegistryManageBucket.prototype = {
                     self.nfRegistryService.bucket = bucket;
                     self.bucketname = bucket.name;
                     self.allowBundleRedeploy = bucket.allowBundleRedeploy;
+                    self.allowPublicRead = bucket.allowPublicRead;
                     if (!self.nfRegistryService.currentUser.anonymous) {
                         if (!response[1].status || response[1].status === 200) {
                             var policies = response[1];
@@ -163,6 +165,7 @@ NfRegistryManageBucket.prototype = {
                     self.nfRegistryService.bucket = response;
                     self.bucketname = response.name;
                     self.allowBundleRedeploy = response.allowBundleRedeploy;
+                    self.allowPublicRead = response.allowPublicRead;
 
                     if (dialogResult) {
                         if (dialogResult.userOrGroup.type === 'user') {
@@ -201,6 +204,7 @@ NfRegistryManageBucket.prototype = {
                     self.nfRegistryService.bucket = response;
                     self.bucketname = response.name;
                     self.allowBundleRedeploy = response.allowBundleRedeploy;
+                    self.allowPublicRead = response.allowPublicRead;
 
                     if (dialogResult) {
                         if (dialogResult.userOrGroup.type === 'user') {
@@ -424,6 +428,8 @@ NfRegistryManageBucket.prototype = {
             } else if (response.status === 409) {
                 self.bucketname = self.nfRegistryService.bucket.name;
                 self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
+                self.allowPublicRead = self.nfRegistryService.bucket.allowPublicRead;
+
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: 'This bucket already exists. Please enter a different identity/bucket name.',
@@ -433,6 +439,8 @@ NfRegistryManageBucket.prototype = {
             } else if (response.status === 400) {
                 self.bucketname = self.nfRegistryService.bucket.name;
                 self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
+                self.allowPublicRead = self.nfRegistryService.bucket.allowPublicRead;
+
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
@@ -467,6 +475,40 @@ NfRegistryManageBucket.prototype = {
                 });
             } else if (response.status === 400) {
                 self.allowBundleRedeploy = !event.checked;
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+            }
+        });
+    },
+
+    /**
+     * Update allowPublicRead flag.
+     *
+     * @param the checkbox change event
+     */
+    toggleBucketPublicRead: function (event) {
+        var self = this;
+        this.nfRegistryApi.updateBucket({
+            'identifier': this.nfRegistryService.bucket.identifier,
+            'allowPublicRead': event.checked,
+        }).subscribe(function (response) {
+            if (!response.status || response.status === 200) {
+                self.nfRegistryService.bucket = response;
+                self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'Bucket settings have been updated.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
+                });
+            } else if (response.status === 400) {
+                self.allowPublicRead = !event.checked;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,

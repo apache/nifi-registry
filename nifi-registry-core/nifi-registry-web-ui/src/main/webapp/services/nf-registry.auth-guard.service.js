@@ -96,8 +96,8 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                             });
                             self.router.navigateByUrl('/nifi-registry/explorer');
                         }
-                    } else {
-                        // registry security not configured, redirect to workflow perspective
+                    } else if (location.protocol === 'http:') {
+                        // user is anonymous and we are NOT secure, redirect to workflow perspective
                         self.dialogService.openConfirm({
                             title: 'Not Applicable',
                             message: 'User administration is not configured for this registry.',
@@ -105,6 +105,15 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                             acceptButtonColor: 'fds-warn'
                         });
                         self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                    } else {
+                        // user is anonymous and we are secure so don't allow the url, navigate to the main page
+                        self.dialogService.openConfirm({
+                            title: 'Access denied',
+                            message: 'Please contact your system administrator.',
+                            acceptButton: 'Ok',
+                            acceptButtonColor: 'fds-warn'
+                        });
+                        self.router.navigateByUrl('/nifi-registry/explorer');
                     }
                 }
             });
@@ -155,7 +164,7 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
 
     checkLogin: function (url) {
         var self = this;
-        if (this.nfRegistryService.currentUser.resourcePermissions.buckets.canRead || this.nfRegistryService.currentUser.anonymous) { return true; }
+        if (this.nfRegistryService.currentUser.resourcePermissions.buckets.canRead) { return true; }
 
         // Store the attempted URL for redirecting
         this.nfRegistryService.redirectUrl = url;
@@ -197,9 +206,18 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                             });
                             self.router.navigateByUrl('/nifi-registry/administration/users');
                         }
-                    } else {
-                        // registry security not configured, allow access to workflow perspective
+                    } else if (location.protocol === 'http:') {
+                        // user is anonymous and we are NOT secure so allow the url
                         self.router.navigateByUrl(url);
+                    } else {
+                        // user is anonymous and we are secure so don't allow the url, navigate to the main page
+                        self.dialogService.openConfirm({
+                            title: 'Access denied',
+                            message: 'Please contact your system administrator.',
+                            acceptButton: 'Ok',
+                            acceptButtonColor: 'fds-warn'
+                        });
+                        self.router.navigateByUrl('/nifi-registry/explorer');
                     }
                 }
             });
@@ -260,7 +278,7 @@ NfRegistryLoginAuthGuard.prototype = {
                     }
                     self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
                     self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
-                } else if (self.nfRegistryService.currentUser.anonymous) {
+                } else if (self.nfRegistryService.currentUser.anonymous && !self.nfRegistryService.currentUser.loginSupported) {
                     self.router.navigateByUrl('/nifi-registry');
                 } else {
                     self.nfRegistryService.currentUser.anonymous = true;

@@ -31,6 +31,7 @@ import org.apache.nifi.registry.security.authorization.generated.Prop;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.security.util.XmlUtils;
+import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
@@ -88,6 +89,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     private final NiFiRegistryProperties properties;
     private final ExtensionManager extensionManager;
     private final SensitivePropertyProvider sensitivePropertyProvider;
+    private final RegistryService registryService;
 
     private Authorizer authorizer;
     private final Map<String, UserGroupProvider> userGroupProviders = new HashMap<>();
@@ -98,11 +100,13 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     public AuthorizerFactory(
             final NiFiRegistryProperties properties,
             final ExtensionManager extensionManager,
-            @Nullable final SensitivePropertyProvider sensitivePropertyProvider) {
+            @Nullable final SensitivePropertyProvider sensitivePropertyProvider,
+            final RegistryService registryService) {
 
         this.properties = properties;
         this.extensionManager = extensionManager;
         this.sensitivePropertyProvider = sensitivePropertyProvider;
+        this.registryService = registryService;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
@@ -110,6 +114,10 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
         if (this.extensionManager == null) {
             throw new IllegalStateException("ExtensionManager cannot be null");
+        }
+
+        if (this.registryService == null) {
+            throw new IllegalStateException("RegistryService cannot be null");
         }
     }
 
@@ -354,10 +362,22 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         // call post construction lifecycle event
         instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
 
-        return installIntegrityChecks(instance);
+        // wrap the instance Authorizer with checks to ensure integrity of data
+        final Authorizer integrityCheckAuthorizer = installIntegrityChecks(instance);
+
+        // wrap the integrity checked Authorizer with the FrameworkAuthorizer
+        return createFrameworkAuthorizer(integrityCheckAuthorizer);
     }
 
-        private void performMethodInjection(final Object instance, final Class authorizerClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private Authorizer createFrameworkAuthorizer(final Authorizer baseAuthorizer) {
+        if (baseAuthorizer instanceof ManagedAuthorizer) {
+            return new FrameworkManagedAuthorizer((ManagedAuthorizer) baseAuthorizer, registryService);
+        } else {
+            return new FrameworkAuthorizer(baseAuthorizer, registryService);
+        }
+    }
+
+    private void performMethodInjection(final Object instance, final Class authorizerClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         for (final Method method : authorizerClass.getMethods()) {
             if (method.isAnnotationPresent(AuthorizerContext.class)) {
                 // make the method accessible

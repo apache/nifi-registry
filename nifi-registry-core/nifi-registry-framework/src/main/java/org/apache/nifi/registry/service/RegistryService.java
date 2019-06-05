@@ -160,6 +160,10 @@ public class RegistryService {
             bucket.setAllowBundleRedeploy(false);
         }
 
+        if (bucket.isAllowPublicRead() == null) {
+            bucket.setAllowPublicRead(false);
+        }
+
         validate(bucket, "Cannot create Bucket");
 
         writeLock.lock();
@@ -234,6 +238,16 @@ public class RegistryService {
         }
     }
 
+    public List<Bucket> getBucketsAllowingPublicRead() {
+        readLock.lock();
+        try {
+            final List<BucketEntity> buckets = metadataService.getBucketsAllowingPublicRead();
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
+        } finally {
+            readLock.unlock();
+        }
+    }
+
     public Bucket updateBucket(final Bucket bucket) {
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");
@@ -280,6 +294,10 @@ public class RegistryService {
 
             if (bucket.isAllowBundleRedeploy() != null) {
                 existingBucketById.setAllowExtensionBundleRedeploy(bucket.isAllowBundleRedeploy());
+            }
+
+            if (bucket.isAllowPublicRead() != null) {
+                existingBucketById.setAllowPublicRead(bucket.isAllowPublicRead());
             }
 
             // perform the actual update

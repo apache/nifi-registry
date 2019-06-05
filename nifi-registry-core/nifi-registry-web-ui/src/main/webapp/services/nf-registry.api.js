@@ -155,9 +155,9 @@ NfRegistryApi.prototype = {
      * @param {string} name  The name of the bucket.
      * @returns {*}
      */
-    createBucket: function (name) {
+    createBucket: function (name, allowPublicRead) {
         var self = this;
-        return this.http.post('/nifi-registry-api/buckets', {'name': name}, headers)
+        return this.http.post('/nifi-registry-api/buckets', {'name': name, 'allowPublicRead': allowPublicRead}, headers)
             .map(function (response) {
                 return response;
             })

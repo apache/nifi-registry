@@ -19,45 +19,22 @@ package org.apache.nifi.registry.web.security.authentication.x509;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
-import org.apache.nifi.registry.web.security.authentication.AuthenticationRequestToken;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.authentication.IdentityProvider;
-import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
-import org.apache.nifi.registry.web.security.authentication.AuthenticationSuccessToken;
 import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.Resource;
-import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
 import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
-import org.apache.nifi.registry.web.security.authentication.exception.UntrustedProxyException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
+import org.apache.nifi.registry.web.security.authentication.AuthenticationRequestToken;
+import org.apache.nifi.registry.web.security.authentication.AuthenticationSuccessToken;
+import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
 
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
 public class X509IdentityAuthenticationProvider extends IdentityAuthenticationProvider {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(X509IdentityAuthenticationProvider.class);
-
-    private static final Authorizable PROXY_AUTHORIZABLE = new Authorizable() {
-        @Override
-        public Authorizable getParentAuthorizable() {
-            return null;
-        }
-
-        @Override
-        public Resource getResource() {
-            return ResourceFactory.getProxyResource();
-        }
-    };
 
     public X509IdentityAuthenticationProvider(NiFiRegistryProperties properties, Authorizer authorizer, IdentityProvider identityProvider) {
         super(properties, authorizer, identityProvider);
@@ -86,10 +63,6 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
         final List<String> proxyChain = ProxiedEntitiesUtils.tokenizeProxiedEntitiesChain(proxiedEntitiesChain);
         proxyChain.add(response.getIdentity());
 
-        final String httpMethodStr = x509RequestDetails.getHttpMethod().toUpperCase();
-        final HttpMethod httpMethod = HttpMethod.resolve(httpMethodStr);
-        LOGGER.debug("HTTP method is {}", new Object[]{httpMethod});
-
         // add the chain as appropriate to each proxy
         NiFiUser proxy = null;
         for (final ListIterator<String> chainIter = proxyChain.listIterator(proxyChain.size()); chainIter.hasPrevious(); ) {
@@ -108,49 +81,11 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             // Only set the client address for client making the request because we don't know the clientAddress of the proxied entities
             String clientAddress = (proxy == null) ? requestToken.getClientAddress() : null;
             proxy = createUser(identity, groups, proxy, clientAddress, isAnonymous);
-
-            if (chainIter.hasPrevious()) {
-                switch (httpMethod) {
-                    case POST:
-                    case PUT:
-                    case PATCH:
-                        authorizeWrite(proxy);
-                        break;
-                    case DELETE:
-                        authorizeDelete(proxy);
-                        break;
-                    default:
-                        authorizeRead(proxy);
-                        break;
-                }
-            }
         }
+
+        // Defer authorization of proxy until later in FrameworkAuthorizer
 
         return new AuthenticationSuccessToken(new NiFiUserDetails(proxy));
-    }
-
-    private void authorizeRead(final NiFiUser proxy) {
-        try {
-            PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.READ, proxy);
-        } catch (final AccessDeniedException e) {
-            throw new UntrustedProxyException(String.format("Untrusted proxy for read operation [%s].", proxy.getIdentity()));
-        }
-    }
-
-    private void authorizeWrite(final NiFiUser proxy) {
-        try {
-            PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.WRITE, proxy);
-        } catch (final AccessDeniedException e) {
-            throw new UntrustedProxyException(String.format("Untrusted proxy for write operation [%s].", proxy.getIdentity()));
-        }
-    }
-
-    private void authorizeDelete(final NiFiUser proxy) {
-        try {
-            PROXY_AUTHORIZABLE.authorize(authorizer, RequestAction.DELETE, proxy);
-        } catch (final AccessDeniedException e) {
-            throw new UntrustedProxyException(String.format("Untrusted proxy for delete operation [%s].", proxy.getIdentity()));
-        }
     }
 
     /**
@@ -169,7 +104,5 @@ public class X509IdentityAuthenticationProvider extends IdentityAuthenticationPr
             return new StandardNiFiUser.Builder().identity(identity).groups(groups).chain(chain).clientAddress(clientAddress).build();
         }
     }
-
-
 
 }

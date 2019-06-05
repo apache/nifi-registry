@@ -566,21 +566,32 @@ class AuthorizationServiceSpec extends Specification {
                 "b1": [
                         "name": "Bucket #1",
                         "description": "An initial bucket for testing",
-                        "createdTimestamp": 1
+                        "createdTimestamp": 1,
+                        "allowPublicRead" : false
                 ],
                 "b2": [
                         "name": "Bucket #2",
                         "description": "A second bucket for testing",
-                        "createdTimestamp": 2
+                        "createdTimestamp": 2,
+                        "allowPublicRead" : true
                 ],
+                "b3": [
+                        "name": "Bucket #3",
+                        "description": "A third bucket for testing",
+                        "createdTimestamp": 3,
+                        "allowPublicRead" : false
+                ]
         ]
         def mapBucket = {
             String id -> new Bucket([
                     identifier: id,
                     name: buckets[id]["name"] as String,
-                    description: buckets[id]["description"] as String]) }
+                    description: buckets[id]["description"] as String,
+                    allowPublicRead: buckets[id]["allowPublicRead"]
+            ]) }
 
-        registryService.getBuckets() >> {[ mapBucket("b1"), mapBucket("b2") ]}
+        registryService.getBuckets() >> {[ mapBucket("b1"), mapBucket("b2"), mapBucket("b3") ]}
+        registryService.getBucketsAllowingPublicRead() >> {[ mapBucket("b2") ]}
 
         def authorized = Mock(Authorizable)
         authorized.authorize(_, _, _) >> { return }
@@ -591,6 +602,7 @@ class AuthorizationServiceSpec extends Specification {
         authorizableLookup.getAuthorizableByResource("/buckets")    >> authorized
         authorizableLookup.getAuthorizableByResource("/buckets/b1") >> authorized
         authorizableLookup.getAuthorizableByResource("/buckets/b2") >> denied
+        authorizableLookup.getAuthorizableByResource("/buckets/b3") >> denied
         authorizableLookup.getAuthorizableByResource("/policies")   >> authorized
         authorizableLookup.getAuthorizableByResource("/proxy")      >> denied
         authorizableLookup.getAuthorizableByResource("/swagger")    >> denied
@@ -602,12 +614,13 @@ class AuthorizationServiceSpec extends Specification {
 
         then:
         resources != null
-        resources.size() == 4
+        resources.size() == 5
         def sortedResources = resources.sort{it.identifier}
         sortedResources[0].identifier == "/buckets"
         sortedResources[1].identifier == "/buckets/b1"
-        sortedResources[2].identifier == "/policies"
-        sortedResources[3].identifier == "/tenants"
+        sortedResources[2].identifier == "/buckets/b2"
+        sortedResources[3].identifier == "/policies"
+        sortedResources[4].identifier == "/tenants"
 
 
         when:
@@ -615,11 +628,11 @@ class AuthorizationServiceSpec extends Specification {
 
         then:
         filteredResources != null
-        filteredResources.size() == 2
+        filteredResources.size() == 3
         def sortedFilteredResources = filteredResources.sort{it.identifier}
         sortedFilteredResources[0].identifier == "/buckets"
         sortedFilteredResources[1].identifier == "/buckets/b1"
-
+        sortedFilteredResources[2].identifier == "/buckets/b2"
     }
 
 }

@@ -20,6 +20,7 @@ import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef } from '@angular/material';
 import { NfRegistryLoginAuthGuard } from 'services/nf-registry.auth-guard.service';
+import { Router } from '@angular/router';
 
 /**
  * NfRegistryUserLogin constructor.
@@ -28,13 +29,15 @@ import { NfRegistryLoginAuthGuard } from 'services/nf-registry.auth-guard.servic
  * @param nfRegistryService                 The nf-registry.service module.
  * @param matDialogRef                      The angular material dialog ref.
  * @param nfRegistryLoginAuthGuard          The login auth guard.
+ * @param router                    The angular router module.
  * @constructor
  */
-function NfRegistryUserLogin(nfRegistryApi, nfRegistryService, matDialogRef, nfRegistryLoginAuthGuard) {
+function NfRegistryUserLogin(nfRegistryApi, nfRegistryService, matDialogRef, nfRegistryLoginAuthGuard, router) {
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.nfRegistryLoginAuthGuard = nfRegistryLoginAuthGuard;
+    this.router = router;
 }
 
 NfRegistryUserLogin.prototype = {
@@ -56,6 +59,12 @@ NfRegistryUserLogin.prototype = {
                 self.nfRegistryLoginAuthGuard.checkLogin(self.nfRegistryService.redirectUrl);
             }
         });
+    },
+
+    cancel: function () {
+        var self = this;
+        self.dialogRef.close();
+        self.router.navigateByUrl('/nifi-registry');
     }
 };
 
@@ -69,7 +78,8 @@ NfRegistryUserLogin.parameters = [
     NfRegistryApi,
     NfRegistryService,
     MatDialogRef,
-    NfRegistryLoginAuthGuard
+    NfRegistryLoginAuthGuard,
+    Router
 ];
 
 export default NfRegistryUserLogin;
