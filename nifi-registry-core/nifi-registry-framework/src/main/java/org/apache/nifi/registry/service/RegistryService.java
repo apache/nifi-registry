@@ -160,6 +160,10 @@ public class RegistryService {
             bucket.setAllowBundleRedeploy(false);
         }
 
+        if (bucket.isAllowPublicRead() == null) {
+            bucket.setAllowPublicRead(false);
+        }
+
         validate(bucket, "Cannot create Bucket");
 
         writeLock.lock();
@@ -280,6 +284,10 @@ public class RegistryService {
 
             if (bucket.isAllowBundleRedeploy() != null) {
                 existingBucketById.setAllowExtensionBundleRedeploy(bucket.isAllowBundleRedeploy());
+            }
+
+            if (bucket.isAllowPublicRead() != null) {
+                existingBucketById.setAllowPublicRead(bucket.isAllowPublicRead());
             }
 
             // perform the actual update

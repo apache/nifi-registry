@@ -75,6 +75,13 @@ NfRegistry.prototype = {
         delete this.nfRegistryService.currentUser.anonymous;
         this.nfStorage.removeItem('jwt');
         this.router.navigateByUrl('/nifi-registry/login');
+    },
+
+    /**
+     * Navigate to login route.
+     */
+    login: function () {
+        this.router.navigateByUrl('/nifi-registry/login');
     }
 };
 

@@ -206,6 +206,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.breadCrumbState = 'out';
     this.explorerViewType = '';
     this.currentUser = {
+        loginSupported: false,
         resourcePermissions: {
             anyTopLevelResource: {
                 canRead: false,

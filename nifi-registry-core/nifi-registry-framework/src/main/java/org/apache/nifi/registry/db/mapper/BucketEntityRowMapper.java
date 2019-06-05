@@ -34,6 +34,7 @@ public class BucketEntityRowMapper implements RowMapper<BucketEntity> {
         b.setDescription(rs.getString("DESCRIPTION"));
         b.setCreated(rs.getTimestamp("CREATED"));
         b.setAllowExtensionBundleRedeploy(rs.getInt("ALLOW_EXTENSION_BUNDLE_REDEPLOY") == 0 ? false : true);
+        b.setAllowPublicRead(rs.getInt("ALLOW_PUBLIC_READ") == 0 ? false : true);
         return b;
     }
 

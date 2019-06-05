@@ -32,6 +32,7 @@ import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
 import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
 import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
+import org.apache.nifi.registry.service.RegistryService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,9 +95,9 @@ public class SecureLdapIT extends IntegrationTestBase {
         @Primary
         @Bean
         @DependsOn({"directoryServer"}) // Can't load LdapUserGroupProvider until the embedded LDAP server, which creates the "directoryServer" bean, is running
-        public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager) throws Exception {
+        public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager, RegistryService registryService) throws Exception {
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider());
+                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService);
             }
             return authorizerFactory.getAuthorizer();
         }
@@ -231,7 +232,18 @@ public class SecureLdapIT extends IntegrationTestBase {
     @Test
     public void testGetCurrentUserFailsForAnonymous() throws Exception {
 
-        // Given: the client is connected to an unsecured NiFi Registry
+        // Given: the client is connected to an secured NiFi Registry
+        final String expectedJson = "{" +
+                "\"anonymous\":true," +
+                "\"identity\":\"anonymous\"," +
+                "\"loginSupported\":true," +
+                "\"resourcePermissions\":{" +
+                "\"anyTopLevelResource\":{\"canDelete\":false,\"canRead\":false,\"canWrite\":false}," +
+                "\"buckets\":{\"canDelete\":false,\"canRead\":false,\"canWrite\":false}," +
+                "\"policies\":{\"canDelete\":false,\"canRead\":false,\"canWrite\":false}," +
+                "\"proxy\":{\"canDelete\":false,\"canRead\":false,\"canWrite\":false}," +
+                "\"tenants\":{\"canDelete\":false,\"canRead\":false,\"canWrite\":false}}" +
+                "}";
 
         // When: the /access endpoint is queried with no credentials
         final Response response = client
@@ -240,8 +252,10 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .get(Response.class);
 
         // Then: the server returns a 200 OK with the expected current user
-        assertEquals(401, response.getStatus());
+        assertEquals(200, response.getStatus());
 
+        final String actualJson = response.readEntity(String.class);
+        JSONAssert.assertEquals(expectedJson, actualJson, false);
     }
 
     @Test

@@ -18,6 +18,7 @@ package org.apache.nifi.registry.security.authorization;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -33,6 +34,7 @@ public class AuthorizationRequest {
     private final Resource resource;
     private final Resource requestedResource;
     private final String identity;
+    private final List<String> proxyIdentities;
     private final Set<String> groups;
     private final RequestAction action;
     private final boolean isAccessAttempt;
@@ -49,6 +51,7 @@ public class AuthorizationRequest {
 
         this.resource = builder.resource;
         this.identity = builder.identity;
+        this.proxyIdentities = builder.proxyIdentities == null ? Collections.emptyList() : Collections.unmodifiableList(builder.proxyIdentities);
         this.groups = builder.groups == null ? null : Collections.unmodifiableSet(builder.groups);
         this.action = builder.action;
         this.isAccessAttempt = builder.isAccessAttempt;
@@ -100,6 +103,15 @@ public class AuthorizationRequest {
      */
     public String getIdentity() {
         return identity;
+    }
+
+    /**
+     * The identities in the proxy chain for the request. Will be empty if the request was not proxied.
+     *
+     * @return The identities in the proxy chain
+     */
+    public List<String> getProxyIdentities() {
+        return proxyIdentities;
     }
 
     /**
@@ -174,6 +186,7 @@ public class AuthorizationRequest {
         private Resource resource;
         private Resource requestedResource;
         private String identity;
+        private List<String> proxyIdentities;
         private Set<String> groups;
         private Boolean isAnonymous;
         private Boolean isAccessAttempt;
@@ -194,6 +207,11 @@ public class AuthorizationRequest {
 
         public Builder identity(final String identity) {
             this.identity = identity;
+            return this;
+        }
+
+        public Builder proxyIdentities(final List<String> proxyIdentities) {
+            this.proxyIdentities = proxyIdentities;
             return this;
         }
 

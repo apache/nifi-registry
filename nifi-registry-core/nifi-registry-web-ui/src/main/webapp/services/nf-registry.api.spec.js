@@ -578,10 +578,13 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.updateBucket({
             'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             'name': 'Bucket #1',
-            'allowBundleRedeploy': false
+            'allowBundleRedeploy': true,
+            'allowPublicRead': true
         }).subscribe(function (response) {
             expect(response[0].identifier).toEqual('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
             expect(response[0].name).toEqual('Bucket #1');
+            expect(response[0].allowBundleRedeploy).toEqual(true);
+            expect(response[0].allowPublicRead).toEqual(true);
         });
         // the request it made
         req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
@@ -590,7 +593,9 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         // Next, fulfill the request by transmitting a response.
         req.flush([{
             'identifier': '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
-            'name': 'Bucket #1'
+            'name': 'Bucket #1',
+            'allowBundleRedeploy': true,
+            'allowPublicRead': true
         }]);
 
         // Finally, assert that there are no outstanding requests.

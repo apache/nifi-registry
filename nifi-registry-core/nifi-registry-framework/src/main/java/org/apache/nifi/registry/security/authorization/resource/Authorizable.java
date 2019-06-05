@@ -16,18 +16,20 @@
  */
 package org.apache.nifi.registry.security.authorization.resource;
 
-import org.apache.nifi.registry.security.authorization.AuthorizationResult.Result;
-import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.AuthorizationAuditor;
 import org.apache.nifi.registry.security.authorization.AuthorizationRequest;
 import org.apache.nifi.registry.security.authorization.AuthorizationResult;
+import org.apache.nifi.registry.security.authorization.AuthorizationResult.Result;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.Resource;
 import org.apache.nifi.registry.security.authorization.UserContextKeys;
+import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
+import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public interface Authorizable {
@@ -92,6 +94,10 @@ public interface Authorizable {
         } else {
             userContext = null;
         }
+
+        // Note: We don't include the proxy identities here since this is not a direct attempt to access the resource and
+        // we just want to determine if the end user is authorized. The proxy identities will be authorized when calling
+        // Authorizable.authorize() during a direct access attempt for a resource.
 
         final Resource resource = getResource();
         final Resource requestedResource = getRequestedResource();
@@ -205,10 +211,18 @@ public interface Authorizable {
             userContext = null;
         }
 
+        final List<String> proxyChain = new ArrayList<>();
+        NiFiUser proxyUser = user.getChain();
+        while (proxyUser  != null) {
+            proxyChain.add(proxyUser.getIdentity());
+            proxyUser = proxyUser.getChain();
+        }
+
         final Resource resource = getResource();
         final Resource requestedResource = getRequestedResource();
         final AuthorizationRequest request = new AuthorizationRequest.Builder()
                 .identity(user.getIdentity())
+                .proxyIdentities(proxyChain)
                 .groups(user.getGroups())
                 .anonymous(user.isAnonymous())
                 .accessAttempt(true)

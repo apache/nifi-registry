@@ -33,6 +33,7 @@ public class BucketMappings {
         bucketEntity.setDescription(bucket.getDescription());
         bucketEntity.setCreated(new Date(bucket.getCreatedTimestamp()));
         bucketEntity.setAllowExtensionBundleRedeploy(bucket.isAllowBundleRedeploy());
+        bucketEntity.setAllowPublicRead(bucket.isAllowPublicRead());
         return bucketEntity;
     }
 
@@ -43,6 +44,7 @@ public class BucketMappings {
         bucket.setDescription(bucketEntity.getDescription());
         bucket.setCreatedTimestamp(bucketEntity.getCreated().getTime());
         bucket.setAllowBundleRedeploy(bucketEntity.isAllowExtensionBundleRedeploy());
+        bucket.setAllowPublicRead(bucketEntity.isAllowPublicRead());
         return bucket;
     }
 

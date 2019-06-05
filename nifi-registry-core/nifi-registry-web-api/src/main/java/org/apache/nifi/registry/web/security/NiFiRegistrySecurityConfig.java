@@ -22,7 +22,6 @@ import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
 import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.IdentityFilter;
-import org.apache.nifi.registry.web.security.authentication.exception.UntrustedProxyException;
 import org.apache.nifi.registry.web.security.authentication.jwt.JwtIdentityProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityAuthenticationProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
@@ -110,13 +109,9 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         // otp
         // todo, if needed one-time password auth filter goes here
 
-        if (properties.getSslPort() == null) {
-            // If we are running an unsecured NiFi Registry server, add an
-            // anonymous authentication filter that will populate the
-            // authenticated, anonymous user if no other user identity
-            // is detected earlier in the Spring filter chain.
-            http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
-        }
+        // add an anonymous authentication filter that will populate the authenticated,
+        // anonymous user if no other user identity is detected earlier in the Spring filter chain
+        http.anonymous().authenticationFilter(anonymousAuthenticationFilter);
 
         // After Spring Security filter chain is complete (so authentication is done),
         // but before the Jersey application endpoints get the request,
@@ -182,20 +177,9 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
                                  AuthenticationException authenticationException)
                     throws IOException, ServletException {
 
-                final int status;
-
-                // See X509IdentityAuthenticationProvider.buildAuthenticatedToken(...)
-                if (authenticationException instanceof UntrustedProxyException) {
-                    // return a 403 response
-                    status = HttpServletResponse.SC_FORBIDDEN;
-                    logger.info("Identity in proxy chain not trusted to act as a proxy: {} Returning 403 response.", authenticationException.toString());
-
-                } else {
-                    // return a 401 response
-                    status = HttpServletResponse.SC_UNAUTHORIZED;
-                    logger.info("Client could not be authenticated due to: {} Returning 401 response.", authenticationException.toString());
-                }
-
+                // return a 401 response
+                final int status = HttpServletResponse.SC_UNAUTHORIZED;
+                logger.info("Client could not be authenticated due to: {} Returning 401 response.", authenticationException.toString());
                 logger.debug("", authenticationException);
 
                 if (!response.isCommitted()) {

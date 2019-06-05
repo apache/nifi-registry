@@ -124,6 +124,7 @@ public class AccessResource extends ApplicationResource {
         }
 
         final CurrentUser currentUser = authorizationService.getCurrentUser();
+        currentUser.setLoginSupported(httpServletRequest.isSecure() && identityProvider != null);
 
         return generateOkResponse(currentUser).build();
     }

@@ -31,6 +31,8 @@ public class BucketEntity {
 
     private boolean allowExtensionBundleRedeploy;
 
+    private boolean allowPublicRead;
+
 
     public String getId() {
         return id;
@@ -70,6 +72,14 @@ public class BucketEntity {
 
     public void setAllowExtensionBundleRedeploy(final boolean allowExtensionBundleRedeploy) {
         this.allowExtensionBundleRedeploy = allowExtensionBundleRedeploy;
+    }
+
+    public boolean isAllowPublicRead() {
+        return allowPublicRead;
+    }
+
+    public void setAllowPublicRead(boolean allowPublicRead) {
+        this.allowPublicRead = allowPublicRead;
     }
 
     @Override
