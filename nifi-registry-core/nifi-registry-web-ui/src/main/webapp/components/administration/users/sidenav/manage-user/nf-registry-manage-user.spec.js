@@ -17,7 +17,7 @@
 
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute } from '@angular/router';
@@ -35,7 +35,7 @@ describe('NfRegistryManageUser Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({userId: '123'})
+                    params: of({userId: '123'})
                 }
             }
         ];
@@ -93,9 +93,9 @@ describe('NfRegistryManageUser Component', function () {
 
                 //Spy
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
 
                 done();
             });
@@ -103,7 +103,7 @@ describe('NfRegistryManageUser Component', function () {
 
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -151,7 +151,7 @@ describe('NfRegistryManageUser Component', function () {
 
     it('should FAIL to get user by id and redirect to admin users perspective', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -171,7 +171,7 @@ describe('NfRegistryManageUser Component', function () {
 
     it('should FAIL to get user by id and redirect to workflow perspective', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 409
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -192,7 +192,7 @@ describe('NfRegistryManageUser Component', function () {
     it('should redirect to users perspective', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -244,11 +244,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to create the manage bucket privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -284,7 +284,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -342,11 +342,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to update the manage bucket privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -382,7 +382,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -440,7 +440,7 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to remove the manage bucket privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             users: [
                 {
@@ -477,9 +477,9 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -537,11 +537,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to create the manage proxy privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -577,7 +577,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -635,11 +635,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to update the manage proxy privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -675,7 +675,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -733,7 +733,7 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to remove the manage proxy privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             users: [
                 {
@@ -770,9 +770,9 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -830,11 +830,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to create the manage policies privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -870,7 +870,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -928,11 +928,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to update the manage policies privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -968,7 +968,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1026,7 +1026,7 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to remove the manage policies privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             users: [
                 {
@@ -1063,9 +1063,9 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1123,11 +1123,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to create the manage tenants privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -1163,7 +1163,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1221,11 +1221,11 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to update the manage tenants privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [
                 {
                     identifier: '123',
@@ -1261,7 +1261,7 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1319,7 +1319,7 @@ describe('NfRegistryManageUser Component', function () {
     it('should toggle to remove the manage tenants privileges for the current user', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             users: [
                 {
@@ -1356,9 +1356,9 @@ describe('NfRegistryManageUser Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1420,12 +1420,12 @@ describe('NfRegistryManageUser Component', function () {
         spyOn(comp.dialog, 'open').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of({});
+                    return of({});
                 }
             };
         });
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1480,7 +1480,7 @@ describe('NfRegistryManageUser Component', function () {
         spyOn(comp, 'filterGroups').and.callFake(function () {
         });
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1543,7 +1543,7 @@ describe('NfRegistryManageUser Component', function () {
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1575,7 +1575,7 @@ describe('NfRegistryManageUser Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [{
                 identity: 'User #1'
             }],
@@ -1584,7 +1584,7 @@ describe('NfRegistryManageUser Component', function () {
             }]
         }));
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
         });
         // 1st change detection triggers ngOnInit
@@ -1619,13 +1619,13 @@ describe('NfRegistryManageUser Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1657,7 +1657,7 @@ describe('NfRegistryManageUser Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'updateUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'test',
             status: 200
@@ -1688,13 +1688,13 @@ describe('NfRegistryManageUser Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {
@@ -1726,7 +1726,7 @@ describe('NfRegistryManageUser Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'updateUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'test',
             status: 409
@@ -1755,7 +1755,7 @@ describe('NfRegistryManageUser Component', function () {
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryService.sidenav, 'close');
         spyOn(nfRegistryApi, 'getUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'User #1',
             resourcePermissions: {

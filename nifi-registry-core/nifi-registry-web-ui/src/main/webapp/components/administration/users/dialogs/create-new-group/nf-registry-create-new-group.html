@@ -24,9 +24,9 @@ limitations under the License.
     </div>
     <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-md">
         <div class="pad-bottom-md fill-available-width">
-            <mat-input-container floatPlaceholder="always" fxFlex>
+            <mat-form-field floatLabel="always" fxFlex>
                 <input #createNewGroupInput matInput floatPlaceholder="always" placeholder="Display Name">
-            </mat-input-container>
+            </mat-form-field>
         </div>
         <mat-checkbox [(ngModel)]="keepDialogOpen">
             Keep this dialog open after creating group

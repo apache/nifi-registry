@@ -17,7 +17,7 @@ limitations under the License.
 
 <mat-progress-spinner id="loading-spinner" *ngIf="nfRegistryService.inProgress" mode="indeterminate"></mat-progress-spinner>
 <mat-sidenav-container>
-    <mat-sidenav #sidenav mode="over" align="end" opened="false" disableClose="true">
+    <mat-sidenav #sidenav mode="over" position="end" opened="false" disableClose="true">
         <router-outlet name="sidenav"></router-outlet>
     </mat-sidenav>
     <div id="nf-registry-app-container">

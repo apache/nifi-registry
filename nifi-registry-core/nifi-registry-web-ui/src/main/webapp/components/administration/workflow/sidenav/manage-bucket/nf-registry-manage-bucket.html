@@ -24,7 +24,7 @@ limitations under the License.
     </div>
     <div class="sidenav-content">
         <div class="pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-            <mat-input-container flex>
+            <mat-form-field flex>
                 <input #bucketnameInput
                        data-automation-id="nf-registry-manage-bucket-input-name"
                        matInput
@@ -32,7 +32,7 @@ limitations under the License.
                        placeholder="Identity/Bucket Name"
                        value="{{nfRegistryService.bucket.name}}"
                        [(ngModel)]="bucketname">
-            </mat-input-container>
+            </mat-form-field>
             <button [disabled]="nfRegistryService.bucket.name === bucketname"
                     (click)="updateBucketName(bucketnameInput.value)"
                     data-automation-id="nf-registry-manage-bucket-save-side-nav"

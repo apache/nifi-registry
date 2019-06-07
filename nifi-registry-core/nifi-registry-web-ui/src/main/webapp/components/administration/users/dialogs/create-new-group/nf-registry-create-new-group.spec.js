@@ -17,7 +17,7 @@
 
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
 
 describe('NfRegistryCreateNewGroup Component isolated unit tests', function () {
@@ -40,7 +40,7 @@ describe('NfRegistryCreateNewGroup Component isolated unit tests', function () {
 
         // Spy
         spyOn(nfRegistryApi, 'createNewGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'identity': 'New Group #1'
         }]));

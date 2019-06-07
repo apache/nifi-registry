@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-import { Observable } from 'rxjs';
 import { Component, ViewChild } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
-import { TdDataTableService } from '@covalent/core';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { TdDataTableService } from '@covalent/core/data-table';
+import { FdsSnackBarService } from '@nifi-fds/core';
+import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 /**
  * NfRegistryAddPolicyToBucket constructor.
@@ -64,12 +65,14 @@ NfRegistryAddPolicyToBucket.prototype = {
     ngOnInit: function () {
         var self = this;
         this.route.params
-            .switchMap(function (params) {
-                return Observable.forkJoin(
-                    self.nfRegistryApi.getUsers(),
-                    self.nfRegistryApi.getUserGroups()
-                );
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return forkJoin(
+                        self.nfRegistryApi.getUsers(),
+                        self.nfRegistryApi.getUserGroups()
+                    );
+                })
+            )
             .subscribe(function (response) {
                 self.users = response[0];
                 self.users = self.users.filter(function (user) {

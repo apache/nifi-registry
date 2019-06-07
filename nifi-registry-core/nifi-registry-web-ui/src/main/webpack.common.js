@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-const webpack = require('webpack');
 const path = require('path');
 const FixStyleOnlyEntriesPlugin = require('webpack-fix-style-only-entries');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const webpackAlias = require('./webpack.alias');
 const loaders = require('./webpack.loader');
@@ -35,6 +33,7 @@ module.exports = {
         // SCSS files
         'nf-registry.style.min': [
             path.resolve(__dirname, 'webapp/theming/nf-registry.scss'),
+            path.resolve(__dirname, 'node_modules/@nifi-fds/core/common/styles/flow-design-system.scss')
         ]
     },
 
@@ -73,7 +72,6 @@ module.exports = {
     module: {
         rules: [
             loaders.ts,
-            loaders.nifiFds,
             loaders.js,
             loaders.html,
             loaders.scss,
@@ -84,13 +82,6 @@ module.exports = {
     },
 
     plugins: [
-        // Automatically load modules instead of having to import or require them everywhere
-        // TODO: https://github.com/apache/nifi-fds/pull/12
-        new webpack.ProvidePlugin({
-            '$': 'jquery',
-            jQuery: 'jquery'
-        }),
-
         // Fix style only entry generating an extra js file
         new FixStyleOnlyEntriesPlugin()
     ]

@@ -23,9 +23,9 @@ limitations under the License.
         </button>
     </div>
     <div flex fxLayoutAlign="start center" class="pad-bottom-md">
-        <mat-input-container flex>
+        <mat-form-field flex>
             <input disabled value="{{userOrGroup.identity}}" #userOrGroupInput matInput placeholder="For This User/Group">
-        </mat-input-container>
+        </mat-form-field>
     </div>
     <div flex fxLayout="row" fxLayoutAlign="start center" class="pad-bottom-md">
         <mat-checkbox [(checked)]="readCheckbox.checked && writeCheckbox.checked && deleteCheckbox.checked" (change)="toggleAllPermissions($event)">

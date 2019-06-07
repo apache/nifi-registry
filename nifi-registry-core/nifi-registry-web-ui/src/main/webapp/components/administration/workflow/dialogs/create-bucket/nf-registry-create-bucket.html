@@ -24,9 +24,9 @@ limitations under the License.
     </div>
     <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-md">
         <div class="pad-bottom-md fill-available-width">
-            <mat-input-container floatPlaceholder="always" fxFlex>
+            <mat-form-field floatLabel="always" fxFlex>
                 <input #newBucketInput matInput floatPlaceholder="always" placeholder="Bucket Name">
-            </mat-input-container>
+            </mat-form-field>
         </div>
         <mat-checkbox #newBucketPublicReadCheckbox [disabled]="protocol === 'http:'" >
             Make publicly visible<i matTooltip="Allows read access to items in this bucket by unauthenticated users. Overrides any specific policies granting read access."

@@ -17,7 +17,7 @@
 
 import NfRegistryApi from 'services/nf-registry.api';
 import { Component, ViewChild } from '@angular/core';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { MatDialogRef } from '@angular/material';
 

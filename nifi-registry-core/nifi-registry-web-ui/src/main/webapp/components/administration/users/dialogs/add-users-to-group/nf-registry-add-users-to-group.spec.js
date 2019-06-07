@@ -17,9 +17,9 @@
 
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
-import { Observable } from 'rxjs';
-import { TdDataTableService } from '@covalent/core';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { of } from 'rxjs';
+import { TdDataTableService } from '@covalent/core/data-table';
+import { FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
 
 describe('NfRegistryAddUsersToGroup Component isolated unit tests', function () {
@@ -45,7 +45,7 @@ describe('NfRegistryAddUsersToGroup Component isolated unit tests', function () 
 
         // Spy
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: 1, identity: 'Group 1'}));
+        }).and.returnValue(of({identifier: 1, identity: 'Group 1'}));
         spyOn(comp.dialogRef, 'close');
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(comp, 'filterUsers').and.callThrough();

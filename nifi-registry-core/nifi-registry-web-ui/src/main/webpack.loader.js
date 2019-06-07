@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
@@ -63,33 +64,11 @@ module.exports = {
         ]
     },
 
-    nifiFds: {
-        /*
-        * Send all js files from @nifi-fds through a custom loader that replaces its usage of inline systemjs text loading
-        * of html files like:
-        *     require('./confirm-dialog.component.html!text')
-        *
-        * with normal require calls that are subsequently loaded via webpack's html-loader like:
-        *     require('./confirm-dialog.component.html')
-        */
-        test: /\.js$/,
-        include: [
-            path.resolve(__dirname, 'node_modules/@nifi-fds/core')
-        ],
-        use: [
-            {
-                loader: 'cache-loader'
-            },
-            {
-                loader: path.resolve(__dirname, 'systemjs-text-to-html-loader')
-            }
-        ]
-    },
-
     js: {
         test: /\.js$/,
         include: [
-            path.resolve(__dirname, 'webapp')
+            path.resolve(__dirname, 'webapp'),
+            path.resolve(__dirname, 'node_modules/@nifi-fds/core')
         ],
         use: [
             {
@@ -110,7 +89,8 @@ module.exports = {
     jsDev: {
         test: /\.js$/,
         include: [
-            path.resolve(__dirname, 'webapp')
+            path.resolve(__dirname, 'webapp'),
+            path.resolve(__dirname, 'node_modules/@nifi-fds/core')
         ],
         // prevent these files/patterns from being included in the coverage report
         exclude: [
@@ -137,6 +117,7 @@ module.exports = {
             }
         ]
     },
+
     html: {
         test: /\.html$/,
         include: [

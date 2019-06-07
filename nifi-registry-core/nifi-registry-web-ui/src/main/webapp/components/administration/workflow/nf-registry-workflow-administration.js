@@ -22,6 +22,7 @@ import NfRegistryCreateBucket from 'components/administration/workflow/dialogs/c
 import nfRegistryAnimations from 'nf-registry.animations';
 import { ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material';
+import { switchMap } from 'rxjs/operators';
 
 /**
  * NfRegistryWorkflowAdministration constructor.
@@ -52,10 +53,12 @@ NfRegistryWorkflowAdministration.prototype = {
         var self = this;
         this.nfRegistryService.inProgress = true;
         this.$subscription = this.route.params
-            .switchMap(function (params) {
-                self.nfRegistryService.adminPerspective = 'workflow';
-                return self.nfRegistryApi.getBuckets();
-            })
+            .pipe(
+                switchMap(function (params) {
+                    self.nfRegistryService.adminPerspective = 'workflow';
+                    return self.nfRegistryApi.getBuckets();
+                })
+            )
             .subscribe(function (buckets) {
                 self.nfRegistryService.buckets = buckets;
                 self.nfRegistryService.filterBuckets();

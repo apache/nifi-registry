@@ -20,14 +20,13 @@ import {
     BrowserDynamicTestingModule,
     platformBrowserDynamicTesting
 } from '@angular/platform-browser-dynamic/testing';
-import { Observable } from 'rxjs';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MomentModule } from 'angular2-moment';
 
 import NfRegistryRoutes from 'nf-registry.routes';
 import { APP_BASE_HREF } from '@angular/common';
-import fdsCore from '@flow-design-system/core';
+import { FdsCoreModule } from '@nifi-fds/core';
 import NfRegistry from 'nf-registry';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
@@ -48,30 +47,6 @@ import NfStorage from 'services/nf-storage.service';
 import NfLoginComponent from 'components/login/nf-registry-login';
 import NfUserLoginComponent from 'components/login/dialogs/nf-registry-user-login';
 
-// rxjs Observable debugger;
-var debuggerOn = false;
-
-/* eslint-disable no-console */
-Observable.prototype.debug = function (message) {
-    return this.do(
-        function (next) {
-            if (debuggerOn) {
-                console.log(message, next);
-            }
-        },
-        function (err) {
-            if (debuggerOn) {
-                console.error('ERROR >>> ', message, err);
-            }
-        },
-        function () {
-            if (debuggerOn) {
-                console.log('Completed.');
-            }
-        }
-    );
-};
-
 const initTestBed = ({ providers } = { providers: [] }) => {
     TestBed.resetTestEnvironment();
 
@@ -85,7 +60,7 @@ const initTestBed = ({ providers } = { providers: [] }) => {
             MomentModule,
             HttpClientModule,
             HttpClientTestingModule,
-            fdsCore,
+            FdsCoreModule,
             NfRegistryRoutes
         ],
         declarations: [

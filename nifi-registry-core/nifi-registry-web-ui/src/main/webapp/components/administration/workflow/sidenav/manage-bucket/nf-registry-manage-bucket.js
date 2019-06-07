@@ -15,10 +15,8 @@
  * limitations under the License.
  */
 
-import { Observable } from 'rxjs';
-import { TdDataTableService } from '@covalent/core';
-import { FdsDialogService } from '@flow-design-system/dialogs';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { TdDataTableService } from '@covalent/core/data-table';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import { Component } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,6 +24,8 @@ import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialog } from '@angular/material';
 import NfRegistryAddPolicyToBucket from 'components/administration/workflow/dialogs/add-policy-to-bucket/nf-registry-add-policy-to-bucket';
 import NfRegistryEditBucketPolicy from 'components/administration/workflow/dialogs/edit-bucket-policy/nf-registry-edit-bucket-policy';
+import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 /**
  * NfRegistryManageBucket constructor.
@@ -93,12 +93,14 @@ NfRegistryManageBucket.prototype = {
     ngOnInit: function () {
         var self = this;
         this.$subscription = this.route.params
-            .switchMap(function (params) {
-                return Observable.forkJoin(
-                    self.nfRegistryApi.getBucket(params['bucketId']),
-                    self.nfRegistryApi.getPolicies()
-                );
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return forkJoin(
+                        self.nfRegistryApi.getBucket(params['bucketId']),
+                        self.nfRegistryApi.getPolicies()
+                    );
+                })
+            )
             .subscribe(function (response) {
                 if (!response[0].status || response[0].status === 200) {
                     self.nfRegistryService.sidenav.open();

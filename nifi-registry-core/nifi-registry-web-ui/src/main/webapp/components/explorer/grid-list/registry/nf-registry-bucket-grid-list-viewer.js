@@ -14,13 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
 import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfStorage from 'services/nf-storage.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import nfRegistryAnimations from 'nf-registry.animations';
+import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 /**
  * NfRegistryBucketGridListViewer constructor.
@@ -56,13 +58,15 @@ NfRegistryBucketGridListViewer.prototype = {
 
         // subscribe to the route params
         this.$subscription = this.route.params
-            .switchMap(function (params) {
-                return Observable.forkJoin(
-                    self.nfRegistryApi.getBuckets(),
-                    self.nfRegistryApi.getDroplets(params['bucketId']),
-                    self.nfRegistryApi.getBucket(params['bucketId'])
-                );
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return forkJoin(
+                        self.nfRegistryApi.getBuckets(),
+                        self.nfRegistryApi.getDroplets(params['bucketId']),
+                        self.nfRegistryApi.getBucket(params['bucketId'])
+                    );
+                })
+            )
             .subscribe(function (response) {
                 if (!response[0].status || response[0].status === 200) {
                     var buckets = response[0];

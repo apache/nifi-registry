@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import { TdDataTableService } from '@covalent/core';
-import { FdsDialogService } from '@flow-design-system/dialogs';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { TdDataTableService } from '@covalent/core/data-table';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import { Component } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialog } from '@angular/material';
 import NfRegistryAddUsersToGroup from 'components/administration/users/dialogs/add-users-to-group/nf-registry-add-users-to-group';
+import { switchMap } from 'rxjs/operators';
 
 /**
  * NfRegistryManageGroup constructor.
@@ -77,9 +77,11 @@ NfRegistryManageGroup.prototype = {
         var self = this;
         // subscribe to the route params
         this.$subscription = self.route.params
-            .switchMap(function (params) {
-                return self.nfRegistryApi.getUserGroup(params['groupId']);
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return self.nfRegistryApi.getUserGroup(params['groupId']);
+                })
+            )
             .subscribe(function (response) {
                 if (!response.status || response.status === 200) {
                     self.nfRegistryService.sidenav.open();

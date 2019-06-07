@@ -17,7 +17,7 @@
 
 import { TestBed, fakeAsync, tick, async } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import * as ngPlatformBrowser from '@angular/platform-browser';
@@ -36,7 +36,7 @@ describe('NfRegistryWorkflowAdministration Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({})
+                    params: of({})
                 }
             }
         ];
@@ -54,10 +54,10 @@ describe('NfRegistryWorkflowAdministration Component', function () {
                 de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-workflow-administration-perspective-buckets-container'));
 
                 // Spy
-                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
-                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-                }).and.returnValue(Observable.of([{name: 'Bucket #1'}]));
+                }).and.returnValue(of([{name: 'Bucket #1'}]));
                 spyOn(nfRegistryService, 'filterBuckets');
 
                 done();

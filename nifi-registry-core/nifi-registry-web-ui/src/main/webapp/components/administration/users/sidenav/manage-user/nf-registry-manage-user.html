@@ -24,14 +24,14 @@ limitations under the License.
     </div>
     <div class="sidenav-content">
         <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-            <mat-input-container flex>
+            <mat-form-field flex>
                 <input #usernameInput
                        matInput
                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
                        placeholder="Identity/User Name"
                        value="{{nfRegistryService.user.identity}}"
                        [(ngModel)]="_username">
-            </mat-input-container>
+            </mat-form-field>
             <button [disabled]="nfRegistryService.user.identity === _username || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
                     (click)="updateUserName(usernameInput.value)"
                     data-automation-id="nf-registry-manage-user-save-side-nav"

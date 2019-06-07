@@ -24,13 +24,13 @@ limitations under the License.
     </div>
     <div class="sidenav-content">
         <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-            <mat-input-container flex>
+            <mat-form-field flex>
                 <input #groupnameInput matInput
                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || !nfRegistryService.group.configurable"
                        placeholder="Identity/Group Name"
                        value="{{nfRegistryService.group.identity}}"
                        [(ngModel)]="_groupname">
-            </mat-input-container>
+            </mat-form-field>
             <button [disabled]="nfRegistryService.group.identity === _groupname || !nfRegistryService.group.configurable"
                     (click)="updateGroupName(groupnameInput.value)"
                     class="input-button"

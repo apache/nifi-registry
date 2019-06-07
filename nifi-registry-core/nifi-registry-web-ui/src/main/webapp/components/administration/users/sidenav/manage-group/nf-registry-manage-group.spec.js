@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {TestBed, fakeAsync, tick} from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import {of} from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 
 import NfRegistryManageGroup from 'components/administration/users/sidenav/manage-group/nf-registry-manage-group';
-import { ActivatedRoute } from '@angular/router';
+import {ActivatedRoute} from '@angular/router';
 
 describe('NfRegistryManageGroup Component', function () {
     let comp;
@@ -35,7 +35,7 @@ describe('NfRegistryManageGroup Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({groupId: '123'})
+                    params: of({groupId: '123'})
                 }
             }
         ];
@@ -124,9 +124,9 @@ describe('NfRegistryManageGroup Component', function () {
 
                 //Spy
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
 
                 done();
             });
@@ -134,7 +134,7 @@ describe('NfRegistryManageGroup Component', function () {
 
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -213,7 +213,7 @@ describe('NfRegistryManageGroup Component', function () {
 
     it('should FAIL to get user by id and redirect to admin users perspective', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -233,7 +233,7 @@ describe('NfRegistryManageGroup Component', function () {
 
     it('should FAIL to get user by id and redirect to workflow perspective', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 409
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -254,7 +254,7 @@ describe('NfRegistryManageGroup Component', function () {
     it('should redirect to users perspective', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -337,12 +337,12 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to create the manage bucket privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404,
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -378,7 +378,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -467,11 +467,11 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to update the manage bucket privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -507,7 +507,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -596,7 +596,7 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to remove the manage bucket privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             userGroups: [
                 {
@@ -633,9 +633,9 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -724,12 +724,12 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to create the manage proxy privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404,
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -765,7 +765,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -854,11 +854,11 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to update the manage proxy privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -894,7 +894,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -983,7 +983,7 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to remove the manage proxy privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             userGroups: [
                 {
@@ -1020,9 +1020,9 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1111,12 +1111,12 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to create the manage policies privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404,
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -1152,7 +1152,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1241,11 +1241,11 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to update the manage policies privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -1281,7 +1281,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1370,7 +1370,7 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to remove the manage policies privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             userGroups: [
                 {
@@ -1407,9 +1407,9 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1498,12 +1498,12 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to create the manage tenants privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404,
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'postPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -1539,7 +1539,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1628,11 +1628,11 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to update the manage tenants privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: []
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             userGroups: [
                 {
                     identifier: '123',
@@ -1668,7 +1668,7 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1757,7 +1757,7 @@ describe('NfRegistryManageGroup Component', function () {
     it('should toggle to remove the manage tenants privileges for the current group', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 400,
             userGroups: [
                 {
@@ -1794,9 +1794,9 @@ describe('NfRegistryManageGroup Component', function () {
             ]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1889,12 +1889,12 @@ describe('NfRegistryManageGroup Component', function () {
         spyOn(comp.dialog, 'open').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of({});
+                    return of({});
                 }
             };
         });
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -1980,7 +1980,7 @@ describe('NfRegistryManageGroup Component', function () {
         spyOn(comp, 'filterUsers').and.callFake(function () {
         });
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -2069,7 +2069,7 @@ describe('NfRegistryManageGroup Component', function () {
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -2132,7 +2132,7 @@ describe('NfRegistryManageGroup Component', function () {
             }]
         }));
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
         });
         // 1st change detection triggers ngOnInit
@@ -2166,13 +2166,13 @@ describe('NfRegistryManageGroup Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -2235,7 +2235,7 @@ describe('NfRegistryManageGroup Component', function () {
             }]
         }));
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'test',
             status: 200
@@ -2266,13 +2266,13 @@ describe('NfRegistryManageGroup Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
@@ -2335,7 +2335,7 @@ describe('NfRegistryManageGroup Component', function () {
             }]
         }));
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'test',
             status: 409
@@ -2364,7 +2364,7 @@ describe('NfRegistryManageGroup Component', function () {
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryService.sidenav, 'close');
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             identity: 'Group #1',
             resourcePermissions: {
