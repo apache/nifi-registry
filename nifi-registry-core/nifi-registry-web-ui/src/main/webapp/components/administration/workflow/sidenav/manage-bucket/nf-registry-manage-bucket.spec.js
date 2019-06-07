@@ -17,7 +17,7 @@
 
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 
@@ -35,7 +35,7 @@ describe('NfRegistryManageBucket Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({bucketId: '123'})
+                    params: of({bucketId: '123'})
                 }
             }
         ];
@@ -66,9 +66,9 @@ describe('NfRegistryManageBucket Component', function () {
 
                 //Spy
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
                 spyOn(nfRegistryService, 'filterDroplets');
 
                 done();
@@ -77,12 +77,12 @@ describe('NfRegistryManageBucket Component', function () {
 
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: 'string',
                 resource: '/buckets/123',
@@ -114,11 +114,11 @@ describe('NfRegistryManageBucket Component', function () {
 
     it('should FAIL to get bucket by id and redirect to workflow perspective', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -139,12 +139,12 @@ describe('NfRegistryManageBucket Component', function () {
     it('should redirect to workflow perspective', fakeAsync(function () {
         // Spy
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: 'string',
                 resource: '/buckets/123',
@@ -183,7 +183,7 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialog, 'open').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of({
+                    return of({
                         userOrGroup: {
                             type: 'user'
                         }
@@ -193,12 +193,12 @@ describe('NfRegistryManageBucket Component', function () {
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '123',
                 resource: '/buckets/123',
@@ -242,7 +242,7 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialog, 'open').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of({
+                    return of({
                         userOrGroup: {
                             type: 'group'
                         }
@@ -252,12 +252,12 @@ describe('NfRegistryManageBucket Component', function () {
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '123',
                 resource: '/buckets/123',
@@ -301,7 +301,7 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialog, 'open').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of({
+                    return of({
                         userOrGroup: {
                             type: 'user'
                         }
@@ -311,12 +311,12 @@ describe('NfRegistryManageBucket Component', function () {
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '123',
                 resource: '/buckets/123',
@@ -360,7 +360,7 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialog, 'open').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of({
+                    return of({
                         userOrGroup: {
                             type: 'group'
                         }
@@ -370,12 +370,12 @@ describe('NfRegistryManageBucket Component', function () {
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '123',
                 resource: '/buckets/123',
@@ -416,12 +416,12 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp, 'filterPolicies').and.callFake(function () {
         });
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: 'string',
                 resource: '/buckets/123',
@@ -452,8 +452,8 @@ describe('NfRegistryManageBucket Component', function () {
         //assertions
         expect(column.active).toBe(true);
         const filterPoliciesCall = comp.filterPolicies.calls.first();
-        expect(filterPoliciesCall.args[0]).toBeUndefined();
-        expect(filterPoliciesCall.args[1]).toBeUndefined();
+        expect(filterPoliciesCall.args[0]).toBe('identity');
+        expect(filterPoliciesCall.args[1]).toBe('ASC');
     }));
 
     it('should remove policy from bucket', fakeAsync(function () {
@@ -463,18 +463,18 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '456',
                 resource: '/buckets/123',
@@ -489,7 +489,7 @@ describe('NfRegistryManageBucket Component', function () {
             }
         ]));
         spyOn(nfRegistryApi, 'getPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             users: [{
                 identity: 'User #1'
             }],
@@ -498,7 +498,7 @@ describe('NfRegistryManageBucket Component', function () {
             }]
         }));
         spyOn(nfRegistryApi, 'putPolicyActionResource').and.callFake(function () {
-        }).and.returnValue(Observable.of({}));
+        }).and.returnValue(of({}));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
         });
         // 1st change detection triggers ngOnInit
@@ -535,18 +535,18 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '456',
                 resource: '/buckets/123',
@@ -561,7 +561,7 @@ describe('NfRegistryManageBucket Component', function () {
             }
         ]));
         spyOn(nfRegistryApi, 'updateBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'test',
             status: 200
@@ -592,18 +592,18 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '456',
                 resource: '/buckets/123',
@@ -618,7 +618,7 @@ describe('NfRegistryManageBucket Component', function () {
             }
         ]));
         spyOn(nfRegistryApi, 'updateBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'test',
             status: 409
@@ -649,18 +649,18 @@ describe('NfRegistryManageBucket Component', function () {
         spyOn(comp.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
         spyOn(comp.snackBarService, 'openCoaster');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: '456',
                 resource: '/buckets/123',
@@ -675,7 +675,7 @@ describe('NfRegistryManageBucket Component', function () {
             }
         ]));
         spyOn(nfRegistryApi, 'updateBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'test',
             status: 400
@@ -704,12 +704,12 @@ describe('NfRegistryManageBucket Component', function () {
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryService.sidenav, 'close');
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '123',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getPolicies').and.callFake(function () {
-        }).and.returnValue(Observable.of([
+        }).and.returnValue(of([
             {
                 identifier: 'string',
                 resource: '/buckets/123',

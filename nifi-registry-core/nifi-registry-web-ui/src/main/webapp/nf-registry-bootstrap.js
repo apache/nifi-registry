@@ -19,13 +19,6 @@ import 'core-js';
 import 'zone.js';
 import 'hammerjs';
 
-// patch Observable with appropriate methods
-import 'rxjs/add/operator/switchMap';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/observable/forkJoin';
-
 import $ from 'jquery';
 import NfRegistryModule from 'nf-registry.module';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
@@ -40,7 +33,6 @@ import '@covalent/core/common/styles/font/MaterialIcons-Regular.woff';
 import '@covalent/core/common/styles/font/MaterialIcons-Regular.ttf';
 import 'images/registry-logo-web-app.svg';
 import 'images/registry-background-logo.svg';
-import 'locale/messages.es.xlf';
 
 // Comment out this line when developing to assert for unidirectional data flow
 enableProdMode();

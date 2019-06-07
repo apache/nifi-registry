@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-import { Observable } from 'rxjs';
 import { Component, ViewChild } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { ActivatedRoute } from '@angular/router';
+import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 /**
  * NfRegistryEditBucketPolicy constructor.
@@ -51,12 +52,14 @@ NfRegistryEditBucketPolicy.prototype = {
     ngOnInit: function () {
         var self = this;
         this.route.params
-            .switchMap(function (params) {
-                return Observable.forkJoin(
-                    self.nfRegistryApi.getUsers(),
-                    self.nfRegistryApi.getUserGroups()
-                );
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return forkJoin(
+                        self.nfRegistryApi.getUsers(),
+                        self.nfRegistryApi.getUserGroups()
+                    );
+                })
+            )
             .subscribe(function (response) {
                 var users = response[0];
                 var groups = response[1];

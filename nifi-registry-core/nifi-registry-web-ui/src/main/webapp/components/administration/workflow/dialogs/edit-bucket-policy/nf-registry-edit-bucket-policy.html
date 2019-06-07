@@ -17,15 +17,17 @@ limitations under the License.
 
 <div id="nifi-registry-admin-create-bucket-dialog">
     <div class="pad-bottom-md" fxLayout="row" fxLayoutAlign="space-between center">
-        <span class="md-card-title">Edit Policy</span>
+        <mat-card-title class="ellipsis">
+            Edit Policy
+        </mat-card-title>
         <button mat-icon-button (click)="cancel()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div flex fxLayoutAlign="start center" class="pad-bottom-md">
-        <mat-input-container flex>
+    <div flex fxLayoutAlign="start center">
+        <mat-form-field floatLabel="always" flex>
             <input disabled value="{{userOrGroup.identity}}" #userOrGroupInput matInput placeholder="For This User/Group">
-        </mat-input-container>
+        </mat-form-field>
     </div>
     <div flex fxLayout="row" fxLayoutAlign="start center" class="pad-bottom-md">
         <mat-checkbox [(checked)]="readCheckbox.checked && writeCheckbox.checked && deleteCheckbox.checked" (change)="toggleAllPermissions($event)">

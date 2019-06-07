@@ -17,7 +17,7 @@
 
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute } from '@angular/router';
@@ -35,7 +35,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({
+                    params: of({
                         bucketId: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
                         dropletId: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
                         dropletType: 'flow'
@@ -60,8 +60,8 @@ describe('NfRegistryDropletGridListViewer Component', function () {
                 nfRegistryService.explorerViewType = 'grid-list';
 
                 //Spy
-                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
-                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(of({}));
                 spyOn(nfRegistryService, 'filterDroplets');
 
                 done();
@@ -70,7 +70,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
 
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Flow #1',
             'description': 'This is flow #1',
@@ -87,17 +87,17 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }]));
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Flow #1',
             'description': 'This is flow #1',
@@ -148,19 +148,19 @@ describe('NfRegistryDropletGridListViewer Component', function () {
 
     it('should FAIL to get buckets, get bucket, get droplets, and get droplet and then redirect to view all buckets', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             status: 404
         }));
         spyOn(comp.router, 'navigateByUrl').and.callFake(function () {
@@ -180,7 +180,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
 
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplet').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Flow #1',
             'description': 'This is flow #1',
@@ -197,17 +197,17 @@ describe('NfRegistryDropletGridListViewer Component', function () {
             }
         }));
         spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }]));
         spyOn(nfRegistryApi, 'getBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({
+        }).and.returnValue(of({
             identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
             name: 'Bucket #1'
         }));
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Flow #1',
             'description': 'This is flow #1',

@@ -18,7 +18,7 @@
 import NfRegistryService from 'services/nf-registry.service';
 import NfStorage from 'services/nf-storage.service';
 import { Router } from '@angular/router';
-import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsDialogService } from '@nifi-fds/core';
 import NfRegistryApi from 'services/nf-registry.api';
 
 /**

@@ -17,7 +17,9 @@ limitations under the License.
 
 <div id="nifi-registry-users-administration-perspective" class="mat-elevation-z5">
     <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-        <span class="md-card-title">Authorized Users ({{nfRegistryService.users.length + nfRegistryService.groups.length}})</span>
+        <mat-card-title class="ellipsis">
+            Authorized Users ({{nfRegistryService.users.length + nfRegistryService.groups.length}})
+        </mat-card-title>
         <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
             <td-chips class="push-right-sm"
                       [items]="nfRegistryService.autoCompleteUsersAndGroups"

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-import { TdDataTableService } from '@covalent/core';
+import { TdDataTableService } from '@covalent/core/data-table';
 import NfRegistryApi from 'services/nf-registry.api';
 import { Component } from '@angular/core';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import $ from 'jquery';

@@ -17,16 +17,18 @@ limitations under the License.
 
 <div id="nifi-registry-admin-add-user-dialog">
     <div class="pad-bottom-md" fxLayout="row" fxLayoutAlign="space-between center">
-        <span class="md-card-title">Add User</span>
+        <mat-card-title class="ellipsis">
+            Add User
+        </mat-card-title>
         <button mat-icon-button (click)="cancel()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
     <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-md">
-        <div class="pad-bottom-md fill-available-width">
-            <mat-input-container floatPlaceholder="always" fxFlex>
+        <div class="fill-available-width">
+            <mat-form-field floatLabel="always" fxFlex>
                 <input #newUserInput matInput floatPlaceholder="always" placeholder="Identity/Username">
-            </mat-input-container>
+            </mat-form-field>
         </div>
         <mat-checkbox [(ngModel)]="keepDialogOpen">
             Keep this dialog open after adding user

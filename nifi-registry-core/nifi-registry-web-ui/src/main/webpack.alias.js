@@ -18,18 +18,6 @@
 const path = require('path');
 
 module.exports = {
-    // Flow Design System
-    '@flow-design-system/core': path.resolve(__dirname, 'node_modules/@nifi-fds/core/flow-design-system.module.js'),
-    '@flow-design-system/dialogs': path.resolve(__dirname, 'node_modules/@nifi-fds/core/dialogs/fds-dialogs.module.js'),
-    '@flow-design-system/dialog-component': path.resolve(__dirname, 'node_modules/@nifi-fds/core/dialogs/fds-dialog.component.js'),
-    '@flow-design-system/dialog-service': path.resolve(__dirname, 'node_modules/@nifi-fds/core/dialogs/services/dialog.service.js'),
-    '@flow-design-system/confirm-dialog-component': path.resolve(__dirname, 'node_modules/@nifi-fds/core/dialogs/confirm-dialog/confirm-dialog.component.js'),
-    '@flow-design-system/snackbars': path.resolve(__dirname, 'node_modules/@nifi-fds/core/snackbars/fds-snackbars.module.js'),
-    '@flow-design-system/snackbar-component': path.resolve(__dirname, 'node_modules/@nifi-fds/core/snackbars/fds-snackbar.component.js'),
-    '@flow-design-system/snackbar-service': path.resolve(__dirname, 'node_modules/@nifi-fds/core/snackbars/services/snackbar.service.js'),
-    '@flow-design-system/coaster-component': path.resolve(__dirname, 'node_modules/@nifi-fds/core/snackbars/coaster/coaster.component.js'),
-    '@flow-design-system/common/storage-service': path.resolve(__dirname, 'node_modules/@nifi-fds/core/common/services/fds-storage.service.js'),
-
     // Nifi Registry app folders
     'components': path.resolve(__dirname, 'webapp/components'),
     'services': path.resolve(__dirname, 'webapp/services'),

@@ -18,7 +18,7 @@
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryAddUser from 'components/administration/users/dialogs/add-user/nf-registry-add-user';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('NfRegistryAddUser Component isolated unit tests', function () {
     var comp;
@@ -41,7 +41,7 @@ describe('NfRegistryAddUser Component isolated unit tests', function () {
 
         // Spy
         spyOn(nfRegistryApi, 'addUser').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'identity': 'New User #1'
         }]));

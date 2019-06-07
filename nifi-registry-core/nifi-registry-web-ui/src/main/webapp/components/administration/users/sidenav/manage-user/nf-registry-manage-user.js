@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-import { TdDataTableService } from '@covalent/core';
-import { FdsDialogService } from '@flow-design-system/dialogs';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { TdDataTableService } from '@covalent/core/data-table';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import { Component } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialog } from '@angular/material';
 import NfRegistryAddUserToGroups from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
+import { switchMap } from 'rxjs/operators';
 
 /**
  * NfRegistryManageUser constructor.
@@ -52,7 +52,8 @@ function NfRegistryManageUser(nfRegistryApi, nfRegistryService, tdDataTableServi
             label: 'Display Name',
             sortable: true,
             tooltip: 'Group name.',
-            width: 100
+            width: 100,
+            active: true
         }
     ];
 
@@ -77,15 +78,17 @@ NfRegistryManageUser.prototype = {
         var self = this;
         // subscribe to the route params
         this.$subscription = self.route.params
-            .switchMap(function (params) {
-                return self.nfRegistryApi.getUser(params['userId']);
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return self.nfRegistryApi.getUser(params['userId']);
+                })
+            )
             .subscribe(function (response) {
                 if (!response.status || response.status === 200) {
                     self.nfRegistryService.sidenav.open();
                     self.nfRegistryService.user = response;
                     self.username = response.identity;
-                    self.filterGroups(this.sortBy, this.sortOrder);
+                    self.sortGroups(self.userGroupsColumns.find(userGroupsColumn => userGroupsColumn.active === true));
                 } else if (response.status === 404) {
                     self.router.navigateByUrl('/nifi-registry/administration/users');
                 } else if (response.status === 409) {
@@ -454,7 +457,8 @@ NfRegistryManageUser.prototype = {
             data: {
                 user: this.nfRegistryService.user,
                 disableClose: true
-            }
+            },
+            width: '400px'
         }).afterClosed().subscribe(function () {
             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                 .subscribe(function (response) {

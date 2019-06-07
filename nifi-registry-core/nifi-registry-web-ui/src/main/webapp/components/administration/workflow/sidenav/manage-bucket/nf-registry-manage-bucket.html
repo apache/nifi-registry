@@ -17,14 +17,16 @@ limitations under the License.
 
 <div fxFill>
     <div fxLayout="row" fxLayoutAlign="space-between center" class="pad-top-sm pad-bottom-md pad-left-md pad-right-md">
-        <span class="md-card-title">{{nfRegistryService.bucket.name}}</span>
+        <mat-card-title class="ellipsis">
+            {{nfRegistryService.bucket.name}}
+        </mat-card-title>
         <button mat-icon-button data-automation-id="nf-registry-manage-bucket-close-side-nav" (click)="closeSideNav()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
     <div class="sidenav-content">
         <div class="pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-            <mat-input-container flex>
+            <mat-form-field floatLabel="always" flex>
                 <input #bucketnameInput
                        data-automation-id="nf-registry-manage-bucket-input-name"
                        matInput
@@ -32,7 +34,7 @@ limitations under the License.
                        placeholder="Identity/Bucket Name"
                        value="{{nfRegistryService.bucket.name}}"
                        [(ngModel)]="bucketname">
-            </mat-input-container>
+            </mat-form-field>
             <button [disabled]="nfRegistryService.bucket.name === bucketname"
                     (click)="updateBucketName(bucketnameInput.value)"
                     data-automation-id="nf-registry-manage-bucket-save-side-nav"
@@ -53,7 +55,9 @@ limitations under the License.
         </div>
         <div class="pad-top-md pad-left-md pad-right-md">
             <div class="pad-bottom-sm">
-                <span class="md-card-title">Bundle Settings</span>
+                <mat-card-title class="ellipsis">
+                    Bundle Settings
+                </mat-card-title>
             </div>
             <div>
                 <mat-checkbox #bundleRedeployCheckbox
@@ -66,7 +70,9 @@ limitations under the License.
         </div>
         <div *ngIf="!nfRegistryService.currentUser.anonymous || nfRegistryService.currentUser.resourcePermissions.policies.canRead" class="pad-top-md pad-left-md pad-right-md">
             <div flex fxLayout="row" fxLayoutAlign="space-between center">
-                <span class="md-card-title">Policies ({{userIdentitiesWithPolicies.length + groupIdentitiesWithPolicies.length}})</span>
+                <mat-card-title class="ellipsis">
+                    Policies ({{userIdentitiesWithPolicies.length + groupIdentitiesWithPolicies.length}})
+                </mat-card-title>
                 <button color="fds-secondary"
                         [disabled]="nfRegistryService.currentUser.anonymous || !canEditBucketPolicies() || !nfRegistryService.currentUser.resourcePermissions.tenants.canRead"
                         mat-raised-button
@@ -146,7 +152,9 @@ limitations under the License.
         </div>
         <div class="pad-top-md pad-left-md pad-right-md">
             <div class="pad-bottom-sm">
-                <span class="md-card-title">About</span>
+                <mat-card-title class="ellipsis">
+                    About
+                </mat-card-title>
             </div>
             <div>
                 <span class="field-header">Bucket Identifier</span>

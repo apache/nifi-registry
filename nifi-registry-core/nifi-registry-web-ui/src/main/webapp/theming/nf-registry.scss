@@ -22,9 +22,9 @@
 // Path overrides
 $fa-font-path: './assets/fonts';
 $mat-font-url: './assets/fonts/';
+$fdsFontPath: './node_modules/roboto-fontface/fonts';
 
-@import '~@nifi-fds/core/common/styles/globalVars';
-@import '~@nifi-fds/core/theming/all-theme';
+@import '~@nifi-fds/core/common/styles/flow-design-system';
 @import '~@covalent/core/common/platform.scss';
 @import '~font-awesome/scss/font-awesome';
 @import 'structureElements';
@@ -36,8 +36,8 @@ $mat-font-url: './assets/fonts/';
 
 $primaryColor: $rose1; //$green2
 $primaryColorHover: $rose2; //$green3
-$accentColor: $blue7; //$orange1
-$accentColorHover: $grey4; //$orange2
+$accentColor: $blue-grey1; //$orange1
+$accentColorHover: $blue4; //$orange2
 
 // Include the base styles for Angular Material core. We include this here so that you only
 // have to load a single css file for Angular Material in your app.

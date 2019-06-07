@@ -17,7 +17,7 @@
 
 import { TestBed } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 
@@ -46,7 +46,7 @@ describe('NfRegistryAdministration Component', function () {
 
                 // Spy
                 spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-                }).and.returnValue(Observable.of([{
+                }).and.returnValue(of([{
                     'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
                     'name': 'Flow #1',
                     'description': 'This is flow #1',

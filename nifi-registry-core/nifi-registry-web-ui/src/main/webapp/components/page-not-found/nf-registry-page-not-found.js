@@ -17,7 +17,7 @@
 import { Component } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import nfRegistryAnimations from 'nf-registry.animations';
-import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsDialogService } from '@nifi-fds/core';
 import { Router } from '@angular/router';
 
 /**

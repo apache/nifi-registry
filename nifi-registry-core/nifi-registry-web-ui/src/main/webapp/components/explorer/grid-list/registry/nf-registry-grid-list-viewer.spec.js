@@ -17,7 +17,7 @@
 
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute } from '@angular/router';
@@ -35,7 +35,7 @@ describe('NfRegistryGridListViewer Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({})
+                    params: of({})
                 }
             }
         ];
@@ -55,10 +55,10 @@ describe('NfRegistryGridListViewer Component', function () {
                 nfRegistryService.perspective = 'explorer';
 
                 // Spy
-                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
-                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'getBuckets').and.callFake(function () {
-                }).and.returnValue(Observable.of([{
+                }).and.returnValue(of([{
                     identifier: '2f7f9e54-dc09-4ceb-aa58-9fe581319cdc',
                     name: 'Bucket #1'
                 }]));
@@ -70,7 +70,7 @@ describe('NfRegistryGridListViewer Component', function () {
 
     it('should have a defined component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Flow #1',
             'description': 'This is flow #1',
@@ -111,7 +111,7 @@ describe('NfRegistryGridListViewer Component', function () {
 
     it('should destroy the component', fakeAsync(function () {
         spyOn(nfRegistryApi, 'getDroplets').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             'name': 'Flow #1',
             'description': 'This is flow #1',

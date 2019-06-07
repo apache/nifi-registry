@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-import { TdDataTableService } from '@covalent/core';
+import { TdDataTableService } from '@covalent/core/data-table';
 import { Router } from '@angular/router';
-import { FdsDialogService } from '@flow-design-system/dialogs';
-import { FdsSnackBarService } from '@flow-design-system/snackbars';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryApi from 'services/nf-registry.api.js';
 import NfStorage from 'services/nf-storage.service.js';
 

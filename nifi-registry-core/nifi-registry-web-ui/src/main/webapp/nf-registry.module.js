@@ -20,7 +20,7 @@ import { MomentModule } from 'angular2-moment';
 import { NgModule } from '@angular/core';
 
 import NfRegistryRoutes from 'nf-registry.routes';
-import fdsCore from '@flow-design-system/core';
+import { FdsCoreModule } from '@nifi-fds/core';
 import NfRegistry from 'nf-registry';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
@@ -64,7 +64,7 @@ NfRegistryModule.annotations = [
     new NgModule({
         imports: [
             MomentModule,
-            fdsCore,
+            FdsCoreModule,
             HttpClientModule,
             NfRegistryRoutes
         ],

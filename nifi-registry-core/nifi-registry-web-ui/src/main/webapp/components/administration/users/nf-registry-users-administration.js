@@ -15,17 +15,18 @@
  * limitations under the License.
  */
 
-import { FdsDialogService } from '@flow-design-system/dialogs';
+import { FdsDialogService } from '@nifi-fds/core';
 import { Component } from '@angular/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import NfRegistryApi from 'services/nf-registry.api';
 import { MatDialog } from '@angular/material';
-import { Observable } from 'rxjs';
 import nfRegistryAnimations from 'nf-registry.animations';
 import NfStorage from 'services/nf-storage.service';
 import NfRegistryCreateNewGroup from 'components/administration/users/dialogs/create-new-group/nf-registry-create-new-group';
 import NfRegistryAddUser from 'components/administration/users/dialogs/add-user/nf-registry-add-user';
+import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 /**
  * NfRegistryUsersAdministration constructor.
@@ -60,13 +61,15 @@ NfRegistryUsersAdministration.prototype = {
         var self = this;
         this.nfRegistryService.inProgress = true;
         this.$subscription = this.route.params
-            .switchMap(function (params) {
-                self.nfRegistryService.adminPerspective = 'users';
-                return Observable.forkJoin(
-                    self.nfRegistryApi.getUsers(),
-                    self.nfRegistryApi.getUserGroups()
-                );
-            })
+            .pipe(
+                switchMap(function (params) {
+                    self.nfRegistryService.adminPerspective = 'users';
+                    return forkJoin(
+                        self.nfRegistryApi.getUsers(),
+                        self.nfRegistryApi.getUserGroups()
+                    );
+                })
+            )
             .subscribe(function (response) {
                 if (!response[0].status || response[0].status === 200) {
                     var users = response[0];
@@ -107,7 +110,8 @@ NfRegistryUsersAdministration.prototype = {
      */
     addUser: function () {
         this.dialog.open(NfRegistryAddUser, {
-            disableClose: true
+            disableClose: true,
+            width: '400px'
         });
     },
 
@@ -116,7 +120,8 @@ NfRegistryUsersAdministration.prototype = {
      */
     createNewGroup: function () {
         this.dialog.open(NfRegistryCreateNewGroup, {
-            disableClose: true
+            disableClose: true,
+            width: '400px'
         });
     },
 

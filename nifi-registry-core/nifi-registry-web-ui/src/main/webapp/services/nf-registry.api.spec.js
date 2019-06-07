@@ -25,7 +25,7 @@ import {
     NfRegistryResourcesAuthGuard,
     NfRegistryWorkflowsAdministrationAuthGuard
 } from 'services/nf-registry.auth-guard.service';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 
 describe('NfRegistry API w/ Angular testing utils', function () {
     let nfRegistryApi;
@@ -207,7 +207,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });
@@ -501,7 +501,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         spyOn(nfRegistryApi.dialogService, 'openConfirm').and.callFake(function () {
             return {
                 afterClosed: function () {
-                    return Observable.of(true);
+                    return of(true);
                 }
             };
         });

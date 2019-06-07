@@ -23,16 +23,16 @@ limitations under the License.
         </button>
     </div>
     <div class="sidenav-content">
-        <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-            <mat-input-container flex>
+        <div class="pad-left-md pad-right-md" flex fxLayoutAlign="start center">
+            <mat-form-field floatLabel="always" flex>
                 <input #usernameInput
                        matInput
                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
                        placeholder="Identity/User Name"
                        value="{{nfRegistryService.user.identity}}"
-                       [(ngModel)]="_username">
-            </mat-input-container>
-            <button [disabled]="nfRegistryService.user.identity === _username || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
+                       [(ngModel)]="username">
+            </mat-form-field>
+            <button [disabled]="nfRegistryService.user.identity === username || (nfRegistryService.currentUser.identity === nfRegistryService.user.identity) || !nfRegistryService.user.configurable"
                     (click)="updateUserName(usernameInput.value)"
                     data-automation-id="nf-registry-manage-user-save-side-nav"
                     class="input-button"
@@ -173,7 +173,9 @@ limitations under the License.
         <div *ngIf="manageUserPerspective === 'membership'">
             <div *ngIf="nfRegistryService.user.userGroups" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
                 <div flex fxLayout="row" fxLayoutAlign="space-between center">
-                    <span class="md-card-title">Membership ({{nfRegistryService.user.userGroups.length}})</span>
+                    <mat-card-title class="ellipsis">
+                        Membership ({{nfRegistryService.user.userGroups.length}})
+                    </mat-card-title>
                     <button color="fds-secondary"
                             [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || canAddNonConfigurableUserToGroup()"
                             mat-raised-button

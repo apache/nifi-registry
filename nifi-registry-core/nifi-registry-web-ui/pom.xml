@@ -156,11 +156,11 @@
                                     <filtering>false</filtering>
                                     <includes>
                                         <!-- roboto -->
-                                        <include>roboto-fontface/fonts/roboto-slab/Roboto-Slab-Regular.ttf</include>
-                                        <include>roboto-fontface/fonts/roboto/Roboto-Regular.ttf</include>
-                                        <include>roboto-fontface/fonts/roboto/Roboto-Medium.ttf</include>
-                                        <include>roboto-fontface/fonts/roboto/Roboto-Light.ttf</include>
-                                        <include>roboto-fontface/fonts/roboto/Roboto-Bold.ttf</include>
+                                        <include>roboto-fontface/fonts/roboto-slab/Roboto-Slab-Regular.woff2</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Regular.woff2</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Medium.woff2</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Light.woff2</include>
+                                        <include>roboto-fontface/fonts/roboto/Roboto-Bold.woff2</include>
                                         <include>roboto-fontface/LICENSE*</include>
                                         <!-- covalent -->
                                         <include>@covalent/core/common/platform.css</include>

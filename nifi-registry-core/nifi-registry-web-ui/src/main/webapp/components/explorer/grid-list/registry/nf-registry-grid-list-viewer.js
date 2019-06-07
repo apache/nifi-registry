@@ -16,12 +16,13 @@
  */
 
 import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
 import NfRegistryService from 'services/nf-registry.service';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfStorage from 'services/nf-storage.service';
 import { ActivatedRoute } from '@angular/router';
 import nfRegistryAnimations from 'nf-registry.animations';
+import { switchMap } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 
 /**
  * NfRegistryGridListViewer constructor.
@@ -56,10 +57,14 @@ NfRegistryGridListViewer.prototype = {
 
         // subscribe to the route params
         this.$subscription = this.route.params
-            .switchMap(function (params) {
-                return Observable.forkJoin(self.nfRegistryApi.getDroplets(),
-                    self.nfRegistryApi.getBuckets());
-            })
+            .pipe(
+                switchMap(function (params) {
+                    return forkJoin(
+                        self.nfRegistryApi.getDroplets(),
+                        self.nfRegistryApi.getBuckets()
+                    );
+                })
+            )
             .subscribe(function (response) {
                 var droplets = response[0];
                 var buckets = response[1];

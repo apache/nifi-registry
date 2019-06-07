@@ -17,11 +17,12 @@
 
 import { TestBed } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { Router } from '@angular/router';
-import fdsDialogsModule from '@flow-design-system/dialogs';
+import { FdsDialogService } from '@nifi-fds/core';
+
 
 describe('NfRegistry Service isolated unit tests', function () {
     let nfRegistryService;
@@ -669,9 +670,9 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
                 spyOn(nfRegistryApi.http, 'post').and.callFake(function () {
                 });
                 spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
-                }).and.returnValue(Observable.of({}));
+                }).and.returnValue(of({}));
 
                 done();
             });
@@ -680,7 +681,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
     it('should retrieve the snapshot metadata for the given droplet.', function () {
         //Spy
         spyOn(nfRegistryApi, 'getDropletSnapshotMetadata').and.callFake(function () {
-        }).and.returnValue(Observable.of([{
+        }).and.returnValue(of([{
             version: 999
         }]));
 
@@ -706,11 +707,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         //Spy
         spyOn(nfRegistryService.dialogService, 'openConfirm').and.returnValue({
             afterClosed: function () {
-                return Observable.of(true);
+                return of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteDroplet').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
         spyOn(nfRegistryService, 'filterDroplets').and.callFake(function () {
         });
 
@@ -779,7 +780,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `delete` action on a bucket.', function () {
         // from the root injector
-        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
@@ -787,11 +788,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return Observable.of(true);
+                return of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
         const bucket = {identifier: '999'};
@@ -831,7 +832,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `delete` action on a user.', function () {
         // from the root injector
-        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
@@ -839,11 +840,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return Observable.of(true);
+                return of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
         const user = {identifier: '999'};
@@ -883,7 +884,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute a `delete` action on a group.', function () {
         // from the root injector
-        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
@@ -891,11 +892,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return Observable.of(true);
+                return of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
+        }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
         const group = {identifier: '999'};
@@ -1005,7 +1006,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should delete all selected buckets.', function () {
         // from the root injector
-        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterBuckets').and.callFake(function () {
@@ -1015,11 +1016,11 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return Observable.of(true);
+                return of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteBucket').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: 999, link: null}));
+        }).and.returnValue(of({identifier: 999, link: null}));
 
         // object to be updated by the test
         const bucket = {identifier: 999, checked: true};
@@ -1045,7 +1046,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should delete all selected users and groups.', function () {
         // from the root injector
-        const dialogService = TestBed.get(fdsDialogsModule.FdsDialogService);
+        const dialogService = TestBed.get(FdsDialogService);
 
         //Spy
         spyOn(nfRegistryService, 'filterUsersAndGroups').and.callFake(function () {
@@ -1055,13 +1056,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         spyOn(dialogService, 'openConfirm').and.callFake(function () {
         }).and.returnValue({
             afterClosed: function () {
-                return Observable.of(true);
+                return of(true);
             }
         });
         spyOn(nfRegistryApi, 'deleteUserGroup').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: 999, link: null}));
+        }).and.returnValue(of({identifier: 999, link: null}));
         spyOn(nfRegistryApi, 'deleteUser').and.callFake(function () {
-        }).and.returnValue(Observable.of({identifier: 99, link: null}));
+        }).and.returnValue(of({identifier: 99, link: null}));
 
         // object to be updated by the test
         const group = {identifier: 999, checked: true};

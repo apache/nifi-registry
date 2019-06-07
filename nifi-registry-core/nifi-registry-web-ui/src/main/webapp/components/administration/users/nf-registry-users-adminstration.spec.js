@@ -17,7 +17,7 @@
 
 import { TestBed, fakeAsync, tick, async } from '@angular/core/testing';
 import initTestBed from 'nf-registry.testbed-factory';
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { ActivatedRoute } from '@angular/router';
@@ -37,7 +37,7 @@ describe('NfRegistryUsersAdministration Component', function () {
             {
                 provide: ActivatedRoute,
                 useValue: {
-                    params: Observable.of({})
+                    params: of({})
                 }
             }
         ];
@@ -55,15 +55,15 @@ describe('NfRegistryUsersAdministration Component', function () {
                 de = fixture.debugElement.query(ngPlatformBrowser.By.css('#nifi-registry-users-administration-perspective'));
 
                 // Spy
-                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(Observable.of({}));
-                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(Observable.of({}));
+                spyOn(nfRegistryApi, 'ticketExchange').and.callFake(function () {}).and.returnValue(of({}));
+                spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {}).and.returnValue(of({}));
                 spyOn(nfRegistryApi, 'getUsers').and.callFake(function () {
-                }).and.returnValue(Observable.of([{
+                }).and.returnValue(of([{
                     'identifier': '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
                     'identity': 'User #1'
                 }]));
                 spyOn(nfRegistryApi, 'getUserGroups').and.callFake(function () {
-                }).and.returnValue(Observable.of([{
+                }).and.returnValue(of([{
                     'identifier': '5e04b4fb-9513-47bb-aa74-1ae34616bfdc',
                     'identity': 'Group #1'}]));
                 spyOn(nfRegistryService, 'filterUsersAndGroups');
