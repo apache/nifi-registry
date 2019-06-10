@@ -61,7 +61,8 @@ module.exports = {
     // Change how modules are resolved
     resolve: {
         extensions: ['.ts', '.tsx', '.js'],
-        alias: webpackAlias
+        alias: webpackAlias,
+        symlinks: false
     },
 
     // Polyfill or mock certain Node.js globals and modules
