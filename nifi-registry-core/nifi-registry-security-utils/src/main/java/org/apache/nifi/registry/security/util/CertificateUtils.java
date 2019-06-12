@@ -456,7 +456,7 @@ public final class CertificateUtils {
 
     /**
      * Reverses the X500Name in order make the certificate be in the right order
-     * [see http://stackoverflow.com/questions/7567837/attributes-reversed-in-certificate-subject-and-issuer/12645265]
+     * [see https://stackoverflow.com/questions/7567837/attributes-reversed-in-certificate-subject-and-issuer/12645265]
      *
      * @param x500Name the X500Name created with the intended order
      * @return the X500Name reversed

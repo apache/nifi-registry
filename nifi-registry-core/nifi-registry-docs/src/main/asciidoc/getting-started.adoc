@@ -16,7 +16,7 @@
 //
 = Getting Started with Apache NiFi Registry
 Apache NiFi Team <dev@nifi.apache.org>
-:homepage: http://nifi.apache.org
+:homepage: https://nifi.apache.org
 :linkattrs:
 
 

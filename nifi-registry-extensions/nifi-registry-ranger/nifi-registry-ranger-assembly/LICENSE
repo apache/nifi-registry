@@ -1,7 +1,7 @@
 
                                  Apache License
                            Version 2.0, January 2004
-                        http://www.apache.org/licenses/
+                        https://www.apache.org/licenses/
 
    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
@@ -412,7 +412,7 @@ The binary distribution of this product bundles 'Scala' which is available under
 This product bundles 'RE2/J' which is available under a Go license.
 
     This is a work derived from Russ Cox's RE2 in Go, whose license
-    http://golang.org/LICENSE is as follows:
+    https://golang.org/LICENSE is as follows:
 
     Copyright (c) 2009 The Go Authors. All rights reserved.
 

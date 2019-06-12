@@ -2,7 +2,7 @@ nifi-registry-ranger-extension
 Copyright 2019 The Apache Software Foundation
 
 This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/).
+The Apache Software Foundation (https://www.apache.org/).
 
 ******************
 Apache Software License v2
@@ -27,7 +27,7 @@ Apache Software License v2
       were derived from the LZMA SDK, version 9.20 (C/ and CPP/7zip/),
       which has been placed in the public domain:
 
-      "LZMA SDK is placed in the public domain." (http://www.7-zip.org/sdk.html)
+      "LZMA SDK is placed in the public domain." (https://www.7-zip.org/sdk.html)
 
   (ASLv2) Apache Commons Codec
     The following NOTICE information applies:
@@ -41,7 +41,7 @@ Apache Software License v2
       ===============================================================================
 
       The content of package org.apache.commons.codec.language.bm has been translated
-      from the original php source code available at http://stevemorse.org/phoneticinfo.htm
+      from the original php source code available at https://stevemorse.org/phoneticinfo.htm
       with permission from the original authors.
       Original source copyright:
       Copyright (c) 2008 Alexander Beider & Stephen P. Morse.
@@ -85,21 +85,21 @@ Apache Software License v2
       Copyright 2001-2012 The Apache Software Foundation
 
       This product includes software developed by
-      The Apache Software Foundation (http://www.apache.org/).
+      The Apache Software Foundation (https://www.apache.org/).
 
       ===============================================================================
 
       The BracketFinder (package org.apache.commons.math3.optimization.univariate)
       and PowellOptimizer (package org.apache.commons.math3.optimization.general)
       classes are based on the Python code in module "optimize.py" (version 0.5)
-      developed by Travis E. Oliphant for the SciPy library (http://www.scipy.org/)
+      developed by Travis E. Oliphant for the SciPy library (https://www.scipy.org/)
       Copyright © 2003-2009 SciPy Developers.
       ===============================================================================
 
       The LinearConstraint, LinearObjectiveFunction, LinearOptimizer,
       RelationShip, SimplexSolver and SimplexTableau classes in package
       org.apache.commons.math3.optimization.linear include software developed by
-      Benjamin McCann (http://www.benmccann.com) and distributed with
+      Benjamin McCann (https://www.benmccann.com) and distributed with
       the following copyright: Copyright 2009 Google Inc.
       ===============================================================================
 
@@ -178,7 +178,7 @@ Apache Software License v2
       Copyright 1999-2013 The Apache Software Foundation
 
       This project contains annotations derived from JCIP-ANNOTATIONS
-      Copyright (c) 2005 Brian Goetz and Tim Peierls. See http://www.jcip.net
+      Copyright (c) 2005 Brian Goetz and Tim Peierls. See https://www.jcip.net
 
   (ASLv2) Apache Ranger
     The following NOTICE information applies:
@@ -233,7 +233,7 @@ Apache Software License v2
       Jackson core and extension components may licensed under different licenses.
       To find the details that apply to this artifact see the accompanying LICENSE file.
       For more information, including possible other licensing options, contact
-      FasterXML.com (http://fasterxml.com).
+      FasterXML.com (https://fasterxml.com).
 
       ## Credits
 
@@ -255,7 +255,7 @@ Apache Software License v2
        Apache Kafka
        Copyright 2012 The Apache Software Foundation.
 
-       scala-library is BSD-like licensed software (http://www.scala-lang.org/license.html)
+       scala-library is BSD-like licensed software (https://www.scala-lang.org/license.html)
 
   (ASLv2) Apache log4j
     The following NOTICE information applies:
@@ -280,15 +280,15 @@ Apache Software License v2
   (ASLv2) Snappy Java
     The following NOTICE information applies:
       This product includes software developed by Google
-       Snappy: http://code.google.com/p/snappy/ (New BSD License)
+       Snappy: https://code.google.com/p/snappy/ (New BSD License)
 
       This product includes software developed by Apache
-       PureJavaCrc32C from apache-hadoop-common http://hadoop.apache.org/
+       PureJavaCrc32C from apache-hadoop-common https://hadoop.apache.org/
        (Apache 2.0 license)
 
       This library containd statically linked libstdc++. This inclusion is allowed by
       "GCC RUntime Library Exception"
-      http://gcc.gnu.org/onlinedocs/libstdc++/manual/license.html
+      https://gcc.gnu.org/onlinedocs/libstdc++/manual/license.html
 
   (ASLv2) Woodstox Core ASL
     The following NOTICE information applies:
@@ -310,7 +310,7 @@ Apache Software License v2
 
           Written by Doug Lea with assistance from members of JCP JSR-166
           Expert Group and released to the public domain, as explained at
-          http://creativecommons.org/publicdomain/zero/1.0/
+          https://creativecommons.org/publicdomain/zero/1.0/
 
   (ASLv2) ZkClient
     The following NOTICE information applies:
@@ -367,7 +367,7 @@ Common Development and Distribution License 1.0
 
 The following binary components are provided under the Common Development and Distribution License 1.0.  See project link for details.
 
-    (CDDL 1.0) JavaBeans Activation Framework (JAF) (javax.activation:activation:jar:1.1 - http://java.sun.com/products/javabeans/jaf/index.jsp)
+    (CDDL 1.0) JavaBeans Activation Framework (JAF) (javax.activation:activation:jar:1.1 - https://java.sun.com/products/javabeans/jaf/index.jsp)
     (CDDL 1.0) (GPL3) Streaming API For XML (javax.xml.stream:stax-api:jar:1.0-2 - no url provided)
 
 ************************
@@ -378,12 +378,12 @@ The following binary components are provided under the Common Development and Di
 
     (CDDL 1.1) (GPL2 w/ CPE) jersey-bundle (com.sun.jersey:jersey-bundle:jar:1.19.3 - https://jersey.java.net/jersey-bundle/)
     (CDDL 1.1) (GPL2 w/ CPE) jersey-server (com.sun.jersey:jersey-server:jar:1.19 - https://jersey.java.net/jersey-server/)
-    (CDDL 1.1) (GPL2 w/ CPE) JavaServer Pages(TM) API (javax.servlet.jsp:javax.servlet.jsp-api:jar:2.1 - http://jsp.java.net)
-    (CDDL 1.1) (GPL2 w/ CPE) Java Servlet API  (javax.servlet:javax.servlet-api:jar:2.5 - http://servlet-spec.java.net)
-    (CDDL 1.1) (GPL2 w/ CPE) javax.ws.rs-api (javax.ws.rs:javax.ws.rs-api:jar:2.1 - http://jax-rs-spec.java.net)
+    (CDDL 1.1) (GPL2 w/ CPE) JavaServer Pages(TM) API (javax.servlet.jsp:javax.servlet.jsp-api:jar:2.1 - https://jsp.java.net)
+    (CDDL 1.1) (GPL2 w/ CPE) Java Servlet API  (javax.servlet:javax.servlet-api:jar:2.5 - https://servlet-spec.java.net)
+    (CDDL 1.1) (GPL2 w/ CPE) javax.ws.rs-api (javax.ws.rs:javax.ws.rs-api:jar:2.1 - https://jax-rs-spec.java.net)
     (CDDL 1.1) (GPL2 w/ CPE) JavaMail API (compat) (javax.mail:mail:jar:1.4.7 - https://java.net/projects/javamail/pages/Home)
     (CDDL 1.1) (GPL2 w/ CPE) Java Architecture For XML Binding (javax.xml.bind:jaxb-api:jar:2.2.2 - https://jaxb.dev.java.net/)
-    (CDDL 1.1) (GPL2 w/ CPE) Old JAXB Runtime (com.sun.xml.bind:jaxb-impl:jar:2.2.3-1 - http://jaxb.java.net/)
+    (CDDL 1.1) (GPL2 w/ CPE) Old JAXB Runtime (com.sun.xml.bind:jaxb-impl:jar:2.2.3-1 - https://jaxb.java.net/)
 
 ************************
 Eclipse Public License 1.0
@@ -391,9 +391,9 @@ Eclipse Public License 1.0
 
 The following binary components are provided under the Eclipse Public License 1.0.  See project link for details.
 
-  (EPL 1.0) Eclipse Link (org.eclipse.persistence:eclipselink:2.5.2 - http://www.eclipse.org/eclipselink/)
-  (EPL 1.0) Common Service Data Objects (org.eclipse.persistence:commonj.sdo:2.1.1 - http://www.eclipse.org/eclipselink/)
-  (EPL 1.0) Java Persistence API (org.eclipse.persistence:javax.persistence:2.1.0 - http://www.eclipse.org/eclipselink/)
+  (EPL 1.0) Eclipse Link (org.eclipse.persistence:eclipselink:2.5.2 - https://www.eclipse.org/eclipselink/)
+  (EPL 1.0) Common Service Data Objects (org.eclipse.persistence:commonj.sdo:2.1.1 - https://www.eclipse.org/eclipselink/)
+  (EPL 1.0) Java Persistence API (org.eclipse.persistence:javax.persistence:2.1.0 - https://www.eclipse.org/eclipselink/)
 
 ************************
 The MIT License
@@ -409,7 +409,7 @@ The following binary components are provided under the MIT License.  See project
 
   (MIT License) JOpt Simple
       Copyright (c) 2004-2016 Paul R. Holser, Jr.
-      http://jopt-simple.github.io/jopt-simple/
+      https://jopt-simple.github.io/jopt-simple/
 
 ************************
 BSD License
@@ -428,7 +428,7 @@ The following binary components are provided under the BSD License.  See project
     The following NOTICE information applies:
       Copyright (c) 2002-2015 Atsuhiko Yamanaka, JCraft,Inc.
       All rights reserved.
-      http://www.jcraft.com/jsch/
+      https://www.jcraft.com/jsch/
 
   (BSD 3-Clause) JLine Bundle
     The following NOTICE information applies:

@@ -2,7 +2,7 @@ nifi-registry-aws-extensions
 Copyright 2019 The Apache Software Foundation
 
 This product includes software developed at
-The Apache Software Foundation (http://www.apache.org/).
+The Apache Software Foundation (https://www.apache.org/).
 
 ******************
 Apache Software License v2
@@ -15,7 +15,7 @@ The following binary components are provided under the Apache Software License v
         Copyright 2010-2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
         This product includes software developed by
-        Amazon Technologies, Inc (http://www.amazon.com/).
+        Amazon Technologies, Inc (https://www.amazon.com/).
 
         **********************
         THIRD PARTY COMPONENTS
@@ -41,21 +41,21 @@ The following binary components are provided under the Apache Software License v
         Copyright 2003-2016 The Apache Software Foundation
 
         This product includes software developed at
-        The Apache Software Foundation (http://www.apache.org/).
+        The Apache Software Foundation (https://www.apache.org/).
 
   (ASLv2) Apache HttpComponents Client
       The following NOTICE information applies:
         Copyright 1999-2019 The Apache Software Foundation
 
         This product includes software developed at
-        The Apache Software Foundation (http://www.apache.org/).
+        The Apache Software Foundation (https://www.apache.org/).
 
   (ASLv2) Apache HttpComponents Core
       The following NOTICE information applies:
         Copyright 2005-2019 The Apache Software Foundation
 
         This product includes software developed at
-        The Apache Software Foundation (http://www.apache.org/).
+        The Apache Software Foundation (https://www.apache.org/).
 
   (ASLv2) Jackson JSON processor
       The following NOTICE information applies:
@@ -72,7 +72,7 @@ The following binary components are provided under the Apache Software License v
         Jackson core and extension components may licensed under different licenses.
         To find the details that apply to this artifact see the accompanying LICENSE file.
         For more information, including possible other licensing options, contact
-        FasterXML.com (http://fasterxml.com).
+        FasterXML.com (https://fasterxml.com).
 
         ## Credits
 
@@ -91,7 +91,7 @@ The following binary components are provided under the Apache Software License v
             * license/LICENSE.jsr166y.txt (Public Domain)
           * HOMEPAGE:
             * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/
-            * http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbosscache/experimental/jsr166/
+            * https://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbosscache/experimental/jsr166/
 
         This product contains a modified version of Robert Harder's Public Domain
         Base64 Encoder and Decoder, which can be obtained at:
@@ -99,7 +99,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.base64.txt (Public Domain)
           * HOMEPAGE:
-            * http://iharder.sourceforge.net/current/java/base64/
+            * https://iharder.sourceforge.net/current/java/base64/
 
         This product contains a modified portion of 'Webbit', an event based
         WebSocket and HTTP server, which can be obtained at:
@@ -115,7 +115,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.slf4j.txt (MIT License)
           * HOMEPAGE:
-            * http://www.slf4j.org/
+            * https://www.slf4j.org/
 
         This product contains a modified portion of 'Apache Harmony', an open source
         Java SE, which can be obtained at:
@@ -125,7 +125,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.harmony.txt (Apache License 2.0)
           * HOMEPAGE:
-            * http://archive.apache.org/dist/harmony/
+            * https://archive.apache.org/dist/harmony/
 
         This product contains a modified portion of 'jbzip2', a Java bzip2 compression
         and decompression library written by Matthew J. Francis. It can be obtained at:
@@ -158,7 +158,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.jzlib.txt (BSD style License)
           * HOMEPAGE:
-            * http://www.jcraft.com/jzlib/
+            * https://www.jcraft.com/jzlib/
 
         This product optionally depends on 'Compress-LZF', a Java library for encoding and
         decoding data in LZF format, written by Tatu Saloranta. It can be obtained at:
@@ -207,7 +207,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.bouncycastle.txt (MIT License)
           * HOMEPAGE:
-            * http://www.bouncycastle.org/
+            * https://www.bouncycastle.org/
 
         This product optionally depends on 'Snappy', a compression library produced
         by Google Inc, which can be obtained at:
@@ -223,7 +223,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.jboss-marshalling.txt (GNU LGPL 2.1)
           * HOMEPAGE:
-            * http://www.jboss.org/jbossmarshalling
+            * https://www.jboss.org/jbossmarshalling
 
         This product optionally depends on 'Caliper', Google's micro-
         benchmarking framework, which can be obtained at:
@@ -239,7 +239,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.commons-logging.txt (Apache License 2.0)
           * HOMEPAGE:
-            * http://commons.apache.org/logging/
+            * https://commons.apache.org/logging/
 
         This product optionally depends on 'Apache Log4J', a logging framework, which
         can be obtained at:
@@ -247,7 +247,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.log4j.txt (Apache License 2.0)
           * HOMEPAGE:
-            * http://logging.apache.org/log4j/
+            * https://logging.apache.org/log4j/
 
         This product optionally depends on 'Aalto XML', an ultra-high performance
         non-blocking XML processor, which can be obtained at:
@@ -255,7 +255,7 @@ The following binary components are provided under the Apache Software License v
           * LICENSE:
             * license/LICENSE.aalto-xml.txt (Apache License 2.0)
           * HOMEPAGE:
-            * http://wiki.fasterxml.com/AaltoHome
+            * https://wiki.fasterxml.com/AaltoHome
 
         This product contains a modified version of 'HPACK', a Java implementation of
         the HTTP/2 HPACK algorithm written by Twitter. It can be obtained at:

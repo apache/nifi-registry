@@ -16,7 +16,7 @@
 //
 = Apache NiFi Registry System Administrator's Guide
 Apache NiFi Team <dev@nifi.apache.org>
-:homepage: http://nifi.apache.org
+:homepage: https://nifi.apache.org
 :linkattrs:
 
 == System Requirements
@@ -922,9 +922,9 @@ See <<kerberos_properties>> for complete documentation.
 * Kerberos is case-sensitive in many places and the error messages (or lack thereof) may not be sufficiently explanatory.
   Check the case sensitivity of the service principal in your configuration files. The convention is `HTTP/fully.qualified.domain@REALM`.
 * Browsers have varying levels of restriction when dealing with SPNEGO negotiations.
-  Some will provide the local Kerberos ticket to any domain that requests it, while others whitelist the trusted domains. See link:http://docs.spring.io/autorepo/docs/spring-security-kerberos/1.0.2.BUILD-SNAPSHOT/reference/htmlsingle/#browserspnegoconfig[Spring Security Kerberos - Reference Documentation: Appendix E. Configure browsers for SPNEGO Negotiation^] for common browsers.
+  Some will provide the local Kerberos ticket to any domain that requests it, while others whitelist the trusted domains. See link:https://docs.spring.io/autorepo/docs/spring-security-kerberos/1.0.2.BUILD-SNAPSHOT/reference/htmlsingle/#browserspnegoconfig[Spring Security Kerberos - Reference Documentation: Appendix E. Configure browsers for SPNEGO Negotiation^] for common browsers.
 * Some browsers (legacy IE) do not support recent encryption algorithms such as AES, and are restricted to legacy algorithms (DES). This should be noted when generating keytabs.
-* The KDC must be configured and a service principal defined for NiFi and a keytab exported. Comprehensive instructions for Kerberos server configuration and administration are beyond the scope of this document (see link:http://web.mit.edu/kerberos/krb5-current/doc/admin/index.html[MIT Kerberos Admin Guide^]), but an example is below.
+* The KDC must be configured and a service principal defined for NiFi and a keytab exported. Comprehensive instructions for Kerberos server configuration and administration are beyond the scope of this document (see link:https://web.mit.edu/kerberos/krb5-current/doc/admin/index.html[MIT Kerberos Admin Guide^]), but an example is below.
 * Kerberos tickets may use AES encryption with keys up to 256-bits in length, and therefore unlimited strength encryption policies may be required for the Jave Runtime Environment (JRE) used for NiFi Registry when Kerberos SPNEGO is configured.
 
 Adding a service principal for a server at `nifi.nifi.apache.org` and exporting the keytab from the KDC:

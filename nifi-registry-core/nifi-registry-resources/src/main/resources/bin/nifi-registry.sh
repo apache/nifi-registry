@@ -21,7 +21,7 @@
 
 
 # Since MacOS X, FreeBSD and some other systems lack gnu readlink, we use a more portable
-# approach based on following StackOverflow comment http://stackoverflow.com/a/1116890/888876
+# approach based on following StackOverflow comment https://stackoverflow.com/a/1116890/888876
 
 TARGET_FILE=$0
 

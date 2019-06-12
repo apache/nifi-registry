@@ -36,9 +36,9 @@ To start NiFi Registry:
 
 ## Getting Help
 If you have questions, you can reach out to our mailing list: dev@nifi.apache.org
-([archive](http://mail-archives.apache.org/mod_mbox/nifi-dev)).
+([archive](https://mail-archives.apache.org/mod_mbox/nifi-dev)).
 We're also often available in IRC: #nifi on
-[irc.freenode.net](http://webchat.freenode.net/?channels=#nifi) 
+[irc.freenode.net](https://webchat.freenode.net/?channels=#nifi) 
 and in #NiFi on [ASF HipChat](https://www.hipchat.com/gzh2m5YML).
 
 ## License
