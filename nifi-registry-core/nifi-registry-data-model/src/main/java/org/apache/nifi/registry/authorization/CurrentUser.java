@@ -46,7 +46,7 @@ public class CurrentUser {
     }
 
     @ApiModelProperty(value = "Indicates if the NiFi instance supports logging in")
-    public boolean getLoginSupported() {
+    public boolean isLoginSupported() {
         return loginSupported;
     }
 

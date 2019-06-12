@@ -20,13 +20,8 @@ import org.apache.nifi.registry.authorization.AccessPolicy
 import org.apache.nifi.registry.authorization.User
 import org.apache.nifi.registry.authorization.UserGroup
 import org.apache.nifi.registry.bucket.Bucket
+import org.apache.nifi.registry.security.authorization.*
 import org.apache.nifi.registry.security.authorization.AccessPolicy as AuthAccessPolicy
-import org.apache.nifi.registry.security.authorization.AuthorizableLookup
-import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider
-import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider
-import org.apache.nifi.registry.security.authorization.Group
-import org.apache.nifi.registry.security.authorization.RequestAction
-import org.apache.nifi.registry.security.authorization.StandardManagedAuthorizer
 import org.apache.nifi.registry.security.authorization.User as AuthUser
 import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException
 import org.apache.nifi.registry.security.authorization.resource.Authorizable
@@ -44,8 +39,9 @@ class AuthorizationServiceSpec extends Specification {
 
     def setup() {
         accessPolicyProvider.getUserGroupProvider() >> userGroupProvider
-        def authorizer = new StandardManagedAuthorizer(accessPolicyProvider, userGroupProvider)
-        authorizationService = new AuthorizationService(authorizableLookup, authorizer, registryService)
+        def standardAuthorizer = new StandardManagedAuthorizer(accessPolicyProvider, userGroupProvider)
+        def frameworkAuthorizer = new FrameworkManagedAuthorizer(standardAuthorizer, registryService)
+        authorizationService = new AuthorizationService(authorizableLookup, frameworkAuthorizer, registryService)
     }
 
     // ----- User tests -------------------------------------------------------
@@ -591,7 +587,6 @@ class AuthorizationServiceSpec extends Specification {
             ]) }
 
         registryService.getBuckets() >> {[ mapBucket("b1"), mapBucket("b2"), mapBucket("b3") ]}
-        registryService.getBucketsAllowingPublicRead() >> {[ mapBucket("b2") ]}
 
         def authorized = Mock(Authorizable)
         authorized.authorize(_, _, _) >> { return }
@@ -601,7 +596,7 @@ class AuthorizationServiceSpec extends Specification {
         authorizableLookup.getAuthorizableByResource("/actuator")   >> denied
         authorizableLookup.getAuthorizableByResource("/buckets")    >> authorized
         authorizableLookup.getAuthorizableByResource("/buckets/b1") >> authorized
-        authorizableLookup.getAuthorizableByResource("/buckets/b2") >> denied
+        authorizableLookup.getAuthorizableByResource("/buckets/b2") >> authorized
         authorizableLookup.getAuthorizableByResource("/buckets/b3") >> denied
         authorizableLookup.getAuthorizableByResource("/policies")   >> authorized
         authorizableLookup.getAuthorizableByResource("/proxy")      >> denied

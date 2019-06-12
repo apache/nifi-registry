@@ -56,17 +56,13 @@ public class AuthorizableApplicationResource extends ApplicationResource {
     }
 
     protected Set<String> getAuthorizedBucketIds(RequestAction actionType) {
-        final Set<String> authorizedBucketIds = authorizationService
+        return authorizationService
                 .getAuthorizedResources(actionType, ResourceType.Bucket)
                 .stream()
                 .map(AuthorizableApplicationResource::extractBucketIdFromResource)
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toSet());
-
-
-
-        return authorizedBucketIds;
     }
 
     private static String extractBucketIdFromResource(Resource resource) {
