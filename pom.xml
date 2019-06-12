@@ -38,12 +38,12 @@
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
         <name>Apache NiFi Project</name>
-        <url>http://nifi.apache.org/</url>
+        <url>https://nifi.apache.org/</url>
     </organization>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
     <mailingLists>
@@ -52,21 +52,21 @@
             <subscribe>dev-subscribe@nifi.apache.org</subscribe>
             <unsubscribe>dev-unsubscribe@nifi.apache.org</unsubscribe>
             <post>dev@nifi.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/nifi-dev</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/nifi-dev</archive>
         </mailingList>
         <mailingList>
             <name>Users</name>
             <subscribe>users-subscribe@nifi.apache.org</subscribe>
             <unsubscribe>users-unsubscribe@nifi.apache.org</unsubscribe>
             <post>users@nifi.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/nifi-users</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/nifi-users</archive>
         </mailingList>
         <mailingList>
             <name>Commits</name>
             <subscribe>commits-subscribe@nifi.apache.org</subscribe>
             <unsubscribe>commits-unsubscribe@nifi.apache.org</unsubscribe>
             <post>commits@nifi.apache.org</post>
-            <archive>http://mail-archives.apache.org/mod_mbox/nifi-commits</archive>
+            <archive>https://mail-archives.apache.org/mod_mbox/nifi-commits</archive>
         </mailingList>
     </mailingLists>
     <prerequisites>
@@ -130,7 +130,7 @@
         </repository>
         <repository>
             <id>jcenter</id>
-            <url>http://jcenter.bintray.com</url>
+            <url>https://jcenter.bintray.com</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
@@ -144,7 +144,7 @@
         <pluginRepository>
             <id>jcenter-releases</id>
             <name>jcenter</name>
-            <url>http://jcenter.bintray.com</url>
+            <url>https://jcenter.bintray.com</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
