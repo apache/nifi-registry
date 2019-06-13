@@ -57,7 +57,7 @@ public class JerseyExtensionClient extends AbstractJerseyClient implements Exten
             if (filterParams != null) {
                 final BundleType bundleType = filterParams.getBundleType();
                 if (bundleType != null) {
-                    target = target.queryParam("bundleType", bundleType.name());
+                    target = target.queryParam("bundleType", bundleType.toString());
                 }
 
                 final ExtensionType extensionType = filterParams.getExtensionType();

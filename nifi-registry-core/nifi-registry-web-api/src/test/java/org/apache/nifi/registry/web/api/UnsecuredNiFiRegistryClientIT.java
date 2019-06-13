@@ -722,6 +722,13 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         assertEquals(1, serviceExtensions.getNumResults());
         assertEquals(1, serviceExtensions.getExtensions().size());
 
+        final ExtensionMetadataContainer narExtensions = extensionClient.findExtensions(
+                new ExtensionFilterParams.Builder().bundleType(BundleType.NIFI_NAR).build());
+        assertNotNull(narExtensions);
+        assertNotNull(narExtensions.getExtensions());
+        assertEquals(4, narExtensions.getNumResults());
+        assertEquals(4, narExtensions.getExtensions().size());
+
         final ProvidedServiceAPI serviceAPI = new ProvidedServiceAPI();
         serviceAPI.setClassName("org.apache.nifi.service.TestService");
         serviceAPI.setGroupId("org.apache.nifi");
