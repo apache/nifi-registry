@@ -164,15 +164,15 @@ public class AccessResource extends ApplicationResource {
         String token = null;
         for (IdentityProvider provider : identityProviderWaterfall) {
 
-            AuthenticationRequest authenticationRequest = identityProvider.extractCredentials(httpServletRequest);
+            AuthenticationRequest authenticationRequest = provider.extractCredentials(httpServletRequest);
             if (authenticationRequest == null) {
                 continue;
             }
             try {
-                token = createAccessToken(identityProvider, authenticationRequest);
+                token = createAccessToken(provider, authenticationRequest);
                 break;
             } catch (final InvalidCredentialsException ice){
-                logger.debug("{}: the supplied client credentials are invalid.", identityProvider.getClass().getSimpleName());
+                logger.debug("{}: the supplied client credentials are invalid.", provider.getClass().getSimpleName());
                 logger.debug("", ice);
             }
 
