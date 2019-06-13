@@ -60,9 +60,6 @@ public class TestFrameworkAuthorizer {
         bucketNotPublic.setName("Non Public Bucket");
         bucketNotPublic.setAllowPublicRead(false);
 
-        when(registryService.getBucketsAllowingPublicRead())
-                .thenReturn(Arrays.asList(bucketNotPublic, bucketPublic));
-
         when(registryService.getBucket(bucketPublic.getIdentifier())).thenReturn(bucketPublic);
         when(registryService.getBucket(bucketNotPublic.getIdentifier())).thenReturn(bucketNotPublic);
     }

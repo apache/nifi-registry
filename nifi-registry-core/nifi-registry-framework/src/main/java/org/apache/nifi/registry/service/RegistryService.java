@@ -238,16 +238,6 @@ public class RegistryService {
         }
     }
 
-    public List<Bucket> getBucketsAllowingPublicRead() {
-        readLock.lock();
-        try {
-            final List<BucketEntity> buckets = metadataService.getBucketsAllowingPublicRead();
-            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
-    }
-
     public Bucket updateBucket(final Bucket bucket) {
         if (bucket == null) {
             throw new IllegalArgumentException("Bucket cannot be null");

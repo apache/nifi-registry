@@ -163,22 +163,6 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
         assertEquals(6, buckets.size());
     }
 
-    @Test
-    public void testGetBucketIdsAllowingPublicRead() {
-        final List<BucketEntity> buckets = metadataService.getBucketsAllowingPublicRead();
-        assertNotNull(buckets);
-        assertEquals(0, buckets.size());
-
-        final BucketEntity bucket = metadataService.getBucketById("1");
-        assertNotNull(bucket);
-        bucket.setAllowPublicRead(true);
-        metadataService.updateBucket(bucket);
-
-        final List<BucketEntity> bucketsAfterUpdate = metadataService.getBucketsAllowingPublicRead();
-        assertNotNull(bucketsAfterUpdate);
-        assertEquals(1, bucketsAfterUpdate.size());
-    }
-
     //----------------- BucketItems ---------------------------------
 
     @Test

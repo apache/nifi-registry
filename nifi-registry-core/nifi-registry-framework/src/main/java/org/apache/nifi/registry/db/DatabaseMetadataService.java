@@ -148,12 +148,6 @@ public class DatabaseMetadataService implements MetadataService {
         return jdbcTemplate.query(sql, new BucketEntityRowMapper());
     }
 
-    @Override
-    public List<BucketEntity> getBucketsAllowingPublicRead() {
-        final String sql = "SELECT * FROM BUCKET WHERE allow_public_read = 1";
-        return jdbcTemplate.query(sql, new BucketEntityRowMapper());
-    }
-
     //----------------- BucketItems ---------------------------------
 
     private static final String BASE_BUCKET_ITEMS_SQL =
