@@ -44,7 +44,7 @@ limitations under the License.
         </div>
         <div class="pad-left-md pad-right-md pad-bottom-sm">
             <mat-checkbox #bundlePublicReadCheckbox
-                          [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite"
+                          [disabled]="!nfRegistryService.currentUser.resourcePermissions.buckets.canWrite || protocol === 'http:'"
                           [(ngModel)]="allowPublicRead"
                           (change)="toggleBucketPublicRead($event)">
                 Make publicly visible<i matTooltip="Allows read access to items in this bucket by unauthenticated users. Overrides any specific policies granting read access."

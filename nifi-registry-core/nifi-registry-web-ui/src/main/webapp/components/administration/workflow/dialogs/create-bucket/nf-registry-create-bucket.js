@@ -38,6 +38,7 @@ function NfRegistryCreateBucket(nfRegistryApi, fdsSnackBarService, nfRegistrySer
     this.dialogRef = matDialogRef;
     // local state
     this.keepDialogOpen = false;
+    this.protocol = location.protocol;
 }
 
 NfRegistryCreateBucket.prototype = {

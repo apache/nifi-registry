@@ -81,6 +81,7 @@ function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableSer
     this.dialogService = fdsDialogService;
     this.snackBarService = fdsSnackBarService;
     this.dataTableService = tdDataTableService;
+    this.protocol = location.protocol;
 }
 
 NfRegistryManageBucket.prototype = {

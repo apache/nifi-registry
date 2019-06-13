@@ -28,7 +28,7 @@ limitations under the License.
                 <input #newBucketInput matInput floatPlaceholder="always" placeholder="Bucket Name">
             </mat-input-container>
         </div>
-        <mat-checkbox #newBucketPublicReadCheckbox >
+        <mat-checkbox #newBucketPublicReadCheckbox [disabled]="protocol === 'http:'" >
             Make publicly visible<i matTooltip="Allows read access to items in this bucket by unauthenticated users. Overrides any specific policies granting read access."
                                     class="pad-left-sm fa fa-question-circle-o help-icon"></i>
         </mat-checkbox>
