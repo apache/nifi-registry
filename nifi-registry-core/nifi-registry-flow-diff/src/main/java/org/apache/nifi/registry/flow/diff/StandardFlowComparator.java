@@ -191,9 +191,9 @@ public class StandardFlowComparator implements FlowComparator {
             }
 
             if (valueA == null && valueB != null) {
-                differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, displayName, valueA, valueB));
+                differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, key, displayName, valueA, valueB));
             } else if (valueA != null && valueB == null) {
-                differences.add(difference(DifferenceType.PROPERTY_REMOVED, componentA, componentB, displayName, valueA, valueB));
+                differences.add(difference(DifferenceType.PROPERTY_REMOVED, componentA, componentB, key, displayName, valueA, valueB));
             } else if (valueA != null && !valueA.equals(valueB)) {
                 // If the property in Flow A references a Controller Service that is not available in the flow
                 // and the property in Flow B references a Controller Service that is available in its environment
@@ -210,7 +210,7 @@ public class StandardFlowComparator implements FlowComparator {
                     }
                 }
 
-                differences.add(difference(DifferenceType.PROPERTY_CHANGED, componentA, componentB, displayName, valueA, valueB));
+                differences.add(difference(DifferenceType.PROPERTY_CHANGED, componentA, componentB, key, displayName, valueA, valueB));
             }
         });
 
@@ -228,7 +228,7 @@ public class StandardFlowComparator implements FlowComparator {
                     displayName = descriptor.getDisplayName() == null ? descriptor.getName() : descriptor.getDisplayName();
                 }
 
-                differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, displayName, null, valueB));
+                differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, key, displayName, null, valueB));
             }
         });
     }
@@ -376,7 +376,7 @@ public class StandardFlowComparator implements FlowComparator {
             return;
         }
 
-        differences.add(difference(type, componentA, componentB, null, valueA, valueB));
+        differences.add(difference(type, componentA, componentB, valueA, valueB));
     }
 
     private boolean isEmpty(final Collection<?> collection) {
@@ -397,15 +397,17 @@ public class StandardFlowComparator implements FlowComparator {
     }
 
     private FlowDifference difference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB,
-                                      final Object valueA, final Object valueB) {
-        return difference(type, componentA, componentB, null, valueA, valueB);
-    }
-
-    private FlowDifference difference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB, final String fieldName,
             final Object valueA, final Object valueB) {
 
-        final String description = differenceDescriptor.describeDifference(type, flowA.getName(), flowB.getName(), componentA, componentB, fieldName, valueA, valueB);
+        final String description = differenceDescriptor.describeDifference(type, flowA.getName(), flowB.getName(), componentA, componentB, null, valueA, valueB);
         return new StandardFlowDifference(type, componentA, componentB, valueA, valueB, description);
+    }
+
+    private FlowDifference difference(final DifferenceType type, final VersionedComponent componentA, final VersionedComponent componentB, final String fieldName, final String prettyPrintFieldName,
+                                      final Object valueA, final Object valueB) {
+
+        final String description = differenceDescriptor.describeDifference(type, flowA.getName(), flowB.getName(), componentA, componentB, prettyPrintFieldName, valueA, valueB);
+        return new StandardFlowDifference(type, componentA, componentB, fieldName, valueA, valueB, description);
     }
 
 

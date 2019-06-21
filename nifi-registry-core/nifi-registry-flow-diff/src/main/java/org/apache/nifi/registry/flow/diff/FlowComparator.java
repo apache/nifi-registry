@@ -25,7 +25,7 @@ public interface FlowComparator {
     FlowComparison compare();
 
     /**
-     * Compares to versions of a Controller Service and returns the differences between them
+     * Compares two versions of a Controller Service and returns the differences between them
      *
      * @param serviceA the first Controller Service
      * @param serviceB the second Controller Service
