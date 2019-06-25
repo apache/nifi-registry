@@ -24,6 +24,7 @@ public class VersionedPropertyDescriptor {
     private String displayName;
     private boolean identifiesControllerService;
     private boolean sensitive;
+    private VersionedControllerServiceReference controllerServiceReference;
 
     @ApiModelProperty("The name of the property")
     public String getName() {
@@ -50,6 +51,15 @@ public class VersionedPropertyDescriptor {
 
     public void setIdentifiesControllerService(boolean identifiesControllerService) {
         this.identifiesControllerService = identifiesControllerService;
+    }
+
+    @ApiModelProperty("The information about the Controller Service that is being referenced by this Property")
+    public VersionedControllerServiceReference getControllerServiceReference() {
+        return controllerServiceReference;
+    }
+
+    public void setControllerServiceReference(VersionedControllerServiceReference reference) {
+        this.controllerServiceReference = reference;
     }
 
     @ApiModelProperty("Whether or not the property is considered sensitive")
