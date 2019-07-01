@@ -25,6 +25,7 @@ const CompressionPlugin = require('compression-webpack-plugin');
 const path = require('path');
 
 const commonConfig = require('./webpack.common');
+const loaders = require('./webpack.loader');
 
 module.exports = merge(commonConfig, {
     // Tells webpack to use its built-in optimizations accordingly
@@ -36,6 +37,13 @@ module.exports = merge(commonConfig, {
     output: {
         // add the content hash for auto cache-busting
         filename: '[name].[contenthash].js'
+    },
+
+    module: {
+        rules: [
+            loaders.ts,
+            loaders.js,
+        ]
     },
 
     optimization: {

@@ -18,6 +18,8 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+const cacheCoverageDir = '.cache-loader-coverage';
+
 module.exports = {
     ts: {
         test: /\.tsx?$/,
@@ -37,7 +39,7 @@ module.exports = {
         ]
     },
 
-    tsDev: {
+    tsCoverage: {
         test: /\.tsx?$/,
         include: [
             path.resolve(__dirname, 'webapp')
@@ -51,12 +53,12 @@ module.exports = {
                 loader: 'cache-loader'
             },
             {
+                loader: path.resolve(__dirname, 'angular-url-loader')
+            },
+            {
                 // Instrument TS files with istanbul-lib-instrument for subsequent code coverage reporting
                 loader: 'istanbul-instrumenter-loader',
                 options: { esModules: true }
-            },
-            {
-                loader: path.resolve(__dirname, 'angular-url-loader')
             },
             {
                 loader: 'ts-loader'
@@ -86,7 +88,7 @@ module.exports = {
         ]
     },
 
-    jsDev: {
+    jsCoverage: {
         test: /\.js$/,
         include: [
             path.resolve(__dirname, 'webapp'),
@@ -99,12 +101,10 @@ module.exports = {
         ],
         use: [
             {
-                loader: 'cache-loader'
-            },
-            {
-                // Instrument JS files with istanbul-lib-instrument for subsequent code coverage reporting
-                loader: 'istanbul-instrumenter-loader',
-                options: { esModules: true }
+                loader: 'cache-loader',
+                options: {
+                    cacheDirectory: cacheCoverageDir
+                }
             },
             {
                 loader: path.resolve(__dirname, 'angular-url-loader')
@@ -112,7 +112,8 @@ module.exports = {
             {
                 loader: 'babel-loader',
                 options: {
-                    presets: ['@babel/preset-env']
+                    presets: ['@babel/preset-env'],
+                    plugins: ['babel-plugin-istanbul']
                 }
             }
         ]
