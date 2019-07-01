@@ -85,6 +85,7 @@
     "@babel/runtime": "7.4.4",
     "@typescript-eslint/eslint-plugin": "1.6.0",
     "babel-loader": "8.0.5",
+    "babel-plugin-istanbul": "5.1.4",
     "babel-polyfill": "6.26.0",
     "cache-loader": "3.0.0",
     "compression-webpack-plugin": "2.0.0",

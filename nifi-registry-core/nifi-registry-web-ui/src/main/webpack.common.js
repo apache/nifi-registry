@@ -74,8 +74,6 @@ module.exports = {
 
     module: {
         rules: [
-            loaders.ts,
-            loaders.js,
             loaders.html,
             loaders.scss,
             loaders.images,

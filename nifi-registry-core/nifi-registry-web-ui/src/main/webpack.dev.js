@@ -24,13 +24,14 @@ const LicenseWebpackPlugin = require('license-webpack-plugin').LicenseWebpackPlu
 const CompressionPlugin = require('compression-webpack-plugin');
 
 const commonConfig = require('./webpack.common');
+const loaders = require('./webpack.loader');
 
 module.exports = merge(commonConfig, {
     // Tells webpack to use its built-in optimizations accordingly
     mode: 'development',
 
     // Source maps
-    devtool: 'eval-source-map',
+    devtool: 'inline-source-map',
 
     // Output bundles
     output: {
@@ -72,14 +73,17 @@ module.exports = merge(commonConfig, {
         stats: 'verbose'
     },
 
+    module: {
+        rules: [
+            loaders.ts,
+            loaders.js,
+        ]
+    },
+
     plugins: [
         // Hot Module Replacement
         new webpack.HotModuleReplacementPlugin(),
 
-        // Source map generation
-        new webpack.SourceMapDevToolPlugin({
-            filename: '[file].map'
-        }),
         // Create CSS files separately
         new MiniCssExtractPlugin({
             filename: '[name].css',
@@ -116,7 +120,7 @@ module.exports = merge(commonConfig, {
                             const missingLicenseText = `*** No license text found ***\n`
                             const licText =`This product bundles '${lic.packageJson.name}' which is available under a(n) ${lic.packageJson.license} license.\n\t${missingLicenseText}`;
 
-                            return licText
+                            return licText;
                         } else {
                             return `\n\n!!! No license information found for ${lic.packageJson.name} !!!\n\n`;
                         }

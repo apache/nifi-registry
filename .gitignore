@@ -29,4 +29,4 @@ nifi-registry-core/nifi-registry-web-ui/src/main/index.html
 nifi-registry-core/nifi-registry-web-ui/src/main/coverage
 nifi-registry-core/nifi-registry-web-ui/src/main/assets
 nifi-registry-core/nifi-registry-web-ui/src/main/*.png
-nifi-registry-core/nifi-registry-web-ui/src/main/.cache-loader
+nifi-registry-core/nifi-registry-web-ui/src/main/.cache-loader*
