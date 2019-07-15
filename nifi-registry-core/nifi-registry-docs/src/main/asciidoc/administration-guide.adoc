@@ -1118,7 +1118,7 @@ Currently, NiFi Registry supports using H2, Postgres 9.x, and MySQL (5.6, 5.7, 8
 
 NOTE: NiFi Registry 0.1.0 only supports H2.
 
-== H2
+=== H2
 
 H2 is an embedded database that is pre-configured in the default _nifi-registry.properties_ file. The contents of the H2 database are stored in a file on the local filesystem.
 
@@ -1130,7 +1130,7 @@ For NiFi Registry 0.2.0 and forward, the location of the H2 database is specifie
 
 `nifi.registry.db.url=jdbc:h2:./database/nifi-registry-primary;`
 
-== Postgres
+=== Postgres
 
 Postgres provides the option to use an externally located database that also supports high availability.
 
@@ -1159,7 +1159,7 @@ The following steps are required to use Postgres:
   nifi.registry.db.username=nifireg
   nifi.registry.db.password=changeme
 
-== MySQL
+=== MySQL
 
 MySQL also provides the option to use an externally located database that also supports high availability.
 
@@ -1356,6 +1356,23 @@ Host bitbucket.org
   HostName bitbucket.org
   IdentityFile ~/.ssh/key-for-bitbucket
 ....
+
+==== DatabaseFlowPersistenceProvider
+
+`DatabaseFlowPersistenceProvider` stores flow contents in a database table.
+
+This provider leverages the same database used for the metadata database, so there is no configuration to provide since the
+connection details will come from the database properties in `nifi-registry.properties`.
+
+The database table is named `FLOW_PERSISTENCE_PROVIDER` and has the following schema:
+
+|====
+|*Column*|*Description*
+|BUCKET_ID|The identifier of the bucket where the flow is located.
+|FLOW_ID|The identifier of the flow.
+|VERSION|The version of the flow.
+|FLOW_CONTENT|The serialized bytes of the flow content stored as a BLOB.
+|====
 
 ==== Switching from other Flow Persistence Provider
 

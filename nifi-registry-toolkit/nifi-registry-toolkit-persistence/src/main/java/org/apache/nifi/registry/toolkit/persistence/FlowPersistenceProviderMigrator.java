@@ -40,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
+
 public class FlowPersistenceProviderMigrator {
     private static final Logger log = LoggerFactory.getLogger(FlowPersistenceProviderMigrator.class);
     public static final int PARSE_EXCEPTION = 1;
@@ -81,9 +83,10 @@ public class FlowPersistenceProviderMigrator {
 
         NiFiRegistryProperties fromProperties = NiFiRegistry.initializeProperties(NiFiRegistry.getMasterKeyProvider());
 
-        DatabaseMetadataService fromMetadataService = new DatabaseMetadataService(new JdbcTemplate(new DataSourceFactory(fromProperties).getDataSource()));
-        FlowPersistenceProvider fromPersistenceProvider = createFlowPersistenceProvider(fromProperties);
-        FlowPersistenceProvider toPersistenceProvider = createFlowPersistenceProvider(createToProperties(commandLine, fromProperties));
+        DataSource dataSource = new DataSourceFactory(fromProperties).getDataSource();
+        DatabaseMetadataService fromMetadataService = new DatabaseMetadataService(new JdbcTemplate(dataSource));
+        FlowPersistenceProvider fromPersistenceProvider = createFlowPersistenceProvider(fromProperties, dataSource);
+        FlowPersistenceProvider toPersistenceProvider = createFlowPersistenceProvider(createToProperties(commandLine, fromProperties), dataSource);
 
         new FlowPersistenceProviderMigrator().doMigrate(fromMetadataService, fromPersistenceProvider, toPersistenceProvider);
     }
@@ -97,10 +100,10 @@ public class FlowPersistenceProviderMigrator {
         return toProperties;
     }
 
-    private static FlowPersistenceProvider createFlowPersistenceProvider(NiFiRegistryProperties niFiRegistryProperties) {
+    private static FlowPersistenceProvider createFlowPersistenceProvider(NiFiRegistryProperties niFiRegistryProperties, DataSource dataSource) {
         ExtensionManager fromExtensionManager = new ExtensionManager(niFiRegistryProperties);
         fromExtensionManager.discoverExtensions();
-        StandardProviderFactory fromProviderFactory = new StandardProviderFactory(niFiRegistryProperties, fromExtensionManager);
+        StandardProviderFactory fromProviderFactory = new StandardProviderFactory(niFiRegistryProperties, fromExtensionManager, dataSource);
         fromProviderFactory.initialize();
         return fromProviderFactory.getFlowPersistenceProvider();
     }

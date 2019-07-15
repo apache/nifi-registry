@@ -37,6 +37,12 @@
     -->
 
     <!--
+    <flowPersistenceProvider>
+        <class>org.apache.nifi.registry.provider.flow.DatabaseFlowPersistenceProvider</class>
+    </flowPersistenceProvider>
+    -->
+
+    <!--
     <eventHookProvider>
     	<class>org.apache.nifi.registry.provider.hook.ScriptEventHookProvider</class>
     	<property name="Script Path"></property>

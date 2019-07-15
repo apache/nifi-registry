@@ -41,6 +41,9 @@ public class CustomFlywayConfiguration implements FlywayConfigurationCustomizer 
     private static final String LOCATION_MYSQL = "classpath:db/migration/mysql";
     private static final String[] LOCATIONS_MYSQL = {LOCATION_COMMON, LOCATION_MYSQL};
 
+    private static final String LOCATION_POSTGRES = "classpath:db/migration/postgres";
+    private static final String[] LOCATIONS_POSTGRES = {LOCATION_COMMON, LOCATION_POSTGRES};
+
     @Override
     public void customize(final FluentConfiguration configuration) {
         final DatabaseType databaseType = getDatabaseType(configuration.getDataSource());
@@ -50,6 +53,10 @@ public class CustomFlywayConfiguration implements FlywayConfigurationCustomizer 
             case MYSQL:
                 LOGGER.info("Setting migration locations to {}", new Object[] {LOCATIONS_MYSQL});
                 configuration.locations(LOCATIONS_MYSQL);
+                break;
+            case POSTGRESQL:
+                LOGGER.info("Setting migration locations to {}", new Object[] {LOCATIONS_POSTGRES});
+                configuration.locations(LOCATIONS_POSTGRES);
                 break;
             default:
                 LOGGER.info("Setting migration locations to {}", new Object[] {LOCATIONS_DEFAULT});

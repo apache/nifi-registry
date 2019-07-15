@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 import org.xml.sax.SAXException;
 
 import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -42,6 +43,8 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +76,7 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
 
     private final NiFiRegistryProperties properties;
     private final ExtensionManager extensionManager;
+    private final DataSource dataSource;
     private final AtomicReference<Providers> providersHolder = new AtomicReference<>(null);
 
     private FlowPersistenceProvider flowPersistenceProvider;
@@ -80,9 +84,10 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
     private BundlePersistenceProvider bundlePersistenceProvider;
 
     @Autowired
-    public StandardProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager) {
+    public StandardProviderFactory(final NiFiRegistryProperties properties, final ExtensionManager extensionManager, final DataSource dataSource) {
         this.properties = properties;
         this.extensionManager = extensionManager;
+        this.dataSource = dataSource;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
@@ -90,6 +95,10 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
 
         if (this.extensionManager == null) {
             throw new IllegalStateException("ExtensionManager cannot be null");
+        }
+
+        if (this.dataSource == null) {
+            throw new IllegalStateException("DataSource cannot be null");
         }
     }
 
@@ -144,14 +153,16 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
                 final Constructor constructor = flowProviderClass.getConstructor();
                 flowPersistenceProvider = (FlowPersistenceProvider) constructor.newInstance();
 
-                LOGGER.info("Instantiated FlowPersistenceProvider with class name {}", new Object[] {flowProviderClassName});
+                performMethodInjection(flowPersistenceProvider, flowProviderClass);
+
+                LOGGER.info("Instantiated FlowPersistenceProvider with class name {}", new Object[]{flowProviderClassName});
             } catch (Exception e) {
                 throw new ProviderFactoryException("Error creating FlowPersistenceProvider with class name: " + flowProviderClassName, e);
             }
 
             final ProviderConfigurationContext configurationContext = createConfigurationContext(jaxbFlowProvider.getProperty());
             flowPersistenceProvider.onConfigured(configurationContext);
-            LOGGER.info("Configured FlowPersistenceProvider with class name {}", new Object[] {flowProviderClassName});
+            LOGGER.info("Configured FlowPersistenceProvider with class name {}", new Object[]{flowProviderClassName});
         }
 
         return flowPersistenceProvider;
@@ -191,6 +202,8 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
 
                     final Constructor constructor = hookProviderClass.getConstructor();
                     hook = (EventHookProvider) constructor.newInstance();
+
+                    performMethodInjection(hook, hookProviderClass);
 
                     LOGGER.info("Instantiated EventHookProvider with class name {}", new Object[] {hookProviderClassName});
                 } catch (Exception e) {
@@ -233,6 +246,8 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
                 final Constructor constructor = extensionBundleProviderClass.getConstructor();
                 bundlePersistenceProvider = (BundlePersistenceProvider) constructor.newInstance();
 
+                performMethodInjection(bundlePersistenceProvider, extensionBundleProviderClass);
+
                 LOGGER.info("Instantiated BundlePersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
             } catch (Exception e) {
                 throw new ProviderFactoryException("Error creating BundlePersistenceProvider with class name: " + extensionBundleProviderClassName, e);
@@ -271,6 +286,37 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
         }
 
         return new StandardProviderConfigurationContext(properties);
+    }
+
+    private void performMethodInjection(final Object instance, final Class providerClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        for (final Method method : providerClass.getMethods()) {
+            if (method.isAnnotationPresent(ProviderContext.class)) {
+                // make the method accessible
+                final boolean isAccessible = method.isAccessible();
+                method.setAccessible(true);
+
+                try {
+                    final Class<?>[] argumentTypes = method.getParameterTypes();
+
+                    // look for setters (single argument)
+                    if (argumentTypes.length == 1) {
+                        final Class<?> argumentType = argumentTypes[0];
+
+                        // look for well known types, currently we only support injecting the DataSource
+                        if (DataSource.class.isAssignableFrom(argumentType)) {
+                            method.invoke(instance, dataSource);
+                        }
+                    }
+                } finally {
+                    method.setAccessible(isAccessible);
+                }
+            }
+        }
+
+        final Class parentClass = providerClass.getSuperclass();
+        if (parentClass != null && Provider.class.isAssignableFrom(parentClass)) {
+            performMethodInjection(instance, parentClass);
+        }
     }
 
 }
