@@ -23,6 +23,8 @@ import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.sql.DataSource;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
@@ -38,7 +40,9 @@ public class TestStandardProviderFactory {
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
         when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
+        final DataSource dataSource = Mockito.mock(DataSource.class);
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager, dataSource);
         providerFactory.initialize();
 
         final FlowPersistenceProvider flowPersistenceProvider = providerFactory.getFlowPersistenceProvider();
@@ -66,7 +70,9 @@ public class TestStandardProviderFactory {
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
         when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
+        final DataSource dataSource = Mockito.mock(DataSource.class);
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager, dataSource);
         providerFactory.getFlowPersistenceProvider();
     }
 
@@ -78,7 +84,9 @@ public class TestStandardProviderFactory {
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
         when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
+        final DataSource dataSource = Mockito.mock(DataSource.class);
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager, dataSource);
         providerFactory.initialize();
     }
 
@@ -90,7 +98,9 @@ public class TestStandardProviderFactory {
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
         when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
+        final DataSource dataSource = Mockito.mock(DataSource.class);
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager, dataSource);
         providerFactory.initialize();
 
         providerFactory.getFlowPersistenceProvider();

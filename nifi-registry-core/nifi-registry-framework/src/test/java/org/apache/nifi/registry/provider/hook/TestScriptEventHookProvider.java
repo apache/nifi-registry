@@ -16,9 +16,6 @@
  */
 package org.apache.nifi.registry.provider.hook;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.ProviderCreationException;
@@ -26,6 +23,11 @@ import org.apache.nifi.registry.provider.ProviderFactory;
 import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import javax.sql.DataSource;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class TestScriptEventHookProvider {
 
@@ -37,7 +39,9 @@ public class TestScriptEventHookProvider {
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
         when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
 
-        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager);
+        final DataSource dataSource = Mockito.mock(DataSource.class);
+
+        final ProviderFactory providerFactory = new StandardProviderFactory(props, extensionManager, dataSource);
         providerFactory.initialize();
         providerFactory.getEventHookProviders();
     }
