@@ -19,6 +19,7 @@ package org.apache.nifi.registry.flow.diff;
 
 import java.util.Objects;
 
+import org.apache.nifi.registry.flow.ScheduledState;
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlowCoordinates;
 
@@ -39,6 +40,13 @@ public class ConciseEvolvingDifferenceDescriptor implements DifferenceDescriptor
                 break;
             case COMPONENT_REMOVED:
                 description = String.format("%s was removed", componentA.getComponentType().getTypeName());
+                break;
+            case SCHEDULED_STATE_CHANGED:
+                if (ScheduledState.DISABLED.equals(valueA)) {
+                    description = String.format("%s was enabled", componentA.getComponentType().getTypeName());
+                } else {
+                    description = String.format("%s was disabled", componentA.getComponentType().getTypeName());
+                }
                 break;
             case PROPERTY_ADDED:
                 description = String.format("Property '%s' was added", fieldName);

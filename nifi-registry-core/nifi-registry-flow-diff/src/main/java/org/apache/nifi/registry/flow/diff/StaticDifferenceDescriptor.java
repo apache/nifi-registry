@@ -19,6 +19,7 @@ package org.apache.nifi.registry.flow.diff;
 
 import java.util.Objects;
 
+import org.apache.nifi.registry.flow.ScheduledState;
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedFlowCoordinates;
 
@@ -49,6 +50,13 @@ public class StaticDifferenceDescriptor implements DifferenceDescriptor {
             case PROPERTY_REMOVED:
                 description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
                     fieldName, componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowAName, flowBName);
+                break;
+            case SCHEDULED_STATE_CHANGED:
+                if (ScheduledState.DISABLED.equals(valueA)) {
+                    description = String.format("%s is disabled in %s but enabled in %s", componentA.getComponentType().getTypeName(), flowAName, flowBName);
+                } else {
+                    description = String.format("%s is enabled in %s but disabled in %s", componentA.getComponentType().getTypeName(), flowAName, flowBName);
+                }
                 break;
             case VARIABLE_ADDED:
                 description = String.format("Variable '%s' exists for Process Group with ID %s in %s but not in %s",

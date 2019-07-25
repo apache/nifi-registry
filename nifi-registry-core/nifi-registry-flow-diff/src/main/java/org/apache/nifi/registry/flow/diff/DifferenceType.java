@@ -79,6 +79,11 @@ public enum DifferenceType {
     RUN_SCHEDULE_CHANGED("Run Schedule Changed"),
 
     /**
+     * The component has a different scheduled state (enabled/disabled) in each of the flows
+     */
+    SCHEDULED_STATE_CHANGED("Scheduled State Changed"),
+
+    /**
      * The component has a different execution mode in each of the flows
      */
     EXECUTION_MODE_CHANGED("Execution Mode Changed"),

@@ -17,6 +17,7 @@
 
 package org.apache.nifi.registry.flow.diff;
 
+import org.apache.nifi.registry.flow.ScheduledState;
 import org.apache.nifi.registry.flow.VersionedComponent;
 
 /**
@@ -36,6 +37,13 @@ public class EvolvingDifferenceDescriptor implements DifferenceDescriptor {
                 break;
             case COMPONENT_REMOVED:
                 description = String.format("%s with ID %s was removed from flow", componentA.getComponentType().getTypeName(), componentA.getIdentifier());
+                break;
+            case SCHEDULED_STATE_CHANGED:
+                if (ScheduledState.DISABLED.equals(valueA)) {
+                    description = String.format("%s was enabled", componentA.getComponentType().getTypeName());
+                } else {
+                    description = String.format("%s was disabled", componentA.getComponentType().getTypeName());
+                }
                 break;
             case PROPERTY_ADDED:
                 description = String.format("Property '%s' was added to %s with ID %s", fieldName, componentB.getComponentType().getTypeName(), componentB.getIdentifier());
