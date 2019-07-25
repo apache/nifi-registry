@@ -420,12 +420,12 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>2.15</version>
+                    <version>3.0.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>com.puppycrawl.tools</groupId>
                             <artifactId>checkstyle</artifactId>
-                            <version>6.5</version>
+                            <version>8.21</version>
                         </dependency>
                     </dependencies>
                 </plugin>
@@ -536,13 +536,11 @@
                                     <property name="processJavadoc" value="true" />
                                 </module>
                                 <module name="NoLineWrap" />
-                                <module name="LeftCurly">
-                                    <property name="maxLineLength" value="160" />
-                                </module>
+                                <module name="LeftCurly" />
                                 <module name="RightCurly" />
                                 <module name="RightCurly">
-                                    <property name="option" value="alone" />
-                                    <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT" />
+                                    <property name="option" value="alone_or_singleline" />
+                                    <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT" />
                                 </module>
                                 <module name="SeparatorWrap">
                                     <property name="tokens" value="DOT" />
@@ -572,6 +570,7 @@
                                 </module>
                                 <module name="NonEmptyAtclauseDescription" />
                                 <module name="JavadocMethod">
+                                    <property name="allowUndeclaredRTE" value="true" />
                                     <property name="allowMissingJavadoc" value="true" />
                                     <property name="allowMissingParamTags" value="true" />
                                     <property name="allowMissingThrowsTags" value="true" />
