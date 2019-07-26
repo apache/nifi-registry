@@ -429,5 +429,11 @@
             <version>2.2.2</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+            <version>9.4.19.v20190610</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
