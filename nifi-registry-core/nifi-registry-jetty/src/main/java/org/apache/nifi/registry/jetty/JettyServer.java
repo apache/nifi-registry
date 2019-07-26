@@ -167,7 +167,7 @@ public class JettyServer {
     }
 
     private SslContextFactory createSslContextFactory() {
-        final SslContextFactory contextFactory = new SslContextFactory();
+        final SslContextFactory.Server contextFactory = new SslContextFactory.Server();
 
         // if needClientAuth is false then set want to true so we can optionally use certs
         if (properties.getNeedClientAuth()) {
