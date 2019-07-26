@@ -72,7 +72,7 @@
     "@angular/router": "8.1.1",
     "angular2-jwt": "0.2.3",
     "@covalent/core": "2.1.0",
-    "@nifi-fds/core": "0.1.0",
+    "@nifi-fds/core": "0.2.0",
     "angular2-moment": "1.9.0",
     "font-awesome": "4.7.0",
     "moment": "2.22.1",

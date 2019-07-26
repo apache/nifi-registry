@@ -81,10 +81,6 @@ body {
   color: white;
 }
 
-body[fds] .td-chip span {
-    font-size: 10px;
-}
-
 #nifi-registry-toolbar span,
 #nifi-registry-toolbar .link {
   color: $grey5;
@@ -151,19 +147,7 @@ mat-sidenav {
   text-transform: uppercase;
 }
 
-body[fds] mat-form-field.td-chips-form-field.mat-form-field {
-  width: unset;
-}
-
-body[fds] .md-title {
-  font-weight: normal;
-  color: $grey3;
-}
-
-body[fds] .md-subhead {
-  font-weight: lighter;
-}
-
-body[fds] div .td-data-table {
-  display: flex;
+// TODO: remove after NIFI-6495 is available in NiFi FDS 0.3.0
+body[fds] .mat-menu-panel {
+    min-height: 40px;
 }
