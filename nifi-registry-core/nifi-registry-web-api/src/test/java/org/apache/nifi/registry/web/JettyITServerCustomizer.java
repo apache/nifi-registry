@@ -33,7 +33,10 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * This customizer fixes integration tests. The customizer is the only way we can pass config from Spring Boot to Jetty.
+ * It sets the endpointIdentificationAlgorithm to null, which stops the Jetty server attempting to validate a hostname in the client certificate's SAN.
+ **/
 @Component
 public class JettyITServerCustomizer implements WebServerFactoryCustomizer<JettyServletWebServerFactory> {
 
@@ -79,11 +82,9 @@ public class JettyITServerCustomizer implements WebServerFactoryCustomizer<Jetty
     }
 
     private SslContextFactory createSslContextFactory(Ssl properties) {
+        // Calling SslContextFactory.Server() calls setEndpointIdentificationAlgorithm(null).
+        // This ensures that Jetty server does not attempt to validate a hostname in the client certificate's SAN.
         final SslContextFactory.Server contextFactory = new SslContextFactory.Server();
-
-        // The ONE thing we needed to do: set endpoint ID algorithm to null. This ensures that Jetty server does
-        // not attempt to validate a hostname in the client certificate's SAN.
-        contextFactory.setEndpointIdentificationAlgorithm(null);
 
         // if needClientAuth is false then set want to true so we can optionally use certs
         if(properties.getClientAuth() == Ssl.ClientAuth.NEED) {
