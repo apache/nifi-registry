@@ -27,7 +27,7 @@ public abstract class TestDataSourceFactory {
 
     @Bean
     @Primary
-    DataSource dataSource() {
+    public DataSource dataSource() {
         return createDataSource();
     }
 
