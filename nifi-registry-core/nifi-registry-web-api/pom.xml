@@ -432,7 +432,7 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
-            <version>9.4.19.v20190610</version>
+            <version>${jetty.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
