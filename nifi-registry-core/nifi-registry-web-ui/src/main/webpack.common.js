@@ -41,8 +41,7 @@ module.exports = {
     output: {
         // add the content hash for auto cache-busting
         filename: '[name].[contenthash].js',
-        path: path.resolve(__dirname, './'),
-        publicPath: 'nifi-registry/'
+        path: path.resolve(__dirname, './')
     },
 
     optimization: {

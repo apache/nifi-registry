@@ -43,7 +43,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.documentation = {
         link: 'nifi-registry-docs/documentation'
     };
-    this.redirectUrl = '/nifi-registry/explorer/grid-list';
+    this.redirectUrl = 'explorer/grid-list';
 
     // Services
     this.router = router;
@@ -566,7 +566,7 @@ NfRegistryService.prototype = {
             );
             break;
         case 'manage':
-            this.router.navigateByUrl('/nifi-registry/administration/workflow(' + action.type + ':' + action.name + '/bucket/' + bucket.identifier + ')');
+            this.router.navigateByUrl('administration/workflow(' + action.type + ':' + action.name + '/bucket/' + bucket.identifier + ')');
             break;
         default:
             break;
@@ -1038,7 +1038,7 @@ NfRegistryService.prototype = {
                 }
             );
         case 'manage':
-            this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/user/' + user.identifier + ')');
+            this.router.navigateByUrl('administration/users(' + action.type + ':' + action.name + '/user/' + user.identifier + ')');
             break;
         default:
             break;
@@ -1086,7 +1086,7 @@ NfRegistryService.prototype = {
             );
             break;
         case 'manage':
-            this.router.navigateByUrl('/nifi-registry/administration/users(' + action.type + ':' + action.name + '/group/' + group.identifier + ')');
+            this.router.navigateByUrl('administration/users(' + action.type + ':' + action.name + '/group/' + group.identifier + ')');
             break;
         default:
             break;

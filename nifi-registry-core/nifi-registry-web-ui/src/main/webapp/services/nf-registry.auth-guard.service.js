@@ -66,7 +66,7 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                 if (currentUser.error) {
                     if (currentUser.error.status === 401) {
                         self.nfStorage.removeItem('jwt');
-                        self.router.navigateByUrl('/nifi-registry/login');
+                        self.router.navigateByUrl('login');
                     }
                 } else {
                     self.nfRegistryService.currentUser = currentUser;
@@ -84,7 +84,7 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                                 acceptButton: 'Ok',
                                 acceptButtonColor: 'fds-warn'
                             });
-                            self.router.navigateByUrl('/nifi-registry/explorer');
+                            self.router.navigateByUrl('explorer');
                         } else if (currentUser.resourcePermissions.tenants.canRead) {
                             self.router.navigateByUrl(url);
                         } else {
@@ -94,7 +94,7 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                                 acceptButton: 'Ok',
                                 acceptButtonColor: 'fds-warn'
                             });
-                            self.router.navigateByUrl('/nifi-registry/explorer');
+                            self.router.navigateByUrl('explorer');
                         }
                     } else if (location.protocol === 'http:') {
                         // user is anonymous and we are NOT secure, redirect to workflow perspective
@@ -104,7 +104,7 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                             acceptButton: 'Ok',
                             acceptButtonColor: 'fds-warn'
                         });
-                        self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                        self.router.navigateByUrl('administration/workflow');
                     } else {
                         // user is anonymous and we are secure so don't allow the url, navigate to the main page
                         self.dialogService.openConfirm({
@@ -113,7 +113,7 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
                             acceptButton: 'Ok',
                             acceptButtonColor: 'fds-warn'
                         });
-                        self.router.navigateByUrl('/nifi-registry/explorer');
+                        self.router.navigateByUrl('explorer');
                     }
                 }
             });
@@ -176,7 +176,7 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                 if (currentUser.error) {
                     if (currentUser.error.status === 401) {
                         self.nfStorage.removeItem('jwt');
-                        self.router.navigateByUrl('/nifi-registry/login');
+                        self.router.navigateByUrl('login');
                     }
                 } else {
                     self.nfRegistryService.currentUser = currentUser;
@@ -194,7 +194,7 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                                 acceptButton: 'Ok',
                                 acceptButtonColor: 'fds-warn'
                             });
-                            self.router.navigateByUrl('/nifi-registry/explorer');
+                            self.router.navigateByUrl('explorer');
                         } else if (currentUser.resourcePermissions.buckets.canRead) {
                             self.router.navigateByUrl(url);
                         } else {
@@ -204,7 +204,7 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                                 acceptButton: 'Ok',
                                 acceptButtonColor: 'fds-warn'
                             });
-                            self.router.navigateByUrl('/nifi-registry/administration/users');
+                            self.router.navigateByUrl('administration/users');
                         }
                     } else if (location.protocol === 'http:') {
                         // user is anonymous and we are NOT secure so allow the url
@@ -217,7 +217,7 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                             acceptButton: 'Ok',
                             acceptButtonColor: 'fds-warn'
                         });
-                        self.router.navigateByUrl('/nifi-registry/explorer');
+                        self.router.navigateByUrl('explorer');
                     }
                 }
             });
@@ -341,7 +341,7 @@ NfRegistryResourcesAuthGuard.prototype = {
                 if (currentUser.error) {
                     if (currentUser.error.status === 401) {
                         self.nfStorage.removeItem('jwt');
-                        self.router.navigateByUrl('/nifi-registry/login');
+                        self.router.navigateByUrl('login');
                     }
                 } else {
                     self.nfRegistryService.currentUser = currentUser;
@@ -351,7 +351,7 @@ NfRegistryResourcesAuthGuard.prototype = {
                             self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
                             self.router.navigateByUrl(url);
                         } else {
-                            self.router.navigateByUrl('/nifi-registry/login');
+                            self.router.navigateByUrl('login');
                         }
                     } else if (currentUser.anonymous === true) {
                         // render the logout button if there is a token locally

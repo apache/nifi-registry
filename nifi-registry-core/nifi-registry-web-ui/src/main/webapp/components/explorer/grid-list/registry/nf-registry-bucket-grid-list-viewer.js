@@ -72,13 +72,13 @@ NfRegistryBucketGridListViewer.prototype = {
                     var buckets = response[0];
                     self.nfRegistryService.buckets = buckets;
                 } else if (response[0].status === 404) {
-                    self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                    self.router.navigateByUrl('explorer/grid-list');
                 }
                 if (!response[2].status || response[2].status === 200) {
                     var bucket = response[2];
                     self.nfRegistryService.bucket = bucket;
                 } else if (response[2].status === 404) {
-                    self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                    self.router.navigateByUrl('explorer/grid-list');
                 }
                 if (!response[1].status || response[1].status === 200) {
                     var droplets = response[1];
@@ -86,9 +86,9 @@ NfRegistryBucketGridListViewer.prototype = {
                 } else if (response[1].status === 404) {
                     if (!response[2].status || response[2].status === 200) {
                         var bucket = response[2];
-                        self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucket);
+                        self.router.navigateByUrl('explorer/grid-list/buckets/' + bucket);
                     } else {
-                        self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                        self.router.navigateByUrl('explorer/grid-list');
                     }
                 }
                 self.nfRegistryService.filterDroplets();

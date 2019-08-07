@@ -227,7 +227,7 @@ describe('NfRegistryManageGroup Component', function () {
 
         //assertions
         const routerCall = comp.router.navigateByUrl.calls.first();
-        expect(routerCall.args[0]).toBe('/nifi-registry/administration/users');
+        expect(routerCall.args[0]).toBe('administration/users');
         expect(comp.router.navigateByUrl.calls.count()).toBe(1);
     }));
 
@@ -247,7 +247,7 @@ describe('NfRegistryManageGroup Component', function () {
 
         //assertions
         const routerCall = comp.router.navigateByUrl.calls.first();
-        expect(routerCall.args[0]).toBe('/nifi-registry/administration/workflow');
+        expect(routerCall.args[0]).toBe('administration/workflow');
         expect(comp.router.navigateByUrl.calls.count()).toBe(1);
     }));
 
@@ -330,7 +330,7 @@ describe('NfRegistryManageGroup Component', function () {
 
         //assertions
         const routerCall = comp.router.navigateByUrl.calls.first();
-        expect(routerCall.args[0]).toBe('/nifi-registry/administration/users');
+        expect(routerCall.args[0]).toBe('administration/users');
         expect(comp.router.navigateByUrl.calls.count()).toBe(1);
     }));
 

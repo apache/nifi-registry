@@ -112,7 +112,7 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
 
         //assertions
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/login');
+        expect(navigateByUrlCall.args[0]).toBe('login');
     });
 
     it('should navigate to login (error loading current user)', function () {
@@ -132,7 +132,7 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
         //assertions
         expect(nfStorage.removeItem).toHaveBeenCalled();
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/login');
+        expect(navigateByUrlCall.args[0]).toBe('login');
     });
 });
 
@@ -198,7 +198,7 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
         //assertions
         expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/explorer/grid-list');
+        expect(navigateByUrlCall.args[0]).toBe('explorer/grid-list');
     });
 });
 
@@ -250,7 +250,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         //assertions
         expect(nfRegistryService.redirectUrl).toBe('test');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/login');
+        expect(navigateByUrlCall.args[0]).toBe('login');
     });
 
     it('should deny access (registry security not configured) and navigate to administration workflow perspective', function () {
@@ -271,7 +271,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
         expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow');
+        expect(navigateByUrlCall.args[0]).toBe('administration/workflow');
     });
 
     it('should deny access (non-admin) and navigate to explorer perspective', function () {
@@ -319,7 +319,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
         expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/explorer');
+        expect(navigateByUrlCall.args[0]).toBe('explorer');
     });
 
     it('should deny access (no tenants permissions) and navigate to explorer perspective', function () {
@@ -367,7 +367,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
         expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/explorer');
+        expect(navigateByUrlCall.args[0]).toBe('explorer');
     });
 
     it('should deny access (no tenants permissions) and navigate to test url', function () {
@@ -462,7 +462,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         //assertions
         expect(nfRegistryService.redirectUrl).toBe('test');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/login');
+        expect(navigateByUrlCall.args[0]).toBe('login');
     });
 
     it('should (registry security not configured) navigate to test url', function () {
@@ -526,7 +526,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
         expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/explorer');
+        expect(navigateByUrlCall.args[0]).toBe('explorer');
     });
 
     it('should deny access (no buckets permissions) and navigate to users administration perspective', function () {
@@ -574,7 +574,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
         expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users');
+        expect(navigateByUrlCall.args[0]).toBe('administration/users');
     });
 
     it('should deny access (no tenants permissions) and navigate to test url', function () {
