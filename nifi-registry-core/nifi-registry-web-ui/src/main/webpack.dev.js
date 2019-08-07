@@ -45,9 +45,6 @@ module.exports = merge(commonConfig, {
 
         historyApiFallback: true,
 
-        // The bundled files will be available in the browser under this path.
-        publicPath: '/nifi-registry/',
-
         // Enable gzip compression for everything served
         compress: true,
 

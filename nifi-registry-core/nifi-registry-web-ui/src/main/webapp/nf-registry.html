@@ -22,12 +22,12 @@ limitations under the License.
     </mat-sidenav>
     <div id="nf-registry-app-container">
         <mat-toolbar id="nifi-registry-toolbar">
-            <img id="nifi-registry-logo" src="nifi-registry/assets/images/registry-logo-web-app.svg">
+            <img id="nifi-registry-logo" src="assets/images/registry-logo-web-app.svg">
             <div *ngIf="nfRegistryService.perspective !== 'login' && nfRegistryService.perspective !== 'not-found'" fxFlex="1 1 auto" class="pad-left-xl" [@flyInOut]="nfRegistryService.breadCrumbState">
-                <span class="pointer" routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">{{nfRegistryService.registry.name}}</span>
+                <span class="pointer" routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">{{nfRegistryService.registry.name}}</span>
                 <mat-menu #availableRegistriesMenu="matMenu" [overlapTrigger]="false">
                     <button mat-menu-item *ngFor="let registry of nfRegistryService.registries"
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
+                            routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                         <span>{{registry.name}}</span>
                     </button>
                 </mat-menu>
@@ -40,11 +40,11 @@ limitations under the License.
                                                                           aria-hidden="true"></i></span>
                 <mat-menu #availableBucketsMenu="matMenu" [overlapTrigger]="false">
                     <button mat-menu-item
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
+                            routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                         <span>All buckets</span>
                     </button>
                     <button mat-menu-item *ngFor="let bucket of nfRegistryService.buckets"
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/buckets/{{bucket.identifier}}">
+                            routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/buckets/{{bucket.identifier}}">
                         <span>{{bucket.name}}</span>
                     </button>
                 </mat-menu>
@@ -56,11 +56,11 @@ limitations under the License.
                         class="fa fa-caret-down pad-left-sm" aria-hidden="true"></i></span>
                 <mat-menu #availableDropletsMenu="matMenu" [overlapTrigger]="false">
                     <button mat-menu-item
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/buckets/{{nfRegistryService.bucket.identifier}}">
+                            routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/buckets/{{nfRegistryService.bucket.identifier}}">
                         <span>All resources</span>
                     </button>
                     <button mat-menu-item *ngFor="let droplet of nfRegistryService.droplets"
-                            routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{droplet.link.href}}">
+                            routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}/{{droplet.link.href}}">
                         <span>{{droplet.name}}</span>
                     </button>
                 </mat-menu>
@@ -80,11 +80,11 @@ limitations under the License.
                 <a matTooltip="Help" href="{{nfRegistryService.documentation.link}}" target="_blank"><i class="fa fa-question-circle help-icon" aria-hidden="true"></i></a>
             </div>
             <button matTooltip="Settings" mat-ripple *ngIf="nfRegistryService.currentUser.resourcePermissions.anyTopLevelResource.canRead && nfRegistryService.perspective === 'explorer'" mat-icon-button
-                    routerLink="/nifi-registry/administration/workflow">
+                    routerLink="administration/workflow">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
             <button color="primary" matTooltip="Close settings" mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
-                    routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
+                    routerLink="explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
                 <mat-icon>close</mat-icon>
             </button>
         </mat-toolbar>

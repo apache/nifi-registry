@@ -132,7 +132,7 @@ NfRegistryManageBucket.prototype = {
                         }
                     }
                 } else if (response[0].status === 404) {
-                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                    self.router.navigateByUrl('administration/workflow');
                 }
             });
     },
@@ -149,7 +149,7 @@ NfRegistryManageBucket.prototype = {
      * Navigate to administer the buckets of the current registry.
      */
     closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/workflow');
+        this.router.navigateByUrl('administration/workflow');
     },
 
     /**

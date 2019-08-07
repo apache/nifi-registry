@@ -827,7 +827,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         const navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/workflow(sidenav:manage/bucket/999)');
+        expect(navigateByUrlCall.args[0]).toBe('administration/workflow(sidenav:manage/bucket/999)');
     });
 
     it('should execute a `delete` action on a user.', function () {
@@ -879,7 +879,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         const navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:manage/user/999)');
+        expect(navigateByUrlCall.args[0]).toBe('administration/users(sidenav:manage/user/999)');
     });
 
     it('should execute a `delete` action on a group.', function () {
@@ -931,7 +931,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
         //assertions
         const navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry/administration/users(sidenav:manage/group/999)');
+        expect(navigateByUrlCall.args[0]).toBe('administration/users(sidenav:manage/group/999)');
     });
 
     it('should filter buckets by name.', function () {

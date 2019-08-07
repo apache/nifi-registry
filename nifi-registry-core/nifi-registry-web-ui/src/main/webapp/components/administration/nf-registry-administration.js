@@ -57,7 +57,7 @@ NfRegistryAdministration.prototype = {
      * @param $event
      */
     navigateToAdminPerspective: function ($event) {
-        this.router.navigateByUrl('nifi-registry/administration/' + $event.value);
+        this.router.navigateByUrl('administration/' + $event.value);
     },
 
     /**

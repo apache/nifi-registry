@@ -132,7 +132,7 @@ describe('NfRegistryManageBucket Component', function () {
 
         //assertions
         const routerCall = comp.router.navigateByUrl.calls.first();
-        expect(routerCall.args[0]).toBe('/nifi-registry/administration/workflow');
+        expect(routerCall.args[0]).toBe('administration/workflow');
         expect(comp.router.navigateByUrl.calls.count()).toBe(1);
     }));
 
@@ -172,7 +172,7 @@ describe('NfRegistryManageBucket Component', function () {
 
         //assertions
         const routerCall = comp.router.navigateByUrl.calls.first();
-        expect(routerCall.args[0]).toBe('/nifi-registry/administration/workflow');
+        expect(routerCall.args[0]).toBe('administration/workflow');
         expect(comp.router.navigateByUrl.calls.count()).toBe(1);
     }));
 

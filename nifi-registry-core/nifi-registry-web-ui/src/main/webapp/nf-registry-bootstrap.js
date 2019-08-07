@@ -46,7 +46,7 @@ const providers = [];
 if (!locale || locale === 'en-us') {
     bootstrapModule();
 } else { //load the translation providers and bootstrap the module
-    var translationFile = './nifi-registry/assets/locale/messages.' + locale + '.xlf';
+    var translationFile = 'assets/locale/messages.' + locale + '.xlf';
 
     $.ajax({
         url: translationFile

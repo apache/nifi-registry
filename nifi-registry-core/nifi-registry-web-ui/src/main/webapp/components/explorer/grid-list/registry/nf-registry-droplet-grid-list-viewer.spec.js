@@ -174,7 +174,7 @@ describe('NfRegistryDropletGridListViewer Component', function () {
 
         //assertions
         const routerCall = comp.router.navigateByUrl.calls.first();
-        expect(routerCall.args[0]).toBe('/nifi-registry/explorer/grid-list');
+        expect(routerCall.args[0]).toBe('explorer/grid-list');
         expect(comp.router.navigateByUrl.calls.count()).toBe(2);
     }));
 

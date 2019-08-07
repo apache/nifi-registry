@@ -37,7 +37,7 @@ import {
 
 // eslint-disable-next-line new-cap
 const NfRegistryRoutes = new RouterModule.forRoot([{
-    path: 'nifi-registry/explorer',
+    path: 'explorer',
     component: NfRegistryExplorer,
     children: [
         {
@@ -61,11 +61,11 @@ const NfRegistryRoutes = new RouterModule.forRoot([{
         }
     ]
 }, {
-    path: 'nifi-registry/login',
+    path: 'login',
     component: NfLoginComponent,
     canActivate: [NfRegistryLoginAuthGuard]
 }, {
-    path: 'nifi-registry/administration',
+    path: 'administration',
     component: NfRegistryAdministration,
     children: [{
         path: '',
@@ -81,15 +81,15 @@ const NfRegistryRoutes = new RouterModule.forRoot([{
         canActivate: [NfRegistryWorkflowsAdministrationAuthGuard]
     }]
 }, {
-    path: 'nifi-registry/explorer/grid-list/buckets',
-    redirectTo: '/nifi-registry/explorer/grid-list',
+    path: 'explorer/grid-list/buckets',
+    redirectTo: '/explorer/grid-list',
     pathMatch: 'full'
 }, {
     path: 'nifi-registry',
-    redirectTo: '/nifi-registry/explorer/grid-list'
+    redirectTo: 'explorer/grid-list'
 }, {
     path: '',
-    redirectTo: '/nifi-registry/explorer/grid-list',
+    redirectTo: 'explorer/grid-list',
     pathMatch: 'full'
 }, {
     path: '**',

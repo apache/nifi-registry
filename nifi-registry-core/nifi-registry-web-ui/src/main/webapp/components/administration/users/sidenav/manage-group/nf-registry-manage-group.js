@@ -90,9 +90,9 @@ NfRegistryManageGroup.prototype = {
                     self.groupname = response.identity;
                     self.sortUsers(self.usersColumns.find(usersColumn => usersColumn.active === true));
                 } else if (response.status === 404) {
-                    self.router.navigateByUrl('/nifi-registry/administration/users');
+                    self.router.navigateByUrl('administration/users');
                 } else if (response.status === 409) {
-                    self.router.navigateByUrl('/nifi-registry/administration/workflow');
+                    self.router.navigateByUrl('administration/workflow');
                 }
             });
     },
@@ -109,7 +109,7 @@ NfRegistryManageGroup.prototype = {
      * Navigate to administer users for current registry.
      */
     closeSideNav: function () {
-        this.router.navigateByUrl('/nifi-registry/administration/users');
+        this.router.navigateByUrl('administration/users');
     },
 
     /**

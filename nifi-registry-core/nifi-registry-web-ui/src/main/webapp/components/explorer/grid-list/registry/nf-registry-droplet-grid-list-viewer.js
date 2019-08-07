@@ -73,16 +73,16 @@ NfRegistryDropletGridListViewer.prototype = {
                     if (!response[1].status || response[1].status === 200) {
                         var bucket = response[1];
                         self.nfRegistryService.bucket = bucket;
-                        self.router.navigateByUrl('/nifi-registry/explorer/grid-list/buckets/' + bucket.identifier);
+                        self.router.navigateByUrl('explorer/grid-list/buckets/' + bucket.identifier);
                     } else if (response[1].status === 404) {
-                        self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                        self.router.navigateByUrl('explorer/grid-list');
                     }
                 }
                 if (!response[1].status || response[1].status === 200) {
                     var bucket = response[1];
                     self.nfRegistryService.bucket = bucket;
                 } else if (response[1].status === 404) {
-                    self.router.navigateByUrl('/nifi-registry/explorer/grid-list');
+                    self.router.navigateByUrl('explorer/grid-list');
                 }
                 if (!response[2].status || response[2].status === 200) {
                     var buckets = response[2];

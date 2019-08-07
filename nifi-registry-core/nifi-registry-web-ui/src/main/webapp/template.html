@@ -19,7 +19,13 @@
 <html>
 <head>
     <title>NiFi Registry</title>
-    <base href="/">
+    <script type="text/javascript">
+        var pathname = document.location.pathname;
+        var appRootIndex = document.location.pathname.indexOf('/nifi-registry/');
+        var base = document.createElement('base');
+        base.setAttribute('href', document.location.pathname.substring(0, appRootIndex) + '/nifi-registry/');
+        document.head.appendChild(base);
+    </script>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>

@@ -26,8 +26,8 @@ var headers = new Headers({'Content-Type': 'application/json'});
 
 var config = {
     urls: {
-        currentUser: '/nifi-registry-api/access',
-        kerberos: '/nifi-registry-api/access/token/kerberos'
+        currentUser: '../nifi-registry-api/access',
+        kerberos: '../nifi-registry-api/access/token/kerberos'
     }
 };
 
@@ -56,7 +56,7 @@ NfRegistryApi.prototype = {
      */
     getDropletSnapshotMetadata: function (dropletUri) {
         var self = this;
-        var url = '/nifi-registry-api/' + dropletUri;
+        var url = '../nifi-registry-api/' + dropletUri;
         url += '/versions';
         return this.http.get(url).pipe(
             map(function (response) {
@@ -84,7 +84,7 @@ NfRegistryApi.prototype = {
      */
     getDroplet: function (bucketId, dropletType, dropletId) {
         var self = this;
-        var url = '/nifi-registry-api/buckets/' + bucketId + '/' + dropletType + '/' + dropletId;
+        var url = '../nifi-registry-api/buckets/' + bucketId + '/' + dropletType + '/' + dropletId;
         return this.http.get(url).pipe(
             map(function (response) {
                 return response;
@@ -111,7 +111,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     getDroplets: function (bucketId) {
-        var url = '/nifi-registry-api/items';
+        var url = '../nifi-registry-api/items';
         if (bucketId) {
             url += '/' + bucketId;
         }
@@ -138,7 +138,7 @@ NfRegistryApi.prototype = {
      */
     deleteDroplet: function (dropletUri) {
         var self = this;
-        return this.http.delete('/nifi-registry-api/' + dropletUri, headers).pipe(
+        return this.http.delete('../nifi-registry-api/' + dropletUri, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -162,7 +162,7 @@ NfRegistryApi.prototype = {
      */
     createBucket: function (name, allowPublicRead) {
         var self = this;
-        return this.http.post('/nifi-registry-api/buckets', {'name': name, 'allowPublicRead': allowPublicRead}, headers).pipe(
+        return this.http.post('../nifi-registry-api/buckets', {'name': name, 'allowPublicRead': allowPublicRead}, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -186,7 +186,7 @@ NfRegistryApi.prototype = {
      */
     deleteBucket: function (bucketId) {
         var self = this;
-        return this.http.delete('/nifi-registry-api/buckets/' + bucketId, headers).pipe(
+        return this.http.delete('../nifi-registry-api/buckets/' + bucketId, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -210,7 +210,7 @@ NfRegistryApi.prototype = {
      */
     getBucket: function (bucketId) {
         var self = this;
-        var url = '/nifi-registry-api/buckets/' + bucketId;
+        var url = '../nifi-registry-api/buckets/' + bucketId;
         return this.http.get(url).pipe(
             map(function (response) {
                 return response;
@@ -237,7 +237,7 @@ NfRegistryApi.prototype = {
      */
     getBuckets: function () {
         var self = this;
-        var url = '/nifi-registry-api/buckets';
+        var url = '../nifi-registry-api/buckets';
         return this.http.get(url).pipe(
             map(function (response) {
                 return response;
@@ -261,7 +261,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     updateBucket: function (updatedBucket) {
-        return this.http.put('/nifi-registry-api/buckets/' + updatedBucket.identifier, updatedBucket, headers).pipe(
+        return this.http.put('../nifi-registry-api/buckets/' + updatedBucket.identifier, updatedBucket, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -279,7 +279,7 @@ NfRegistryApi.prototype = {
      */
     getUser: function (userId) {
         var self = this;
-        return this.http.get('/nifi-registry-api/tenants/users/' + userId).pipe(
+        return this.http.get('../nifi-registry-api/tenants/users/' + userId).pipe(
             map(function (response) {
                 return response;
             }),
@@ -303,7 +303,7 @@ NfRegistryApi.prototype = {
      */
     addUser: function (identity) {
         var self = this;
-        return this.http.post('/nifi-registry-api/tenants/users', {
+        return this.http.post('../nifi-registry-api/tenants/users', {
             identity: identity,
             resourcePermissions: {
                 anyTopLevelResource: {
@@ -356,7 +356,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     updateUser: function (identifier, identity) {
-        return this.http.put('/nifi-registry-api/tenants/users/' + identifier, {
+        return this.http.put('../nifi-registry-api/tenants/users/' + identifier, {
             'identifier': identifier,
             'identity': identity
         }, headers).pipe(
@@ -376,7 +376,7 @@ NfRegistryApi.prototype = {
      */
     getUsers: function () {
         var self = this;
-        return this.http.get('/nifi-registry-api/tenants/users').pipe(
+        return this.http.get('../nifi-registry-api/tenants/users').pipe(
             map(function (response) {
                 return response;
             }),
@@ -400,7 +400,7 @@ NfRegistryApi.prototype = {
      */
     deleteUser: function (userId) {
         var self = this;
-        return this.http.delete('/nifi-registry-api/tenants/users/' + userId, headers).pipe(
+        return this.http.delete('../nifi-registry-api/tenants/users/' + userId, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -423,7 +423,7 @@ NfRegistryApi.prototype = {
      */
     getUserGroups: function () {
         var self = this;
-        return this.http.get('/nifi-registry-api/tenants/user-groups').pipe(
+        return this.http.get('../nifi-registry-api/tenants/user-groups').pipe(
             map(function (response) {
                 return response;
             }),
@@ -447,7 +447,7 @@ NfRegistryApi.prototype = {
      */
     getUserGroup: function (groupId) {
         var self = this;
-        return this.http.get('/nifi-registry-api/tenants/user-groups/' + groupId).pipe(
+        return this.http.get('../nifi-registry-api/tenants/user-groups/' + groupId).pipe(
             map(function (response) {
                 return response;
             }),
@@ -471,7 +471,7 @@ NfRegistryApi.prototype = {
      */
     deleteUserGroup: function (userGroupId) {
         var self = this;
-        return this.http.delete('/nifi-registry-api/tenants/user-groups/' + userGroupId, headers).pipe(
+        return this.http.delete('../nifi-registry-api/tenants/user-groups/' + userGroupId, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -497,7 +497,7 @@ NfRegistryApi.prototype = {
      */
     createNewGroup: function (identifier, identity, users) {
         var self = this;
-        return this.http.post('/nifi-registry-api/tenants/user-groups', {
+        return this.http.post('../nifi-registry-api/tenants/user-groups', {
             'identifier': identifier,
             'identity': identity,
             'users': users
@@ -526,7 +526,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     updateUserGroup: function (identifier, identity, users) {
-        return this.http.put('/nifi-registry-api/tenants/user-groups/' + identifier, {
+        return this.http.put('../nifi-registry-api/tenants/user-groups/' + identifier, {
             'identifier': identifier,
             'identity': identity,
             'users': users
@@ -546,7 +546,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     getPolicies: function () {
-        var url = '/nifi-registry-api/policies';
+        var url = '../nifi-registry-api/policies';
         return this.http.get(url).pipe(
             map(function (response) {
                 return response;
@@ -566,7 +566,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     getResourcePoliciesById: function (action, resource, resourceId) {
-        return this.http.get('/nifi-registry-api/policies/' + action + resource + '/' + resourceId).pipe(
+        return this.http.get('../nifi-registry-api/policies/' + action + resource + '/' + resourceId).pipe(
             map(function (response) {
                 return response;
             }),
@@ -584,7 +584,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     getPolicyActionResource: function (action, resource) {
-        return this.http.get('/nifi-registry-api/policies/' + action + resource).pipe(
+        return this.http.get('../nifi-registry-api/policies/' + action + resource).pipe(
             map(function (response) {
                 return response;
             }),
@@ -606,7 +606,7 @@ NfRegistryApi.prototype = {
      */
     putPolicyActionResource: function (identifier, action, resource, users, userGroups) {
         var self = this;
-        return this.http.put('/nifi-registry-api/policies/' + identifier, {
+        return this.http.put('../nifi-registry-api/policies/' + identifier, {
             'identifier': identifier,
             'resource': resource,
             'action': action,
@@ -639,7 +639,7 @@ NfRegistryApi.prototype = {
      */
     postPolicyActionResource: function (action, resource, users, userGroups) {
         var self = this;
-        return this.http.post('/nifi-registry-api/policies', {
+        return this.http.post('../nifi-registry-api/policies', {
             'resource': resource,
             'action': action,
             'users': users,
@@ -680,7 +680,7 @@ NfRegistryApi.prototype = {
             withCredentials: true,
             responseType: 'text'
         };
-        return this.http.post('/nifi-registry-api/access/token/login', null, options).pipe(
+        return this.http.post('../nifi-registry-api/access/token/login', null, options).pipe(
             map(function (jwt) {
                 // get the payload and store the token with the appropriate expiration
                 var token = self.nfStorage.getJwtPayload(jwt);
@@ -780,7 +780,7 @@ NfRegistryApi.prototype = {
      * @returns {*}
      */
     getRegistryConfig: function (action, resource) {
-        return this.http.get('/nifi-registry-api/config').pipe(
+        return this.http.get('../nifi-registry-api/config').pipe(
             map(function (response) {
                 return response;
             }),
