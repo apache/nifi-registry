@@ -23,7 +23,7 @@ env:
 os: linux
 
 jdk:
-    - oraclejdk8
+    - openjdk8
 
 # Caches mvn repository in order to speed up builds
 cache:
@@ -34,6 +34,9 @@ cache:
 before_cache:
     # Remove nifi repo again to save travis from caching it
     - rm -rf $HOME/.m2/repository/org/apache/nifi-registry/
+
+services:
+    - xvfb
 
 addons:
     chrome: stable
@@ -47,7 +50,6 @@ before_install:
 #   1. simulate an `X` server on Travis CI for karma tests that require a GUI
 before_script:
     - export DISPLAY=:99.0
-    - sh -e /etc/init.d/xvfb start
     - sleep 3 # give xvfb some time to start
 
 # skip the installation step entirely

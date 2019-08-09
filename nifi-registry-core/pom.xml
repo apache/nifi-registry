@@ -47,6 +47,7 @@
         <module>nifi-registry-docker</module>
         <module>nifi-registry-bundle-utils</module>
         <module>nifi-registry-test</module>
+	<module>nifi-registry-revision</module>
     </modules>
 
     <dependencyManagement>
