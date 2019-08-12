@@ -30,6 +30,7 @@
         <frontend.dependency.configs>${basedir}/src/main</frontend.dependency.configs>
         <frontend.working.dir>${project.build.directory}/frontend-working-directory</frontend.working.dir>
         <frontend.assets>${project.build.directory}/${project.build.finalName}/node_modules</frontend.assets>
+        <npm.bundle.script>build:webapp:bundle:production</npm.bundle.script>
     </properties>
     <build>
         <!--
@@ -199,10 +200,10 @@
                                     <directory>${frontend.working.dir}</directory>
                                     <filtering>false</filtering>
                                     <includes>
-                                        <include>nf-registry.bundle.min.*.js*</include>
-                                        <include>vendor.min.*.js*</include>
-                                        <include>nf-registry.style.min.*.css*</include>
-                                        <include>vendor.min.*.css*</include>
+                                        <include>nf-registry.bundle.min*.js*</include>
+                                        <include>vendor.min*.js*</include>
+                                        <include>nf-registry.style.min*.css*</include>
+                                        <include>vendor.min*.css*</include>
                                         <include>index.html</include>
                                         <include>assets/**/*</include>
                                         <include>registry-favicon.png</include>
@@ -260,7 +261,7 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <arguments>run build:webapp:bundle:production</arguments>
+                            <arguments>run ${npm.bundle.script}</arguments>
                             <workingDirectory>${frontend.working.dir}</workingDirectory>
                         </configuration>
                     </execution>
@@ -339,7 +340,14 @@
             <id>development-mode</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>dev</value>
+                </property>
             </activation>
+            <properties>
+                <npm.bundle.script>build:webapp:bundle:development</npm.bundle.script>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

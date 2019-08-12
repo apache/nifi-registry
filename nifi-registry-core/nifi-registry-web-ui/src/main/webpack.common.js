@@ -84,6 +84,6 @@ module.exports = {
 
     plugins: [
         // Fix style only entry generating an extra js file
-        new FixStyleOnlyEntriesPlugin()
+        new FixStyleOnlyEntriesPlugin({ silent: true })
     ]
 };
