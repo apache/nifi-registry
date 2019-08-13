@@ -452,8 +452,8 @@ describe('NfRegistryManageBucket Component', function () {
         //assertions
         expect(column.active).toBe(true);
         const filterPoliciesCall = comp.filterPolicies.calls.first();
-        expect(filterPoliciesCall.args[0]).toBeUndefined();
-        expect(filterPoliciesCall.args[1]).toBeUndefined();
+        expect(filterPoliciesCall.args[0]).toBe('identity');
+        expect(filterPoliciesCall.args[1]).toBe('ASC');
     }));
 
     it('should remove policy from bucket', fakeAsync(function () {

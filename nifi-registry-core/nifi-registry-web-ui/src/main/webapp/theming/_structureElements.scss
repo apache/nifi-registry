@@ -246,11 +246,6 @@ body[fds] .tab-toggle-group > .mat-button-toggle-appearance-standard {
 }
 
 // TODO: remove after NIFI-6547 is available in NiFi FDS 0.3.0
-//body[fds] .tab-toggle-group .mat-button-toggle-checked {
-//    background: transparent;
-//}
-
-// TODO: remove after NIFI-6547 is available in NiFi FDS 0.3.0
 body[fds] .tab-toggle-group > .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
     line-height: 38px;
 }

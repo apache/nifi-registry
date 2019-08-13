@@ -2059,8 +2059,8 @@ describe('NfRegistryManageGroup Component', function () {
         //assertions
         expect(column.active).toBe(true);
         const filterUsersCall = comp.filterUsers.calls.first();
-        expect(filterUsersCall.args[0]).toBeUndefined();
-        expect(filterUsersCall.args[1]).toBeUndefined();
+        expect(filterUsersCall.args[0]).toBe('identity');
+        expect(filterUsersCall.args[1]).toBe('ASC');
     }));
 
     it('should remove user from group', fakeAsync(function () {
