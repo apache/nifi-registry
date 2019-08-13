@@ -50,7 +50,8 @@ function NfRegistryManageBucket(nfRegistryApi, nfRegistryService, tdDataTableSer
             label: 'Display Name',
             sortable: true,
             tooltip: 'User/Group name.',
-            width: 40
+            width: 40,
+            active: true
         },
         {
             name: 'permissions',
@@ -127,7 +128,7 @@ NfRegistryManageBucket.prototype = {
                                     });
                                 }
                             });
-                            self.filterPolicies(this.sortBy, this.sortOrder);
+                            self.sortBuckets(self.bucketPoliciesColumns.find(bucketPoliciesColumn => bucketPoliciesColumn.active === true));
                         }
                     }
                 } else if (response[0].status === 404) {
@@ -200,7 +201,8 @@ NfRegistryManageBucket.prototype = {
             data: {
                 userOrGroup: userOrGroup,
                 disableClose: true
-            }
+            },
+            width: '400px'
         }).afterClosed().subscribe(function (dialogResult) {
             self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier)
                 .subscribe(function (response) {

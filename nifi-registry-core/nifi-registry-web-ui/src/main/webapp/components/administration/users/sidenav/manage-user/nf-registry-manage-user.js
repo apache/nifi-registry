@@ -52,7 +52,8 @@ function NfRegistryManageUser(nfRegistryApi, nfRegistryService, tdDataTableServi
             label: 'Display Name',
             sortable: true,
             tooltip: 'Group name.',
-            width: 100
+            width: 100,
+            active: true
         }
     ];
 
@@ -87,7 +88,7 @@ NfRegistryManageUser.prototype = {
                     self.nfRegistryService.sidenav.open();
                     self.nfRegistryService.user = response;
                     self.username = response.identity;
-                    self.filterGroups(this.sortBy, this.sortOrder);
+                    self.sortGroups(self.userGroupsColumns.find(userGroupsColumn => userGroupsColumn.active === true));
                 } else if (response.status === 404) {
                     self.router.navigateByUrl('/nifi-registry/administration/users');
                 } else if (response.status === 409) {
@@ -456,7 +457,8 @@ NfRegistryManageUser.prototype = {
             data: {
                 user: this.nfRegistryService.user,
                 disableClose: true
-            }
+            },
+            width: '400px'
         }).afterClosed().subscribe(function () {
             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                 .subscribe(function (response) {

@@ -23,15 +23,15 @@ limitations under the License.
         </button>
     </div>
     <div class="sidenav-content">
-        <div class="pad-bottom-md pad-left-md pad-right-md" flex fxLayoutAlign="start center">
-            <mat-form-field flex>
+        <div class="pad-left-md pad-right-md" flex fxLayoutAlign="start center">
+            <mat-form-field floatLabel="always" flex>
                 <input #groupnameInput matInput
                        [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || !nfRegistryService.group.configurable"
                        placeholder="Identity/Group Name"
                        value="{{nfRegistryService.group.identity}}"
-                       [(ngModel)]="_groupname">
+                       [(ngModel)]="groupname">
             </mat-form-field>
-            <button [disabled]="nfRegistryService.group.identity === _groupname || !nfRegistryService.group.configurable"
+            <button [disabled]="nfRegistryService.group.identity === groupname || !nfRegistryService.group.configurable"
                     (click)="updateGroupName(groupnameInput.value)"
                     class="input-button"
                     color="fds-regular"
@@ -167,7 +167,9 @@ limitations under the License.
         <div *ngIf="manageGroupPerspective === 'membership'">
             <div *ngIf="nfRegistryService.group.users" class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
                 <div flex fxLayout="row" fxLayoutAlign="space-between center">
-                    <span class="md-card-title">Membership ({{nfRegistryService.group.users.length}})</span>
+                    <mat-card-title class="ellipsis">
+                        Membership ({{nfRegistryService.group.users.length}})
+                    </mat-card-title>
                     <button color="fds-secondary"
                             [disabled]="!nfRegistryService.currentUser.resourcePermissions.tenants.canWrite || !nfRegistryService.group.configurable"
                             mat-raised-button

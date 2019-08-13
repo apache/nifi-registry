@@ -110,7 +110,8 @@ NfRegistryUsersAdministration.prototype = {
      */
     addUser: function () {
         this.dialog.open(NfRegistryAddUser, {
-            disableClose: true
+            disableClose: true,
+            width: '400px'
         });
     },
 
@@ -119,7 +120,8 @@ NfRegistryUsersAdministration.prototype = {
      */
     createNewGroup: function () {
         this.dialog.open(NfRegistryCreateNewGroup, {
-            disableClose: true
+            disableClose: true,
+            width: '400px'
         });
     },
 

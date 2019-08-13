@@ -16,7 +16,9 @@ limitations under the License.
 -->
 <div id="nifi-registry-workflow-administration-perspective-buckets-container" class="mat-elevation-z5">
     <div fxFlex class="pad-top-md pad-bottom-sm pad-left-md pad-right-md">
-        <span class="md-card-title">Buckets ({{nfRegistryService.buckets.length}})</span>
+        <mat-card-title class="ellipsis">
+            Buckets ({{nfRegistryService.buckets.length}})
+        </mat-card-title>
         <div flex class="push-right-sm" fxLayout="row" fxLayoutAlign="end center">
             <td-chips class="push-right-sm"
                       [items]="nfRegistryService.autoCompleteBuckets"

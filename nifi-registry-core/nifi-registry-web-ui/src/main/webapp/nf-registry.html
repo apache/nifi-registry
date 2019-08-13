@@ -83,9 +83,9 @@ limitations under the License.
                     routerLink="/nifi-registry/administration/workflow">
                 <i class="fa fa-wrench" aria-hidden="true"></i>
             </button>
-            <button matTooltip="Close settings" mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
+            <button color="primary" matTooltip="Close settings" mat-ripple *ngIf="nfRegistryService.perspective === 'administration'" mat-mini-fab
                     routerLink="/nifi-registry/explorer/{{(nfRegistryService.explorerViewType) ? nfRegistryService.explorerViewType : 'grid-list'}}">
-                <mat-icon color="primary">close</mat-icon>
+                <mat-icon>close</mat-icon>
             </button>
         </mat-toolbar>
         <div id="nf-registry-perspectives-container">

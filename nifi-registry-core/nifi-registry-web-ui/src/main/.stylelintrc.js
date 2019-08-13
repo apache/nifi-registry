@@ -24,7 +24,7 @@ module.exports = {
         }],
         "declaration-empty-line-before": null,
         "selector-type-no-unknown": [true, {
-            "ignoreTypes": ["/mat-/", "/flow-designer-/", "/fds-/"]
+            "ignoreTypes": ["/mat-/", "/flow-designer-/", "/fds-/", "/td-/"]
         }],
         "font-family-no-missing-generic-family-keyword": null
     }

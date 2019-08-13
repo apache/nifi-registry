@@ -22,6 +22,7 @@
 // Path overrides
 $fa-font-path: './assets/fonts';
 $mat-font-url: './assets/fonts/';
+$fdsFontPath: './node_modules/roboto-fontface/fonts';
 
 @import '~@nifi-fds/core/common/styles/flow-design-system';
 @import '~@covalent/core/common/platform.scss';

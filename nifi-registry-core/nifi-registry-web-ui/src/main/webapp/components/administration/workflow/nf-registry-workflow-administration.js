@@ -82,7 +82,8 @@ NfRegistryWorkflowAdministration.prototype = {
      */
     createBucket: function () {
         this.dialog.open(NfRegistryCreateBucket, {
-            disableClose: true
+            disableClose: true,
+            width: '400px'
         });
     }
 };

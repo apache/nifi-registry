@@ -52,7 +52,8 @@ function NfRegistryManageGroup(nfRegistryApi, nfRegistryService, tdDataTableServ
             label: 'Display Name',
             sortable: true,
             tooltip: 'Group name.',
-            width: 100
+            width: 100,
+            active: true
         }
     ];
 
@@ -87,7 +88,7 @@ NfRegistryManageGroup.prototype = {
                     self.nfRegistryService.sidenav.open();
                     self.nfRegistryService.group = response;
                     self.groupname = response.identity;
-                    self.filterUsers();
+                    self.sortUsers(self.usersColumns.find(usersColumn => usersColumn.active === true));
                 } else if (response.status === 404) {
                     self.router.navigateByUrl('/nifi-registry/administration/users');
                 } else if (response.status === 409) {

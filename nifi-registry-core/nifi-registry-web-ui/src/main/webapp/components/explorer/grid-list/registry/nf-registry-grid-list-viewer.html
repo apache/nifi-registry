@@ -97,10 +97,10 @@ limitations under the License.
                                              *ngFor="let snapshotMeta of droplet.snapshotMetadata; let i = index"
                                              [active]="i === 0 ? true : false">
                                         <div fxLayout="column" fxLayoutAlign="space-between stretch">
-                                            <div *ngIf="snapshotMeta.comments" fxLayout="row" class="md-body-2">
+                                            <div *ngIf="snapshotMeta.comments" fxLayout="row" class="mat-body-2">
                                                 {{snapshotMeta.comments}}
                                             </div>
-                                            <div *ngIf="!snapshotMeta.comments" fxLayout="row" class="md-body-2">
+                                            <div *ngIf="!snapshotMeta.comments" fxLayout="row" class="mat-body-2">
                                                 No comments specified
                                             </div>
                                             <div fxLayout="row" class="mat-caption">

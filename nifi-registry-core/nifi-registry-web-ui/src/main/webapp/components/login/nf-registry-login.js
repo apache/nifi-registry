@@ -42,7 +42,8 @@ NfLoginComponent.prototype = {
     ngOnInit: function () {
         this.nfRegistryService.perspective = 'login';
         this.dialog.open(NfUserLoginComponent, {
-            disableClose: true
+            disableClose: true,
+            width: '400px'
         });
     }
 };
