@@ -53,7 +53,9 @@ if (!locale || locale === 'en-us') {
     }).done(function (translations) {
         // add providers if translation file for locale is loaded
         if (translations) {
-            providers.push({provide: TRANSLATIONS, useValue: translations.documentElement.innerHTML});
+            var parser = new DOMParser();
+            var translationsDom = parser.parseFromString(translations, 'text/xml');
+            providers.push({provide: TRANSLATIONS, useValue: translationsDom.documentElement.innerHTML});
             providers.push({provide: TRANSLATIONS_FORMAT, useValue: 'xlf'});
             providers.push({provide: LOCALE_ID, useValue: locale});
         }
