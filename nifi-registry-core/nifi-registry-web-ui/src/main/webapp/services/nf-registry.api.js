@@ -56,7 +56,7 @@ NfRegistryApi.prototype = {
      */
     getDropletSnapshotMetadata: function (dropletUri) {
         var self = this;
-        var url = '/nifi-registry-api/' + dropletUri;
+        var url = '../nifi-registry-api/' + dropletUri;
         url += '/versions';
         return this.http.get(url).pipe(
             map(function (response) {

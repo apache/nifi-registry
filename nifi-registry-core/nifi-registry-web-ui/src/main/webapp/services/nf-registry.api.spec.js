@@ -58,7 +58,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+        req = httpMock.expectOne('../nifi-registry-api/access/token/kerberos');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -94,7 +94,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/access/token/kerberos');
+        req = httpMock.expectOne('../nifi-registry-api/access/token/kerberos');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -112,7 +112,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/access');
+        req = httpMock.expectOne('../nifi-registry-api/access');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -130,7 +130,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.getDropletSnapshotMetadata('flow/test').subscribe(function (response) {
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/flow/test/versions');
+        req = httpMock.expectOne('../nifi-registry-api/flow/test/versions');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -151,19 +151,19 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getDropletSnapshotMetadata('flow/test').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/flow/test/versions: 401 GET droplet mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/flow/test/versions: 401 GET droplet mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/flow/test/versions: 401 GET droplet mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/flow/test/versions: 401 GET droplet mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/flow/test/versions');
+        req = httpMock.expectOne('../nifi-registry-api/flow/test/versions');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/flow/test/versions: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/flow/test/versions: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -177,7 +177,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response.name).toEqual('Flow #1');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -214,20 +214,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getDroplet('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'flows', '2e04b4fb-9513-47bb-aa74-1ae34616bfdc').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Flow Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc/flows/2e04b4fb-9513-47bb-aa74-1ae34616bfdc: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -243,7 +243,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response[1].name).toEqual('Flow #2');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/items');
+        req = httpMock.expectOne('../nifi-registry-api/items');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -286,15 +286,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     it('should fail to GET all droplets across all buckets.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplets().subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/items: 401 GET droplet mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/items: 401 GET droplet mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/items');
+        req = httpMock.expectOne('../nifi-registry-api/items');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/items: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/items: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -308,7 +308,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response[0].name).toEqual('Flow #1');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -336,15 +336,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     it('should fail to GET all droplets across a single bucket.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getDroplets('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/items/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET droplet mock error', {status: 401, statusText: 'GET droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -356,7 +356,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/flows/1234');
+        req = httpMock.expectOne('../nifi-registry-api/flows/1234');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -373,20 +373,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.deleteDroplet('flows/1234').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/flows/1234: 401 DELETE droplet mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/flows/1234: 401 DELETE droplet mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/flows/1234: 401 DELETE droplet mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/flows/1234: 401 DELETE droplet mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/flows/1234');
+        req = httpMock.expectOne('../nifi-registry-api/flows/1234');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/flows/1234: 401 DELETE droplet mock error', {status: 401, statusText: 'DELETE droplet mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/flows/1234: 401 DELETE droplet mock error', {status: 401, statusText: 'DELETE droplet mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -398,7 +398,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response.identifier).toBe('1234');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets');
+        req = httpMock.expectOne('../nifi-registry-api/buckets');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -417,20 +417,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.createBucket('test').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets: 401 POST bucket mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets: 401 POST bucket mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets: 401 POST bucket mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets: 401 POST bucket mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets');
+        req = httpMock.expectOne('../nifi-registry-api/buckets');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/buckets: 401 POST bucket mock error', {status: 401, statusText: 'POST bucket mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets: 401 POST bucket mock error', {status: 401, statusText: 'POST bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -441,7 +441,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         nfRegistryApi.deleteBucket('1234').subscribe(function (response) {
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/1234');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/1234');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -458,19 +458,19 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.deleteBucket('1234').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/1234: 401 DELETE bucket mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets/1234: 401 DELETE bucket mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets/1234: 401 DELETE bucket mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets/1234: 401 DELETE bucket mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/1234');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/1234');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/buckets/1234: 401 DELETE bucket mock error', {status: 401, statusText: 'DELETE bucket mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets/1234: 401 DELETE bucket mock error', {status: 401, statusText: 'DELETE bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -483,7 +483,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response.name).toEqual('Bucket #1');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -508,20 +508,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getBucket('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Bucket Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error', {status: 401, statusText: 'GET bucket mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET bucket mock error', {status: 401, statusText: 'GET bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -534,7 +534,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response[0].name).toEqual('Bucket #1');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets');
+        req = httpMock.expectOne('../nifi-registry-api/buckets');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -554,20 +554,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getBuckets().subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets: 401 GET metadata mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Buckets Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets: 401 GET metadata mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets');
+        req = httpMock.expectOne('../nifi-registry-api/buckets');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/buckets: 401 GET metadata mock error', {status: 401, statusText: 'GET metadata mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets: 401 GET metadata mock error', {status: 401, statusText: 'GET metadata mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -587,7 +587,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response[0].allowPublicRead).toEqual(true);
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
@@ -609,15 +609,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             'name': 'Bucket #1',
             'allowBundleRedeploy': false
         }).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error', {status: 401, statusText: 'PUT to update a bucket name mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a bucket name mock error', {status: 401, statusText: 'PUT to update a bucket name mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -630,7 +630,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response[0].name).toEqual('User #1');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -650,20 +650,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('User Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error', {status: 401, statusText: 'GET user by id mock error', error: 'test'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 GET user by id mock error', {status: 401, statusText: 'GET user by id mock error', error: 'test'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -676,7 +676,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -695,20 +695,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.addUser('test').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users: 401 POST add user mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users: 401 POST add user mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/users: 401 POST add user mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/users: 401 POST add user mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/users: 401 POST add user mock error', {status: 401, statusText: 'POST add user mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/users: 401 POST add user mock error', {status: 401, statusText: 'POST add user mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -721,7 +721,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             expect(response[0].name).toEqual('user #1');
         });
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
@@ -737,15 +737,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     it('should fail to PUT to update a user name.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.updateUser('2f7f9e54-dc09-4ceb-aa58-9fe581319cdc', 'user #1').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error', {status: 401, statusText: 'PUT to update a user name mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/users/2f7f9e54-dc09-4ceb-aa58-9fe581319cdc: 401 PUT to update a user name mock error', {status: 401, statusText: 'PUT to update a user name mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -758,7 +758,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -778,20 +778,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getUsers().subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users: 401 GET users mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users: 401 GET users mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Users Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/users: 401 GET users mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/users: 401 GET users mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/users: 401 GET users mock error', {status: 401, statusText: 'GET users mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/users: 401 GET users mock error', {status: 401, statusText: 'GET users mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -804,7 +804,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/123');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -824,20 +824,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.deleteUser(123).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/users/123: 401 DELETE users mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users/123: 401 DELETE users mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/users/123: 401 DELETE users mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/users/123: 401 DELETE users mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/users/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/123');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/users/123: 401 DELETE users mock error', {status: 401, statusText: 'DELETE users mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/users/123: 401 DELETE users mock error', {status: 401, statusText: 'DELETE users mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -850,7 +850,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -870,20 +870,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getUserGroups().subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups: 401 GET user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Groups Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/user-groups: 401 GET user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -896,7 +896,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets/123');
+        req = httpMock.expectOne('../nifi-registry-api/policies/read/buckets/123');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -915,15 +915,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getResourcePoliciesById('read', '/buckets', '123').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets/123');
+        req = httpMock.expectOne('../nifi-registry-api/policies/read/buckets/123');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error', {status: 401, statusText: 'GET get resource policies by id mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/policies/read/buckets/123: 401 GET get resource policies by id mock error', {status: 401, statusText: 'GET get resource policies by id mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -936,7 +936,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets');
+        req = httpMock.expectOne('../nifi-registry-api/policies/read/buckets');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -955,15 +955,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getPolicyActionResource('read', '/buckets').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies/read/buckets');
+        req = httpMock.expectOne('../nifi-registry-api/policies/read/buckets');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error', {status: 401, statusText: 'GET policy action resource mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/policies/read/buckets: 401 GET policy action resource mock error', {status: 401, statusText: 'GET policy action resource mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -976,7 +976,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies/123');
+        req = httpMock.expectOne('../nifi-registry-api/policies/123');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
@@ -995,20 +995,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.putPolicyActionResource('123', 'read', '/buckets', [], []).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies/123: 401 PUT policy action resource mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/policies/123: 401 PUT policy action resource mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies/123: 401 PUT policy action resource mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/policies/123: 401 PUT policy action resource mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies/123');
+        req = httpMock.expectOne('../nifi-registry-api/policies/123');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/policies/123: 401 PUT policy action resource mock error', {status: 401, statusText: 'PUT policy action resource mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/policies/123: 401 PUT policy action resource mock error', {status: 401, statusText: 'PUT policy action resource mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1021,7 +1021,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies');
+        req = httpMock.expectOne('../nifi-registry-api/policies');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -1040,20 +1040,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.postPolicyActionResource('read', '/buckets', [], []).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies: 401 POST policy action resource mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/policies: 401 POST policy action resource mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/policies: 401 POST policy action resource mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/policies: 401 POST policy action resource mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies');
+        req = httpMock.expectOne('../nifi-registry-api/policies');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/policies: 401 POST policy action resource mock error', {status: 401, statusText: 'POST policy action resource mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/policies: 401 POST policy action resource mock error', {status: 401, statusText: 'POST policy action resource mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1066,7 +1066,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/access/token/login');
+        req = httpMock.expectOne('../nifi-registry-api/access/token/login');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -1092,11 +1092,11 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/access/token/login');
+        req = httpMock.expectOne('../nifi-registry-api/access/token/login');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/access/token/login: 401 POST to login mock error', {status: 401, statusText: 'POST to login mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/access/token/login: 401 POST to login mock error', {status: 401, statusText: 'POST to login mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1109,7 +1109,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies');
+        req = httpMock.expectOne('../nifi-registry-api/policies');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -1126,15 +1126,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
     it('should fail to GET all access policies.', inject([HttpTestingController], function (httpMock) {
         // api call
         nfRegistryApi.getPolicies().subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/policies: 401 GET policies mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/policies: 401 GET policies mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/policies');
+        req = httpMock.expectOne('../nifi-registry-api/policies');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/policies: 401 GET policies mock error', {status: 401, statusText: 'GET policies mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/policies: 401 GET policies mock error', {status: 401, statusText: 'GET policies mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1147,7 +1147,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
@@ -1167,20 +1167,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.getUserGroup(123).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Group Not Found');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
         expect(req.request.method).toEqual('GET');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 GET user groups mock error', {status: 401, statusText: 'GET user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1193,7 +1193,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -1213,20 +1213,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
         // api call
         nfRegistryApi.deleteUserGroup(123).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error', {status: 401, statusText: 'DELETE user groups mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error', {status: 401, statusText: 'DELETE user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1244,7 +1244,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
@@ -1268,20 +1268,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             identity: 'User #1',
             identifier: 9999
         }]).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups: 401 POST user groups mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups: 401 POST user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for /nifi-registry-api/tenants/user-groups: 401 POST user groups mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/user-groups: 401 POST user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups');
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups: 401 POST user groups mock error', {status: 401, statusText: 'POST user groups mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups: 401 POST user groups mock error', {status: 401, statusText: 'POST user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1299,7 +1299,7 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
@@ -1319,15 +1319,15 @@ describe('NfRegistry API w/ Angular testing utils', function () {
             identity: 'User #1',
             identifier: '9999'
         }]).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 PUT to update a user group name mock error');
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 PUT to update a user group name mock error');
         });
 
         // the request it made
-        req = httpMock.expectOne('/nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
         expect(req.request.method).toEqual('PUT');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for /nifi-registry-api/tenants/user-groups/123: 401 PUT to update a user group name mock error', {status: 401, statusText: 'PUT to update a user group name mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 PUT to update a user group name mock error', {status: 401, statusText: 'PUT to update a user group name mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
