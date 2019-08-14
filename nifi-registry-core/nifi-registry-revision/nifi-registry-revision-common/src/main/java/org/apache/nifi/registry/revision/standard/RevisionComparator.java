@@ -19,6 +19,7 @@ package org.apache.nifi.registry.revision.standard;
 import org.apache.nifi.registry.revision.api.Revision;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 public class RevisionComparator implements Comparator<Revision> {
 
@@ -29,7 +30,8 @@ public class RevisionComparator implements Comparator<Revision> {
             return entityComparison;
         }
 
-        final int clientComparison = o1.getClientId().compareTo(o2.getClientId());
+        final Comparator<String> nullSafeStringComparator = Comparator.nullsFirst(String::compareTo);
+        final int clientComparison = Objects.compare(o1.getClientId(), o2.getClientId(), nullSafeStringComparator);
         if (clientComparison != 0) {
             return clientComparison;
         }

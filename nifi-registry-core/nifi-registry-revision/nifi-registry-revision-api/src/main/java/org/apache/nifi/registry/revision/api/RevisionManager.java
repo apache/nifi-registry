@@ -25,6 +25,9 @@ import java.util.Map;
  * A Revision Manager provides the ability to prevent clients of the Web API from stepping on one another.
  * This is done by providing revisions for entities individually.
  * </p>
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
  */
 public interface RevisionManager {
 

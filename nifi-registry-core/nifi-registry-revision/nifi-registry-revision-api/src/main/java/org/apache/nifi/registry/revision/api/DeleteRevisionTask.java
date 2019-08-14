@@ -18,6 +18,9 @@ package org.apache.nifi.registry.revision.api;
 
 /**
  * A task that is responsible for deleting some entities.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
  */
 public interface DeleteRevisionTask<T> {
 

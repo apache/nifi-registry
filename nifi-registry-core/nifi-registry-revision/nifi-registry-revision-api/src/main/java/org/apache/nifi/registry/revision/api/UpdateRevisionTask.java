@@ -20,6 +20,9 @@ package org.apache.nifi.registry.revision.api;
  * <p>
  * A task that is responsible for updating some entities.
  * </p>
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
  */
 public interface UpdateRevisionTask<T> {
     /**

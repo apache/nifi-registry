@@ -16,6 +16,12 @@
  */
 package org.apache.nifi.registry.revision.api;
 
+/**
+ * A revision for an entity which is made up of the entity id, a version, and an optional client id.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
+ */
 public class Revision {
 
     private final Long version;

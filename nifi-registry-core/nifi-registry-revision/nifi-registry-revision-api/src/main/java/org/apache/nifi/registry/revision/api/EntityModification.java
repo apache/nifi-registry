@@ -16,6 +16,12 @@
  */
 package org.apache.nifi.registry.revision.api;
 
+/**
+ * A holder for a Revision and the identity of the user that made the last modification.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
+ */
 public class EntityModification {
 
     private final Revision revision;

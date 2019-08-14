@@ -16,6 +16,12 @@
  */
 package org.apache.nifi.registry.revision.api;
 
+/**
+ * An exception to be thrown when an expired RevisionClaim is encountered.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
+ */
 public class ExpiredRevisionClaimException extends InvalidRevisionException {
     private static final long serialVersionUID = 5648579322377770273L;
 

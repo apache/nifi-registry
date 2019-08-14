@@ -18,6 +18,12 @@ package org.apache.nifi.registry.revision.api;
 
 import java.util.Set;
 
+/**
+ * A set of Revisions submitted by a client.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
+ */
 public interface RevisionClaim {
 
     Set<Revision> getRevisions();

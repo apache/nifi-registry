@@ -18,6 +18,9 @@ package org.apache.nifi.registry.revision.api;
 
 /**
  * Exception indicating that the client has included an old revision in their request.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
  */
 public class InvalidRevisionException extends RuntimeException {
 

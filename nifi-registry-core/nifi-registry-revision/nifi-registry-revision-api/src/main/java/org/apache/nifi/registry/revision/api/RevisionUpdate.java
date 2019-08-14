@@ -19,7 +19,10 @@ package org.apache.nifi.registry.revision.api;
 import java.util.Set;
 
 /**
- * A packaging of an entity and the corresponding Revision for that component
+ * A packaging of an entity and the corresponding Revision for that component.
+ *
+ * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
+ * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
  */
 public interface RevisionUpdate<T> {
 
