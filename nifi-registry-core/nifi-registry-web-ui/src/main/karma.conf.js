@@ -66,6 +66,11 @@ module.exports = function (config) {
             noInfo: true
         },
 
+        webpackMiddleware: {
+            stats: 'errors-only',
+            logLevel: 'error'
+        },
+
         exclude: [],
 
         preprocessors: {
