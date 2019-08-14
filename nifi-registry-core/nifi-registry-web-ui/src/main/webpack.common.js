@@ -70,6 +70,8 @@ module.exports = {
         console: true
     },
 
+    stats: 'errors-only',
+
     module: {
         rules: [
             loaders.ts,
