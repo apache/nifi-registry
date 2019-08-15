@@ -58,7 +58,7 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
         spyOn(dialogService, 'openConfirm');
     });
 
-    it('should navigate to test url (registry security not configured) ', function () {
+    it('should navigate to test url (registry security not configured) ', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: true
@@ -69,17 +69,18 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
         nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
-        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.currentUser.canLogout).toBe(true);
-        expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
-        expect(nfRegistryService.currentUser.anonymous).toBe(true);
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('test');
+        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(nfRegistryService.currentUser.canLogout).toBe(true);
+                expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
+                expect(nfRegistryService.currentUser.anonymous).toBe(true);
+                expect(canActivate).toBe(true);
+                done();
+            });
     });
 
-    it('should navigate to test url (registry security configured and we know who you are) ', function () {
+    it('should navigate to test url (registry security configured and we know who you are) ', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false
@@ -90,16 +91,17 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
         nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
-        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.currentUser.canLogout).toBe(true);
-        expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('test');
+        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(nfRegistryService.currentUser.canLogout).toBe(true);
+                expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
+                expect(canActivate).toBe(true);
+                done();
+            });
     });
 
-    it('should navigate to login', function () {
+    it('should navigate to login', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false
@@ -108,31 +110,37 @@ describe('NfRegistry Auth Guard Service NfRegistryResourcesAuthGuard isolated un
         nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
-        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('login');
+        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('login');
+                done();
+            });
     });
 
-    it('should navigate to login (error loading current user)', function () {
+    it('should navigate to login (error loading current user)', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             error: {
                 status: 401
             }
         }));
-        spyOn(nfStorage, 'removeItem');
+        spyOn(nfStorage, 'removeItem').and.callFake(() => {});
 
         nfRegistryResourcesAuthGuard = new NfRegistryResourcesAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfStorage.removeItem).toHaveBeenCalled();
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('login');
+        nfRegistryResourcesAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfStorage.removeItem).toHaveBeenCalled();
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('login');
+                done();
+            });
     });
 });
 
@@ -169,7 +177,7 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
         spyOn(dialogService, 'openConfirm');
     });
 
-    it('should navigate to base nifi-registry url', function () {
+    it('should navigate to base nifi-registry url', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: true
@@ -177,15 +185,18 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
         nfRegistryLoginAuthGuard = new NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
-        nfRegistryLoginAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.currentUser.anonymous).toBe(true);
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('/nifi-registry');
+        nfRegistryLoginAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.currentUser.anonymous).toBe(true);
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('/nifi-registry');
+                done();
+            });
     });
 
-    it('should navigate to test url', function () {
+    it('should navigate to test url', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false
@@ -193,12 +204,15 @@ describe('NfRegistry Auth Guard Service NfRegistryLoginAuthGuard isolated unit t
         nfRegistryLoginAuthGuard = new NfRegistryLoginAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router);
 
         // The function to test
-        nfRegistryLoginAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('explorer/grid-list');
+        nfRegistryLoginAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.currentUser.canActivateResourcesAuthGuard).toBe(true);
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('explorer/grid-list');
+                done();
+            });
     });
 });
 
@@ -235,7 +249,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         spyOn(dialogService, 'openConfirm');
     });
 
-    it('should navigate to login', function () {
+    it('should navigate to login', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             error: {
@@ -245,15 +259,18 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('login');
+        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('login');
+                done();
+            });
     });
 
-    it('should deny access (registry security not configured) and navigate to administration workflow perspective', function () {
+    it('should deny access (registry security not configured) and navigate to administration workflow perspective', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: true
@@ -261,20 +278,23 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var dialogServiceCall = dialogService.openConfirm.calls.first();
-        expect(dialogServiceCall.args[0].title).toBe('Not Applicable');
-        expect(dialogServiceCall.args[0].message).toBe('User administration is not configured for this registry.');
-        expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-        expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('administration/workflow');
+        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var dialogServiceCall = dialogService.openConfirm.calls.first();
+                expect(dialogServiceCall.args[0].title).toBe('Not Applicable');
+                expect(dialogServiceCall.args[0].message).toBe('User administration is not configured for this registry.');
+                expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+                expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('administration/workflow');
+                done();
+            });
     });
 
-    it('should deny access (non-admin) and navigate to explorer perspective', function () {
+    it('should deny access (non-admin) and navigate to explorer perspective', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false,
@@ -309,20 +329,23 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var dialogServiceCall = dialogService.openConfirm.calls.first();
-        expect(dialogServiceCall.args[0].title).toBe('Access denied');
-        expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
-        expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-        expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('explorer');
+        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var dialogServiceCall = dialogService.openConfirm.calls.first();
+                expect(dialogServiceCall.args[0].title).toBe('Access denied');
+                expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
+                expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+                expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('explorer');
+                done();
+            });
     });
 
-    it('should deny access (no tenants permissions) and navigate to explorer perspective', function () {
+    it('should deny access (no tenants permissions) and navigate to explorer perspective', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false,
@@ -357,20 +380,23 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var dialogServiceCall = dialogService.openConfirm.calls.first();
-        expect(dialogServiceCall.args[0].title).toBe('Access denied');
-        expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
-        expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-        expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('explorer');
+        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var dialogServiceCall = dialogService.openConfirm.calls.first();
+                expect(dialogServiceCall.args[0].title).toBe('Access denied');
+                expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
+                expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+                expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('explorer');
+                done();
+            });
     });
 
-    it('should deny access (no tenants permissions) and navigate to test url', function () {
+    it('should deny access (no tenants permissions) and navigate to explorer url', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false,
@@ -386,7 +412,7 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
                     canDelete: false
                 },
                 tenants: {
-                    canRead: true,
+                    canRead: false,
                     canWrite: false,
                     canDelete: false
                 },
@@ -405,12 +431,15 @@ describe('NfRegistry Auth Guard Service NfRegistryUsersAdministrationAuthGuard i
         nfRegistryUsersAdministrationAuthGuard = new NfRegistryUsersAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('test');
+        nfRegistryUsersAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('explorer');
+                done();
+            });
     });
 });
 
@@ -447,7 +476,7 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         spyOn(dialogService, 'openConfirm');
     });
 
-    it('should navigate to login', function () {
+    it('should navigate to login', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             error: {
@@ -457,15 +486,18 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('login');
+        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('login');
+                done();
+            });
     });
 
-    it('should (registry security not configured) navigate to test url', function () {
+    it('should (registry security not configured) navigate to test url', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: true
@@ -473,15 +505,15 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('test');
+        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(true);
+                done();
+            });
     });
 
-    it('should deny access (non-admin) and navigate to explorer perspective', function () {
+    it('should deny access (non-admin) and navigate to explorer perspective', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false,
@@ -516,20 +548,23 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var dialogServiceCall = dialogService.openConfirm.calls.first();
-        expect(dialogServiceCall.args[0].title).toBe('Access denied');
-        expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
-        expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-        expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('explorer');
+        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var dialogServiceCall = dialogService.openConfirm.calls.first();
+                expect(dialogServiceCall.args[0].title).toBe('Access denied');
+                expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
+                expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+                expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('explorer');
+                done();
+            });
     });
 
-    it('should deny access (no buckets permissions) and navigate to users administration perspective', function () {
+    it('should deny access (no buckets permissions) and navigate to users administration perspective', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false,
@@ -564,20 +599,23 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var dialogServiceCall = dialogService.openConfirm.calls.first();
-        expect(dialogServiceCall.args[0].title).toBe('Access denied');
-        expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
-        expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
-        expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('administration/users');
+        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(false);
+                expect(nfRegistryService.redirectUrl).toBe('test');
+                var dialogServiceCall = dialogService.openConfirm.calls.first();
+                expect(dialogServiceCall.args[0].title).toBe('Access denied');
+                expect(dialogServiceCall.args[0].message).toBe('Please contact your system administrator.');
+                expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
+                expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
+                var navigateByUrlCall = router.navigateByUrl.calls.first();
+                expect(navigateByUrlCall.args[0]).toBe('explorer');
+                done();
+            });
     });
 
-    it('should deny access (no tenants permissions) and navigate to test url', function () {
+    it('should (no tenants permissions) navigate to test url', function (done) {
         spyOn(nfRegistryApi, 'loadCurrentUser').and.callFake(function () {
         }).and.returnValue(of({
             anonymous: false,
@@ -612,11 +650,11 @@ describe('NfRegistry Auth Guard Service NfRegistryWorkflowsAdministrationAuthGua
         nfRegistryWorkflowsAdministrationAuthGuard = new NfRegistryWorkflowsAdministrationAuthGuard(nfRegistryService, nfRegistryApi, nfStorage, router, dialogService);
 
         // The function to test
-        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'});
-
-        //assertions
-        expect(nfRegistryService.redirectUrl).toBe('test');
-        var navigateByUrlCall = router.navigateByUrl.calls.first();
-        expect(navigateByUrlCall.args[0]).toBe('test');
+        nfRegistryWorkflowsAdministrationAuthGuard.canActivate({}, {url: 'test'})
+            .then((canActivate) => {
+                //assertions
+                expect(canActivate).toBe(true);
+                done();
+            });
     });
 });
