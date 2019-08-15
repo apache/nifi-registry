@@ -41,7 +41,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     };
 
     this.documentation = {
-        link: 'nifi-registry-docs/documentation'
+        link: '../nifi-registry-docs/documentation'
     };
     this.redirectUrl = 'explorer/grid-list';
 
