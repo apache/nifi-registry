@@ -54,72 +54,85 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
 
     checkLogin: function (url) {
         var self = this;
-        if (this.nfRegistryService.currentUser.resourcePermissions.tenants.canRead) { return true; }
+        return new Promise((resolve) => {
+            if (this.nfRegistryService.currentUser.resourcePermissions.tenants.canRead) {
+                resolve(true);
+                return true;
+            }
 
-        // Store the attempted URL for redirecting
-        this.nfRegistryService.redirectUrl = url;
+            // Store the attempted URL for redirecting
+            this.nfRegistryService.redirectUrl = url;
 
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
-                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
-                if (currentUser.error) {
-                    if (currentUser.error.status === 401) {
-                        self.nfStorage.removeItem('jwt');
-                        self.router.navigateByUrl('login');
-                    }
-                } else {
-                    self.nfRegistryService.currentUser = currentUser;
-                    if (currentUser.anonymous === false) {
-                        // render the logout button if there is a token locally
-                        if (self.nfStorage.getItem('jwt') !== null) {
-                            self.nfRegistryService.currentUser.canLogout = true;
+            // attempt kerberos authentication
+            this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+                self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                    // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                    if (currentUser.error) {
+                        if (currentUser.error.status === 401) {
+                            self.nfStorage.removeItem('jwt');
+                            self.router.navigateByUrl('login');
+                            resolve(false);
                         }
-
-                        // redirect to explorer perspective if not admin
-                        if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
-                            self.dialogService.openConfirm({
-                                title: 'Access denied',
-                                message: 'Please contact your system administrator.',
-                                acceptButton: 'Ok',
-                                acceptButtonColor: 'fds-warn'
-                            });
-                            self.router.navigateByUrl('explorer');
-                        } else if (currentUser.resourcePermissions.tenants.canRead) {
-                            self.router.navigateByUrl(url);
-                        } else {
-                            self.dialogService.openConfirm({
-                                title: 'Access denied',
-                                message: 'Please contact your system administrator.',
-                                acceptButton: 'Ok',
-                                acceptButtonColor: 'fds-warn'
-                            });
-                            self.router.navigateByUrl('explorer');
-                        }
-                    } else if (location.protocol === 'http:') {
-                        // user is anonymous and we are NOT secure, redirect to workflow perspective
-                        self.dialogService.openConfirm({
-                            title: 'Not Applicable',
-                            message: 'User administration is not configured for this registry.',
-                            acceptButton: 'Ok',
-                            acceptButtonColor: 'fds-warn'
-                        });
-                        self.router.navigateByUrl('administration/workflow');
                     } else {
-                        // user is anonymous and we are secure so don't allow the url, navigate to the main page
-                        self.dialogService.openConfirm({
-                            title: 'Access denied',
-                            message: 'Please contact your system administrator.',
-                            acceptButton: 'Ok',
-                            acceptButtonColor: 'fds-warn'
-                        });
-                        self.router.navigateByUrl('explorer');
+                        self.nfRegistryService.currentUser = currentUser;
+                        if (currentUser.anonymous === false) {
+                            // render the logout button if there is a token locally
+                            if (self.nfStorage.getItem('jwt') !== null) {
+                                self.nfRegistryService.currentUser.canLogout = true;
+                            }
+
+                            // redirect to explorer perspective if not admin
+                            if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
+                                self.dialogService.openConfirm({
+                                    title: 'Access denied',
+                                    message: 'Please contact your system administrator.',
+                                    acceptButton: 'Ok',
+                                    acceptButtonColor: 'fds-warn'
+                                });
+                                self.router.navigateByUrl('explorer');
+                                resolve(false);
+                            } else if (currentUser.resourcePermissions.tenants.canRead) {
+                                resolve(true);
+                            } else {
+                                self.dialogService.openConfirm({
+                                    title: 'Access denied',
+                                    message: 'Please contact your system administrator.',
+                                    acceptButton: 'Ok',
+                                    acceptButtonColor: 'fds-warn'
+                                });
+                                self.router.navigateByUrl('explorer');
+                                resolve(false);
+                            }
+                        } else if (location.protocol === 'http:') {
+                            // user is anonymous and we are NOT secure, redirect to workflow perspective
+                            self.dialogService.openConfirm({
+                                title: 'Not Applicable',
+                                message: 'User administration is not configured for this registry.',
+                                acceptButton: 'Ok',
+                                acceptButtonColor: 'fds-warn'
+                            });
+                            self.router.navigateByUrl('administration/workflow');
+                            resolve(false);
+                        } else {
+                            if (self.nfRegistryService.currentUser.resourcePermissions.tenants.canRead) {
+                                resolve(true);
+                                return true;
+                            }
+
+                            // user is anonymous and we are secure so don't allow the url, navigate to the main page
+                            self.dialogService.openConfirm({
+                                title: 'Access denied',
+                                message: 'Please contact your system administrator.',
+                                acceptButton: 'Ok',
+                                acceptButtonColor: 'fds-warn'
+                            });
+                            self.router.navigateByUrl('explorer');
+                            resolve(false);
+                        }
                     }
-                }
+                });
             });
         });
-
-        return false;
     }
 };
 
@@ -164,30 +177,65 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
 
     checkLogin: function (url) {
         var self = this;
-        if (this.nfRegistryService.currentUser.resourcePermissions.buckets.canRead) { return true; }
+        return new Promise((resolve) => {
+            if (this.nfRegistryService.currentUser.resourcePermissions.buckets.canRead) {
+                resolve(true);
+                return;
+            }
 
-        // Store the attempted URL for redirecting
-        this.nfRegistryService.redirectUrl = url;
+            // Store the attempted URL for redirecting
+            this.nfRegistryService.redirectUrl = url;
 
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
-                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
-                if (currentUser.error) {
-                    if (currentUser.error.status === 401) {
-                        self.nfStorage.removeItem('jwt');
-                        self.router.navigateByUrl('login');
-                    }
-                } else {
-                    self.nfRegistryService.currentUser = currentUser;
-                    if (currentUser.anonymous === false) {
-                        // render the logout button if there is a token locally
-                        if (self.nfStorage.getItem('jwt') !== null) {
-                            self.nfRegistryService.currentUser.canLogout = true;
+            // attempt kerberos authentication
+            this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+                self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                    // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                    if (currentUser.error) {
+                        if (currentUser.error.status === 401) {
+                            self.nfStorage.removeItem('jwt');
+                            self.router.navigateByUrl('login');
+                            resolve(false);
                         }
+                    } else {
+                        self.nfRegistryService.currentUser = currentUser;
+                        if (currentUser.anonymous === false) {
+                            // render the logout button if there is a token locally
+                            if (self.nfStorage.getItem('jwt') !== null) {
+                                self.nfRegistryService.currentUser.canLogout = true;
+                            }
 
-                        // redirect to explorer perspective if not admin
-                        if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
+                            // redirect to explorer perspective if not admin
+                            if (!currentUser.resourcePermissions.anyTopLevelResource.canRead) {
+                                self.dialogService.openConfirm({
+                                    title: 'Access denied',
+                                    message: 'Please contact your system administrator.',
+                                    acceptButton: 'Ok',
+                                    acceptButtonColor: 'fds-warn'
+                                });
+                                self.router.navigateByUrl('explorer');
+                                resolve(false);
+                            } else if (currentUser.resourcePermissions.buckets.canRead) {
+                                resolve(true);
+                            } else {
+                                self.dialogService.openConfirm({
+                                    title: 'Access denied',
+                                    message: 'Please contact your system administrator.',
+                                    acceptButton: 'Ok',
+                                    acceptButtonColor: 'fds-warn'
+                                });
+                                self.router.navigateByUrl('explorer');
+                                resolve(false);
+                            }
+                        } else if (location.protocol === 'http:') {
+                            // user is anonymous and we are NOT secure so allow the url
+                            resolve(true);
+                        } else {
+                            if (self.nfRegistryService.currentUser.resourcePermissions.buckets.canRead) {
+                                resolve(true);
+                                return;
+                            }
+
+                            // user is anonymous and we are secure so don't allow the url, navigate to the main page
                             self.dialogService.openConfirm({
                                 title: 'Access denied',
                                 message: 'Please contact your system administrator.',
@@ -195,35 +243,12 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
                                 acceptButtonColor: 'fds-warn'
                             });
                             self.router.navigateByUrl('explorer');
-                        } else if (currentUser.resourcePermissions.buckets.canRead) {
-                            self.router.navigateByUrl(url);
-                        } else {
-                            self.dialogService.openConfirm({
-                                title: 'Access denied',
-                                message: 'Please contact your system administrator.',
-                                acceptButton: 'Ok',
-                                acceptButtonColor: 'fds-warn'
-                            });
-                            self.router.navigateByUrl('administration/users');
+                            resolve(false);
                         }
-                    } else if (location.protocol === 'http:') {
-                        // user is anonymous and we are NOT secure so allow the url
-                        self.router.navigateByUrl(url);
-                    } else {
-                        // user is anonymous and we are secure so don't allow the url, navigate to the main page
-                        self.dialogService.openConfirm({
-                            title: 'Access denied',
-                            message: 'Please contact your system administrator.',
-                            acceptButton: 'Ok',
-                            acceptButtonColor: 'fds-warn'
-                        });
-                        self.router.navigateByUrl('explorer');
                     }
-                }
+                });
             });
         });
-
-        return false;
     }
 };
 
@@ -266,28 +291,33 @@ NfRegistryLoginAuthGuard.prototype = {
 
     checkLogin: function (url) {
         var self = this;
-        if (this.nfRegistryService.currentUser.anonymous) { return true; }
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
-                self.nfRegistryService.currentUser = currentUser;
-                if (currentUser.anonymous === false) {
-                    // render the logout button if there is a token locally
-                    if (self.nfStorage.getItem('jwt') !== null) {
-                        self.nfRegistryService.currentUser.canLogout = true;
+        return new Promise((resolve) => {
+            if (this.nfRegistryService.currentUser.anonymous) {
+                resolve(true);
+                return;
+            }
+            // attempt kerberos authentication
+            this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+                self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                    self.nfRegistryService.currentUser = currentUser;
+                    if (currentUser.anonymous === false) {
+                        // render the logout button if there is a token locally
+                        if (self.nfStorage.getItem('jwt') !== null) {
+                            self.nfRegistryService.currentUser.canLogout = true;
+                        }
+                        self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
+                        resolve(false);
+                        self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
+                    } else if (self.nfRegistryService.currentUser.anonymous && !self.nfRegistryService.currentUser.loginSupported) {
+                        resolve(false);
+                        self.router.navigateByUrl('/nifi-registry');
+                    } else {
+                        self.nfRegistryService.currentUser.anonymous = true;
+                        resolve(true);
                     }
-                    self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
-                    self.router.navigateByUrl(self.nfRegistryService.redirectUrl);
-                } else if (self.nfRegistryService.currentUser.anonymous && !self.nfRegistryService.currentUser.loginSupported) {
-                    self.router.navigateByUrl('/nifi-registry');
-                } else {
-                    self.nfRegistryService.currentUser.anonymous = true;
-                    self.router.navigateByUrl(url);
-                }
+                });
             });
         });
-
-        return false;
     }
 };
 
@@ -323,49 +353,53 @@ NfRegistryResourcesAuthGuard.prototype = {
      */
     canActivate: function (route, state) {
         var url = state.url;
-
         return this.checkLogin(url);
     },
 
     checkLogin: function (url) {
         var self = this;
-        if (this.nfRegistryService.currentUser.canActivateResourcesAuthGuard === true) { return true; }
+        return new Promise((resolve) => {
+            if (this.nfRegistryService.currentUser.canActivateResourcesAuthGuard === true) {
+                resolve(true);
+                return;
+            }
 
-        // Store the attempted URL for redirecting
-        this.nfRegistryService.redirectUrl = url;
+            // Store the attempted URL for redirecting
+            this.nfRegistryService.redirectUrl = url;
 
-        // attempt kerberos authentication
-        this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
-            self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
-                // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
-                if (currentUser.error) {
-                    if (currentUser.error.status === 401) {
-                        self.nfStorage.removeItem('jwt');
-                        self.router.navigateByUrl('login');
-                    }
-                } else {
-                    self.nfRegistryService.currentUser = currentUser;
-                    if (!currentUser || currentUser.anonymous === false) {
-                        if (self.nfStorage.hasItem('jwt')) {
-                            self.nfRegistryService.currentUser.canLogout = true;
-                            self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
-                            self.router.navigateByUrl(url);
-                        } else {
+            // attempt kerberos authentication
+            this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
+                self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
+                    // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
+                    if (currentUser.error) {
+                        if (currentUser.error.status === 401) {
+                            self.nfStorage.removeItem('jwt');
                             self.router.navigateByUrl('login');
+                            resolve(false);
                         }
-                    } else if (currentUser.anonymous === true) {
-                        // render the logout button if there is a token locally
-                        if (self.nfStorage.getItem('jwt') !== null) {
-                            self.nfRegistryService.currentUser.canLogout = true;
+                    } else {
+                        self.nfRegistryService.currentUser = currentUser;
+                        if (!currentUser || currentUser.anonymous === false) {
+                            if (self.nfStorage.hasItem('jwt')) {
+                                self.nfRegistryService.currentUser.canLogout = true;
+                                self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
+                                resolve(true);
+                            } else {
+                                self.router.navigateByUrl('login');
+                                resolve(false);
+                            }
+                        } else if (currentUser.anonymous === true) {
+                            // render the logout button if there is a token locally
+                            if (self.nfStorage.getItem('jwt') !== null) {
+                                self.nfRegistryService.currentUser.canLogout = true;
+                            }
+                            self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
+                            resolve(true);
                         }
-                        self.nfRegistryService.currentUser.canActivateResourcesAuthGuard = true;
-                        self.router.navigateByUrl(url);
                     }
-                }
+                });
             });
         });
-
-        return false;
     }
 };
 
