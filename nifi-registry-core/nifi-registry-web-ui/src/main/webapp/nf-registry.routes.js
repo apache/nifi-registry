@@ -109,6 +109,6 @@ const NfRegistryRoutes = new RouterModule.forRoot([{
     component: NfRegistryManageBucket,
     canActivate: [NfRegistryWorkflowsAdministrationAuthGuard],
     outlet: 'sidenav'
-}]);
+}], { useHash: true });
 
 export default NfRegistryRoutes;
