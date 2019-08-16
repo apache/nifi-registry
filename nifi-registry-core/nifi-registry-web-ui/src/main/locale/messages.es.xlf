@@ -89,6 +89,12 @@
         <note priority="1" from="description">A button for attempting to authenticate with the registry.</note>
         <note priority="1" from="meaning">Log in form</note>
        </trans-unit>
+      <trans-unit id="nf-cancel-user-login-button" datatype="html">
+         <source>Cancel</source>
+         <target state="new">Cancelar</target>
+        <note priority="1" from="description">A button for cancelling authentication with the registry.</note>
+        <note priority="1" from="meaning">Cancel Log in form</note>
+       </trans-unit>
       <trans-unit id="nf-admin-workflow-create-new-group-button" datatype="html">
          <source>Create</source>
          <target state="new">Crear</target>

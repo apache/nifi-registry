@@ -206,6 +206,7 @@
                                         <include>vendor.min*.css*</include>
                                         <include>index.html</include>
                                         <include>assets/**/*</include>
+                                        <include>locale/**/*</include>
                                         <include>registry-favicon.png</include>
                                         <include>LICENSE</include>
                                         <include>NOTICE</include>
