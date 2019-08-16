@@ -51,6 +51,12 @@ public class StaticDifferenceDescriptor implements DifferenceDescriptor {
                 description = String.format("Property '%s' exists for %s with ID %s in %s but not in %s",
                     fieldName, componentA.getComponentType().getTypeName(), componentA.getIdentifier(), flowAName, flowBName);
                 break;
+            case PROPERTY_PARAMETERIZED:
+                description = String.format("Property '%s' is a parameter reference in %s but not in %s", fieldName, flowAName, flowBName);
+                break;
+            case PROPERTY_PARAMETERIZATION_REMOVED:
+                description = String.format("Property '%s' is a parameter reference in %s but not in %s", fieldName, flowBName, flowAName);
+                break;
             case SCHEDULED_STATE_CHANGED:
                 if (ScheduledState.DISABLED.equals(valueA)) {
                     description = String.format("%s is disabled in %s but enabled in %s", componentA.getComponentType().getTypeName(), flowAName, flowBName);

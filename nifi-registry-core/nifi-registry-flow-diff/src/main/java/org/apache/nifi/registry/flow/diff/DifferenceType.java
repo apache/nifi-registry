@@ -109,6 +109,18 @@ public enum DifferenceType {
     PROPERTY_REMOVED("Property Removed"),
 
     /**
+     * Property is unset or set to an explicit value in Flow A but set to (exactly) a parameter reference in Flow B. Note that if Flow A
+     * has a property set to "#{param1} abc" and it is changed to "#{param1} abc #{param2}" this would indicate a Difference Type of @{link #PROPERTY_CHANGED}, not
+     * PROPERTY_PARAMETERIZED
+     */
+    PROPERTY_PARAMETERIZED("Property Parameterized"),
+
+    /**
+     * Property is set to (exactly) a parameter reference in Flow A but either unset or set to an explicit value in Flow B.
+     */
+    PROPERTY_PARAMETERIZATION_REMOVED("Property Parameterization Removed"),
+
+    /**
      * The component has a different value for the Annotation Data in each of the flows
      */
     ANNOTATION_DATA_CHANGED("Annotation Data (Advanced UI Configuration) Changed"),
