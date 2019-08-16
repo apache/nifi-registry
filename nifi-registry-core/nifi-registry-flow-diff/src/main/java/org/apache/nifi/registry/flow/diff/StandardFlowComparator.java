@@ -37,12 +37,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StandardFlowComparator implements FlowComparator {
     private static final String DEFAULT_LOAD_BALANCE_STRATEGY = "DO_NOT_LOAD_BALANCE";
     private static final String DEFAULT_PARTITIONING_ATTRIBUTE = "";
     private static final String DEFAULT_LOAD_BALANCE_COMPRESSION = "DO_NOT_COMPRESS";
+
+    private static final Pattern PARAMETER_REFERENCE_PATTERN = Pattern.compile("#\\{[A-Za-z0-9\\-_. ]+}");
 
     private final ComparableDataFlow flowA;
     private final ComparableDataFlow flowB;
@@ -192,9 +195,17 @@ public class StandardFlowComparator implements FlowComparator {
             }
 
             if (valueA == null && valueB != null) {
-                differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, key, displayName, valueA, valueB));
+                if (isParameterReference(valueB)) {
+                    differences.add(difference(DifferenceType.PROPERTY_PARAMETERIZED, componentA, componentB, key, displayName, null, null));
+                } else {
+                    differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, key, displayName, valueA, valueB));
+                }
             } else if (valueA != null && valueB == null) {
-                differences.add(difference(DifferenceType.PROPERTY_REMOVED, componentA, componentB, key, displayName, valueA, valueB));
+                if (isParameterReference(valueA)) {
+                    differences.add(difference(DifferenceType.PROPERTY_PARAMETERIZATION_REMOVED, componentA, componentB, key, displayName, null, null));
+                } else {
+                    differences.add(difference(DifferenceType.PROPERTY_REMOVED, componentA, componentB, key, displayName, valueA, valueB));
+                }
             } else if (valueA != null && !valueA.equals(valueB)) {
                 // If the property in Flow A references a Controller Service that is not available in the flow
                 // and the property in Flow B references a Controller Service that is available in its environment
@@ -211,7 +222,15 @@ public class StandardFlowComparator implements FlowComparator {
                     }
                 }
 
-                differences.add(difference(DifferenceType.PROPERTY_CHANGED, componentA, componentB, key, displayName, valueA, valueB));
+                final boolean aParameterized = isParameterReference(valueA);
+                final boolean bParameterized = isParameterReference(valueB);
+                if (aParameterized && !bParameterized) {
+                    differences.add(difference(DifferenceType.PROPERTY_PARAMETERIZATION_REMOVED, componentA, componentB, key, displayName, null, null));
+                } else if (!aParameterized && bParameterized) {
+                    differences.add(difference(DifferenceType.PROPERTY_PARAMETERIZED, componentA, componentB, key, displayName, null, null));
+                } else {
+                    differences.add(difference(DifferenceType.PROPERTY_CHANGED, componentA, componentB, key, displayName, valueA, valueB));
+                }
             }
         });
 
@@ -229,11 +248,19 @@ public class StandardFlowComparator implements FlowComparator {
                     displayName = descriptor.getDisplayName() == null ? descriptor.getName() : descriptor.getDisplayName();
                 }
 
-                differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, key, displayName, null, valueB));
+                if (isParameterReference(valueB)) {
+                    differences.add(difference(DifferenceType.PROPERTY_PARAMETERIZED, componentA, componentB, key, displayName, null, null));
+                } else {
+                    differences.add(difference(DifferenceType.PROPERTY_ADDED, componentA, componentB, key, displayName, null, valueB));
+                }
             }
         });
     }
 
+
+    private boolean isParameterReference(final String propertyValue) {
+        return PARAMETER_REFERENCE_PATTERN.matcher(propertyValue).matches();
+    }
 
     private void compare(final VersionedFunnel funnelA, final VersionedFunnel funnelB, final Set<FlowDifference> differences) {
         compareComponents(funnelA, funnelB, differences);
