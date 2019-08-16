@@ -43,19 +43,18 @@ const locale = navigator.language.toLowerCase();
 const providers = [];
 
 // No locale or U.S. English: no translation providers so go ahead and bootstrap the app
-if (!locale || locale === 'en-us') {
+if (!locale || locale === 'en-US') {
     bootstrapModule();
 } else { //load the translation providers and bootstrap the module
-    var translationFile = 'assets/locale/messages.' + locale + '.xlf';
+    var translationFile = 'locale/messages.' + locale + '.xlf';
 
     $.ajax({
-        url: translationFile
+        url: translationFile,
+        dataType : "text"
     }).done(function (translations) {
         // add providers if translation file for locale is loaded
         if (translations) {
-            var parser = new DOMParser();
-            var translationsDom = parser.parseFromString(translations, 'text/xml');
-            providers.push({provide: TRANSLATIONS, useValue: translationsDom.documentElement.innerHTML});
+            providers.push({provide: TRANSLATIONS, useValue: translations});
             providers.push({provide: TRANSLATIONS_FORMAT, useValue: 'xlf'});
             providers.push({provide: LOCALE_ID, useValue: locale});
         }
