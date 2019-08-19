@@ -50,7 +50,7 @@ if (!locale || locale === 'en-US') {
 
     $.ajax({
         url: translationFile,
-        dataType : "text"
+        dataType: 'text'
     }).done(function (translations) {
         // add providers if translation file for locale is loaded
         if (translations) {
