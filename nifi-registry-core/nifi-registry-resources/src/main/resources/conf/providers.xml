@@ -96,4 +96,21 @@
     </extensionBundlePersistenceProvider>
     -->
 
+    <!-- Example GCP Bundle Persistence Provider
+            - Requires nifi-registry-gcp-assembly to be added to the classpath via a custom extension directory in nifi-registry.properties
+                Example: nifi.registry.extension.dir.gcp=./ext/gcp/lib
+                Where "./ext/gcp/lib" contains the extracted contents of nifi-registry-gcp-assembly
+            - "Bucket Name" - The name of an existing bucket to store extension bundles
+            - "Key Prefix" - An optional prefix that if specified will be added to the beginning of all GCS keys
+            - "Service Account Credentials" - Path to the JSON file containing the service account credentials to use when accessing GCS
+     -->
+    <!--
+    <extensionBundlePersistenceProvider>
+        <class>org.apache.nifi.registry.gcp.GCPBundlePersistenceProvider</class>
+        <property name="Bucket Name">my-bundles</property>
+        <property name="Key Prefix"></property>
+        <property name="Service Account Credentials"></property>
+    </extensionBundlePersistenceProvider>
+    -->
+
 </providers>

@@ -68,6 +68,7 @@
                 <exclude>nifi-registry-docs</exclude>
                 <exclude>nifi-registry-ranger-assembly</exclude>
                 <exclude>nifi-registry-aws-assembly</exclude>
+                <exclude>nifi-registry-gcp-assembly</exclude>
             </excludes>
         </dependencySet>
         
