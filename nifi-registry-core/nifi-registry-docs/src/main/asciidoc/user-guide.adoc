@@ -160,6 +160,8 @@ image::new_bucket_button.png["New Bucket Button"]
 +
 image::new_bucket_dialog.png["New Bucket Dialog"]
 
+NOTE: Check "Make publicly available" to allow read access to items in the bucket by unauthenticated users. This will override any specific <<bucket_policies,bucket policies>> granting read access.
+
 NOTE: To quickly create multiple buckets, check "Keep this dialog open after creating bucket".
 
 
@@ -190,6 +192,23 @@ image::manage_bucket.png["Manage Bucket"]
 +
 image::bucket_nav_name_edit.png["Edit Bucket Name"]
 
+=== Make a Bucket Publicly Visible
+To allow read access to items in a bucket by unauthenticated users, select the "Make publicly visible" checkbox.
+
+image::bucket_nav_make_public.png["Make Bucket Public"]
+
+This setting will override any specific policies granting read access to the bucket.
+
+=== Allow Bundles in a Bucket to be Overwritten
+To allow released bundles in a bucket to be overwritten, select the "Allow bundle overwrite" checkbox.
+
+image::bucket_nav_allow_bundle_overwrite.png["Allow Bundle Overwrite"]
+
+Currently, the only supported bundle type is a link:https://nifi.apache.org/docs/nifi-docs/html/developer-guide.html#nars[NiFi Archive (NAR)]. By default, buckets do not allow the re-release of released NARs. This setting explicitly allows the same version of a NAR to be uploaded to a bucket.
+
+For more information on bundles, see the <<manage_bundles>> section.
+
+[[bucket_policies]]
 === Bucket Policies
 Bucket policies define user privileges on buckets/flows in the Registry and in NiFi.  The available permissions are:
 
@@ -298,7 +317,7 @@ Special privileges are additional permissions that allow a user to manage or acc
 
 * *Can manage policies* - Allow a user to grant all registry users read, write, and delete permission to a bucket.
 
-* *Can proxy user requests* - Allow a connected system (e.g., NiFi) to process requests of authorized users of that system.
+* *Can proxy user requests* - Allow a connected system (e.g., NiFi) to process requests of authorized users of that system. For example, if dev and prod NiFi clusters are connected to the same NiFi Registry instance, privileges can be set to allow the dev NiFi cluster to only update versioned flows while limiting the prod NiFi to only download flows.
 
 ==== Grant Special Privileges to a User
 1. Select the Manage button (image:iconManage.png["Manage Icon"]) in the row of the user.
@@ -366,6 +385,7 @@ image::remove_user_from_group.png["Remove User From Group"]
 
 Editing group names, deleting groups, adding policies to/deleting policies from groups and granting special privileges to groups follow similar procedures described earlier for corresponding user level actions.
 
+[[manage_bundles]]
 == Manage Bundles
 
 Bundles can be managed through the REST API.
