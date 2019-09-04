@@ -57,5 +57,5 @@ install: true
 
 #build commands
 script:
-    - mvn -T 2C clean install -Pintegration-tests,contrib-check,jsUnitTests | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
+    - mvn clean install -Pintegration-tests,contrib-check,jsUnitTests | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
 
