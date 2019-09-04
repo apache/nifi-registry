@@ -121,6 +121,7 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
                     final JAXBElement<Providers> element = unmarshaller.unmarshal(new StreamSource(providersConfigFile), Providers.class);
                     providersHolder.set(element.getValue());
                 } catch (SAXException | JAXBException e) {
+                    LOGGER.error(e.getMessage(), e);
                     throw new ProviderFactoryException("Unable to load the providers configuration file at: " + providersConfigFile.getAbsolutePath(), e);
                 }
             } else {
@@ -157,6 +158,7 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
 
                 LOGGER.info("Instantiated FlowPersistenceProvider with class name {}", new Object[]{flowProviderClassName});
             } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
                 throw new ProviderFactoryException("Error creating FlowPersistenceProvider with class name: " + flowProviderClassName, e);
             }
 
@@ -207,6 +209,7 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
 
                     LOGGER.info("Instantiated EventHookProvider with class name {}", new Object[] {hookProviderClassName});
                 } catch (Exception e) {
+                    LOGGER.error(e.getMessage(), e);
                     throw new ProviderFactoryException("Error creating EventHookProvider with class name: " + hookProviderClassName, e);
                 }
 
@@ -250,6 +253,7 @@ public class StandardProviderFactory implements ProviderFactory, DisposableBean 
 
                 LOGGER.info("Instantiated BundlePersistenceProvider with class name {}", new Object[] {extensionBundleProviderClassName});
             } catch (Exception e) {
+                LOGGER.error(e.getMessage(), e);
                 throw new ProviderFactoryException("Error creating BundlePersistenceProvider with class name: " + extensionBundleProviderClassName, e);
             }
 
