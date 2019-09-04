@@ -95,7 +95,7 @@ image::local_registry.png["Local Registry Client"]
 
 
 === Start Version Control on a Process Group
-NiFi can now place a process group under version control.
+With NiFi connected to a NiFi Registry, dataflows can be version controlled on the *process group level*.
 
 Right-click on a process group and select "Version->Start version control" from the context menu:
 
@@ -160,7 +160,7 @@ In addition to this Getting Started Guide, more information about NiFi Registry 
 
 - link:user-guide.html[Apache NiFi Registry User Guide] - This guide provides information on how to navigate the Registry UI and explains in detail how to manage flows/policies/special privileges and configure users/groups when the Registry is secured.
 - link:administration-guide.html[Apache NiFi Registry System Administrator's Guide] - A guide for setting up and administering Apache NiFi Registry. Topics covered include: system requirements, security configuration, user authentication, authorization, proxy configuration and details about the different system-level settings.
-- link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html[Apache NiFi User Guide^] - A fairly extensive guide that is often used more as a Reference Guide, as it provides information on each of the different components available in NiFi and explains how to use the different features provided by the application. It includes the section "Versioning a Dataflow" which covers the integration of NiFi with NiFi Registry. Topics covered include: connecting to a registry, version states, importing a versioned flow and managing local changes.
+- link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html[Apache NiFi User Guide^] - A fairly extensive guide that is often used more as a Reference Guide, as it provides information on each of the different components available in NiFi and explains how to use the different features provided by the application. It includes the section link:https://nifi.apache.org/docs/nifi-docs/html/user-guide.html#versioning_dataflow["Versioning a Dataflow"] which covers the integration of NiFi with NiFi Registry. Topics covered include: connecting to a registry, version states, importing a versioned flow and managing local changes.
 - link:https://cwiki.apache.org/confluence/display/NIFI/Contributor+Guide[Contributor's Guide^] - A guide for explaining how to contribute work back to the Apache NiFi community so that others can make use of it.
 
 In addition to the guides provided here, you can browse the different
