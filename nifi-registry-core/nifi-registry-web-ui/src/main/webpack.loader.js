@@ -88,11 +88,34 @@ module.exports = {
         ]
     },
 
+    jsFDS: {
+        test: /\.js$/,
+        include: [
+            path.resolve(__dirname, 'node_modules/@nifi-fds/core')
+        ],
+        use: [
+            {
+                loader: 'cache-loader',
+                options: {
+                    cacheDirectory: cacheCoverageDir
+                }
+            },
+            {
+                loader: path.resolve(__dirname, 'angular-url-loader')
+            },
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['@babel/preset-env']
+                }
+            }
+        ]
+    },
+
     jsCoverage: {
         test: /\.js$/,
         include: [
-            path.resolve(__dirname, 'webapp'),
-            path.resolve(__dirname, 'node_modules/@nifi-fds/core')
+            path.resolve(__dirname, 'webapp')
         ],
         // prevent these files/patterns from being included in the coverage report
         exclude: [
