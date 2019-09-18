@@ -30,6 +30,7 @@ module.exports = merge(commonConfig, {
 
     module: {
         rules: [
+            loaders.jsFDS,
             loaders.tsCoverage,
             loaders.jsCoverage,
             loaders.html,
