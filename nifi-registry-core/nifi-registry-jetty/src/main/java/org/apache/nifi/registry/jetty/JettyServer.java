@@ -17,6 +17,10 @@
 package org.apache.nifi.registry.jetty;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.jetty.headers.ContentSecurityPolicyFilter;
+import org.apache.nifi.registry.jetty.headers.StrictTransportSecurityFilter;
+import org.apache.nifi.registry.jetty.headers.XFrameOptionsFilter;
+import org.apache.nifi.registry.jetty.headers.XSSProtectionFilter;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
@@ -28,11 +32,10 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.util.resource.ResourceCollection;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.Configuration;
@@ -42,6 +45,8 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -55,6 +60,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -104,6 +110,37 @@ public class JettyServer {
         } catch (final Throwable t) {
             startUpFailure(t);
         }
+    }
+
+    /**
+     * Returns a File object for the directory containing NIFI documentation.
+     * <p>
+     * Formerly, if the docsDirectory did not exist NIFI would fail to start
+     * with an IllegalStateException and a rather unhelpful log message.
+     * NIFI-2184 updates the process such that if the docsDirectory does not
+     * exist an attempt will be made to create the directory. If that is
+     * successful NIFI will no longer fail and will start successfully barring
+     * any other errors. The side effect of the docsDirectory not being present
+     * is that the documentation links under the 'General' portion of the help
+     * page will not be accessible, but at least the process will be running.
+     *
+     * @param docsDirectory Name of documentation directory in installation directory.
+     * @return A File object to the documentation directory; else startUpFailure called.
+     */
+    private File getDocsDir(final String docsDirectory) {
+        File docsDir;
+        try {
+            docsDir = Paths.get(docsDirectory).toRealPath().toFile();
+        } catch (IOException ex) {
+            logger.info("Directory '" + docsDirectory + "' is missing. Some documentation will be unavailable.");
+            docsDir = new File(docsDirectory).getAbsoluteFile();
+            final boolean made = docsDir.mkdirs();
+            if (!made) {
+                logger.error("Failed to create 'docs' directory!");
+                startUpFailure(new IOException(docsDir.getAbsolutePath() + " could not be created"));
+            }
+        }
+        return docsDir;
     }
 
     private void configureConnectors() {
@@ -254,11 +291,11 @@ public class JettyServer {
 
         final String docsContextPath = "/nifi-registry-docs";
         webDocsContext = loadWar(webDocsWar, docsContextPath);
+        addDocsServlets(webDocsContext);
 
         final HandlerCollection handlers = new HandlerCollection();
         handlers.addHandler(webUiContext);
         handlers.addHandler(webApiContext);
-        handlers.addHandler(createDocsWebApp(docsContextPath));
         handlers.addHandler(webDocsContext);
         server.setHandler(handlers);
     }
@@ -301,6 +338,15 @@ public class JettyServer {
         // configure the max form size (3x the default)
         webappContext.setMaxFormContentSize(600000);
 
+        // add HTTP security headers to all responses
+        final String ALL_PATHS = "/*";
+        ArrayList<Class<? extends Filter>> filters = new ArrayList<>(Arrays.asList(XFrameOptionsFilter.class, ContentSecurityPolicyFilter.class, XSSProtectionFilter.class));
+        if(properties.isHTTPSConfigured()) {
+            filters.add(StrictTransportSecurityFilter.class);
+        }
+
+        filters.forEach( (filter) -> addFilters(filter, ALL_PATHS, webappContext));
+
         // start out assuming the system ClassLoader will be the parent, but if additional resources were specified then
         // inject a new ClassLoader in between the system and webapp ClassLoaders that contains the additional resources
         ClassLoader parentClassLoader = ClassLoader.getSystemClassLoader();
@@ -313,6 +359,12 @@ public class JettyServer {
 
         logger.info("Loading WAR: " + warFile.getAbsolutePath() + " with context path set to " + contextPath);
         return webappContext;
+    }
+
+    private void addFilters(Class<? extends Filter> clazz, String path, WebAppContext webappContext) {
+        FilterHolder holder = new FilterHolder(clazz);
+        holder.setName(clazz.getSimpleName());
+        webappContext.addFilter(holder, path, EnumSet.allOf(DispatcherType.class));
     }
 
     private URL[] getWebApiAdditionalClasspath() {
@@ -370,51 +422,28 @@ public class JettyServer {
         return resources.toArray(new URL[resources.size()]);
     }
 
-    private ContextHandler createDocsWebApp(final String contextPath) throws IOException {
-        final ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(false);
-
-        // load the docs directory
-        String docsDirectory = docsLocation;
-        if (StringUtils.isBlank(docsDirectory)) {
-            docsDirectory = "docs";
-        }
-
-        File docsDir;
+    private void addDocsServlets(WebAppContext docsContext) {
         try {
-            docsDir = Paths.get(docsDirectory).toRealPath().toFile();
-        } catch (IOException ex) {
-            logger.warn("Directory '" + docsDirectory + "' is missing. Some documentation will be unavailable.");
-            docsDir = new File(docsDirectory).getAbsoluteFile();
-            final boolean made = docsDir.mkdirs();
-            if (!made) {
-                logger.error("Failed to create 'docs' directory!");
-                startUpFailure(new IOException(docsDir.getAbsolutePath() + " could not be created"));
-            }
+            // Load the nifi-registry/docs directory
+            final File docsDir = getDocsDir(docsLocation);
+
+            // Create the servlet which will serve the static resources
+            ServletHolder defaultHolder = new ServletHolder("default", DefaultServlet.class);
+            defaultHolder.setInitParameter("dirAllowed", "false");
+
+            ServletHolder docs = new ServletHolder("docs", DefaultServlet.class);
+            docs.setInitParameter("resourceBase", docsDir.getPath());
+            docs.setInitParameter("dirAllowed", "false");
+
+            docsContext.addServlet(docs, "/html/*");
+            docsContext.addServlet(defaultHolder, "/");
+
+            logger.info("Loading documents web app with context path set to " + docsContext.getContextPath());
+
+        } catch (Exception ex) {
+            logger.error("Unhandled Exception in createDocsWebApp: " + ex.getMessage());
+            startUpFailure(ex);
         }
-
-        final Resource docsResource = Resource.newResource(docsDir);
-
-        // load the rest documentation
-        final File webApiDocsDir = new File(webApiContext.getTempDirectory(), "webapp/docs");
-        if (!webApiDocsDir.exists()) {
-            final boolean made = webApiDocsDir.mkdirs();
-            if (!made) {
-                throw new RuntimeException(webApiDocsDir.getAbsolutePath() + " could not be created");
-            }
-        }
-        final Resource webApiDocsResource = Resource.newResource(webApiDocsDir);
-
-        // create resources for both docs locations
-        final ResourceCollection resources = new ResourceCollection(docsResource, webApiDocsResource);
-        resourceHandler.setBaseResource(resources);
-
-        // create the context handler
-        final ContextHandler handler = new ContextHandler(contextPath);
-        handler.setHandler(resourceHandler);
-
-        logger.info("Loading documents web app with context path set to " + contextPath);
-        return handler;
     }
 
     public void start() {

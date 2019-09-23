@@ -100,6 +100,12 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+        // Apply security headers for registry API. Security headers for docs and UI are applied with Jetty filters in registry-core.
+        http.headers().xssProtection();
+        http.headers().contentSecurityPolicy("frame-ancestors 'self'");
+        http.headers().httpStrictTransportSecurity().maxAgeInSeconds(31540000);
+        http.headers().frameOptions().sameOrigin();
+
         // x509
         http.addFilterBefore(x509AuthenticationFilter(), AnonymousAuthenticationFilter.class);
 
