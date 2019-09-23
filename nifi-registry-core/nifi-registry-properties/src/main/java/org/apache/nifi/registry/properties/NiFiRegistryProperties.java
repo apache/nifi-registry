@@ -118,6 +118,10 @@ public class NiFiRegistryProperties extends Properties {
         return getPropertyAsInteger(WEB_HTTPS_PORT);
     }
 
+    public boolean isHTTPSConfigured() {
+        return getSslPort() != null;
+    }
+
     public String getHttpsHost() {
         return getProperty(WEB_HTTPS_HOST);
     }
