@@ -438,6 +438,21 @@ public class JettyServer {
             docsContext.addServlet(docs, "/html/*");
             docsContext.addServlet(defaultHolder, "/");
 
+            // load the rest documentation
+            final File webApiDocsDir = new File(webApiContext.getTempDirectory(), "webapp/docs");
+            if (!webApiDocsDir.exists()) {
+                final boolean made = webApiDocsDir.mkdirs();
+                if (!made) {
+                    throw new RuntimeException(webApiDocsDir.getAbsolutePath() + " could not be created");
+                }
+            }
+
+            ServletHolder apiDocs = new ServletHolder("apiDocs", DefaultServlet.class);
+            apiDocs.setInitParameter("resourceBase", webApiDocsDir.getPath());
+            apiDocs.setInitParameter("dirAllowed", "false");
+
+            docsContext.addServlet(apiDocs, "/rest-api/*");
+
             logger.info("Loading documents web app with context path set to " + docsContext.getContextPath());
 
         } catch (Exception ex) {
