@@ -17,13 +17,13 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.extension.ExtensionClassLoader;
 import org.apache.nifi.registry.extension.ExtensionCloseable;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
 import org.apache.nifi.registry.properties.SensitivePropertyProvider;
-import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
@@ -31,6 +31,7 @@ import org.apache.nifi.registry.security.authorization.generated.Authorizers;
 import org.apache.nifi.registry.security.authorization.generated.Prop;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.security.util.ClassLoaderUtils;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.apache.nifi.registry.service.RegistryService;
@@ -41,8 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.SAXException;
 
+import javax.sql.DataSource;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -60,6 +63,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,11 +75,16 @@ import java.util.Set;
  *
  * This implementation of AuthorizerFactory in NiFi Registry is based on a combination of
  * NiFi's AuthorizerFactory and AuthorizerFactoryBean.
+ *
+ * This class is annotated with Spring's @Transactional because a provider may have a DataSource injected and perform
+ * database operations during initialization and configuration when we are outside of the application's normal
+ * transactional scope during the processing of an incoming request.
  */
+@Transactional
 @Configuration("authorizerFactory")
 public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyProviderLookup, AuthorizerLookup, DisposableBean {
 
-    private static final Logger logger = LoggerFactory.getLogger(StandardProviderFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthorizerFactory.class);
 
     private static final String AUTHORIZERS_XSD = "/authorizers.xsd";
     private static final String JAXB_GENERATED_PATH = "org.apache.nifi.registry.security.authorization.generated";
@@ -96,6 +105,8 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     private final ExtensionManager extensionManager;
     private final SensitivePropertyProvider sensitivePropertyProvider;
     private final RegistryService registryService;
+    private final DataSource dataSource;
+    private final IdentityMapper identityMapper;
 
     private Authorizer authorizer;
     private final Map<String, UserGroupProvider> userGroupProviders = new HashMap<>();
@@ -107,24 +118,16 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             final NiFiRegistryProperties properties,
             final ExtensionManager extensionManager,
             @Nullable final SensitivePropertyProvider sensitivePropertyProvider,
-            final RegistryService registryService) {
+            final RegistryService registryService,
+            final DataSource dataSource,
+            final IdentityMapper identityMapper) {
 
-        this.properties = properties;
-        this.extensionManager = extensionManager;
+        this.properties = Validate.notNull(properties);
+        this.extensionManager = Validate.notNull(extensionManager);
         this.sensitivePropertyProvider = sensitivePropertyProvider;
-        this.registryService = registryService;
-
-        if (this.properties == null) {
-            throw new IllegalStateException("NiFiRegistryProperties cannot be null");
-        }
-
-        if (this.extensionManager == null) {
-            throw new IllegalStateException("ExtensionManager cannot be null");
-        }
-
-        if (this.registryService == null) {
-            throw new IllegalStateException("RegistryService cannot be null");
-        }
+        this.registryService = Validate.notNull(registryService);
+        this.dataSource = Validate.notNull(dataSource);
+        this.identityMapper = Validate.notNull(identityMapper);
     }
 
     /***** UserGroupProviderLookup *****/
@@ -447,6 +450,12 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         if (NiFiRegistryProperties.class.isAssignableFrom(argumentType)) {
                             // nifi properties injection
                             method.invoke(instance, properties);
+                        } else if (DataSource.class.isAssignableFrom(argumentType)) {
+                            // data source injection
+                            method.invoke(instance, dataSource);
+                        } else if (IdentityMapper.class.isAssignableFrom(argumentType)) {
+                            // identity mapper injection
+                            method.invoke(instance, identityMapper);
                         }
                     }
                 } finally {
@@ -478,6 +487,12 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         if (NiFiRegistryProperties.class.isAssignableFrom(fieldType)) {
                             // nifi properties injection
                             field.set(instance, properties);
+                        } else if (DataSource.class.isAssignableFrom(fieldType)) {
+                            // data source injection
+                            field.set(instance, dataSource);
+                        } else if (IdentityMapper.class.isAssignableFrom(fieldType)) {
+                            // identity mapper injection
+                            field.set(instance, identityMapper);
                         }
                     }
 
@@ -618,14 +633,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                     }
 
                     @Override
-                    public AccessPolicy deleteAccessPolicy(String accessPolicyIdentifier) throws AuthorizationAccessException {
-                        if (!baseConfigurableAccessPolicyProvider.isConfigurable(baseConfigurableAccessPolicyProvider.getAccessPolicy(accessPolicyIdentifier))) {
-                            throw new IllegalArgumentException("The specified access policy is not support modification.");
-                        }
-                        return baseConfigurableAccessPolicyProvider.deleteAccessPolicy(accessPolicyIdentifier);
-                    }
-
-                    @Override
                     public Set<AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
                         return baseConfigurableAccessPolicyProvider.getAccessPolicies();
                     }
@@ -694,14 +701,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                 }
 
                                 @Override
-                                public User deleteUser(String userIdentifier) throws AuthorizationAccessException {
-                                    if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getUser(userIdentifier))) {
-                                        throw new IllegalArgumentException("The specified user does not support modification.");
-                                    }
-                                    return baseConfigurableUserGroupProvider.deleteUser(userIdentifier);
-                                }
-
-                                @Override
                                 public Group addGroup(Group group) throws AuthorizationAccessException {
                                     if (groupExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
                                         throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
@@ -737,14 +736,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                         throw new IllegalArgumentException("The specified group does not support modification.");
                                     }
                                     return baseConfigurableUserGroupProvider.deleteGroup(group);
-                                }
-
-                                @Override
-                                public Group deleteGroup(String groupId) throws AuthorizationAccessException {
-                                    if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getGroup(groupId))) {
-                                        throw new IllegalArgumentException("The specified group does not support modification.");
-                                    }
-                                    return baseConfigurableUserGroupProvider.deleteGroup(groupId);
                                 }
 
                                 @Override
@@ -840,8 +831,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             final UserGroupProvider userGroupProvider = accessPolicyProvider.getUserGroupProvider();
 
             // ensure that only one policy per resource-action exists
-            for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
-                if (policyExists(accessPolicyProvider, accessPolicy)) {
+            final Set<AccessPolicy> allPolicies = accessPolicyProvider.getAccessPolicies();
+            for (AccessPolicy accessPolicy : allPolicies) {
+                if (policyExists(allPolicies, accessPolicy)) {
                     throw new SecurityProviderCreationException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
                 }
             }
@@ -930,7 +922,17 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
      * @return true if another access policy exists with the same resource and action, false otherwise
      */
     private static boolean policyExists(final AccessPolicyProvider accessPolicyProvider, final AccessPolicy checkAccessPolicy) {
-        for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
+        return policyExists(accessPolicyProvider.getAccessPolicies(), checkAccessPolicy);
+    }
+
+    /**
+     * Checks if another policy exists with the same resource and action as the given policy.
+     *
+     * @param checkAccessPolicy an access policy being checked
+     * @return true if another access policy exists with the same resource and action, false otherwise
+     */
+    private static boolean policyExists(final Collection<AccessPolicy> policies, final AccessPolicy checkAccessPolicy) {
+        for (AccessPolicy accessPolicy : policies) {
             if (!accessPolicy.getIdentifier().equals(checkAccessPolicy.getIdentifier())
                     && accessPolicy.getResource().equals(checkAccessPolicy.getResource())
                     && accessPolicy.getAction().equals(checkAccessPolicy.getAction())) {
@@ -939,6 +941,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         }
         return false;
     }
+
 
     /**
      * Checks if another user or group exists with the same identity.

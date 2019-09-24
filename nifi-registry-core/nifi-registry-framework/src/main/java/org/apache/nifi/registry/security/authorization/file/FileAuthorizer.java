@@ -16,7 +16,6 @@
  */
 package org.apache.nifi.registry.security.authorization.file;
 
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.AbstractPolicyBasedAuthorizer;
 import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
@@ -32,7 +31,10 @@ import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
 import org.apache.nifi.registry.security.authorization.UsersAndAccessPolicies;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
+import org.apache.nifi.registry.security.authorization.util.AccessPolicyProviderUtils;
+import org.apache.nifi.registry.security.authorization.util.UserGroupProviderUtils;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,8 +117,8 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
         if (configurationProperties.containsKey(FileAccessPolicyProvider.PROP_AUTHORIZATIONS_FILE)) {
             accessPolicyProperties.put(FileAccessPolicyProvider.PROP_AUTHORIZATIONS_FILE, configurationProperties.get(FileAccessPolicyProvider.PROP_AUTHORIZATIONS_FILE));
         }
-        if (configurationProperties.containsKey(FileAccessPolicyProvider.PROP_INITIAL_ADMIN_IDENTITY)) {
-            accessPolicyProperties.put(FileAccessPolicyProvider.PROP_INITIAL_ADMIN_IDENTITY, configurationProperties.get(FileAccessPolicyProvider.PROP_INITIAL_ADMIN_IDENTITY));
+        if (configurationProperties.containsKey(AccessPolicyProviderUtils.PROP_INITIAL_ADMIN_IDENTITY)) {
+            accessPolicyProperties.put(AccessPolicyProviderUtils.PROP_INITIAL_ADMIN_IDENTITY, configurationProperties.get(AccessPolicyProviderUtils.PROP_INITIAL_ADMIN_IDENTITY));
         }
         if (configurationProperties.containsKey(FileAuthorizer.PROP_LEGACY_AUTHORIZED_USERS_FILE)) {
             accessPolicyProperties.put(FileAuthorizer.PROP_LEGACY_AUTHORIZED_USERS_FILE, configurationProperties.get(FileAuthorizer.PROP_LEGACY_AUTHORIZED_USERS_FILE));
@@ -124,20 +126,20 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
 
         // ensure all nifi identities are seeded into the user provider
         configurationProperties.forEach((property, value) -> {
-            final Matcher matcher = FileAccessPolicyProvider.NIFI_IDENTITY_PATTERN.matcher(property);
+            final Matcher matcher = AccessPolicyProviderUtils.NIFI_IDENTITY_PATTERN.matcher(property);
             if (matcher.matches()) {
                 accessPolicyProperties.put(property, value);
-                userGroupProperties.put(property.replace(FileAccessPolicyProvider.PROP_NIFI_IDENTITY_PREFIX, FileUserGroupProvider.PROP_INITIAL_USER_IDENTITY_PREFIX), value);
+                userGroupProperties.put(property.replace(AccessPolicyProviderUtils.PROP_NIFI_IDENTITY_PREFIX, UserGroupProviderUtils.PROP_INITIAL_USER_IDENTITY_PREFIX), value);
             }
         });
 
         // ensure the initial admin is seeded into the user provider if appropriate
-        if (configurationProperties.containsKey(FileAccessPolicyProvider.PROP_INITIAL_ADMIN_IDENTITY)) {
+        if (configurationProperties.containsKey(AccessPolicyProviderUtils.PROP_INITIAL_ADMIN_IDENTITY)) {
             int i = 0;
             while (true) {
-                final String key = FileUserGroupProvider.PROP_INITIAL_USER_IDENTITY_PREFIX + i++;
+                final String key = UserGroupProviderUtils.PROP_INITIAL_USER_IDENTITY_PREFIX + i++;
                 if (!userGroupProperties.containsKey(key)) {
-                    userGroupProperties.put(key, configurationProperties.get(FileAccessPolicyProvider.PROP_INITIAL_ADMIN_IDENTITY));
+                    userGroupProperties.put(key, configurationProperties.get(AccessPolicyProviderUtils.PROP_INITIAL_ADMIN_IDENTITY));
                     break;
                 }
             }
@@ -178,11 +180,6 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @Override
-    public synchronized Group deleteGroup(String groupId) throws AuthorizationAccessException {
-        return userGroupProvider.deleteGroup(groupId);
-    }
-
-    @Override
     public Set<Group> getGroups() throws AuthorizationAccessException {
         return userGroupProvider.getGroups();
     }
@@ -215,11 +212,6 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @Override
-    public synchronized User deleteUser(final String userId) throws AuthorizationAccessException {
-        return userGroupProvider.deleteUser(userId);
-    }
-
-    @Override
     public Set<User> getUsers() throws AuthorizationAccessException {
         return userGroupProvider.getUsers();
     }
@@ -247,19 +239,14 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @Override
-    public synchronized AccessPolicy deleteAccessPolicy(final String accessPolicyIdentifier) throws AuthorizationAccessException {
-        return accessPolicyProvider.deleteAccessPolicy(accessPolicyIdentifier);
-    }
-
-    @Override
     public Set<AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
         return accessPolicyProvider.getAccessPolicies();
     }
 
     @AuthorizerContext
-    public void setNiFiProperties(NiFiRegistryProperties properties) {
-        userGroupProvider.setNiFiProperties(properties);
-        accessPolicyProvider.setNiFiProperties(properties);
+    public void setIdentityMapper(final IdentityMapper identityMapper) {
+        userGroupProvider.setIdentityMapper(identityMapper);
+        accessPolicyProvider.setIdentityMapper(identityMapper);
     }
 
     @Override

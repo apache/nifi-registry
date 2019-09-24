@@ -33,6 +33,7 @@ import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
 import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
 import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.service.RegistryService;
 import org.junit.After;
 import org.junit.Before;
@@ -52,6 +53,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.sql.DataSource;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
@@ -110,9 +112,18 @@ public class SecureLdapIT extends IntegrationTestBase {
         public static Authorizer getAuthorizer(
                 @Autowired NiFiRegistryProperties properties,
                 ExtensionManager extensionManager,
-                RegistryService registryService) throws Exception {
+                RegistryService registryService,
+                DataSource dataSource,
+                IdentityMapper identityMapper) throws Exception {
+
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService);
+                authorizerFactory = new AuthorizerFactory(
+                        properties,
+                        extensionManager,
+                        sensitivePropertyProvider(),
+                        registryService,
+                        dataSource,
+                        identityMapper);
             }
             return authorizerFactory.getAuthorizer();
         }

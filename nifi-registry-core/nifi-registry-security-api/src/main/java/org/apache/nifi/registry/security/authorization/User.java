@@ -40,7 +40,6 @@ public class User {
         if (identity == null || identity.trim().isEmpty()) {
             throw new IllegalArgumentException("Identity can not be null or empty");
         }
-
     }
 
     /**

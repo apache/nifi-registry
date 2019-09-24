@@ -118,11 +118,6 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
     }
 
     @Override
-    public User deleteUser(String userIdentifier) throws AuthorizationAccessException {
-        return configurableUserGroupProvider.deleteUser(userIdentifier);
-    }
-
-    @Override
     public Group addGroup(Group group) throws AuthorizationAccessException {
         return configurableUserGroupProvider.addGroup(group);
     }
@@ -140,11 +135,6 @@ public class CompositeConfigurableUserGroupProvider extends CompositeUserGroupPr
     @Override
     public Group deleteGroup(Group group) throws AuthorizationAccessException {
         return configurableUserGroupProvider.deleteGroup(group);
-    }
-
-    @Override
-    public Group deleteGroup(String groupIdentifier) throws AuthorizationAccessException {
-        return configurableUserGroupProvider.deleteGroup(groupIdentifier);
     }
 
     @Override

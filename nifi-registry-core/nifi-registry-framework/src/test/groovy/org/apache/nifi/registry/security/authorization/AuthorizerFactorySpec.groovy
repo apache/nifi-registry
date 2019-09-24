@@ -20,14 +20,19 @@ import org.apache.nifi.registry.extension.ExtensionClassLoader
 import org.apache.nifi.registry.extension.ExtensionManager
 import org.apache.nifi.registry.properties.NiFiRegistryProperties
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory
+import org.apache.nifi.registry.security.identity.IdentityMapper
 import org.apache.nifi.registry.service.RegistryService
 import spock.lang.Specification
+
+import javax.sql.DataSource
 
 class AuthorizerFactorySpec extends Specification {
 
     def mockProperties = Mock(NiFiRegistryProperties)
     def mockExtensionManager = Mock(ExtensionManager)
     def mockRegistryService = Mock(RegistryService)
+    def mockDataSource = Mock(DataSource)
+    def mockIdentityMapper = Mock(IdentityMapper)
 
     AuthorizerFactory authorizerFactory
 
@@ -36,7 +41,7 @@ class AuthorizerFactorySpec extends Specification {
         mockExtensionManager.getExtensionClassLoader(_) >> new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader())
         mockProperties.getPropertyKeys() >> new HashSet<String>() // Called by IdentityMappingUtil.getIdentityMappings()
 
-        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService)
+        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService, mockDataSource, mockIdentityMapper)
     }
 
     // runs after every feature method
@@ -89,7 +94,7 @@ class AuthorizerFactorySpec extends Specification {
 
         when: "a bad configuration is provided and getAuthorizer() is called"
         setMockPropsAuthorizersConfig(authorizersConfigFile, selectedAuthorizer)
-        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService)
+        authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService, mockDataSource, mockIdentityMapper)
         authorizerFactory.getAuthorizer()
 
         then: "expect an exception"

@@ -17,7 +17,6 @@
 package org.apache.nifi.registry.web.security.authentication.x509;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.authentication.IdentityProvider;
@@ -25,6 +24,7 @@ import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
 import org.apache.nifi.registry.web.security.authentication.AuthenticationRequestToken;
 import org.apache.nifi.registry.web.security.authentication.AuthenticationSuccessToken;
@@ -36,8 +36,8 @@ import java.util.Set;
 
 public class X509IdentityAuthenticationProvider extends IdentityAuthenticationProvider {
 
-    public X509IdentityAuthenticationProvider(NiFiRegistryProperties properties, Authorizer authorizer, IdentityProvider identityProvider) {
-        super(properties, authorizer, identityProvider);
+    public X509IdentityAuthenticationProvider(Authorizer authorizer, IdentityProvider identityProvider, IdentityMapper identityMapper) {
+        super(authorizer, identityProvider, identityMapper);
     }
 
     @Override

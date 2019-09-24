@@ -457,7 +457,7 @@ public class AuthorizationService {
             throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
 
-        configurableAccessPolicyProvider().deleteAccessPolicy(identifier);
+        configurableAccessPolicyProvider().deleteAccessPolicy(accessPolicy);
         return accessPolicyToDTO(accessPolicy);
     }
 

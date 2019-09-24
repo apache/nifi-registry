@@ -17,9 +17,6 @@
 package org.apache.nifi.registry.security.ldap.tenants;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.properties.util.IdentityMapping;
-import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.User;
@@ -30,6 +27,7 @@ import org.apache.nifi.registry.security.authorization.annotation.AuthorizerCont
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.security.ldap.LdapAuthenticationStrategy;
 import org.apache.nifi.registry.security.ldap.LdapsSocketFactory;
 import org.apache.nifi.registry.security.ldap.ReferralStrategy;
@@ -69,7 +67,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -116,9 +113,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
 
     public static final String PROP_SYNC_INTERVAL = "Sync Interval";
 
-    private List<IdentityMapping> identityMappings;
-    private List<IdentityMapping> groupMappings;
-    private NiFiRegistryProperties properties;
+    private IdentityMapper identityMapper;
 
     private ScheduledExecutorService ldapSync;
     private AtomicReference<TenantHolder> tenants = new AtomicReference<>(null);
@@ -354,10 +349,6 @@ public class LdapUserGroupProvider implements UserGroupProvider {
         // get whether group membership should be case sensitive
         final String rawGroupMembershipEnforceCaseSensitivity = configurationContext.getProperty(PROP_GROUP_MEMBERSHIP_ENFORCE_CASE_SENSITIVITY).getValue();
         groupMembershipEnforceCaseSensitivity = Boolean.parseBoolean(rawGroupMembershipEnforceCaseSensitivity);
-
-        // extract the identity mappings from nifi-registry.properties if any are provided
-        identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
-        groupMappings = Collections.unmodifiableList(IdentityMappingUtil.getGroupMappings(properties));
 
         // set the base environment is necessary
         if (!baseEnvironment.isEmpty()) {
@@ -614,7 +605,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                                                 final String userIdentity;
                                                 if (useDnForUserIdentity) {
                                                     // use the user value to avoid the unnecessary look up
-                                                    userIdentity = IdentityMappingUtil.mapIdentity(userDn, identityMappings);
+                                                    userIdentity = identityMapper.mapUser(userDn);
                                                 } else {
                                                     // lookup the user to extract the user identity
                                                     userIdentity = getUserIdentity((DirContextAdapter) ldapTemplate.lookup(userDn));
@@ -661,7 +652,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
                     final String groupName;
                     if (useDnForGroupName) {
                         // use the dn to avoid the unnecessary look up
-                        groupName = IdentityMappingUtil.mapIdentity(groupDn, groupMappings);
+                        groupName = identityMapper.mapGroup(groupDn);
                     } else {
                         groupName = getGroupName((DirContextAdapter) ldapTemplate.lookup(groupDn));
                     }
@@ -716,7 +707,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             }
         }
 
-        return IdentityMappingUtil.mapIdentity(identity, identityMappings);
+        return identityMapper.mapUser(identity);
     }
 
     private String getReferencedUserValue(final DirContextOperations ctx) {
@@ -758,7 +749,7 @@ public class LdapUserGroupProvider implements UserGroupProvider {
             }
         }
 
-        return IdentityMappingUtil.mapIdentity(name, groupMappings);
+        return identityMapper.mapGroup(name);
     }
 
     private String getReferencedGroupValue(final DirContextOperations ctx) {
@@ -783,8 +774,8 @@ public class LdapUserGroupProvider implements UserGroupProvider {
     }
 
     @AuthorizerContext
-    public void setNiFiProperties(NiFiRegistryProperties properties) {
-        this.properties = properties;
+    public void setIdentityMapper(final IdentityMapper identityMapper) {
+        this.identityMapper = identityMapper;
     }
 
     @Override

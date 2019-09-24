@@ -16,9 +16,9 @@
  */
 package org.apache.nifi.registry.web.security;
 
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
 import org.apache.nifi.registry.web.security.authentication.IdentityAuthenticationProvider;
@@ -59,7 +59,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(NiFiRegistrySecurityConfig.class);
 
     @Autowired
-    private NiFiRegistryProperties properties;
+    private IdentityMapper identityMapper;
 
     @Autowired
     private AuthorizationService authorizationService;
@@ -146,7 +146,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider x509AuthenticationProvider() {
         if (x509AuthenticationProvider == null) {
-            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, x509IdentityProvider);
+            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(authorizer, x509IdentityProvider, identityMapper);
         }
         return x509AuthenticationProvider;
     }
@@ -160,7 +160,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider jwtAuthenticationProvider() {
         if (jwtAuthenticationProvider == null) {
-            jwtAuthenticationProvider = new IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
+            jwtAuthenticationProvider = new IdentityAuthenticationProvider(authorizer, jwtIdentityProvider, identityMapper);
         }
         return jwtAuthenticationProvider;
     }
