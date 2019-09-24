@@ -52,6 +52,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.sql.DataSource;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
@@ -110,9 +111,10 @@ public class SecureLdapIT extends IntegrationTestBase {
         public static Authorizer getAuthorizer(
                 @Autowired NiFiRegistryProperties properties,
                 ExtensionManager extensionManager,
-                RegistryService registryService) throws Exception {
+                RegistryService registryService,
+                DataSource dataSource) throws Exception {
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService);
+                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService, dataSource);
             }
             return authorizerFactory.getAuthorizer();
         }

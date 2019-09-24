@@ -20,21 +20,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.util.IdentityMapping;
 import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
+import org.apache.nifi.registry.security.authorization.AbstractConfigurableAccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
-import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.User;
-import org.apache.nifi.registry.security.authorization.UserGroupProvider;
-import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.security.authorization.file.generated.Authorizations;
 import org.apache.nifi.registry.security.authorization.file.generated.Policies;
 import org.apache.nifi.registry.security.authorization.file.generated.Policy;
+import org.apache.nifi.registry.security.authorization.util.AccessPolicyProviderUtils;
+import org.apache.nifi.registry.security.authorization.util.InitialPolicies;
+import org.apache.nifi.registry.security.authorization.util.ResourceAndAction;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.util.PropertyValue;
@@ -70,17 +71,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvider {
+public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(FileAccessPolicyProvider.class);
 
@@ -115,61 +112,20 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     static final String WRITE_CODE = "W";
     static final String DELETE_CODE = "D";
 
-    /*  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
-     *  (and also gets us away from requiring magic strings here) */
-    private static final ResourceActionPair[] INITIAL_ADMIN_ACCESS_POLICIES = {
-            new ResourceActionPair("/tenants", READ_CODE),
-            new ResourceActionPair("/tenants", WRITE_CODE),
-            new ResourceActionPair("/tenants", DELETE_CODE),
-            new ResourceActionPair("/policies", READ_CODE),
-            new ResourceActionPair("/policies", WRITE_CODE),
-            new ResourceActionPair("/policies", DELETE_CODE),
-            new ResourceActionPair("/buckets", READ_CODE),
-            new ResourceActionPair("/buckets", WRITE_CODE),
-            new ResourceActionPair("/buckets", DELETE_CODE),
-            new ResourceActionPair("/actuator", READ_CODE),
-            new ResourceActionPair("/actuator", WRITE_CODE),
-            new ResourceActionPair("/actuator", DELETE_CODE),
-            new ResourceActionPair("/swagger", READ_CODE),
-            new ResourceActionPair("/swagger", WRITE_CODE),
-            new ResourceActionPair("/swagger", DELETE_CODE),
-            new ResourceActionPair("/proxy", READ_CODE),
-            new ResourceActionPair("/proxy", WRITE_CODE),
-            new ResourceActionPair("/proxy", DELETE_CODE)
-    };
-
-    /*  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
-     *  (and also gets us away from requiring magic strings here) */
-    private static final ResourceActionPair[] NIFI_ACCESS_POLICIES = {
-            new ResourceActionPair("/buckets", READ_CODE),
-            new ResourceActionPair("/proxy", READ_CODE),
-            new ResourceActionPair("/proxy", WRITE_CODE),
-            new ResourceActionPair("/proxy", DELETE_CODE)
-    };
-
-    static final String PROP_NIFI_IDENTITY_PREFIX = "NiFi Identity ";
-    static final String PROP_USER_GROUP_PROVIDER = "User Group Provider";
-    static final String PROP_NIFI_GROUP_NAME = "NiFi Group Name";
     static final String PROP_AUTHORIZATIONS_FILE = "Authorizations File";
-    static final String PROP_INITIAL_ADMIN_IDENTITY = "Initial Admin Identity";
-    static final Pattern NIFI_IDENTITY_PATTERN = Pattern.compile(PROP_NIFI_IDENTITY_PREFIX + "\\S+");
 
     private Schema authorizationsSchema;
     private NiFiRegistryProperties properties;
     private File authorizationsFile;
     private String initialAdminIdentity;
     private Set<String> nifiIdentities;
-    private String nifiIdentityGroupIdentifier;
+    private String nifiGroupName;
     private List<IdentityMapping> identityMappings;
 
-    private UserGroupProvider userGroupProvider;
-    private UserGroupProviderLookup userGroupProviderLookup;
     private final AtomicReference<AuthorizationsHolder> authorizationsHolder = new AtomicReference<>();
 
     @Override
-    public void initialize(AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
-        userGroupProviderLookup = initializationContext.getUserGroupProviderLookup();
-
+    public void doInitialize(final AccessPolicyProviderInitializationContext initializationContext) throws SecurityProviderCreationException {
         try {
             final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             authorizationsSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(AUTHORIZATIONS_XSD));
@@ -179,18 +135,8 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     }
 
     @Override
-    public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
+    public void doOnConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         try {
-            final PropertyValue userGroupProviderIdentifier = configurationContext.getProperty(PROP_USER_GROUP_PROVIDER);
-            if (!userGroupProviderIdentifier.isSet()) {
-                throw new SecurityProviderCreationException("The user group provider must be specified.");
-            }
-
-            userGroupProvider = userGroupProviderLookup.getUserGroupProvider(userGroupProviderIdentifier.getValue());
-            if (userGroupProvider == null) {
-                throw new SecurityProviderCreationException("Unable to locate user group provider with identifier " + userGroupProviderIdentifier.getValue());
-            }
-
             final PropertyValue authorizationsPath = configurationContext.getProperty(PROP_AUTHORIZATIONS_FILE);
             if (StringUtils.isBlank(authorizationsPath.getValue())) {
                 throw new SecurityProviderCreationException("The authorizations file must be specified.");
@@ -207,47 +153,21 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
             identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
 
             // get the value of the initial admin identity
-            final PropertyValue initialAdminIdentityProp = configurationContext.getProperty(PROP_INITIAL_ADMIN_IDENTITY);
-            initialAdminIdentity = initialAdminIdentityProp.isSet() ? IdentityMappingUtil.mapIdentity(initialAdminIdentityProp.getValue(), identityMappings) : null;
+            initialAdminIdentity = AccessPolicyProviderUtils.getInitialAdminIdentity(configurationContext, identityMappings);
 
             // extract any nifi identities
-            nifiIdentities = new HashSet<>();
-            for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
-                Matcher matcher = NIFI_IDENTITY_PATTERN.matcher(entry.getKey());
-                if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
-                    nifiIdentities.add(IdentityMappingUtil.mapIdentity(entry.getValue(), identityMappings));
-                }
-            }
+            nifiIdentities = AccessPolicyProviderUtils.getNiFiIdentities(configurationContext, identityMappings);
 
-            PropertyValue identityGroupNameProp = configurationContext.getProperty(PROP_NIFI_GROUP_NAME);
-            String identityGroupName = (identityGroupNameProp != null && identityGroupNameProp.isSet()) ? identityGroupNameProp.getValue() : null;
-            if (!StringUtils.isBlank(identityGroupName)) {
-                logger.debug("{} is: {}", PROP_NIFI_GROUP_NAME, identityGroupName);
-                Set<Group> groups = userGroupProvider.getGroups();
-                logger.trace("All authorization groups: {}", groups);
-                Optional<Group> identityGroupsOptional =
-                        groups.stream()
-                            .filter(group -> group.getName().equals(identityGroupName))
-                            .findFirst();
-                Group identityGroup = identityGroupsOptional
-                        .orElseThrow(() ->
-                            new SecurityProviderCreationException(String.format("Authorizations node group '%s' could not be found", identityGroupName))
-                        );
-                logger.debug("Identity Group is: {}", identityGroup);
-                nifiIdentityGroupIdentifier = identityGroup.getIdentifier();
-            }
+            // extract the group for nifi identities, if one exists
+            nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext);
+
             // load the authorizations
             load();
 
             logger.info(String.format("Authorizations file loaded at %s", new Date().toString()));
-        } catch (SecurityProviderCreationException | JAXBException | IllegalStateException | SAXException e) {
+        } catch (JAXBException | SAXException e) {
             throw new SecurityProviderCreationException(e);
         }
-    }
-
-    @Override
-    public UserGroupProvider getUserGroupProvider() {
-        return userGroupProvider;
     }
 
     @Override
@@ -520,22 +440,20 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
         // if we are starting fresh then we might need to populate an initial admin
         if (emptyAuthorizations) {
             if (hasInitialAdminIdentity) {
-               logger.info("Populating authorizations for Initial Admin: " + initialAdminIdentity);
+               logger.info("Populating authorizations for Initial Admin: '" + initialAdminIdentity + "'");
                populateInitialAdmin(authorizations);
             }
 
             if (hasNiFiIdentities) {
-                logger.info("Populating proxy authorizations for NiFi clients: [{}]", StringUtils.join(nifiIdentities, ";"));
+                logger.info("Populating authorizations for NiFi identities: [{}]", StringUtils.join(nifiIdentities, ";"));
                 populateNiFiIdentities(authorizations);
             }
 
-            if (!StringUtils.isEmpty(nifiIdentityGroupIdentifier)) {
-                logger.info("Populating proxy authorizations for NiFi identity group: [{}]", nifiIdentityGroupIdentifier);
-                // grant access to the resources needed for initial nifi-proxy identities
-                for (ResourceActionPair resourceAction : NIFI_ACCESS_POLICIES) {
-                    addGroupToAccessPolicy(authorizations, resourceAction.resource, nifiIdentityGroupIdentifier, resourceAction.actionCode);
-                }
+            if (!StringUtils.isEmpty(nifiGroupName)) {
+                logger.info("Populating authorizations for NiFi identity group: [{}]", nifiGroupName);
+                populateNiFiGroup(authorizations);
             }
+
             saveAndRefreshHolder(authorizations);
         } else {
             this.authorizationsHolder.set(authorizationsHolder);
@@ -559,17 +477,17 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
 
     /**
      *  Creates the initial admin user and sets policies managing buckets, users, and policies.
-     *
-     *  TODO - move this somewhere into nifi-registry-security-framework so it can be applied to any ConfigurableAccessPolicyProvider
      */
     private void populateInitialAdmin(final Authorizations authorizations) {
-        final User initialAdmin = userGroupProvider.getUserByIdentity(initialAdminIdentity);
+        final User initialAdmin = getUserGroupProvider().getUserByIdentity(initialAdminIdentity);
         if (initialAdmin == null) {
             throw new SecurityProviderCreationException("Unable to locate initial admin " + initialAdminIdentity + " to seed policies");
         }
 
-        for (ResourceActionPair resourceAction : INITIAL_ADMIN_ACCESS_POLICIES) {
-            addUserToAccessPolicy(authorizations, resourceAction.resource, initialAdmin.getIdentifier(), resourceAction.actionCode);
+        for (final ResourceAndAction resourceAction : InitialPolicies.ADMIN_POLICIES) {
+            final String resource = resourceAction.getResource().getIdentifier();
+            final String actionCode = getActionCode(resourceAction.getAction());
+            addUserToAccessPolicy(authorizations, resource, initialAdmin.getIdentifier(), actionCode);
         }
     }
 
@@ -578,48 +496,59 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
      *
      * @param authorizations the overall authorizations
      */
-    private void populateNiFiIdentities(Authorizations authorizations) {
+    private void populateNiFiIdentities(final Authorizations authorizations) {
         for (String nifiIdentity : nifiIdentities) {
-            final User nifiUser = userGroupProvider.getUserByIdentity(nifiIdentity);
+            final User nifiUser = getUserGroupProvider().getUserByIdentity(nifiIdentity);
             if (nifiUser == null) {
-                throw new SecurityProviderCreationException("Unable to locate node " + nifiIdentity + " to seed policies.");
+                throw new SecurityProviderCreationException("Unable to locate NiFi identities'" + nifiIdentity + "' to seed policies.");
             }
 
-            // grant access to the resources needed for initial nifi-proxy identities
-            for (ResourceActionPair resourceAction : NIFI_ACCESS_POLICIES) {
-                addUserToAccessPolicy(authorizations, resourceAction.resource, nifiUser.getIdentifier(), resourceAction.actionCode);
+            // grant access to the resources needed for initial nifi identities
+            for (final ResourceAndAction resourceAction : InitialPolicies.NIFI_POLICIES) {
+                final String resource = resourceAction.getResource().getIdentifier();
+                final String actionCode = getActionCode(resourceAction.getAction());
+                addUserToAccessPolicy(authorizations, resource, nifiUser.getIdentifier(), actionCode);
             }
         }
     }
 
-    private void addGroupToAccessPolicy(Authorizations authorizations, String resource, String nifiIdentityGroupIdentifier, String action) {
-    Optional<Policy> policyOptional = authorizations.getPolicies().getPolicy().stream()
-            .filter(policy -> policy.getResource().equals(resource))
-            .filter(policy -> policy.getAction().equals(action))
-        .findAny();
-    if (policyOptional.isPresent()) {
-        Policy policy = policyOptional.get();
-        Policy.Group group = new Policy.Group();
-        group.setIdentifier(nifiIdentityGroupIdentifier);
-        policy.getGroup().add(group);
-    } else {
-        AccessPolicy.Builder accessPolicyBuilder =
-            new AccessPolicy.Builder()
-              .identifierGenerateFromSeed(resource + action)
-              .resource(resource)
-              .addGroup(nifiIdentityGroupIdentifier);
-      if (action.equals(READ_CODE)) {
-          accessPolicyBuilder.action(RequestAction.READ);
-      } else if (action.equals(WRITE_CODE)) {
-          accessPolicyBuilder.action(RequestAction.WRITE);
-      } else if (action.equals(DELETE_CODE)) {
-          accessPolicyBuilder.action(RequestAction.DELETE);
-      } else {
-          throw new IllegalStateException("Unknown Policy Action: " + action);
-      }
-      authorizations.getPolicies().getPolicy().add(createJAXBPolicy(accessPolicyBuilder.build()));
+    /**
+     * Populates the authorizations for the NiFi Group.
+     *
+     * @param authorizations the overall authorizations
+     */
+    private void populateNiFiGroup(final Authorizations authorizations) {
+        final Group nifiGroup = AccessPolicyProviderUtils.getGroup(nifiGroupName, getUserGroupProvider());
+
+        // grant access to the resources needed for initial nifi-proxy identities
+        for (final ResourceAndAction resourceAction : InitialPolicies.NIFI_POLICIES) {
+            final String resource = resourceAction.getResource().getIdentifier();
+            final String actionCode = getActionCode(resourceAction.getAction());
+            addGroupToAccessPolicy(authorizations, resource, nifiGroup.getIdentifier(), actionCode);
+        }
     }
-  }
+
+    private void addGroupToAccessPolicy(final Authorizations authorizations, final String resource, final String groupIdentifier, final String actionCode) {
+        Optional<Policy> policyOptional = authorizations.getPolicies().getPolicy().stream()
+                .filter(policy -> policy.getResource().equals(resource))
+                .filter(policy -> policy.getAction().equals(actionCode))
+            .findAny();
+        if (policyOptional.isPresent()) {
+            Policy policy = policyOptional.get();
+            Policy.Group group = new Policy.Group();
+            group.setIdentifier(groupIdentifier);
+            policy.getGroup().add(group);
+        } else {
+            AccessPolicy.Builder accessPolicyBuilder =
+                    new AccessPolicy.Builder()
+                            .identifierGenerateFromSeed(resource + actionCode)
+                            .resource(resource)
+                            .addGroup(groupIdentifier)
+                            .action(getAction(actionCode));
+
+            authorizations.getPolicies().getPolicy().add(createJAXBPolicy(accessPolicyBuilder.build()));
+        }
+    }
 
     /**
      * Creates and adds an access policy for the given resource, identity, and actions to the specified authorizations.
@@ -627,13 +556,13 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
      * @param authorizations the Authorizations instance to add the policy to
      * @param resource the resource for the policy
      * @param userIdentifier the identifier for the user to add to the policy
-     * @param action the action for the policy
+     * @param actionCode the action for the policy
      */
-    private void addUserToAccessPolicy(final Authorizations authorizations, final String resource, final String userIdentifier, final String action) {
+    private void addUserToAccessPolicy(final Authorizations authorizations, final String resource, final String userIdentifier, final String actionCode) {
         // first try to find an existing policy for the given resource and action
         Policy foundPolicy = null;
         for (Policy policy : authorizations.getPolicies().getPolicy()) {
-            if (policy.getResource().equals(resource) && policy.getAction().equals(action)) {
+            if (policy.getResource().equals(resource) && policy.getAction().equals(actionCode)) {
                 foundPolicy = policy;
                 break;
             }
@@ -641,22 +570,13 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
 
         if (foundPolicy == null) {
             // if we didn't find an existing policy create a new one
-            final String uuidSeed = resource + action;
+            final String uuidSeed = resource + actionCode;
 
             final AccessPolicy.Builder builder = new AccessPolicy.Builder()
                     .identifierGenerateFromSeed(uuidSeed)
                     .resource(resource)
-                    .addUser(userIdentifier);
-
-            if (action.equals(READ_CODE)) {
-                builder.action(RequestAction.READ);
-            } else if (action.equals(WRITE_CODE)) {
-                builder.action(RequestAction.WRITE);
-            } else if (action.equals(DELETE_CODE)) {
-                builder.action(RequestAction.DELETE);
-            } else {
-                throw new IllegalStateException("Unknown Policy Action: " + action);
-            }
+                    .addUser(userIdentifier)
+                    .action(getAction(actionCode));
 
             final AccessPolicy accessPolicy = builder.build();
             final Policy jaxbPolicy = createJAXBPolicy(accessPolicy);
@@ -673,23 +593,35 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
         final Policy policy = new Policy();
         policy.setIdentifier(accessPolicy.getIdentifier());
         policy.setResource(accessPolicy.getResource());
-
-        switch (accessPolicy.getAction()) {
-            case READ:
-                policy.setAction(READ_CODE);
-                break;
-            case WRITE:
-                policy.setAction(WRITE_CODE);
-                break;
-            case DELETE:
-                policy.setAction(DELETE_CODE);
-                break;
-            default:
-                break;
-        }
-
+        policy.setAction(getActionCode(accessPolicy.getAction()));
         transferUsersAndGroups(accessPolicy, policy);
         return policy;
+    }
+
+    private String getActionCode(final RequestAction action) {
+        switch (action) {
+            case READ:
+                return READ_CODE;
+            case WRITE:
+                return WRITE_CODE;
+            case DELETE:
+                return DELETE_CODE;
+            default:
+                throw new IllegalStateException("Unknown action: " + action);
+        }
+    }
+
+    private RequestAction getAction(final String actionCode) {
+        switch (actionCode) {
+            case READ_CODE:
+                return RequestAction.READ;
+            case WRITE_CODE:
+                return RequestAction.WRITE;
+            case DELETE_CODE:
+                return RequestAction.DELETE;
+            default:
+                throw new IllegalStateException("Unknown action: " + actionCode);
+        }
     }
 
     /**
@@ -720,90 +652,6 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     }
 
     /**
-     * Adds the given user identifier to the policy if it doesn't already exist.
-     *
-     * @param userIdentifier a user identifier
-     * @param policy a policy to add the user to
-     */
-    private void addUserToPolicy(final String userIdentifier, final Policy policy) {
-        // determine if the user already exists in the policy
-        boolean userExists = false;
-        for (Policy.User policyUser : policy.getUser()) {
-            if (policyUser.getIdentifier().equals(userIdentifier)) {
-                userExists = true;
-                break;
-            }
-        }
-
-        // add the user to the policy if doesn't already exist
-        if (!userExists) {
-            Policy.User policyUser = new Policy.User();
-            policyUser.setIdentifier(userIdentifier);
-            policy.getUser().add(policyUser);
-        }
-    }
-
-    /**
-     * Adds the given group identifier to the policy if it doesn't already exist.
-     *
-     * @param groupIdentifier a group identifier
-     * @param policy a policy to add the user to
-     */
-    private void addGroupToPolicy(final String groupIdentifier, final Policy policy) {
-        // determine if the group already exists in the policy
-        boolean groupExists = false;
-        for (Policy.Group policyGroup : policy.getGroup()) {
-            if (policyGroup.getIdentifier().equals(groupIdentifier)) {
-                groupExists = true;
-                break;
-            }
-        }
-
-        // add the group to the policy if doesn't already exist
-        if (!groupExists) {
-            Policy.Group policyGroup = new Policy.Group();
-            policyGroup.setIdentifier(groupIdentifier);
-            policy.getGroup().add(policyGroup);
-        }
-    }
-
-    /**
-     * Finds the Policy matching the resource and action, or creates a new one and adds it to the list of policies.
-     *
-     * @param policies the policies to search through
-     * @param seedIdentity the seedIdentity to use when creating identifiers for new policies
-     * @param resource the resource for the policy
-     * @param action the action string for the police (R or RW)
-     * @return the matching policy or a new policy
-     */
-    private Policy getOrCreatePolicy(final List<Policy> policies, final String seedIdentity, final String resource, final String action) {
-        Policy foundPolicy = null;
-
-        // try to find a policy with the same resource and actions
-        for (Policy policy : policies) {
-            if (policy.getResource().equals(resource) && policy.getAction().equals(action)) {
-                foundPolicy = policy;
-                break;
-            }
-        }
-
-        // if a matching policy wasn't found then create one
-        if (foundPolicy == null) {
-            final String uuidSeed = resource + action + seedIdentity;
-            final String policyIdentifier = IdentifierUtil.getIdentifier(uuidSeed);
-
-            foundPolicy = new Policy();
-            foundPolicy.setIdentifier(policyIdentifier);
-            foundPolicy.setResource(resource);
-            foundPolicy.setAction(action);
-
-            policies.add(foundPolicy);
-        }
-
-        return foundPolicy;
-    }
-
-    /**
      * Saves the Authorizations instance by marshalling to a file, then re-populates the
      * in-memory data structures and sets the new holder.
      *
@@ -826,12 +674,4 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     public void preDestruction() throws SecurityProviderDestructionException {
     }
 
-    private static class ResourceActionPair {
-        public String resource;
-        public String actionCode;
-        public ResourceActionPair(String resource, String actionCode) {
-            this.resource = resource;
-            this.actionCode = actionCode;
-        }
-    }
 }

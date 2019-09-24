@@ -484,33 +484,25 @@ class AuthorizationServiceSpec extends Specification {
     def "delete access policy"() {
 
         setup:
+        def policy1 = new AuthAccessPolicy.Builder()
+                .identifier("policy1")
+                .resource("/resource")
+                .action(RequestAction.READ)
+                .addGroups(new HashSet<String>())
+                .addUsers(new HashSet<String>())
+                .build()
+
         userGroupProvider.getGroups() >> new HashSet<Group>()
         userGroupProvider.getUsers() >> new HashSet<AuthUser>()
-        accessPolicyProvider.getAccessPolicy("id") >> {
-            String id -> new AuthAccessPolicy.Builder()
-                    .identifier("id")
-                    .resource("/resource")
-                    .action(RequestAction.READ)
-                    .addGroups(new HashSet<String>())
-                    .addUsers(new HashSet<String>())
-                    .build()
-        }
-        accessPolicyProvider.deleteAccessPolicy(!null as String) >> {
-            String id -> new AuthAccessPolicy.Builder()
-                    .identifier(id)
-                    .resource("/resource")
-                    .action(RequestAction.READ)
-                    .addGroups(new HashSet<String>())
-                    .addUsers(new HashSet<String>())
-                    .build()
-        }
+        accessPolicyProvider.getAccessPolicy("id") >> policy1
+        accessPolicyProvider.deleteAccessPolicy(!null as String) >> policy1
 
         when: "access policy is deleted"
         def policy = authorizationService.deleteAccessPolicy("id")
 
         then: "deleted policy is returned"
         with(policy) {
-            identifier == "id"
+            identifier == "policy1"
             resource == "/resource"
             action == RequestAction.READ.toString()
         }

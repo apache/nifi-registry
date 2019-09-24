@@ -23,7 +23,6 @@ import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.SensitivePropertyProtectionException;
 import org.apache.nifi.registry.properties.SensitivePropertyProvider;
-import org.apache.nifi.registry.provider.StandardProviderFactory;
 import org.apache.nifi.registry.security.authorization.annotation.AuthorizerContext;
 import org.apache.nifi.registry.security.authorization.exception.AuthorizationAccessException;
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
@@ -34,15 +33,15 @@ import org.apache.nifi.registry.security.exception.SecurityProviderDestructionEx
 import org.apache.nifi.registry.security.util.ClassLoaderUtils;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.apache.nifi.registry.service.RegistryService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.SAXException;
 
+import javax.sql.DataSource;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -71,11 +70,14 @@ import java.util.Set;
  *
  * This implementation of AuthorizerFactory in NiFi Registry is based on a combination of
  * NiFi's AuthorizerFactory and AuthorizerFactoryBean.
+ *
+ * This class is annotated with Spring's @Transactional because a provider may have a DataSource injected and perform
+ * database operations during initialization and configuration when we are outside of the application's normal
+ * transactional scope during the processing of an incoming request.
  */
+@Transactional
 @Configuration("authorizerFactory")
 public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyProviderLookup, AuthorizerLookup, DisposableBean {
-
-    private static final Logger logger = LoggerFactory.getLogger(StandardProviderFactory.class);
 
     private static final String AUTHORIZERS_XSD = "/authorizers.xsd";
     private static final String JAXB_GENERATED_PATH = "org.apache.nifi.registry.security.authorization.generated";
@@ -96,6 +98,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     private final ExtensionManager extensionManager;
     private final SensitivePropertyProvider sensitivePropertyProvider;
     private final RegistryService registryService;
+    private final DataSource dataSource;
 
     private Authorizer authorizer;
     private final Map<String, UserGroupProvider> userGroupProviders = new HashMap<>();
@@ -107,12 +110,14 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             final NiFiRegistryProperties properties,
             final ExtensionManager extensionManager,
             @Nullable final SensitivePropertyProvider sensitivePropertyProvider,
-            final RegistryService registryService) {
+            final RegistryService registryService,
+            final DataSource dataSource) {
 
         this.properties = properties;
         this.extensionManager = extensionManager;
         this.sensitivePropertyProvider = sensitivePropertyProvider;
         this.registryService = registryService;
+        this.dataSource = dataSource;
 
         if (this.properties == null) {
             throw new IllegalStateException("NiFiRegistryProperties cannot be null");
@@ -124,6 +129,10 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
         if (this.registryService == null) {
             throw new IllegalStateException("RegistryService cannot be null");
+        }
+
+        if (this.dataSource == null) {
+            throw new IllegalStateException("DataSource cannot be null");
         }
     }
 
@@ -441,6 +450,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         if (NiFiRegistryProperties.class.isAssignableFrom(argumentType)) {
                             // nifi properties injection
                             method.invoke(instance, properties);
+                        } else if (DataSource.class.isAssignableFrom(argumentType)) {
+                            // data source injection
+                            method.invoke(instance, dataSource);
                         }
                     }
                 } finally {
@@ -472,6 +484,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         if (NiFiRegistryProperties.class.isAssignableFrom(fieldType)) {
                             // nifi properties injection
                             field.set(instance, properties);
+                        } else if (DataSource.class.isAssignableFrom(fieldType)) {
+                            // data source injection
+                            field.set(instance, dataSource);
                         }
                     }
 

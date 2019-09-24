@@ -102,10 +102,13 @@ public interface ConfigurableUserGroupProvider extends UserGroupProvider {
     /**
      * Deletes the user for the given ID.
      *
+     * @deprecated use {@link #deleteUser(User user)} instead
+     *
      * @param userIdentifier the user to delete
      * @return the user that was deleted, or null if no matching user was found
      * @throws AuthorizationAccessException if there was an unexpected error performing the operation
      */
+    @Deprecated
     User deleteUser(String userIdentifier) throws AuthorizationAccessException;
 
     /**
@@ -155,9 +158,12 @@ public interface ConfigurableUserGroupProvider extends UserGroupProvider {
     /**
      * Deletes the given group.
      *
+     * @deprecated use {@link #deleteGroup(Group group)} instead
+     *
      * @param groupIdentifier the group to delete
      * @return the deleted group, or null if no matching group was found
      * @throws AuthorizationAccessException if there was an unexpected error performing the operation
      */
+    @Deprecated
     Group deleteGroup(String groupIdentifier) throws AuthorizationAccessException;
 }

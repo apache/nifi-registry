@@ -32,9 +32,9 @@ import org.apache.nifi.registry.security.authorization.exception.UninheritableAu
 import org.apache.nifi.registry.security.authorization.file.tenants.generated.Groups;
 import org.apache.nifi.registry.security.authorization.file.tenants.generated.Tenants;
 import org.apache.nifi.registry.security.authorization.file.tenants.generated.Users;
+import org.apache.nifi.registry.security.authorization.util.UserGroupProviderUtils;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
-import org.apache.nifi.registry.util.FileUtils;
 import org.apache.nifi.registry.util.PropertyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +68,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
 
@@ -108,15 +104,11 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
     private static final String IDENTITY_ATTR = "identity";
     private static final String NAME_ATTR = "name";
 
-    static final String PROP_INITIAL_USER_IDENTITY_PREFIX = "Initial User Identity ";
     static final String PROP_TENANTS_FILE = "Users File";
-    static final Pattern INITIAL_USER_IDENTITY_PATTERN = Pattern.compile(PROP_INITIAL_USER_IDENTITY_PREFIX + "\\S+");
 
-    private Schema usersSchema;
     private Schema tenantsSchema;
     private NiFiRegistryProperties properties;
     private File tenantsFile;
-    private File restoreTenantsFile;
     private Set<String> initialUserIdentities;
     private List<IdentityMapping> identityMappings;
 
@@ -127,7 +119,6 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         try {
             final SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             tenantsSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(TENANTS_XSD));
-            //usersSchema = schemaFactory.newSchema(FileAuthorizer.class.getResource(USERS_XSD));
         } catch (Exception e) {
             throw new SecurityProviderCreationException(e);
         }
@@ -148,29 +139,16 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
                 saveTenants(new Tenants());
             }
 
-            final File tenantsFileDirectory = tenantsFile.getAbsoluteFile().getParentFile();
-
             // extract the identity mappings from nifi-registry.properties if any are provided
             identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
 
             // extract any nifi identities
-            initialUserIdentities = new HashSet<>();
-            for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
-                Matcher matcher = INITIAL_USER_IDENTITY_PATTERN.matcher(entry.getKey());
-                if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
-                    initialUserIdentities.add(IdentityMappingUtil.mapIdentity(entry.getValue(), identityMappings));
-                }
-            }
+            initialUserIdentities = UserGroupProviderUtils.getInitialUserIdentities(configurationContext, identityMappings);
 
             load();
 
-            // if we've copied the authorizations file to a restore directory synchronize it
-            if (restoreTenantsFile != null) {
-                FileUtils.copyFile(tenantsFile, restoreTenantsFile, false, false, logger);
-            }
-
             logger.info(String.format("Users/Groups file loaded at %s", new Date().toString()));
-        } catch (IOException | SecurityProviderCreationException | JAXBException | IllegalStateException | SAXException e) {
+        } catch (SecurityProviderCreationException | JAXBException | IllegalStateException | SAXException e) {
             throw new SecurityProviderCreationException(e);
         }
     }
@@ -662,10 +640,10 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         }
 
         if (foundUser == null) {
-            final String userIdentifier = IdentifierUtil.getIdentifier(userIdentity);
+            final User newUser = new User.Builder().identifierGenerateFromSeed(userIdentity).identity(userIdentity).build();
             foundUser = new org.apache.nifi.registry.security.authorization.file.tenants.generated.User();
-            foundUser.setIdentifier(userIdentifier);
-            foundUser.setIdentity(userIdentity);
+            foundUser.setIdentifier(newUser.getIdentifier());
+            foundUser.setIdentity(newUser.getIdentity());
             tenants.getUsers().getUser().add(foundUser);
         }
 
@@ -693,10 +671,10 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         }
 
         if (foundGroup == null) {
-            final String newGroupIdentifier = IdentifierUtil.getIdentifier(groupName);
+            final Group newGroup = new Group.Builder().identifierGenerateFromSeed(groupName).name(groupName).build();
             foundGroup = new org.apache.nifi.registry.security.authorization.file.tenants.generated.Group();
-            foundGroup.setIdentifier(newGroupIdentifier);
-            foundGroup.setName(groupName);
+            foundGroup.setIdentifier(newGroup.getIdentifier());
+            foundGroup.setName(newGroup.getName());
             tenants.getGroups().getGroup().add(foundGroup);
         }
 

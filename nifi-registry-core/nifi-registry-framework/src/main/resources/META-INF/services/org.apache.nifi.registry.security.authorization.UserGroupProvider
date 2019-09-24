@@ -16,4 +16,5 @@ org.apache.nifi.registry.security.authorization.CompositeUserGroupProvider
 org.apache.nifi.registry.security.authorization.CompositeConfigurableUserGroupProvider
 org.apache.nifi.registry.security.authorization.file.FileUserGroupProvider
 org.apache.nifi.registry.security.ldap.tenants.LdapUserGroupProvider
+org.apache.nifi.registry.security.authorization.database.DatabaseUserGroupProvider
 org.apache.nifi.registry.security.authorization.shell.ShellUserGroupProvider

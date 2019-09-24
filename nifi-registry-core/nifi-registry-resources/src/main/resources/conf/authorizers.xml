@@ -48,6 +48,20 @@
     </userGroupProvider>
 
     <!--
+        The DatabaseUserGroupProvider will provide support for managing users and groups in a relational database. The framework
+        will provide a database connection to this provider using the same database information from nifi-registry.properties.
+
+        - Initial User Identity [unique key] - Same as the Initial User Identity in the FileUserGroupProvider
+    -->
+    <!-- To enable the database-user-group-provider remove 2 lines. This is 1 of 2.
+    <userGroupProvider>
+        <identifier>database-user-group-provider</identifier>
+        <class>org.apache.nifi.registry.security.authorization.database.DatabaseUserGroupProvider</class>
+        <property name="Initial User Identity 1"></property>
+    </userGroupProvider>
+    To enable the database-user-group-provider remove 2 lines. This is 2 of 2. -->
+
+    <!--
         The LdapUserGroupProvider will retrieve users and groups from an LDAP server. The users and groups
         are not configurable.
 
@@ -265,6 +279,26 @@
 
         <!--<property name="NiFi Identity 1"></property>-->
     </accessPolicyProvider>
+
+    <!--
+        The DatabaseAccessPolicyProvider will provide support for managing access policies in a relational database. The
+        framework will provide a database connection to this provider using the same database information from nifi-registry.properties.
+
+        - User Group Provider - Same as User Group Provider in the FileAccessPolicyProvider
+
+        - Initial Admin Identity - Same as Initial Admin Identity in the FileAccessPolicyProvider
+
+        - NiFi Identity [unique key] - Same as NiFi Identity in the FileAccessPolicyProvider
+    -->
+    <!-- To enable the database-access-policy-provider remove 2 lines. This is 1 of 2.
+    <accessPolicyProvider>
+        <identifier>database-access-policy-provider</identifier>
+        <class>org.apache.nifi.registry.security.authorization.database.DatabaseAccessPolicyProvider</class>
+        <property name="User Group Provider">database-user-group-provider</property>
+        <property name="Initial Admin Identity"></property>
+        <property name="NiFi Identity 1"></property>
+    </accessPolicyProvider>
+    To enable the database-access-policy-provider remove 2 lines. This is 2 of 2. -->
 
     <!--
         The StandardManagedAuthorizer. This authorizer implementation must be configured with the

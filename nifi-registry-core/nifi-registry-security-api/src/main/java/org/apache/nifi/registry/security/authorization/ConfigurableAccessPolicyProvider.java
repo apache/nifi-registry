@@ -100,9 +100,13 @@ public interface ConfigurableAccessPolicyProvider extends AccessPolicyProvider {
     /**
      * Deletes the policy with the specified identifier.
      *
+     * @deprecated use {@link #deleteAccessPolicy(AccessPolicy)} instead
+     *
      * @param accessPolicyIdentifier the policy to delete
      * @return the deleted policy, or null if no matching policy was found
      * @throws AuthorizationAccessException if there was an unexpected error performing the operation
      */
+    @Deprecated
     AccessPolicy deleteAccessPolicy(String accessPolicyIdentifier) throws AuthorizationAccessException;
+
 }
