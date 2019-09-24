@@ -18,6 +18,8 @@ package org.apache.nifi.registry.authorization;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.nifi.registry.revision.entity.RevisableEntity;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,13 +29,14 @@ import java.util.Set;
  * A tenant of this NiFi Registry
  */
 @ApiModel
-public class Tenant {
+public class Tenant implements RevisableEntity {
 
     private String identifier;
     private String identity;
     private Boolean configurable;
     private ResourcePermissions resourcePermissions;
     private Set<AccessPolicySummary> accessPolicies;
+    private RevisionInfo revision;
 
     public Tenant() {}
 
@@ -48,10 +51,12 @@ public class Tenant {
     @ApiModelProperty(
             value = "The computer-generated identifier of the tenant.",
             readOnly = true)
+    @Override
     public String getIdentifier() {
         return identifier;
     }
 
+    @Override
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
@@ -114,4 +119,17 @@ public class Tenant {
         }
     }
 
+    @ApiModelProperty(
+            value = "The revision of this entity used for optimistic-locking during updates.",
+            readOnly = true
+    )
+    @Override
+    public RevisionInfo getRevision() {
+        return revision;
+    }
+
+    @Override
+    public void setRevision(RevisionInfo revision) {
+        this.revision = revision;
+    }
 }

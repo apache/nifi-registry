@@ -69,6 +69,7 @@ import org.apache.nifi.registry.flow.VersionedParameterContext;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.flow.VersionedPropertyDescriptor;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.apache.nifi.registry.util.FileUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
@@ -114,10 +115,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
     static final Logger LOGGER = LoggerFactory.getLogger(UnsecuredNiFiRegistryClientIT.class);
 
+    static final String CLIENT_ID = "UnsecuredNiFiRegistryClientIT";
+
     private NiFiRegistryClient client;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() {
         final String baseUrl = createBaseURL();
         LOGGER.info("Using base url = " + baseUrl);
 
@@ -189,6 +192,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         for (final Bucket bucket : createdBuckets) {
             final Bucket retrievedBucket = bucketClient.get(bucket.getIdentifier());
             assertNotNull(retrievedBucket);
+            assertNotNull(retrievedBucket.getRevision());
             assertFalse(retrievedBucket.isAllowBundleRedeploy());
             LOGGER.info("Retrieved bucket " + retrievedBucket.getIdentifier());
         }
@@ -213,6 +217,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
             final Bucket bucketUpdate = new Bucket();
             bucketUpdate.setIdentifier(bucket.getIdentifier());
             bucketUpdate.setDescription(bucket.getDescription() + " UPDATE");
+            bucketUpdate.setRevision(bucket.getRevision());
 
             final Bucket updatedBucket = bucketClient.update(bucketUpdate);
             assertNotNull(updatedBucket);
@@ -251,6 +256,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final VersionedFlow flow1Update = new VersionedFlow();
         flow1Update.setIdentifier(flow1.getIdentifier());
         flow1Update.setName(flow1.getName() + " UPDATED");
+        flow1Update.setRevision(retrievedFlow1.getRevision());
 
         final VersionedFlow updatedFlow1 = flowClient.update(flowsBucket.getIdentifier(), flow1Update);
         assertNotNull(updatedFlow1);
@@ -793,11 +799,11 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // ---------------------- DELETE DATA --------------------------//
 
-        final VersionedFlow deletedFlow1 = flowClient.delete(flowsBucket.getIdentifier(), flow1.getIdentifier());
+        final VersionedFlow deletedFlow1 = flowClient.delete(flowsBucket.getIdentifier(), updatedFlow1.getIdentifier(), updatedFlow1.getRevision());
         assertNotNull(deletedFlow1);
         LOGGER.info("Deleted flow " + deletedFlow1.getIdentifier());
 
-        final VersionedFlow deletedFlow2 = flowClient.delete(flowsBucket.getIdentifier(), flow2.getIdentifier());
+        final VersionedFlow deletedFlow2 = flowClient.delete(flowsBucket.getIdentifier(), flow2.getIdentifier(), flow2.getRevision());
         assertNotNull(deletedFlow2);
         LOGGER.info("Deleted flow " + deletedFlow2.getIdentifier());
 
@@ -811,7 +817,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
         // delete each bucket
         for (final Bucket bucket : createdBuckets) {
-            final Bucket deletedBucket = bucketClient.delete(bucket.getIdentifier());
+            final Bucket deletedBucket = bucketClient.delete(bucket.getIdentifier(), bucket.getRevision());
             assertNotNull(deletedBucket);
             LOGGER.info("Deleted bucket " + deletedBucket.getIdentifier());
         }
@@ -823,9 +829,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
 
     @Test
     public void testFlowSnapshotsWithParameterContextAndEncodingVersion() throws IOException, NiFiRegistryException {
+        final RevisionInfo initialRevision = new RevisionInfo(null, 0L);
+
         // Create a bucket
         final Bucket bucket = new Bucket();
         bucket.setName("Test Bucket");
+        bucket.setRevision(initialRevision);
 
         final Bucket createdBucket = client.getBucketClient().create(bucket);
         assertNotNull(createdBucket);
@@ -834,6 +843,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final VersionedFlow flow = new VersionedFlow();
         flow.setName("My Flow");
         flow.setBucketIdentifier(createdBucket.getIdentifier());
+        flow.setRevision(initialRevision);
 
         final VersionedFlow createdFlow = client.getFlowClient().create(flow);
         assertNotNull(createdFlow);
@@ -961,6 +971,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         final Bucket bucket = new Bucket();
         bucket.setName("Bucket #" + num);
         bucket.setDescription("This is bucket #" + num);
+        bucket.setRevision(new RevisionInfo(CLIENT_ID, 0L));
         return bucketClient.create(bucket);
     }
 
@@ -969,6 +980,7 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         versionedFlow.setName(bucket.getName() + " Flow #" + num);
         versionedFlow.setDescription("This is " + bucket.getName() + " flow #" + num);
         versionedFlow.setBucketIdentifier(bucket.getIdentifier());
+        versionedFlow.setRevision(new RevisionInfo(CLIENT_ID, 0L));
         return client.create(versionedFlow);
     }
 

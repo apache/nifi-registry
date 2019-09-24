@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.revision.entity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -74,5 +75,12 @@ public interface RevisableEntityService {
      * @return the deleted entity
      */
     <T extends RevisableEntity> T delete(String entityIdentifier, RevisionInfo revisionInfo, Supplier<T> deleteEntity);
+
+    /**
+     * Populates RevisionInfo on any objects in the collection that implement RevisableEntity.
+     *
+     * @param entities the entities collection which may contain one or more RevisableEntity instances
+     */
+    void populateRevisions(Collection<?> entities);
 
 }

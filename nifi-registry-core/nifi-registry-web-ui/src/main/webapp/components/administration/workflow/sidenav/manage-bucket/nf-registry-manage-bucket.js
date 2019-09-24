@@ -355,7 +355,7 @@ NfRegistryManageBucket.prototype = {
                                     return (group.identity !== userOrGroup.identity);
                                 });
                                 self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                    policy.resource, policy.users, policy.userGroups).subscribe(
+                                    policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                     function (response) {
                                         // policy removed!!!...now update the view
                                         self.nfRegistryApi.getPolicies().subscribe(function (response) {
@@ -412,6 +412,7 @@ NfRegistryManageBucket.prototype = {
         this.nfRegistryApi.updateBucket({
             'identifier': this.nfRegistryService.bucket.identifier,
             'name': bucketname,
+            'revision': this.nfRegistryService.bucket.revision
         }).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.bucket = response;

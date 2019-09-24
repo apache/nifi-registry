@@ -20,20 +20,18 @@ import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
-import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
-import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
-import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
-import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
+import org.apache.nifi.registry.revision.web.ClientIdParameter;
+import org.apache.nifi.registry.revision.web.LongParameter;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -42,28 +40,15 @@ import static org.mockito.Mockito.when;
 public class TenantResourceTest {
 
     private TenantResource tenantResource;
-    private AuthorizationService authorizationService;
-    private Authorizer authorizer;
-    private ConfigurableAccessPolicyProvider accessPolicyProvider;
     private EventService eventService;
-    private ConfigurableUserGroupProvider userGroupProvider;
-    private AuthorizableLookup authorizableLookup;
+    private ServiceFacade serviceFacade;
 
     @Before
     public void setUp() {
-        authorizationService = mock(AuthorizationService.class);
-        authorizer = mock(ManagedAuthorizer.class);
-        authorizableLookup = mock(AuthorizableLookup.class);
-        accessPolicyProvider = mock(ConfigurableAccessPolicyProvider.class);
-        userGroupProvider = mock(ConfigurableUserGroupProvider.class);
         eventService = mock(EventService.class);
+        serviceFacade = mock(ServiceFacade.class);
 
-        when(accessPolicyProvider.getUserGroupProvider()).thenReturn(userGroupProvider);
-        when(((ManagedAuthorizer) authorizer).getAccessPolicyProvider()).thenReturn(accessPolicyProvider);
-        when(authorizationService.getAuthorizer()).thenReturn(authorizer);
-        when(authorizationService.getAuthorizableLookup()).thenReturn(authorizableLookup);
-
-        tenantResource = new TenantResource(authorizationService, eventService) {
+        tenantResource = new TenantResource(serviceFacade, eventService) {
 
             @Override
             protected URI getBaseUri() {
@@ -79,27 +64,36 @@ public class TenantResourceTest {
     @Test
     public void testCreateUser() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        User user = new User(null, "identity");
-        User result = new User("identifier", user.getIdentity());
 
-        when(authorizationService.createUser(user)).thenReturn(result);
+        RevisionInfo revisionInfo = new RevisionInfo("client1", 0L);
+        User user = new User(null, "identity");
+        user.setRevision(revisionInfo);
+
+        RevisionInfo resultRevisionInfo = new RevisionInfo("client1", 1L);
+        User result = new User("identifier", user.getIdentity());
+        result.setRevision(resultRevisionInfo);
+
+        when(serviceFacade.createUser(user)).thenReturn(result);
 
         tenantResource.createUser(request, user);
 
-        verify(authorizationService).createUser(user);
+        verify(serviceFacade).createUser(user);
         verify(eventService).publish(eq(EventFactory.userCreated(result)));
     }
 
     @Test
     public void testUpdateUser() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        User user = new User("identifier", "new-identity");
 
-        when(authorizationService.updateUser(user)).thenReturn(user);
+        RevisionInfo revisionInfo = new RevisionInfo("client1", 1L);
+        User user = new User("identifier", "new-identity");
+        user.setRevision(revisionInfo);
+
+        when(serviceFacade.updateUser(user)).thenReturn(user);
 
         tenantResource.updateUser(request, user.getIdentifier(), user);
 
-        verify(authorizationService).updateUser(user);
+        verify(serviceFacade).updateUser(user);
         verify(eventService).publish(eq(EventFactory.userUpdated(user)));
     }
 
@@ -107,39 +101,50 @@ public class TenantResourceTest {
     public void testDeleteUser() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         User user = new User("identifier", "identity");
+        Long version = new Long(0);
+        ClientIdParameter clientId = new ClientIdParameter();
 
-        when(authorizationService.deleteUser(user.getIdentifier())).thenReturn(user);
+        when(serviceFacade.deleteUser(eq(user.getIdentifier()), any(RevisionInfo.class))).thenReturn(user);
 
-        tenantResource.removeUser(request, user.getIdentifier());
+        tenantResource.removeUser(request, new LongParameter(version.toString()), clientId, user.getIdentifier());
 
-        verify(authorizationService).deleteUser(user.getIdentifier());
+        verify(serviceFacade).deleteUser(eq(user.getIdentifier()), any(RevisionInfo.class));
         verify(eventService).publish(eq(EventFactory.userDeleted(user)));
     }
 
     @Test
     public void testCreateUserGroup() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        UserGroup userGroup = new UserGroup(null, "identity");
-        UserGroup result = new UserGroup("identifier", userGroup.getIdentity());
 
-        when(authorizationService.createUserGroup(userGroup)).thenReturn(result);
+        RevisionInfo revisionInfo = new RevisionInfo("client1", 0L);
+        UserGroup userGroup = new UserGroup(null, "identity");
+        userGroup.setRevision(revisionInfo);
+
+        RevisionInfo resultRevisionInfo = new RevisionInfo("client1", 1L);
+        UserGroup result = new UserGroup("identifier", userGroup.getIdentity());
+        result.setRevision(resultRevisionInfo);
+
+        when(serviceFacade.createUserGroup(userGroup)).thenReturn(result);
 
         tenantResource.createUserGroup(request, userGroup);
 
-        verify(authorizationService).createUserGroup(userGroup);
+        verify(serviceFacade).createUserGroup(userGroup);
         verify(eventService).publish(eq(EventFactory.userGroupCreated(result)));
     }
 
     @Test
     public void testUpdateUserGroup() {
         HttpServletRequest request = mock(HttpServletRequest.class);
-        UserGroup userGroup = new UserGroup("identifier", "new-identity");
 
-        when(authorizationService.updateUserGroup(userGroup)).thenReturn(userGroup);
+        RevisionInfo revisionInfo = new RevisionInfo("client1", 1L);
+        UserGroup userGroup = new UserGroup("identifier", "new-identity");
+        userGroup.setRevision(revisionInfo);
+
+        when(serviceFacade.updateUserGroup(userGroup)).thenReturn(userGroup);
 
         tenantResource.updateUserGroup(request, userGroup.getIdentifier(), userGroup);
 
-        verify(authorizationService).updateUserGroup(userGroup);
+        verify(serviceFacade).updateUserGroup(userGroup);
         verify(eventService).publish(eq(EventFactory.userGroupUpdated(userGroup)));
     }
 
@@ -147,12 +152,14 @@ public class TenantResourceTest {
     public void testDeleteUserGroup() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         UserGroup userGroup = new UserGroup("identifier", "identity");
+        Long version = new Long(0);
+        ClientIdParameter clientId = new ClientIdParameter();
 
-        when(authorizationService.deleteUserGroup(userGroup.getIdentifier())).thenReturn(userGroup);
+        when(serviceFacade.deleteUserGroup(eq(userGroup.getIdentifier()), any(RevisionInfo.class))).thenReturn(userGroup);
 
-        tenantResource.removeUserGroup(request, userGroup.getIdentifier());
+        tenantResource.removeUserGroup(request, new LongParameter(version.toString()), clientId, userGroup.getIdentifier());
 
-        verify(authorizationService).deleteUserGroup(userGroup.getIdentifier());
+        verify(serviceFacade).deleteUserGroup(eq(userGroup.getIdentifier()), any(RevisionInfo.class));
         verify(eventService).publish(eq(EventFactory.userGroupDeleted(userGroup)));
     }
 }

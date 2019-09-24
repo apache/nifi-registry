@@ -20,6 +20,7 @@ import org.apache.nifi.registry.authorization.AccessPolicy
 import org.apache.nifi.registry.authorization.User
 import org.apache.nifi.registry.authorization.UserGroup
 import org.apache.nifi.registry.bucket.Bucket
+import org.apache.nifi.registry.exception.ResourceNotFoundException
 import org.apache.nifi.registry.security.authorization.*
 import org.apache.nifi.registry.security.authorization.AccessPolicy as AuthAccessPolicy
 import org.apache.nifi.registry.security.authorization.User as AuthUser
@@ -56,12 +57,12 @@ class AuthorizationServiceSpec extends Specification {
         accessPolicyProvider.getAccessPolicies() >> new HashSet<AccessPolicy>()  // needed for converting user to DTO
 
         when: "new user is created successfully"
-        def user = new User(null, "username")
+        def user = new User("id", "username")
         User createdUser = authorizationService.createUser(user)
 
         then: "created user has been assigned an identifier"
         with(createdUser) {
-            identifier != null
+            identifier == "id"
             identity == "username"
         }
 
@@ -134,7 +135,7 @@ class AuthorizationServiceSpec extends Specification {
         def user2 = authorizationService.getUser("does-not-exist")
 
         then: "no user is returned"
-        user2 == null
+        thrown(ResourceNotFoundException.class)
 
     }
 
@@ -162,8 +163,9 @@ class AuthorizationServiceSpec extends Specification {
     def "delete user"() {
 
         setup:
-        userGroupProvider.getUser("userId") >> new AuthUser.Builder().identifier("userId").identity("username").build()
-        userGroupProvider.deleteUser("userId") >> new AuthUser.Builder().identifier("userId").identity("username").build()
+        def user1 = new AuthUser.Builder().identifier("userId").identity("username").build()
+        userGroupProvider.getUser("userId") >> user1
+        userGroupProvider.deleteUser(user1) >> user1
         userGroupProvider.getGroups() >> new HashSet<Group>()
         accessPolicyProvider.getAccessPolicies() >> new HashSet<AccessPolicy>()
 
@@ -190,12 +192,12 @@ class AuthorizationServiceSpec extends Specification {
         accessPolicyProvider.getAccessPolicies() >> new HashSet<AccessPolicy>()  // needed for converting to DTO
 
         when: "new group is created successfully"
-        def group = new UserGroup(null, "groupName")
+        def group = new UserGroup("id", "groupName")
         UserGroup createdGroup = authorizationService.createUserGroup(group)
 
         then: "created group has been assigned an identifier"
         with(createdGroup) {
-            identifier != null
+            identifier == "id"
             identity == "groupName"
         }
 
@@ -255,7 +257,7 @@ class AuthorizationServiceSpec extends Specification {
         def g2 = authorizationService.getUserGroup("nonExistentId")
 
         then: "no group is returned"
-        g2 == null
+        thrown(ResourceNotFoundException.class)
 
     }
 
@@ -282,8 +284,9 @@ class AuthorizationServiceSpec extends Specification {
     def "delete user group"() {
 
         setup:
-        userGroupProvider.getGroup("id") >> new Group.Builder().identifier("id").name("name").build()
-        userGroupProvider.deleteGroup("id") >> new Group.Builder().identifier("id").name("name").build()
+        def group1 = new Group.Builder().identifier("id").name("name").build();
+        userGroupProvider.getGroup("id") >> group1
+        userGroupProvider.deleteGroup(group1) >> group1
         accessPolicyProvider.getAccessPolicies() >> new HashSet<AccessPolicy>()
 
 
@@ -316,11 +319,14 @@ class AuthorizationServiceSpec extends Specification {
 
 
         when: "new access policy is created successfully"
-        def createdPolicy = authorizationService.createAccessPolicy(new AccessPolicy([resource: "/resource", action: "read"]))
+        def accessPolicy = new AccessPolicy([resource: "/resource", action: "read"])
+        accessPolicy.setIdentifier("id")
+
+        def createdPolicy = authorizationService.createAccessPolicy(accessPolicy)
 
         then: "created policy has been assigned an identifier"
         with(createdPolicy) {
-            identifier != null
+            identifier == "id"
             resource == "/resource"
             action == "read"
             configurable == true
@@ -378,7 +384,7 @@ class AuthorizationServiceSpec extends Specification {
         def p2 = authorizationService.getAccessPolicy("nonExistentId")
 
         then: "no policy is returned"
-        p2 == null
+        thrown(ResourceNotFoundException.class)
 
     }
 

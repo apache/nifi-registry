@@ -145,7 +145,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -179,7 +179,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -229,7 +229,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage tenants privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -263,7 +263,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage tenants privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -313,7 +313,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage policies privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -347,7 +347,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage policies privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -397,7 +397,7 @@ NfRegistryManageGroup.prototype = {
                                     // resource exists, let's update it
                                     policy.userGroups.push(self.nfRegistryService.group);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage proxy privileges updated!!!...now update the view
                                             response.userGroups.forEach(function (group) {
@@ -431,7 +431,7 @@ NfRegistryManageGroup.prototype = {
                                         return (group.identifier !== self.nfRegistryService.group.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage proxy privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier).subscribe(function (response) {
@@ -547,21 +547,30 @@ NfRegistryManageGroup.prototype = {
             return u.identifier !== user.identifier;
         });
 
-        this.nfRegistryApi.updateUserGroup(this.nfRegistryService.group.identifier, this.nfRegistryService.group.identity, users).subscribe(function (response) {
+        this.nfRegistryApi.updateUserGroup(this.nfRegistryService.group.identifier, this.nfRegistryService.group.identity, users, this.nfRegistryService.group.revision).subscribe(function (response) {
             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier)
                 .subscribe(function (response) {
                     self.nfRegistryService.group = response;
                     self.filterUsers();
                 });
-            self.snackBarService.openCoaster({
-                title: 'Success',
-                message: 'The user has been removed from the ' + self.nfRegistryService.group.identity + ' group.',
-                verticalPosition: 'bottom',
-                horizontalPosition: 'right',
-                icon: 'fa fa-check-circle-o',
-                color: '#1EB475',
-                duration: 3000
-            });
+            if (!response.status || response.status === 200) {
+                self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'The user has been removed from the ' + self.nfRegistryService.group.identity + ' group.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
+                });
+            } else {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+            }
         });
     },
 
@@ -572,7 +581,7 @@ NfRegistryManageGroup.prototype = {
      */
     updateGroupName: function (groupname) {
         var self = this;
-        this.nfRegistryApi.updateUserGroup(this.nfRegistryService.group.identifier, groupname, this.nfRegistryService.group.users).subscribe(function (response) {
+        this.nfRegistryApi.updateUserGroup(this.nfRegistryService.group.identifier, groupname, this.nfRegistryService.group.users, this.nfRegistryService.group.revision).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.group = response;
                 self.nfRegistryService.groups.filter(function (group) {
@@ -596,6 +605,21 @@ NfRegistryManageGroup.prototype = {
                     message: 'This group already exists. Please enter a different identity/group name.',
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
+                });
+            } else {
+                self.groupname = self.nfRegistryService.group.identity;
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(function (accept) {
+                    self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier)
+                        .subscribe(function (response) {
+                            self.nfRegistryService.group = response;
+                            self.groupname = response.identity;
+                            self.filterUsers();
+                        });
                 });
             }
         });

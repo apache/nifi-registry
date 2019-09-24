@@ -25,10 +25,8 @@ import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.extension.bundle.BundleVersion;
 import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
 import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
@@ -38,10 +36,8 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoExtensionMetadata;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoGroup;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersion;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.service.ServiceFacade;
+import org.apache.nifi.registry.web.service.StreamingContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -50,13 +46,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 
 @Component
@@ -66,21 +59,13 @@ import java.util.SortedSet;
         description = "Interact with extension bundles via the hierarchy of bucket/group/artifact/version. ",
         authorizations = { @Authorization("Authorization") }
 )
-public class ExtensionRepoResource extends AuthorizableApplicationResource {
+public class ExtensionRepoResource extends ApplicationResource {
 
     public static final String CONTENT_DISPOSITION_HEADER = "content-disposition";
-    private final RegistryService registryService;
-    private final LinkService linkService;
 
     @Autowired
-    public ExtensionRepoResource(
-            final RegistryService registryService,
-            final LinkService linkService,
-            final AuthorizationService authorizationService,
-            final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
+    public ExtensionRepoResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     @GET
@@ -99,15 +84,7 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getExtensionRepoBuckets() {
-
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
-        }
-
-        final SortedSet<ExtensionRepoBucket> repoBuckets = registryService.getExtensionRepoBuckets(authorizedBucketIds);
-        linkService.populateFullLinks(repoBuckets, getBaseUri());
+        final SortedSet<ExtensionRepoBucket> repoBuckets = serviceFacade.getExtensionRepoBuckets(getBaseUri());
         return Response.status(Response.Status.OK).entity(repoBuckets).build();
     }
 
@@ -137,11 +114,7 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The bucket name")
                 final String bucketName
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final SortedSet<ExtensionRepoGroup> repoGroups = registryService.getExtensionRepoGroups(bucket);
-        linkService.populateFullLinks(repoGroups, getBaseUri());
+        final SortedSet<ExtensionRepoGroup> repoGroups = serviceFacade.getExtensionRepoGroups(getBaseUri(), bucketName);
         return Response.status(Response.Status.OK).entity(repoGroups).build();
     }
 
@@ -174,11 +147,7 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The group id")
                 final String groupId
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final SortedSet<ExtensionRepoArtifact> repoArtifacts = registryService.getExtensionRepoArtifacts(bucket, groupId);
-        linkService.populateFullLinks(repoArtifacts, getBaseUri());
+        final SortedSet<ExtensionRepoArtifact> repoArtifacts = serviceFacade.getExtensionRepoArtifacts(getBaseUri(), bucketName, groupId);
         return Response.status(Response.Status.OK).entity(repoArtifacts).build();
     }
 
@@ -214,11 +183,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The artifact identifier")
                 final String artifactId
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final SortedSet<ExtensionRepoVersionSummary> repoVersions = registryService.getExtensionRepoVersions(bucket, groupId, artifactId);
-        linkService.populateFullLinks(repoVersions, getBaseUri());
+        final SortedSet<ExtensionRepoVersionSummary> repoVersions = serviceFacade.getExtensionRepoVersions(
+                getBaseUri(), bucketName, groupId, artifactId);
         return Response.status(Response.Status.OK).entity(repoVersions).build();
     }
 
@@ -256,41 +222,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The version")
                 final String version
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-
-        final String extensionsUri = generateResourceUri(
-                "extension-repository",
-                bundleVersion.getBucket().getName(),
-                bundleVersion.getBundle().getGroupId(),
-                bundleVersion.getBundle().getArtifactId(),
-                bundleVersion.getVersionMetadata().getVersion(),
-                "extensions");
-
-        final String downloadUri = generateResourceUri(
-                "extension-repository",
-                bundleVersion.getBucket().getName(),
-                bundleVersion.getBundle().getGroupId(),
-                bundleVersion.getBundle().getArtifactId(),
-                bundleVersion.getVersionMetadata().getVersion(),
-                "content");
-
-        final String sha256Uri = generateResourceUri(
-                "extension-repository",
-                bundleVersion.getBucket().getName(),
-                bundleVersion.getBundle().getGroupId(),
-                bundleVersion.getBundle().getArtifactId(),
-                bundleVersion.getVersionMetadata().getVersion(),
-                "sha256");
-
-        final ExtensionRepoVersion repoVersion = new ExtensionRepoVersion();
-        repoVersion.setExtensionsLink(Link.fromUri(extensionsUri).rel("extensions").build());
-        repoVersion.setDownloadLink(Link.fromUri(downloadUri).rel("content").build());
-        repoVersion.setSha256Link(Link.fromUri(sha256Uri).rel("sha256").build());
-        repoVersion.setSha256Supplied(bundleVersion.getVersionMetadata().getSha256Supplied());
-
+        final ExtensionRepoVersion repoVersion = serviceFacade.getExtensionRepoVersion(
+                getBaseUri(), bucketName, groupId, artifactId, version);
         return Response.ok(repoVersion).build();
     }
 
@@ -329,15 +262,10 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The version")
                 final String version
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
 
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-        final SortedSet<ExtensionMetadata> extensions = registryService.getExtensionMetadata(bundleVersion);
-
-        final List<ExtensionRepoExtensionMetadata> extensionRepoExtensions = new ArrayList<>(extensions.size());
-        extensions.forEach(e -> extensionRepoExtensions.add(new ExtensionRepoExtensionMetadata(e)));
-        linkService.populateFullLinks(extensionRepoExtensions, getBaseUri());
+        final List<ExtensionRepoExtensionMetadata> extensionRepoExtensions =
+                serviceFacade.getExtensionRepoExtensions(
+                        getBaseUri(), bucketName, groupId, artifactId, version);
 
         return Response.ok(extensionRepoExtensions).build();
     }
@@ -380,11 +308,9 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The fully qualified name of the extension")
                 final String name
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-        final org.apache.nifi.registry.extension.component.manifest.Extension extension = registryService.getExtension(bundleVersion, name);
+        final org.apache.nifi.registry.extension.component.manifest.Extension extension =
+                serviceFacade.getExtensionRepoExtension(
+                        getBaseUri(), bucketName, groupId, artifactId, version, name);
         return Response.ok(extension).build();
     }
 
@@ -426,11 +352,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The fully qualified name of the extension")
                 final String name
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-        final StreamingOutput streamingOutput = (output) -> registryService.writeExtensionDocs(bundleVersion, name, output);
+        final StreamingOutput streamingOutput = serviceFacade.getExtensionRepoExtensionDocs(
+                getBaseUri(), bucketName, groupId, artifactId, version, name);
         return Response.ok(streamingOutput).build();
     }
 
@@ -472,11 +395,8 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The fully qualified name of the extension")
                 final String name
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-        final StreamingOutput streamingOutput = (output) -> registryService.writeAdditionalDetailsDocs(bundleVersion, name, output);
+        final StreamingOutput streamingOutput = serviceFacade.getExtensionRepoExtensionAdditionalDocs(
+                getBaseUri(), bucketName, groupId, artifactId, version, name);
         return Response.ok(streamingOutput).build();
     }
 
@@ -514,14 +434,14 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The version")
                 final String version
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
+        final StreamingContent streamingContent = serviceFacade.getExtensionRepoVersionContent(
+            bucketName, groupId, artifactId, version);
 
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-        final StreamingOutput streamingOutput = (output) -> registryService.writeBundleVersionContent(bundleVersion, output);
+        final String filename = streamingContent.getFilename();
+        final StreamingOutput streamingOutput = streamingContent.getOutput();
 
         return Response.ok(streamingOutput)
-                .header(CONTENT_DISPOSITION_HEADER,"attachment; filename = " + bundleVersion.getFilename())
+                .header(CONTENT_DISPOSITION_HEADER,"attachment; filename = " + filename)
                 .build();
     }
 
@@ -560,11 +480,7 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The version")
                 final String version
     ) {
-        final Bucket bucket = registryService.getBucketByName(bucketName);
-        authorizeBucketAccess(RequestAction.READ, bucket.getIdentifier());
-
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bucket.getIdentifier(), groupId, artifactId, version);
-        final String sha256Hex = bundleVersion.getVersionMetadata().getSha256();
+        final String sha256Hex = serviceFacade.getExtensionRepoVersionSha256(bucketName, groupId, artifactId, version);
         return Response.ok(sha256Hex, MediaType.TEXT_PLAIN).build();
     }
 
@@ -596,12 +512,6 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
             @ApiParam("The version")
                 final String version
     ) {
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
-        }
-
         // Since we are using the filter params which are optional in the service layer, we need to validate these path params here
 
         if (StringUtils.isBlank(groupId)) {
@@ -618,7 +528,7 @@ public class ExtensionRepoResource extends AuthorizableApplicationResource {
 
         final BundleVersionFilterParams filterParams = BundleVersionFilterParams.of(groupId, artifactId, version);
 
-        final SortedSet<BundleVersionMetadata> bundleVersions = registryService.getBundleVersions(authorizedBucketIds, filterParams);
+        final SortedSet<BundleVersionMetadata> bundleVersions = serviceFacade.getBundleVersions(filterParams);
         if (bundleVersions.isEmpty()) {
             throw new ResourceNotFoundException("An extension bundle version does not exist with the specific group, artifact, and version");
         } else {

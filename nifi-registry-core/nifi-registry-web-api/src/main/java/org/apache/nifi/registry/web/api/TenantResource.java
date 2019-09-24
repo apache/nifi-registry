@@ -29,26 +29,24 @@ import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
-import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
+import org.apache.nifi.registry.revision.web.ClientIdParameter;
+import org.apache.nifi.registry.revision.web.LongParameter;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -65,16 +63,12 @@ import java.util.List;
         description = "Endpoint for managing users and user groups.",
         authorizations = { @Authorization("Authorization") }
 )
-public class TenantResource extends AuthorizableApplicationResource {
-
-    private static final Logger logger = LoggerFactory.getLogger(TenantResource.class);
-
-    private Authorizer authorizer;
+public class TenantResource extends ApplicationResource {
 
     @Autowired
-    public TenantResource(AuthorizationService authorizationService, EventService eventService) {
-        super(authorizationService, eventService);
-        authorizer = authorizationService.getAuthorizer();
+    public TenantResource(final ServiceFacade serviceFacade,
+                          final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
 
@@ -109,25 +103,11 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createUser(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user configuration details.", required = true)
-            final User requestUser) {
+                final User requestUser) {
 
-        verifyAuthorizerSupportsConfigurableUserGroups();
-
-        if (requestUser == null) {
-            throw new IllegalArgumentException("User details must be specified when creating a new user.");
-        }
-        if (requestUser.getIdentifier() != null) {
-            throw new IllegalArgumentException("User identifier cannot be specified when creating a new user.");
-        }
-        if (StringUtils.isBlank(requestUser.getIdentity())) {
-            throw new IllegalArgumentException("User identity must be specified when creating a new user.");
-        }
-
-        authorizeAccess(RequestAction.WRITE);
-
-        User createdUser = authorizationService.createUser(requestUser);
+        final User createdUser = serviceFacade.createUser(requestUser);
         publish(EventFactory.userCreated(createdUser));
 
         String locationUri = generateUserUri(createdUser);
@@ -160,12 +140,8 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getUsers() {
-        verifyAuthorizerIsManaged();
-
-        authorizeAccess(RequestAction.READ);
-
         // get all the users
-        final List<User> users = authorizationService.getUsers();
+        final List<User> users = serviceFacade.getUsers();
 
         // generate the response
         return generateOkResponse(users).build();
@@ -200,15 +176,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     public Response getUser(
             @ApiParam(value = "The user id.", required = true)
             @PathParam("id") final String identifier) {
-        verifyAuthorizerIsManaged();
-        authorizeAccess(RequestAction.READ);
-
-        final User user = authorizationService.getUser(identifier);
-        if (user == null) {
-            logger.warn("The specified user id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
-        }
+        final User user = serviceFacade.getUser(identifier);
         return generateOkResponse(user).build();
     }
 
@@ -249,9 +217,6 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiParam(value = "The user configuration details.", required = true)
             final User requestUser) {
 
-        verifyAuthorizerSupportsConfigurableUserGroups();
-        authorizeAccess(RequestAction.WRITE);
-
         if (requestUser == null) {
             throw new IllegalArgumentException("User details must be specified when updating a user.");
         }
@@ -260,14 +225,8 @@ public class TenantResource extends AuthorizableApplicationResource {
                     + "user id of the requested resource (%s).", requestUser.getIdentifier(), identifier));
         }
 
-        final User updatedUser = authorizationService.updateUser(requestUser);
-        if (updatedUser == null) {
-            logger.warn("The specified user id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
-        }
+        final User updatedUser = serviceFacade.updateUser(requestUser);
         publish(EventFactory.userUpdated(updatedUser));
-
         return generateOkResponse(updatedUser).build();
     }
 
@@ -300,22 +259,21 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response removeUser(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
+            @ApiParam(value = "The version is used to verify the client is working with the latest version of the entity.", required = true)
+            @QueryParam(VERSION)
+                final LongParameter version,
+            @ApiParam(value = "If the client id is not specified, new one will be generated. This value (whether specified or generated) is included in the response.")
+            @QueryParam(CLIENT_ID)
+            @DefaultValue(StringUtils.EMPTY)
+                final ClientIdParameter clientId,
             @ApiParam(value = "The user id.", required = true)
             @PathParam("id")
-            final String identifier) {
+                final String identifier) {
 
-        verifyAuthorizerSupportsConfigurableUserGroups();
-        authorizeAccess(RequestAction.DELETE);
-
-        final User user = authorizationService.deleteUser(identifier);
-        if (user == null) {
-            logger.warn("The specified user id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
-        }
+        final RevisionInfo revisionInfo = getRevisionInfo(version, clientId);
+        final User user = serviceFacade.deleteUser(identifier, revisionInfo);
         publish(EventFactory.userDeleted(user));
-
         return generateOkResponse(user).build();
     }
 
@@ -351,27 +309,14 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response createUserGroup(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The user group configuration details.", required = true)
-            final UserGroup requestUserGroup) {
+                final UserGroup requestUserGroup) {
 
-        verifyAuthorizerSupportsConfigurableUserGroups();
-        authorizeAccess(RequestAction.WRITE);
-
-        if (requestUserGroup == null) {
-            throw new IllegalArgumentException("User group details must be specified when creating a new group.");
-        }
-        if (requestUserGroup.getIdentifier() != null) {
-            throw new IllegalArgumentException("User group ID cannot be specified when creating a new group.");
-        }
-        if (StringUtils.isBlank(requestUserGroup.getIdentity())) {
-            throw new IllegalArgumentException("User group identity must be specified when creating a new group.");
-        }
-
-        UserGroup createdGroup = authorizationService.createUserGroup(requestUserGroup);
+        final UserGroup createdGroup = serviceFacade.createUserGroup(requestUserGroup);
         publish(EventFactory.userGroupCreated(createdGroup));
 
-        String locationUri = generateUserGroupUri(createdGroup);
+        final String locationUri = generateUserGroupUri(createdGroup);
         return generateCreatedResponse(URI.create(locationUri), createdGroup).build();
     }
 
@@ -402,10 +347,7 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getUserGroups() {
-        verifyAuthorizerIsManaged();
-        authorizeAccess(RequestAction.READ);
-
-        final List<UserGroup> userGroups = authorizationService.getUserGroups();
+        final List<UserGroup> userGroups = serviceFacade.getUserGroups();
         return generateOkResponse(userGroups).build();
     }
 
@@ -438,16 +380,7 @@ public class TenantResource extends AuthorizableApplicationResource {
     public Response getUserGroup(
             @ApiParam(value = "The user group id.", required = true)
             @PathParam("id") final String identifier) {
-        verifyAuthorizerIsManaged();
-        authorizeAccess(RequestAction.READ);
-
-        final UserGroup userGroup = authorizationService.getUserGroup(identifier);
-        if (userGroup == null) {
-            logger.warn("The specified user group id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
-        }
-
+        final UserGroup userGroup = serviceFacade.getUserGroup(identifier);
         return generateOkResponse(userGroup).build();
     }
 
@@ -488,8 +421,6 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiParam(value = "The user group configuration details.", required = true)
             final UserGroup requestUserGroup) {
 
-        verifyAuthorizerSupportsConfigurableUserGroups();
-
         if (requestUserGroup == null) {
             throw new IllegalArgumentException("User group details must be specified to update a user group.");
         }
@@ -498,16 +429,8 @@ public class TenantResource extends AuthorizableApplicationResource {
                     + "user group id of the requested resource (%s).", requestUserGroup.getIdentifier(), identifier));
         }
 
-        authorizeAccess(RequestAction.WRITE);
-
-        UserGroup updatedUserGroup = authorizationService.updateUserGroup(requestUserGroup);
-        if (updatedUserGroup == null) {
-            logger.warn("The specified user group id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
-        }
+        final UserGroup updatedUserGroup = serviceFacade.updateUserGroup(requestUserGroup);
         publish(EventFactory.userGroupUpdated(updatedUserGroup));
-
         return generateOkResponse(updatedUserGroup).build();
     }
 
@@ -540,40 +463,22 @@ public class TenantResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response removeUserGroup(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
+            @ApiParam(value = "The version is used to verify the client is working with the latest version of the entity.", required = true)
+            @QueryParam(VERSION)
+                final LongParameter version,
+            @ApiParam(value = "If the client id is not specified, new one will be generated. This value (whether specified or generated) is included in the response.")
+            @QueryParam(CLIENT_ID)
+            @DefaultValue(StringUtils.EMPTY)
+                final ClientIdParameter clientId,
             @ApiParam(value = "The user group id.", required = true)
             @PathParam("id")
-            final String identifier) {
-        verifyAuthorizerSupportsConfigurableUserGroups();
-        authorizeAccess(RequestAction.DELETE);
+                final String identifier) {
 
-        final UserGroup userGroup = authorizationService.deleteUserGroup(identifier);
-        if (userGroup == null) {
-            logger.warn("The specified user group id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
-        }
+        final RevisionInfo revisionInfo = getRevisionInfo(version, clientId);
+        final UserGroup userGroup = serviceFacade.deleteUserGroup(identifier, revisionInfo);
         publish(EventFactory.userGroupDeleted(userGroup));
-
         return generateOkResponse(userGroup).build();
-    }
-
-
-    private void verifyAuthorizerIsManaged() {
-        if (!AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
-        }
-    }
-
-    private void verifyAuthorizerSupportsConfigurableUserGroups() {
-        if (!AuthorizerCapabilityDetection.isConfigurableUserGroupProvider(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_USERS);
-        }
-    }
-
-    private void authorizeAccess(RequestAction actionType) {
-        final Authorizable tenantsAuthorizable = authorizableLookup.getTenantsAuthorizable();
-        authorizationService.authorize(tenantsAuthorizable, actionType);
     }
 
     private String generateUserUri(final User user) {

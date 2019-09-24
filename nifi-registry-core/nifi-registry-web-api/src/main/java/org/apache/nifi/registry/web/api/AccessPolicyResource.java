@@ -24,30 +24,30 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.AccessPolicy;
 import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.Resource;
 import org.apache.nifi.registry.event.EventService;
-import org.apache.nifi.registry.exception.ResourceNotFoundException;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
+import org.apache.nifi.registry.revision.web.ClientIdParameter;
+import org.apache.nifi.registry.revision.web.LongParameter;
 import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -65,19 +65,11 @@ import java.util.List;
         description = "Endpoint for managing access policies.",
         authorizations = { @Authorization("Authorization") }
 )
-public class AccessPolicyResource extends AuthorizableApplicationResource {
-
-    private static final Logger logger = LoggerFactory.getLogger(AccessPolicyResource.class);
-
-    private Authorizer authorizer;
+public class AccessPolicyResource extends ApplicationResource {
 
     @Autowired
-    public AccessPolicyResource(
-            Authorizer authorizer,
-            AuthorizationService authorizationService,
-            EventService eventService) {
-        super(authorizationService, eventService);
-        this.authorizer = authorizer;
+    public AccessPolicyResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     /**
@@ -109,22 +101,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiParam(value = "The access policy configuration details.", required = true)
             final AccessPolicy requestAccessPolicy) {
 
-        verifyAuthorizerSupportsConfigurablePolicies();
-        authorizeAccess(RequestAction.WRITE);
-
-        if (requestAccessPolicy == null) {
-            throw new IllegalArgumentException("Access policy details must be specified when creating a new policy.");
-        }
-        if (requestAccessPolicy.getIdentifier() != null) {
-            throw new IllegalArgumentException("Access policy ID cannot be specified when creating a new policy.");
-        }
-        if (requestAccessPolicy.getResource() == null) {
-            throw new IllegalArgumentException("Resource must be specified when creating a new access policy.");
-        }
-        RequestAction.valueOfValue(requestAccessPolicy.getAction());
-
-        AccessPolicy createdPolicy = authorizationService.createAccessPolicy(requestAccessPolicy);
-
+        AccessPolicy createdPolicy = serviceFacade.createAccessPolicy(requestAccessPolicy);
         String locationUri = generateAccessPolicyUri(createdPolicy);
         return generateCreatedResponse(URI.create(locationUri), createdPolicy).build();
     }
@@ -152,11 +129,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getAccessPolicies() {
-
-        verifyAuthorizerIsManaged();
-        authorizeAccess(RequestAction.READ);
-
-        List<AccessPolicy> accessPolicies = authorizationService.getAccessPolicies();
+        List<AccessPolicy> accessPolicies = serviceFacade.getAccessPolicies();
         if (accessPolicies == null) {
             accessPolicies = Collections.emptyList();
         }
@@ -191,17 +164,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
     public Response getAccessPolicy(
             @ApiParam(value = "The access policy id.", required = true)
             @PathParam("id") final String identifier) {
-
-        verifyAuthorizerIsManaged();
-        authorizeAccess(RequestAction.READ);
-
-        final AccessPolicy accessPolicy = authorizationService.getAccessPolicy(identifier);
-        if (accessPolicy == null) {
-            logger.warn("The specified access policy id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
-        }
-
+        final AccessPolicy accessPolicy = serviceFacade.getAccessPolicy(identifier);
         return generateOkResponse(accessPolicy).build();
     }
 
@@ -241,17 +204,11 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @PathParam("resource")
             final String rawResource) {
 
-        verifyAuthorizerIsManaged();
-        authorizeAccess(RequestAction.READ);
-
         // parse the action and resource type
         final RequestAction requestAction = RequestAction.valueOfValue(action);
         final String resource = "/" + rawResource;
 
-        AccessPolicy accessPolicy = authorizationService.getAccessPolicy(resource, requestAction);
-        if (accessPolicy == null) {
-            throw new ResourceNotFoundException("No policy found for action='" + action + "', resource='" + resource + "'");
-        }
+        final AccessPolicy accessPolicy = serviceFacade.getAccessPolicy(resource, requestAction);
         return generateOkResponse(accessPolicy).build();
     }
 
@@ -285,15 +242,12 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might not be configured to use a ConfigurableAccessPolicyProvider.") })
     public Response updateAccessPolicy(
             @Context
-            final HttpServletRequest httpServletRequest,
+                final HttpServletRequest httpServletRequest,
             @ApiParam(value = "The access policy id.", required = true)
             @PathParam("id")
-            final String identifier,
+                final String identifier,
             @ApiParam(value = "The access policy configuration details.", required = true)
-            final AccessPolicy requestAccessPolicy) {
-
-        verifyAuthorizerSupportsConfigurablePolicies();
-        authorizeAccess(RequestAction.WRITE);
+                final AccessPolicy requestAccessPolicy) {
 
         if (requestAccessPolicy == null) {
             throw new IllegalArgumentException("Access policy details must be specified when updating a policy.");
@@ -303,9 +257,7 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
                     + "policy id of the requested resource (%s).", requestAccessPolicy.getIdentifier(), identifier));
         }
 
-        AccessPolicy createdPolicy = authorizationService.updateAccessPolicy(requestAccessPolicy);
-
-        String locationUri = generateAccessPolicyUri(createdPolicy);
+        final AccessPolicy createdPolicy = serviceFacade.updateAccessPolicy(requestAccessPolicy);
         return generateOkResponse(createdPolicy).build();
     }
 
@@ -336,19 +288,21 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409 + " The NiFi Registry might not be configured to use a ConfigurableAccessPolicyProvider.") })
     public Response removeAccessPolicy(
-            @Context final HttpServletRequest httpServletRequest,
+            @Context
+                final HttpServletRequest httpServletRequest,
+            @ApiParam(value = "The version is used to verify the client is working with the latest version of the entity.", required = true)
+            @QueryParam(VERSION)
+                final LongParameter version,
+            @ApiParam(value = "If the client id is not specified, new one will be generated. This value (whether specified or generated) is included in the response.")
+            @QueryParam(CLIENT_ID)
+            @DefaultValue(StringUtils.EMPTY)
+                final ClientIdParameter clientId,
             @ApiParam(value = "The access policy id.", required = true)
             @PathParam("id")
-            final String identifier) {
+                final String identifier) {
 
-        verifyAuthorizerSupportsConfigurablePolicies();
-        authorizeAccess(RequestAction.DELETE);
-        AccessPolicy deletedPolicy = authorizationService.deleteAccessPolicy(identifier);
-        if (deletedPolicy == null) {
-            logger.warn("The specified access policy id [{}] does not exist.", identifier);
-
-            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
-        }
+        final RevisionInfo revisionInfo = getRevisionInfo(version, clientId);
+        final AccessPolicy deletedPolicy = serviceFacade.deleteAccessPolicy(identifier, revisionInfo);
         return generateOkResponse(deletedPolicy).build();
     }
 
@@ -376,30 +330,8 @@ public class AccessPolicyResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403) })
     public Response getResources() {
-        authorizeAccess(RequestAction.READ);
-
-        final List<Resource> resources = authorizationService.getResources();
-
+        final List<Resource> resources = serviceFacade.getResources();
         return generateOkResponse(resources).build();
-    }
-
-
-    private void verifyAuthorizerIsManaged() {
-        if (!AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer)) {
-            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
-        }
-    }
-
-    private void verifyAuthorizerSupportsConfigurablePolicies() {
-        if (!AuthorizerCapabilityDetection.isConfigurableAccessPolicyProvider(authorizer)) {
-            verifyAuthorizerIsManaged();
-            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_POLICIES);
-        }
-    }
-
-    private void authorizeAccess(RequestAction actionType) {
-        final Authorizable policiesAuthorizable = authorizableLookup.getPoliciesAuthorizable();
-        authorizationService.authorize(policiesAuthorizable, actionType);
     }
 
     private String generateAccessPolicyUri(final AccessPolicySummary accessPolicy) {

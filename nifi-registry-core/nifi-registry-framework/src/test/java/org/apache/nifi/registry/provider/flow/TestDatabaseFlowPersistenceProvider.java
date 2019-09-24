@@ -16,20 +16,13 @@
  */
 package org.apache.nifi.registry.provider.flow;
 
-import org.apache.nifi.registry.db.DatabaseTestApplication;
+import org.apache.nifi.registry.db.DatabaseBaseTest;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
-import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
@@ -39,11 +32,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
-@Transactional
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = DatabaseTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@TestExecutionListeners({DependencyInjectionTestExecutionListener.class, TransactionalTestExecutionListener.class})
-public class TestDatabaseFlowPersistenceProvider {
+public class TestDatabaseFlowPersistenceProvider extends DatabaseBaseTest {
 
     @Autowired
     private DataSource dataSource;

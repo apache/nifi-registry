@@ -36,11 +36,11 @@ import org.apache.nifi.registry.security.authentication.exception.IdentityAccess
 import org.apache.nifi.registry.security.authentication.exception.InvalidCredentialsException;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.exception.UnauthorizedException;
 import org.apache.nifi.registry.web.security.authentication.jwt.JwtService;
 import org.apache.nifi.registry.web.security.authentication.kerberos.KerberosSpnegoIdentityProvider;
 import org.apache.nifi.registry.web.security.authentication.x509.X509IdentityProvider;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +74,6 @@ public class AccessResource extends ApplicationResource {
     private static final Logger logger = LoggerFactory.getLogger(AccessResource.class);
 
     private NiFiRegistryProperties properties;
-    private AuthorizationService authorizationService;
     private JwtService jwtService;
     private X509IdentityProvider x509IdentityProvider;
     private KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider;
@@ -83,19 +82,18 @@ public class AccessResource extends ApplicationResource {
     @Autowired
     public AccessResource(
             NiFiRegistryProperties properties,
-            AuthorizationService authorizationService,
             JwtService jwtService,
             X509IdentityProvider x509IdentityProvider,
             @Nullable KerberosSpnegoIdentityProvider kerberosSpnegoIdentityProvider,
             @Nullable IdentityProvider identityProvider,
+            ServiceFacade serviceFacade,
             EventService eventService) {
-        super(eventService);
+        super(serviceFacade, eventService);
         this.properties = properties;
         this.jwtService = jwtService;
         this.x509IdentityProvider = x509IdentityProvider;
         this.kerberosSpnegoIdentityProvider = kerberosSpnegoIdentityProvider;
         this.identityProvider = identityProvider;
-        this.authorizationService = authorizationService;
     }
 
     /**
@@ -123,7 +121,7 @@ public class AccessResource extends ApplicationResource {
             throw new WebApplicationException(new Throwable("Unable to access details for current user."));
         }
 
-        final CurrentUser currentUser = authorizationService.getCurrentUser();
+        final CurrentUser currentUser = serviceFacade.getCurrentUser();
         currentUser.setLoginSupported(httpServletRequest.isSecure() && identityProvider != null);
 
         return generateOkResponse(currentUser).build();

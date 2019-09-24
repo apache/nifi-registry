@@ -410,21 +410,27 @@ NfRegistryService.prototype = {
             }).afterClosed().subscribe(
                 function (accept) {
                     if (accept) {
-                        self.api.deleteDroplet(droplet.link.href).subscribe(function (response) {
-                            self.droplets = self.droplets.filter(function (d) {
-                                return (d.identifier !== droplet.identifier);
-                            });
-                            self.snackBarService.openCoaster({
-                                title: 'Success',
-                                message: 'All versions of this ' + droplet.type.toLowerCase() + ' have been deleted.',
-                                verticalPosition: 'bottom',
-                                horizontalPosition: 'right',
-                                icon: 'fa fa-check-circle-o',
-                                color: '#1EB475',
-                                duration: 3000
-                            });
-                            self.droplet = {};
-                            self.filterDroplets();
+                        var deleteUrl = droplet.link.href;
+                        if (droplet.type === 'Flow') {
+                            deleteUrl = deleteUrl + '?version=' + droplet.revision.version;
+                        }
+                        self.api.deleteDroplet(deleteUrl).subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.droplets = self.droplets.filter(function (d) {
+                                    return (d.identifier !== droplet.identifier);
+                                });
+                                self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'All versions of this ' + droplet.type.toLowerCase() + ' have been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.droplet = {};
+                                self.filterDroplets();
+                            }
                         });
                     }
                 }
@@ -544,22 +550,24 @@ NfRegistryService.prototype = {
             }).afterClosed().subscribe(
                 function (accept) {
                     if (accept) {
-                        self.api.deleteBucket(bucket.identifier).subscribe(function (response) {
-                            self.buckets = self.buckets.filter(function (b) {
-                                return b.identifier !== bucket.identifier;
-                            });
-                            self.snackBarService.openCoaster({
-                                title: 'Success',
-                                message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
-                                verticalPosition: 'bottom',
-                                horizontalPosition: 'right',
-                                icon: 'fa fa-check-circle-o',
-                                color: '#1EB475',
-                                duration: 3000
-                            });
-                            self.bucket = {};
-                            self.filterBuckets();
-                            self.determineAllBucketsSelectedState();
+                        self.api.deleteBucket(bucket.identifier, bucket.revision.version).subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.buckets = self.buckets.filter(function (b) {
+                                    return b.identifier !== bucket.identifier;
+                                });
+                                self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'All versions of all items in this bucket, as well as the bucket, have been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.bucket = {};
+                                self.filterBuckets();
+                                self.determineAllBucketsSelectedState();
+                            }
                         });
                     }
                 }
@@ -773,20 +781,22 @@ NfRegistryService.prototype = {
                 if (accept) {
                     self.filteredBuckets.forEach(function (filteredBucket) {
                         if (filteredBucket.checked) {
-                            self.api.deleteBucket(filteredBucket.identifier).subscribe(function (response) {
-                                self.buckets = self.buckets.filter(function (bucket) {
-                                    return bucket.identifier !== filteredBucket.identifier;
-                                });
-                                self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'All versions of all items in ' + filteredBucket.name + ' have been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.filterBuckets();
+                            self.api.deleteBucket(filteredBucket.identifier, filteredBucket.revision.version).subscribe(function (response) {
+                                if (!response.status || response.status === 200) {
+                                    self.buckets = self.buckets.filter(function (bucket) {
+                                        return bucket.identifier !== filteredBucket.identifier;
+                                    });
+                                    self.snackBarService.openCoaster({
+                                        title: 'Success',
+                                        message: 'All versions of all items in ' + filteredBucket.name + ' have been deleted.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-check-circle-o',
+                                        color: '#1EB475',
+                                        duration: 3000
+                                    });
+                                    self.filterBuckets();
+                                }
                             });
                         }
                     });
@@ -1018,21 +1028,23 @@ NfRegistryService.prototype = {
             }).afterClosed().subscribe(
                 function (accept) {
                     if (accept) {
-                        self.api.deleteUser(user.identifier).subscribe(function (response) {
-                            self.users = self.users.filter(function (u) {
-                                return u.identifier !== user.identifier;
-                            });
-                            self.snackBarService.openCoaster({
-                                title: 'Success',
-                                message: 'User: ' + user.identity + ' has been deleted.',
-                                verticalPosition: 'bottom',
-                                horizontalPosition: 'right',
-                                icon: 'fa fa-check-circle-o',
-                                color: '#1EB475',
-                                duration: 3000
-                            });
-                            self.filterUsersAndGroups();
-                            self.determineAllUsersAndGroupsSelectedState();
+                        self.api.deleteUser(user.identifier, user.revision.version).subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.users = self.users.filter(function (u) {
+                                    return u.identifier !== user.identifier;
+                                });
+                                self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'User: ' + user.identity + ' has been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterUsersAndGroups();
+                                self.determineAllUsersAndGroupsSelectedState();
+                            }
                         });
                     }
                 }
@@ -1065,21 +1077,23 @@ NfRegistryService.prototype = {
             }).afterClosed().subscribe(
                 function (accept) {
                     if (accept) {
-                        self.api.deleteUserGroup(group.identifier).subscribe(function (response) {
-                            self.groups = self.groups.filter(function (u) {
-                                return u.identifier !== group.identifier;
-                            });
-                            self.snackBarService.openCoaster({
-                                title: 'Success',
-                                message: 'Group: ' + group.identity + ' has been deleted.',
-                                verticalPosition: 'bottom',
-                                horizontalPosition: 'right',
-                                icon: 'fa fa-check-circle-o',
-                                color: '#1EB475',
-                                duration: 3000
-                            });
-                            self.filterUsersAndGroups();
-                            self.determineAllUsersAndGroupsSelectedState();
+                        self.api.deleteUserGroup(group.identifier, group.revision.version).subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.groups = self.groups.filter(function (u) {
+                                    return u.identifier !== group.identifier;
+                                });
+                                self.snackBarService.openCoaster({
+                                    title: 'Success',
+                                    message: 'Group: ' + group.identity + ' has been deleted.',
+                                    verticalPosition: 'bottom',
+                                    horizontalPosition: 'right',
+                                    icon: 'fa fa-check-circle-o',
+                                    color: '#1EB475',
+                                    duration: 3000
+                                });
+                                self.filterUsersAndGroups();
+                                self.determineAllUsersAndGroupsSelectedState();
+                            }
                         });
                     }
                 }
@@ -1110,39 +1124,43 @@ NfRegistryService.prototype = {
                 if (accept) {
                     self.filteredUserGroups.forEach(function (filteredUserGroup) {
                         if (filteredUserGroup.checked) {
-                            self.api.deleteUserGroup(filteredUserGroup.identifier).subscribe(function (response) {
-                                self.groups = self.groups.filter(function (u) {
-                                    return u.identifier !== filteredUserGroup.identifier;
-                                });
-                                self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'User group: ' + filteredUserGroup.identity + ' has been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.filterUsersAndGroups();
+                            self.api.deleteUserGroup(filteredUserGroup.identifier, filteredUserGroup.revision.version).subscribe(function (response) {
+                                if (!response.status || response.status === 200) {
+                                    self.groups = self.groups.filter(function (u) {
+                                        return u.identifier !== filteredUserGroup.identifier;
+                                    });
+                                    self.snackBarService.openCoaster({
+                                        title: 'Success',
+                                        message: 'User group: ' + filteredUserGroup.identity + ' has been deleted.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-check-circle-o',
+                                        color: '#1EB475',
+                                        duration: 3000
+                                    });
+                                    self.filterUsersAndGroups();
+                                }
                             });
                         }
                     });
                     self.filteredUsers.forEach(function (filteredUser) {
                         if (filteredUser.checked) {
-                            self.api.deleteUser(filteredUser.identifier).subscribe(function (response) {
-                                self.users = self.users.filter(function (u) {
-                                    return u.identifier !== filteredUser.identifier;
-                                });
-                                self.snackBarService.openCoaster({
-                                    title: 'Success',
-                                    message: 'User: ' + filteredUser.identity + ' has been deleted.',
-                                    verticalPosition: 'bottom',
-                                    horizontalPosition: 'right',
-                                    icon: 'fa fa-check-circle-o',
-                                    color: '#1EB475',
-                                    duration: 3000
-                                });
-                                self.filterUsersAndGroups();
+                            self.api.deleteUser(filteredUser.identifier, filteredUser.revision.version).subscribe(function (response) {
+                                if (!response.status || response.status === 200) {
+                                    self.users = self.users.filter(function (u) {
+                                        return u.identifier !== filteredUser.identifier;
+                                    });
+                                    self.snackBarService.openCoaster({
+                                        title: 'Success',
+                                        message: 'User: ' + filteredUser.identity + ' has been deleted.',
+                                        verticalPosition: 'bottom',
+                                        horizontalPosition: 'right',
+                                        icon: 'fa fa-check-circle-o',
+                                        color: '#1EB475',
+                                        duration: 3000
+                                    });
+                                    self.filterUsersAndGroups();
+                                }
                             });
                         }
                     });

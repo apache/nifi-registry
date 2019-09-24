@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.AccessPolicy;
 import org.apache.nifi.registry.authorization.AccessPolicySummary;
 import org.apache.nifi.registry.authorization.CurrentUser;
@@ -26,6 +27,7 @@ import org.apache.nifi.registry.authorization.Tenant;
 import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
@@ -49,6 +51,8 @@ import org.apache.nifi.registry.security.authorization.user.NiFiUser;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,13 +61,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
+/**
+ * Service for performing operations on users, groups, and policies.
+ */
 @Service
 public class AuthorizationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationService.class);
 
     public static final String MSG_NON_MANAGED_AUTHORIZER = "This NiFi Registry is not configured to internally manage users, groups, or policies. Please contact your system administrator.";
     public static final String MSG_NON_CONFIGURABLE_POLICIES = "This NiFi Registry is not configured to allow configurable policies. Please contact your system administrator.";
@@ -74,10 +80,6 @@ public class AuthorizationService {
     private RegistryService registryService;
     private UserGroupProvider userGroupProvider;
     private AccessPolicyProvider accessPolicyProvider;
-
-    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private final Lock readLock = lock.readLock();
-    private final Lock writeLock = lock.writeLock();
 
     @Autowired
     public AuthorizationService(
@@ -103,12 +105,39 @@ public class AuthorizationService {
         return authorizableLookup;
     }
 
-    public Authorizer getAuthorizer() {
-        return authorizer;
-    }
-
     public void authorize(Authorizable authorizable, RequestAction action) throws AccessDeniedException {
         authorizable.authorize(authorizer, action, NiFiUserUtils.getNiFiUser());
+    }
+
+    public boolean isManagedAuthorizer() {
+        return AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer);
+    }
+
+    public boolean isConfigurableUserGroupProvider() {
+        return AuthorizerCapabilityDetection.isConfigurableUserGroupProvider(authorizer);
+    }
+
+    public boolean isConfigurableAccessPolicyProvider() {
+        return AuthorizerCapabilityDetection.isConfigurableAccessPolicyProvider(authorizer);
+    }
+
+    public void verifyAuthorizerIsManaged() {
+        if (!isManagedAuthorizer()) {
+            throw new IllegalStateException(AuthorizationService.MSG_NON_MANAGED_AUTHORIZER);
+        }
+    }
+
+    public void verifyAuthorizerSupportsConfigurablePolicies() {
+        if (!isConfigurableAccessPolicyProvider()) {
+            verifyAuthorizerIsManaged();
+            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_POLICIES);
+        }
+    }
+
+    public void verifyAuthorizerSupportsConfigurableUserGroups() {
+        if (!isConfigurableUserGroupProvider()) {
+            throw new IllegalStateException(AuthorizationService.MSG_NON_CONFIGURABLE_USERS);
+        }
     }
 
     // ---------------------- Permissions methods ---------------------------------------
@@ -176,255 +205,234 @@ public class AuthorizationService {
 
     // ---------------------- User methods ----------------------------------------------
 
-    public User createUser(User user) {
+    public User createUser(final User user) {
         verifyUserGroupProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            final org.apache.nifi.registry.security.authorization.User createdUser =
-                ((ConfigurableUserGroupProvider) userGroupProvider).addUser(userFromDTO(user));
-            return userToDTO(createdUser);
-        } finally {
-            writeLock.unlock();
+
+        if (StringUtils.isBlank(user.getIdentity())) {
+            throw new IllegalArgumentException("User identity must be specified when creating a new user.");
         }
+
+        final org.apache.nifi.registry.security.authorization.User createdUser =
+                configurableUserGroupProvider().addUser(userFromDTO(user));
+        return userToDTO(createdUser);
     }
 
     public List<User> getUsers() {
-        this.readLock.lock();
-        try {
-            return userGroupProvider.getUsers().stream().map(this::userToDTO).collect(Collectors.toList());
-        } finally {
-            this.readLock.unlock();
-        }
+        return userGroupProvider.getUsers().stream().map(this::userToDTO).collect(Collectors.toList());
     }
 
-    public User getUser(String identifier) {
-        this.readLock.lock();
-        try {
-            return userToDTO(userGroupProvider.getUser(identifier));
-        } finally {
-            this.readLock.unlock();
+    public User getUser(final String identifier) {
+        final org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
+        if (user == null) {
+            LOGGER.warn("The specified user id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
+
+        return userToDTO(user);
     }
 
-    public User getUserByIdentity(String identity) {
-        this.readLock.lock();
-        try {
-            return userToDTO(userGroupProvider.getUserByIdentity(identity));
-        } finally {
-            this.readLock.unlock();
+    public User getUserByIdentity(final String identity) {
+        final org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUserByIdentity(identity);
+        if (user == null) {
+            LOGGER.warn("The specified user identity [{}] does not exist.", identity);
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
+
+        return userToDTO(user);
     }
 
-    public User updateUser(User user) {
+    public User updateUser(final User user) {
         verifyUserGroupProviderIsConfigurable();
-        this.writeLock.lock();
-        try {
-            final org.apache.nifi.registry.security.authorization.User updatedUser =
-                    ((ConfigurableUserGroupProvider) userGroupProvider).updateUser(userFromDTO(user));
-            if (updatedUser == null) {
-                return null;
-            }
-            return userToDTO(updatedUser);
-        } finally {
-            this.writeLock.unlock();
+
+        final org.apache.nifi.registry.security.authorization.User updatedUser =
+                configurableUserGroupProvider().updateUser(userFromDTO(user));
+
+        if (updatedUser == null) {
+            LOGGER.warn("The specified user id [{}] does not exist.", user.getIdentifier());
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
         }
+
+        return userToDTO(updatedUser);
     }
 
-    public User deleteUser(String identifier) {
+    public User deleteUser(final String identifier) {
         verifyUserGroupProviderIsConfigurable();
-        this.writeLock.lock();
-        try {
-            User deletedUserDTO = getUser(identifier);
-            if (deletedUserDTO != null) {
-                ((ConfigurableUserGroupProvider) userGroupProvider).deleteUser(identifier);
-            }
-            return deletedUserDTO;
-        } finally {
-            this.writeLock.unlock();
-        }
-    }
 
+        final org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
+        if (user == null) {
+            LOGGER.warn("The specified user id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
+        }
+
+        configurableUserGroupProvider().deleteUser(user);
+        return userToDTO(user);
+    }
 
     // ---------------------- User Group methods --------------------------------------
 
-    public UserGroup createUserGroup(UserGroup userGroup) {
+    public UserGroup createUserGroup(final UserGroup userGroup) {
         verifyUserGroupProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            final org.apache.nifi.registry.security.authorization.Group createdGroup =
-                    ((ConfigurableUserGroupProvider) userGroupProvider).addGroup(userGroupFromDTO(userGroup));
-            return userGroupToDTO(createdGroup);
-        } finally {
-            writeLock.unlock();
+
+        if (StringUtils.isBlank(userGroup.getIdentity())) {
+            throw new IllegalArgumentException("User group identity must be specified when creating a new group.");
         }
+
+        final org.apache.nifi.registry.security.authorization.Group createdGroup =
+                configurableUserGroupProvider().addGroup(userGroupFromDTO(userGroup));
+        return userGroupToDTO(createdGroup);
     }
 
     public List<UserGroup> getUserGroups() {
-        this.readLock.lock();
-        try {
-            return userGroupProvider.getGroups().stream().map(this::userGroupToDTO).collect(Collectors.toList());
-        } finally {
-            this.readLock.unlock();
-        }
+        return userGroupProvider.getGroups().stream().map(this::userGroupToDTO).collect(Collectors.toList());
     }
 
-    public UserGroup getUserGroup(String identifier) {
-        this.readLock.lock();
-        try {
-            return userGroupToDTO(userGroupProvider.getGroup(identifier));
-        } finally {
-            this.readLock.unlock();
+    public UserGroup getUserGroup(final String identifier) {
+        final org.apache.nifi.registry.security.authorization.Group group = userGroupProvider.getGroup(identifier);
+
+        if (group == null) {
+            LOGGER.warn("The specified user group id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
+
+        return userGroupToDTO(group);
     }
 
-    public UserGroup updateUserGroup(UserGroup userGroup) {
+    public UserGroup updateUserGroup(final UserGroup userGroup) {
         verifyUserGroupProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            final org.apache.nifi.registry.security.authorization.Group updatedGroup =
-                    ((ConfigurableUserGroupProvider) userGroupProvider).updateGroup(userGroupFromDTO(userGroup));
-            if (updatedGroup == null) {
-                return null;
-            }
-            return userGroupToDTO(updatedGroup);
-        } finally {
-            writeLock.unlock();
+
+        final org.apache.nifi.registry.security.authorization.Group updatedGroup =
+                configurableUserGroupProvider().updateGroup(userGroupFromDTO(userGroup));
+
+        if (updatedGroup == null) {
+            LOGGER.warn("The specified user group id [{}] does not exist.", userGroup.getIdentifier());
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
+
+        return userGroupToDTO(updatedGroup);
     }
 
-    public UserGroup deleteUserGroup(String identifier) {
+    public UserGroup deleteUserGroup(final String identifier) {
         verifyUserGroupProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            final UserGroup userGroupDTO = getUserGroup(identifier);
-            if (userGroupDTO != null) {
-                ((ConfigurableUserGroupProvider) userGroupProvider).deleteGroup(identifier);
-            }
-            return userGroupDTO;
-        } finally {
-            writeLock.unlock();
+
+        final Group group = userGroupProvider.getGroup(identifier);
+        if (group == null) {
+            LOGGER.warn("The specified user group id [{}] does not exist.", group.getIdentifier());
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
         }
+
+        configurableUserGroupProvider().deleteGroup(group);
+        return userGroupToDTO(group);
     }
 
 
     // ---------------------- Access Policy methods ----------------------------------------
 
-    public AccessPolicy createAccessPolicy(AccessPolicy accessPolicy) {
+    public AccessPolicy createAccessPolicy(final AccessPolicy accessPolicy) {
         verifyAccessPolicyProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            org.apache.nifi.registry.security.authorization.AccessPolicy createdAccessPolicy =
-                    ((ConfigurableAccessPolicyProvider) accessPolicyProvider).addAccessPolicy(accessPolicyFromDTO(accessPolicy));
-            return accessPolicyToDTO(createdAccessPolicy);
-        } finally {
-            writeLock.unlock();
+
+        if (accessPolicy.getResource() == null) {
+            throw new IllegalArgumentException("Resource must be specified when creating a new access policy.");
         }
+
+        RequestAction.valueOfValue(accessPolicy.getAction());
+
+        final org.apache.nifi.registry.security.authorization.AccessPolicy createdAccessPolicy =
+                configurableAccessPolicyProvider().addAccessPolicy(accessPolicyFromDTO(accessPolicy));
+        return accessPolicyToDTO(createdAccessPolicy);
     }
 
-    public AccessPolicy getAccessPolicy(String identifier) {
-        readLock.lock();
-        try {
-            return accessPolicyToDTO(accessPolicyProvider.getAccessPolicy(identifier));
-        } finally {
-            readLock.unlock();
+    public AccessPolicy getAccessPolicy(final String identifier) {
+        final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy =
+                accessPolicyProvider.getAccessPolicy(identifier);
+
+        if (accessPolicy == null) {
+            LOGGER.warn("The specified access policy id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
+
+        return accessPolicyToDTO(accessPolicy);
     }
 
-    public AccessPolicy getAccessPolicy(String resource, RequestAction action) {
-        readLock.lock();
-        try {
-            return accessPolicyToDTO(accessPolicyProvider.getAccessPolicy(resource, action));
-        } finally {
-            readLock.unlock();
+    public AccessPolicy getAccessPolicy(final String resource, final RequestAction action) {
+        final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy =
+                accessPolicyProvider.getAccessPolicy(resource, action);
+
+        if (accessPolicy == null) {
+            throw new ResourceNotFoundException("No policy found for action='" + action + "', resource='" + resource + "'");
         }
+
+        return accessPolicyToDTO(accessPolicy);
     }
 
     public List<AccessPolicy> getAccessPolicies() {
-        readLock.lock();
-        try {
-            return accessPolicyProvider.getAccessPolicies().stream().map(this::accessPolicyToDTO).collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
+        return accessPolicyProvider.getAccessPolicies().stream().map(this::accessPolicyToDTO).collect(Collectors.toList());
     }
 
     public List<AccessPolicySummary> getAccessPolicySummaries() {
-        readLock.lock();
-        try {
-            return accessPolicyProvider.getAccessPolicies().stream().map(this::accessPolicyToSummaryDTO).collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
+        return accessPolicyProvider.getAccessPolicies().stream().map(this::accessPolicyToSummaryDTO).collect(Collectors.toList());
     }
 
     private List<AccessPolicySummary> getAccessPolicySummariesForUser(String userIdentifier) {
-        readLock.lock();
-        try {
-            return accessPolicyProvider.getAccessPolicies().stream()
-                    .filter(accessPolicy -> {
-                        if (accessPolicy.getUsers().contains(userIdentifier)) {
-                            return true;
-                        }
-                        return accessPolicy.getGroups().stream().anyMatch(g -> {
-                            final Group group = userGroupProvider.getGroup(g);
-                            return group != null && group.getUsers().contains(userIdentifier);
-                        });
-                    })
-                    .map(this::accessPolicyToSummaryDTO)
-                    .collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
+        return accessPolicyProvider.getAccessPolicies().stream()
+                .filter(accessPolicy -> {
+                    if (accessPolicy.getUsers().contains(userIdentifier)) {
+                        return true;
+                    }
+                    return accessPolicy.getGroups().stream().anyMatch(g -> {
+                        final Group group = userGroupProvider.getGroup(g);
+                        return group != null && group.getUsers().contains(userIdentifier);
+                    });
+                })
+                .map(this::accessPolicyToSummaryDTO)
+                .collect(Collectors.toList());
     }
 
     private List<AccessPolicySummary> getAccessPolicySummariesForUserGroup(String userGroupIdentifier) {
-        readLock.lock();
-        try {
-            return accessPolicyProvider.getAccessPolicies().stream()
-                    .filter(accessPolicy -> accessPolicy.getGroups().contains(userGroupIdentifier))
-                    .map(this::accessPolicyToSummaryDTO)
-                    .collect(Collectors.toList());
-        } finally {
-            readLock.unlock();
-        }
+        return accessPolicyProvider.getAccessPolicies().stream()
+                .filter(accessPolicy -> accessPolicy.getGroups().contains(userGroupIdentifier))
+                .map(this::accessPolicyToSummaryDTO)
+                .collect(Collectors.toList());
     }
 
-    public AccessPolicy updateAccessPolicy(AccessPolicy accessPolicy) {
+    public AccessPolicy updateAccessPolicy(final AccessPolicy accessPolicy) {
         verifyAccessPolicyProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            // Don't allow changing action or resource of existing policy (should only be adding/removing users/groups)
-            org.apache.nifi.registry.security.authorization.AccessPolicy currentAccessPolicy =
-                    accessPolicyProvider.getAccessPolicy(accessPolicy.getIdentifier());
-            if (currentAccessPolicy == null) {
-                return null;
-            }
-            accessPolicy.setResource(currentAccessPolicy.getResource());
-            accessPolicy.setAction(currentAccessPolicy.getAction().toString());
 
-            org.apache.nifi.registry.security.authorization.AccessPolicy updatedAccessPolicy =
-                    ((ConfigurableAccessPolicyProvider) accessPolicyProvider).updateAccessPolicy(accessPolicyFromDTO(accessPolicy));
-            if (updatedAccessPolicy == null) {
-                return null;
-            }
-            return accessPolicyToDTO(updatedAccessPolicy);
-        } finally {
-            writeLock.unlock();
+        // Don't allow changing action or resource of existing policy (should only be adding/removing users/groups)
+        final org.apache.nifi.registry.security.authorization.AccessPolicy currentAccessPolicy =
+                accessPolicyProvider.getAccessPolicy(accessPolicy.getIdentifier());
+
+        if (currentAccessPolicy == null) {
+            LOGGER.warn("The specified access policy id [{}] does not exist.", accessPolicy.getIdentifier());
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
+
+        accessPolicy.setResource(currentAccessPolicy.getResource());
+        accessPolicy.setAction(currentAccessPolicy.getAction().toString());
+
+        final org.apache.nifi.registry.security.authorization.AccessPolicy updatedAccessPolicy =
+                configurableAccessPolicyProvider().updateAccessPolicy(accessPolicyFromDTO(accessPolicy));
+
+        if (updatedAccessPolicy == null) {
+            LOGGER.warn("The specified access policy id [{}] does not exist.", accessPolicy.getIdentifier());
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
+        }
+
+        return accessPolicyToDTO(updatedAccessPolicy);
     }
 
-    public AccessPolicy deleteAccessPolicy(String identifier) {
+    public AccessPolicy deleteAccessPolicy(final String identifier) {
         verifyAccessPolicyProviderIsConfigurable();
-        writeLock.lock();
-        try {
-            AccessPolicy deletedAccessPolicyDTO = getAccessPolicy(identifier);
-            if (deletedAccessPolicyDTO != null) {
-                ((ConfigurableAccessPolicyProvider) accessPolicyProvider).deleteAccessPolicy(identifier);
-            }
-            return deletedAccessPolicyDTO;
-        } finally {
-            writeLock.unlock();
+
+        final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy =
+                accessPolicyProvider.getAccessPolicy(identifier);
+
+        if (accessPolicy == null) {
+            LOGGER.warn("The specified access policy id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
         }
+
+        configurableAccessPolicyProvider().deleteAccessPolicy(identifier);
+        return accessPolicyToDTO(accessPolicy);
     }
 
 
@@ -465,6 +473,14 @@ public class AuthorizationService {
     }
 
     // ---------------------- Private Helper methods --------------------------------------
+
+    private ConfigurableUserGroupProvider configurableUserGroupProvider() {
+        return ((ConfigurableUserGroupProvider) userGroupProvider);
+    }
+
+    private ConfigurableAccessPolicyProvider configurableAccessPolicyProvider() {
+        return ((ConfigurableAccessPolicyProvider) accessPolicyProvider);
+    }
 
     private void verifyUserGroupProviderIsConfigurable() {
         if (!(userGroupProvider instanceof ConfigurableUserGroupProvider)) {
@@ -608,17 +624,12 @@ public class AuthorizationService {
     }
 
     private Tenant tenantIdToDTO(String identifier) {
-        this.readLock.lock();
-        try {
-            org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
-            if (user != null) {
-                return tenantToDTO(user);
-            } else {
-                org.apache.nifi.registry.security.authorization.Group group = userGroupProvider.getGroup(identifier);
-                return tenantToDTO(group);
-            }
-        } finally {
-            this.readLock.unlock();
+        final org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
+        if (user != null) {
+            return tenantToDTO(user);
+        } else {
+            org.apache.nifi.registry.security.authorization.Group group = userGroupProvider.getGroup(identifier);
+            return tenantToDTO(group);
         }
     }
 
@@ -672,7 +683,7 @@ public class AuthorizationService {
             return null;
         }
         return new org.apache.nifi.registry.security.authorization.User.Builder()
-                .identifier(userDTO.getIdentifier() != null ? userDTO.getIdentifier() : UUID.randomUUID().toString())
+                .identifier(userDTO.getIdentifier())
                 .identity(userDTO.getIdentity())
                 .build();
     }
@@ -683,7 +694,7 @@ public class AuthorizationService {
             return null;
         }
         org.apache.nifi.registry.security.authorization.Group.Builder groupBuilder = new org.apache.nifi.registry.security.authorization.Group.Builder()
-                .identifier(userGroupDTO.getIdentifier() != null ? userGroupDTO.getIdentifier() : UUID.randomUUID().toString())
+                .identifier(userGroupDTO.getIdentifier())
                 .name(userGroupDTO.getIdentity());
         Set<Tenant> users = userGroupDTO.getUsers();
         if (users != null) {
@@ -696,7 +707,7 @@ public class AuthorizationService {
             final AccessPolicy accessPolicyDTO) {
         org.apache.nifi.registry.security.authorization.AccessPolicy.Builder accessPolicyBuilder =
                 new org.apache.nifi.registry.security.authorization.AccessPolicy.Builder()
-                        .identifier(accessPolicyDTO.getIdentifier() != null ? accessPolicyDTO.getIdentifier() : UUID.randomUUID().toString())
+                        .identifier(accessPolicyDTO.getIdentifier())
                         .resource(accessPolicyDTO.getResource())
                         .action(RequestAction.valueOfValue(accessPolicyDTO.getAction()));
 

@@ -24,7 +24,6 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.extension.bundle.Bundle;
@@ -33,11 +32,8 @@ import org.apache.nifi.registry.extension.bundle.BundleVersion;
 import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
 import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.security.PermissionsService;
+import org.apache.nifi.registry.web.service.ServiceFacade;
+import org.apache.nifi.registry.web.service.StreamingContent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,10 +47,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 
 @Component
@@ -64,23 +57,13 @@ import java.util.SortedSet;
         description = "Gets metadata about extension bundles and their versions. ",
         authorizations = { @Authorization("Authorization") }
 )
-public class BundleResource extends AuthorizableApplicationResource {
+public class BundleResource extends ApplicationResource {
 
     public static final String CONTENT_DISPOSITION_HEADER = "content-disposition";
-    private final RegistryService registryService;
-    private final LinkService linkService;
-    private final PermissionsService permissionsService;
 
     @Autowired
-    public BundleResource(final RegistryService registryService,
-                          final LinkService linkService,
-                          final PermissionsService permissionsService,
-                          final AuthorizationService authorizationService,
-                          final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
-        this.permissionsService = permissionsService;
+    public BundleResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     // ---------- Extension Bundles ----------
@@ -111,21 +94,10 @@ public class BundleResource extends AuthorizableApplicationResource {
                     "such as 'nifi-%' to select all bundles where the artifactId starts with 'nifi-'.")
                 final String artifactId) {
 
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
-        }
-
         final BundleFilterParams filterParams = BundleFilterParams.of(bucketName, groupId, artifactId);
 
-        List<Bundle> bundles = registryService.getBundles(authorizedBucketIds, filterParams);
-        if (bundles == null) {
-            bundles = Collections.emptyList();
-        }
-        permissionsService.populateItemPermissions(bundles);
-        linkService.populateLinks(bundles);
-
+        // Service facade will return only bundles from authorized buckets
+        final List<Bundle> bundles = serviceFacade.getBundles(filterParams);
         return Response.status(Response.Status.OK).entity(bundles).build();
     }
 
@@ -155,10 +127,7 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The extension bundle identifier")
                 final String bundleId) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        permissionsService.populateItemPermissions(bundle);
-        linkService.populateLinks(bundle);
-
+        final Bundle bundle = serviceFacade.getBundle(bundleId);
         return Response.status(Response.Status.OK).entity(bundle).build();
     }
 
@@ -188,14 +157,8 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The extension bundle identifier")
                 final String bundleId) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-
-        final Bundle deletedBundle = registryService.deleteBundle(bundle);
+        final Bundle deletedBundle = serviceFacade.deleteBundle(bundleId);
         publish(EventFactory.extensionBundleDeleted(deletedBundle));
-
-        permissionsService.populateItemPermissions(deletedBundle);
-        linkService.populateLinks(deletedBundle);
-
         return Response.status(Response.Status.OK).entity(deletedBundle).build();
     }
 
@@ -228,16 +191,8 @@ public class BundleResource extends AuthorizableApplicationResource {
                 final String version
             ) {
 
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
-        }
-
         final BundleVersionFilterParams filterParams = BundleVersionFilterParams.of(groupId, artifactId, version);
-        final SortedSet<BundleVersionMetadata> bundleVersions = registryService.getBundleVersions(authorizedBucketIds, filterParams);
-        linkService.populateLinks(bundleVersions);
-
+        final SortedSet<BundleVersionMetadata> bundleVersions = serviceFacade.getBundleVersions(filterParams);
         return Response.status(Response.Status.OK).entity(bundleVersions).build();
     }
 
@@ -268,10 +223,7 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The extension bundle identifier")
                 final String bundleId) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final SortedSet<BundleVersionMetadata> bundleVersions = registryService.getBundleVersions(bundle.getIdentifier());
-        linkService.populateLinks(bundleVersions);
-
+        final SortedSet<BundleVersionMetadata> bundleVersions = serviceFacade.getBundleVersions(bundleId);
         return Response.status(Response.Status.OK).entity(bundleVersions).build();
     }
 
@@ -304,10 +256,7 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The version of the bundle")
                 final String version) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
-        linkService.populateLinks(bundleVersion);
-
+        final BundleVersion bundleVersion = serviceFacade.getBundleVersion(bundleId, version);
         return Response.ok(bundleVersion).build();
     }
 
@@ -340,13 +289,13 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The version of the bundle")
                 final String version) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
+        final StreamingContent streamingContent = serviceFacade.getBundleVersionContent(bundleId, version);
 
-        final StreamingOutput streamingOutput = (output) -> registryService.writeBundleVersionContent(bundleVersion, output);
+        final String filename = streamingContent.getFilename();
+        final StreamingOutput output = streamingContent.getOutput();
 
-        return Response.ok(streamingOutput)
-                .header(CONTENT_DISPOSITION_HEADER,"attachment; filename = " + bundleVersion.getFilename())
+        return Response.ok(output)
+                .header(CONTENT_DISPOSITION_HEADER,"attachment; filename = " + filename)
                 .build();
     }
 
@@ -379,13 +328,8 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The version of the bundle")
                 final String version) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
-
-        final BundleVersion deletedBundleVersion = registryService.deleteBundleVersion(bundleVersion);
+        final BundleVersion deletedBundleVersion = serviceFacade.deleteBundleVersion(bundleId, version);
         publish(EventFactory.extensionBundleVersionDeleted(deletedBundleVersion));
-        linkService.populateLinks(deletedBundleVersion);
-
         return Response.status(Response.Status.OK).entity(deletedBundleVersion).build();
     }
 
@@ -419,11 +363,7 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The version of the bundle")
                 final String version) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
-
-        final SortedSet<ExtensionMetadata> extensions = registryService.getExtensionMetadata(bundleVersion);
-        linkService.populateLinks(extensions);
+        final SortedSet<ExtensionMetadata> extensions = serviceFacade.getExtensionMetadata(bundleId, version);
         return Response.ok(extensions).build();
     }
 
@@ -461,10 +401,8 @@ public class BundleResource extends AuthorizableApplicationResource {
                 final String name
             ) {
 
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
-
-        final org.apache.nifi.registry.extension.component.manifest.Extension extension = registryService.getExtension(bundleVersion, name);
+        final org.apache.nifi.registry.extension.component.manifest.Extension extension =
+                serviceFacade.getExtension(bundleId, version, name);
         return Response.ok(extension).build();
     }
 
@@ -499,10 +437,7 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The fully qualified name of the extension")
                 final String name
     ) {
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
-
-        final StreamingOutput streamingOutput = (output) -> registryService.writeExtensionDocs(bundleVersion, name, output);
+        final StreamingOutput streamingOutput = serviceFacade.getExtensionDocs(bundleId, version, name);
         return Response.ok(streamingOutput).build();
     }
 
@@ -537,29 +472,8 @@ public class BundleResource extends AuthorizableApplicationResource {
             @ApiParam("The fully qualified name of the extension")
                 final String name
     ) {
-        final Bundle bundle = getBundleWithBucketReadAuthorization(bundleId);
-        final BundleVersion bundleVersion = registryService.getBundleVersion(bundle.getBucketIdentifier(), bundleId, version);
-
-        final StreamingOutput streamingOutput = (output) -> registryService.writeAdditionalDetailsDocs(bundleVersion, name, output);
+        final StreamingOutput streamingOutput = serviceFacade.getAdditionalDetailsDocs(bundleId, version, name);
         return Response.ok(streamingOutput).build();
-    }
-
-    /**
-     * Retrieves the extension bundle with the given id and ensures the current user has authorization to read the bucket it belongs to.
-     *
-     * @param bundleId the bundle id
-     * @return the extension bundle
-     */
-    private Bundle getBundleWithBucketReadAuthorization(final String bundleId) {
-        final Bundle bundle = registryService.getBundle(bundleId);
-
-        // this should never happen, but if somehow the back-end didn't populate the bucket id let's make sure the flow isn't returned
-        if (StringUtils.isBlank(bundle.getBucketIdentifier())) {
-            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
-        }
-
-        authorizeBucketAccess(RequestAction.READ, bundle.getBucketIdentifier());
-        return bundle;
     }
 
 }

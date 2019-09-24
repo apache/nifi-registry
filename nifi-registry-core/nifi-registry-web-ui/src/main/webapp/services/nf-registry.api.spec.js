@@ -438,10 +438,10 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
     it('should DELETE a bucket.', inject([HttpTestingController], function (httpMock) {
         // api call
-        nfRegistryApi.deleteBucket('1234').subscribe(function (response) {
+        nfRegistryApi.deleteBucket('1234', 0).subscribe(function (response) {
         });
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/buckets/1234');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/1234?version=0');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -457,20 +457,20 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // api call
-        nfRegistryApi.deleteBucket('1234').subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets/1234: 401 DELETE bucket mock error');
+        nfRegistryApi.deleteBucket('1234', 0).subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/buckets/1234?version=0: 401 DELETE bucket mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets/1234: 401 DELETE bucket mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/buckets/1234?version=0: 401 DELETE bucket mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/buckets/1234');
+        req = httpMock.expectOne('../nifi-registry-api/buckets/1234?version=0');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for ../nifi-registry-api/buckets/1234: 401 DELETE bucket mock error', {status: 401, statusText: 'DELETE bucket mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/buckets/1234?version=0: 401 DELETE bucket mock error', {status: 401, statusText: 'DELETE bucket mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -799,12 +799,12 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
     it('should DELETE users.', inject([HttpTestingController], function (httpMock) {
         // api call
-        nfRegistryApi.deleteUser(123).subscribe(function (response) {
+        nfRegistryApi.deleteUser(123, 0).subscribe(function (response) {
             expect(response.identity).toEqual('User #1');
         });
 
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/tenants/users/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/123?version=0');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -823,21 +823,21 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // api call
-        nfRegistryApi.deleteUser(123).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users/123: 401 DELETE users mock error');
+        nfRegistryApi.deleteUser(123, 0).subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/users/123?version=0: 401 DELETE users mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/users/123: 401 DELETE users mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/users/123?version=0: 401 DELETE users mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/tenants/users/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/users/123?version=0');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for ../nifi-registry-api/tenants/users/123: 401 DELETE users mock error', {status: 401, statusText: 'DELETE users mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/users/123?version=0: 401 DELETE users mock error', {status: 401, statusText: 'DELETE users mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();
@@ -1188,12 +1188,12 @@ describe('NfRegistry API w/ Angular testing utils', function () {
 
     it('should DELETE a user group.', inject([HttpTestingController], function (httpMock) {
         // api call
-        nfRegistryApi.deleteUserGroup(123).subscribe(function (response) {
+        nfRegistryApi.deleteUserGroup(123, 0).subscribe(function (response) {
             expect(response.identity).toEqual('Group #1');
         });
 
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123?version=0');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
@@ -1212,21 +1212,21 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // api call
-        nfRegistryApi.deleteUserGroup(123).subscribe(function (response) {
-            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error');
+        nfRegistryApi.deleteUserGroup(123, 0).subscribe(function (response) {
+            expect(response.message).toEqual('Http failure response for ../nifi-registry-api/tenants/user-groups/123?version=0: 401 DELETE user groups mock error');
             var dialogServiceCall = nfRegistryApi.dialogService.openConfirm.calls.first();
             expect(dialogServiceCall.args[0].title).toBe('Error');
-            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error');
+            expect(dialogServiceCall.args[0].message).toBe('Http failure response for ../nifi-registry-api/tenants/user-groups/123?version=0: 401 DELETE user groups mock error');
             expect(dialogServiceCall.args[0].acceptButton).toBe('Ok');
             expect(dialogServiceCall.args[0].acceptButtonColor).toBe('fds-warn');
         });
 
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123');
+        req = httpMock.expectOne('../nifi-registry-api/tenants/user-groups/123?version=0');
         expect(req.request.method).toEqual('DELETE');
 
         // Next, fulfill the request by transmitting a response.
-        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups/123: 401 DELETE user groups mock error', {status: 401, statusText: 'DELETE user groups mock error'});
+        req.flush('Http failure response for ../nifi-registry-api/tenants/user-groups/123?version=0: 401 DELETE user groups mock error', {status: 401, statusText: 'DELETE user groups mock error'});
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();

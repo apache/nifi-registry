@@ -145,7 +145,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
                                             response.users.forEach(function (user) {
@@ -179,7 +179,7 @@ NfRegistryManageUser.prototype = {
                                         return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage buckets privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
@@ -229,7 +229,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage tenants privileges updated!!!...now update the view
                                             response.users.forEach(function (user) {
@@ -263,7 +263,7 @@ NfRegistryManageUser.prototype = {
                                         return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage tenants privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
@@ -313,7 +313,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage policies privileges updated!!!...now update the view
                                             response.users.forEach(function (user) {
@@ -347,7 +347,7 @@ NfRegistryManageUser.prototype = {
                                         return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage policies privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
@@ -397,7 +397,7 @@ NfRegistryManageUser.prototype = {
                                     // resource exists, let's update it
                                     policy.users.push(self.nfRegistryService.user);
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // can manage proxy privileges updated!!!...now update the view
                                             response.users.forEach(function (user) {
@@ -431,7 +431,7 @@ NfRegistryManageUser.prototype = {
                                         return (user.identifier !== self.nfRegistryService.user.identifier);
                                     });
                                     self.nfRegistryApi.putPolicyActionResource(policy.identifier, policy.action,
-                                        policy.resource, policy.users, policy.userGroups).subscribe(
+                                        policy.resource, policy.users, policy.userGroups, policy.revision).subscribe(
                                         function (response) {
                                             // administrator privileges updated!!!...now update the view
                                             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier).subscribe(function (response) {
@@ -550,21 +550,32 @@ NfRegistryManageUser.prototype = {
                 var users = fullGroup.users.filter(function (user) {
                     return self.nfRegistryService.user.identifier !== user.identifier;
                 });
-                self.nfRegistryApi.updateUserGroup(fullGroup.identifier, fullGroup.identity, users).subscribe(function (response) {
+                self.nfRegistryApi.updateUserGroup(fullGroup.identifier, fullGroup.identity, users, fullGroup.revision).subscribe(function (response) {
                     self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                         .subscribe(function (response) {
                             self.nfRegistryService.user = response;
+                            self.username = response.identity;
                             self.filterGroups(this.sortBy, this.sortOrder);
                         });
-                    self.snackBarService.openCoaster({
-                        title: 'Success',
-                        message: 'This user has been removed from the ' + group.identity + ' group.',
-                        verticalPosition: 'bottom',
-                        horizontalPosition: 'right',
-                        icon: 'fa fa-check-circle-o',
-                        color: '#1EB475',
-                        duration: 3000
-                    });
+
+                    if (!response.status || response.status === 200) {
+                        self.snackBarService.openCoaster({
+                            title: 'Success',
+                            message: 'This user has been removed from the ' + group.identity + ' group.',
+                            verticalPosition: 'bottom',
+                            horizontalPosition: 'right',
+                            icon: 'fa fa-check-circle-o',
+                            color: '#1EB475',
+                            duration: 3000
+                        });
+                    } else {
+                        self.dialogService.openConfirm({
+                            title: 'Error',
+                            message: response.error,
+                            acceptButton: 'Ok',
+                            acceptButtonColor: 'fds-warn'
+                        });
+                    }
                 });
             }
         });
@@ -577,7 +588,7 @@ NfRegistryManageUser.prototype = {
      */
     updateUserName: function (username) {
         var self = this;
-        this.nfRegistryApi.updateUser(this.nfRegistryService.user.identifier, username).subscribe(function (response) {
+        this.nfRegistryApi.updateUser(this.nfRegistryService.user.identifier, username, this.nfRegistryService.user.revision).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.user = response;
                 self.nfRegistryService.users.filter(function (user) {
@@ -601,6 +612,21 @@ NfRegistryManageUser.prototype = {
                     message: 'This user already exists. Please enter a different identity/user name.',
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
+                });
+            } else {
+                self.username = self.nfRegistryService.user.identity;
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(function (accept) {
+                    self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
+                        .subscribe(function (response) {
+                            self.nfRegistryService.user = response;
+                            self.username = response.identity;
+                            self.filterGroups(this.sortBy, this.sortOrder);
+                        });
                 });
             }
         });

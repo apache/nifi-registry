@@ -32,14 +32,11 @@ import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
-import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
+import org.apache.nifi.registry.revision.web.ClientIdParameter;
+import org.apache.nifi.registry.revision.web.LongParameter;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.security.PermissionsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,12 +44,14 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -65,25 +64,11 @@ import java.util.SortedSet;
         description = "Create flows scoped to an existing bucket in the registry.",
         authorizations = { @Authorization("Authorization") }
 )
-public class BucketFlowResource extends AuthorizableApplicationResource {
-
-    private static final Logger logger = LoggerFactory.getLogger(BucketFlowResource.class);
-
-    private final RegistryService registryService;
-    private final LinkService linkService;
-    private final PermissionsService permissionsService;
+public class BucketFlowResource extends ApplicationResource {
 
     @Autowired
-    public BucketFlowResource(
-            final RegistryService registryService,
-            final LinkService linkService,
-            final PermissionsService permissionsService,
-            final AuthorizationService authorizationService,
-            final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
-        this.permissionsService =permissionsService;
+    public BucketFlowResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     @POST
@@ -108,18 +93,14 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     public Response createFlow(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-            final String bucketId,
+                final String bucketId,
             @ApiParam(value = "The details of the flow to create.", required = true)
-            final VersionedFlow flow) {
+                final VersionedFlow flow) {
 
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
         verifyPathParamsMatchBody(bucketId, flow);
 
-        final VersionedFlow createdFlow = registryService.createFlow(bucketId, flow);
+        final VersionedFlow createdFlow = serviceFacade.createFlow(bucketId, flow);
         publish(EventFactory.flowCreated(createdFlow));
-
-        permissionsService.populateItemPermissions(createdFlow);
-        linkService.populateLinks(createdFlow);
         return Response.status(Response.Status.OK).entity(createdFlow).build();
     }
 
@@ -148,12 +129,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The bucket identifier")
             final String bucketId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final List<VersionedFlow> flows = registryService.getFlows(bucketId);
-        permissionsService.populateItemPermissions(flows);
-        linkService.populateLinks(flows);
-
+        final List<VersionedFlow> flows = serviceFacade.getFlows(bucketId);
         return Response.status(Response.Status.OK).entity(flows).build();
     }
 
@@ -185,12 +161,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The flow identifier")
                 final String flowId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final VersionedFlow flow = registryService.getFlow(bucketId, flowId);
-        permissionsService.populateItemPermissions(flow);
-        linkService.populateLinks(flow);
-
+        final VersionedFlow flow = serviceFacade.getFlow(bucketId, flowId);
         return Response.status(Response.Status.OK).entity(flow).build();
     }
 
@@ -225,16 +196,12 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
                 final VersionedFlow flow) {
 
         verifyPathParamsMatchBody(bucketId, flowId, flow);
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         // bucketId and flowId fields are optional in the body parameter, but required before calling the service layer
         setBucketItemMetadataIfMissing(bucketId, flowId, flow);
 
-        final VersionedFlow updatedFlow = registryService.updateFlow(flow);
+        final VersionedFlow updatedFlow = serviceFacade.updateFlow(flow);
         publish(EventFactory.flowUpdated(updatedFlow));
-        permissionsService.populateItemPermissions(updatedFlow);
-        linkService.populateLinks(updatedFlow);
-
         return Response.status(Response.Status.OK).entity(updatedFlow).build();
     }
 
@@ -258,6 +225,13 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response deleteFlow(
+            @ApiParam(value = "The version is used to verify the client is working with the latest version of the entity.", required = true)
+            @QueryParam(VERSION)
+                final LongParameter version,
+            @ApiParam(value = "If the client id is not specified, new one will be generated. This value (whether specified or generated) is included in the response.")
+            @QueryParam(CLIENT_ID)
+            @DefaultValue(StringUtils.EMPTY)
+                final ClientIdParameter clientId,
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
                 final String bucketId,
@@ -265,9 +239,10 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The flow identifier")
                 final String flowId) {
 
-        authorizeBucketAccess(RequestAction.DELETE, bucketId);
-        final VersionedFlow deletedFlow = registryService.deleteFlow(bucketId, flowId);
+        final RevisionInfo revisionInfo = getRevisionInfo(version, clientId);
+        final VersionedFlow deletedFlow = serviceFacade.deleteFlow(bucketId, flowId, revisionInfo);
         publish(EventFactory.flowDeleted(deletedFlow));
+
         return Response.status(Response.Status.OK).entity(deletedFlow).build();
     }
 
@@ -303,7 +278,6 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
                 final VersionedFlowSnapshot snapshot) {
 
         verifyPathParamsMatchBody(bucketId, flowId, snapshot);
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
 
         // bucketId and flowId fields are optional in the body parameter, but required before calling the service layer
         setSnaphotMetadataIfMissing(bucketId, flowId, snapshot);
@@ -311,16 +285,9 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
         final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
         snapshot.getSnapshotMetadata().setAuthor(userIdentity);
 
-        final VersionedFlowSnapshot createdSnapshot = registryService.createFlowSnapshot(snapshot);
+        final VersionedFlowSnapshot createdSnapshot = serviceFacade.createFlowSnapshot(snapshot);
         publish(EventFactory.flowVersionCreated(createdSnapshot));
 
-        if (createdSnapshot.getSnapshotMetadata() != null) {
-            linkService.populateLinks(createdSnapshot.getSnapshotMetadata());
-        }
-        if (createdSnapshot.getBucket() != null) {
-            permissionsService.populateBucketPermissions(createdSnapshot.getBucket());
-            linkService.populateLinks(createdSnapshot.getBucket());
-        }
         return Response.status(Response.Status.OK).entity(createdSnapshot).build();
     }
 
@@ -352,13 +319,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The flow identifier")
                 final String flowId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
-        if (snapshots != null ) {
-            linkService.populateLinks(snapshots);
-        }
-
+        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = serviceFacade.getFlowSnapshots(bucketId, flowId);
         return Response.status(Response.Status.OK).entity(snapshots).build();
     }
 
@@ -389,12 +350,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The flow identifier")
                 final String flowId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
-        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latestMetadata.getVersion());
-        populateLinksAndPermissions(lastSnapshot);
-
+        final VersionedFlowSnapshot lastSnapshot = serviceFacade.getLatestFlowSnapshot(bucketId, flowId);
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
     }
 
@@ -425,11 +381,7 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @ApiParam("The flow identifier")
             final String flowId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final VersionedFlowSnapshotMetadata latest = registryService.getLatestFlowSnapshotMetadata(bucketId, flowId);
-        linkService.populateLinks(latest);
-
+        final VersionedFlowSnapshotMetadata latest = serviceFacade.getLatestFlowSnapshotMetadata(bucketId, flowId);
         return Response.status(Response.Status.OK).entity(latest).build();
     }
 
@@ -463,11 +415,8 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
             @PathParam("versionNumber")
             @ApiParam("The version number")
                 final Integer versionNumber) {
-        authorizeBucketAccess(RequestAction.READ, bucketId);
 
-        final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
-        populateLinksAndPermissions(snapshot);
-
+        final VersionedFlowSnapshot snapshot = serviceFacade.getFlowSnapshot(bucketId, flowId, versionNumber);
         return Response.status(Response.Status.OK).entity(snapshot).build();
     }
 
@@ -494,35 +443,19 @@ public class BucketFlowResource extends AuthorizableApplicationResource {
     public Response getFlowDiff(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-            final String bucketId,
+                final String bucketId,
             @PathParam("flowId")
             @ApiParam("The flow identifier")
-            final String flowId,
+                final String flowId,
             @PathParam("versionA")
             @ApiParam("The first version number")
-            final Integer versionNumberA,
+                final Integer versionNumberA,
             @PathParam("versionB")
             @ApiParam("The second version number")
-            final Integer versionNumberB) {
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-        VersionedFlowDifference result = registryService.getFlowDiff(bucketId, flowId, versionNumberA, versionNumberB);
+                final Integer versionNumberB) {
+
+        final VersionedFlowDifference result = serviceFacade.getFlowDiff(bucketId, flowId, versionNumberA, versionNumberB);
         return Response.status(Response.Status.OK).entity(result).build();
-    }
-
-    private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
-        if (snapshot.getSnapshotMetadata() != null) {
-            linkService.populateLinks(snapshot.getSnapshotMetadata());
-        }
-
-        if (snapshot.getFlow() != null) {
-            linkService.populateLinks(snapshot.getFlow());
-        }
-
-        if (snapshot.getBucket() != null) {
-            permissionsService.populateBucketPermissions(snapshot.getBucket());
-            linkService.populateLinks(snapshot.getBucket());
-        }
-
     }
 
     private static void verifyPathParamsMatchBody(String bucketIdParam, BucketItem bodyBucketItem) throws BadRequestException {

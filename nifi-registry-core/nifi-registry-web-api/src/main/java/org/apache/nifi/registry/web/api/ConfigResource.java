@@ -25,12 +25,7 @@ import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.nifi.registry.RegistryConfiguration;
 import org.apache.nifi.registry.event.EventService;
-import org.apache.nifi.registry.security.authorization.Authorizer;
-import org.apache.nifi.registry.security.authorization.AuthorizerCapabilityDetection;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.service.AuthorizationService;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -48,13 +43,13 @@ import javax.ws.rs.core.Response;
         description = "Retrieves the configuration for this NiFi Registry.",
         authorizations = { @Authorization("Authorization") }
 )
-public class ConfigResource extends AuthorizableApplicationResource {
+public class ConfigResource extends ApplicationResource {
 
     @Autowired
     public ConfigResource(
-            final AuthorizationService authorizationService,
+            final ServiceFacade serviceFacade,
             final EventService eventService) {
-        super(authorizationService, eventService);
+        super(serviceFacade, eventService);
     }
 
     @GET
@@ -74,36 +69,7 @@ public class ConfigResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getConfiguration() {
-
-        final RegistryConfiguration config = new RegistryConfiguration();
-
-        boolean hasAnyConfigurationAccess = false;
-        AccessDeniedException lastAccessDeniedException = null;
-        final Authorizer authorizer = authorizationService.getAuthorizer();
-        try {
-            final Authorizable policyAuthorizer = authorizableLookup.getPoliciesAuthorizable();
-            authorizationService.authorize(policyAuthorizer, RequestAction.READ);
-            config.setSupportsManagedAuthorizer(AuthorizerCapabilityDetection.isManagedAuthorizer(authorizer));
-            config.setSupportsConfigurableAuthorizer(AuthorizerCapabilityDetection.isConfigurableAccessPolicyProvider(authorizer));
-            hasAnyConfigurationAccess = true;
-        } catch (AccessDeniedException e) {
-            lastAccessDeniedException = e;
-        }
-
-        try {
-            authorizationService.authorize(authorizableLookup.getTenantsAuthorizable(), RequestAction.READ);
-            config.setSupportsConfigurableUsersAndGroups(AuthorizerCapabilityDetection.isConfigurableUserGroupProvider(authorizer));
-            hasAnyConfigurationAccess = true;
-        } catch (AccessDeniedException e) {
-            lastAccessDeniedException = e;
-        }
-
-        if (!hasAnyConfigurationAccess) {
-            // If the user doesn't have access to any configuration, then throw the exception.
-            // Otherwise, return what they can access.
-            throw lastAccessDeniedException;
-        }
-
+        final RegistryConfiguration config = serviceFacade.getRegistryConfiguration();
         return Response.status(Response.Status.OK).entity(config).build();
     }
 }

@@ -27,8 +27,8 @@
         <module>nifi-registry-revision-api</module>
         <module>nifi-registry-revision-common</module>
         <module>nifi-registry-revision-spring-jdbc</module>
-	<module>nifi-registry-revision-entity-model</module>
-	<module>nifi-registry-revision-entity-service</module>
+	    <module>nifi-registry-revision-entity-model</module>
+	    <module>nifi-registry-revision-entity-service</module>
     </modules>
 
 </project>

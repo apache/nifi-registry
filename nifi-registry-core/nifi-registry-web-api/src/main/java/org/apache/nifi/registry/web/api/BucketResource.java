@@ -26,36 +26,29 @@ import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
-import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.security.authorization.resource.Authorizable;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.security.PermissionsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
+import org.apache.nifi.registry.revision.web.ClientIdParameter;
+import org.apache.nifi.registry.revision.web.LongParameter;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -67,30 +60,11 @@ import java.util.Set;
                 "Search for and retrieve existing buckets.",
         authorizations = { @Authorization("Authorization") }
 )
-public class BucketResource extends AuthorizableApplicationResource {
-
-    private static final Logger logger = LoggerFactory.getLogger(BucketResource.class);
-
-    @Context
-    UriInfo uriInfo;
-
-    private final LinkService linkService;
-
-    private final RegistryService registryService;
-
-    private final PermissionsService permissionsService;
+public class BucketResource extends ApplicationResource {
 
     @Autowired
-    public BucketResource(
-            final RegistryService registryService,
-            final LinkService linkService,
-            final PermissionsService permissionsService,
-            final AuthorizationService authorizationService,
-            final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
-        this.permissionsService = permissionsService;
+    public BucketResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     @POST
@@ -112,13 +86,9 @@ public class BucketResource extends AuthorizableApplicationResource {
     public Response createBucket(
             @ApiParam(value = "The bucket to create", required = true)
             final Bucket bucket) {
-        authorizeAccess(RequestAction.WRITE);
 
-        final Bucket createdBucket = registryService.createBucket(bucket);
+        final Bucket createdBucket = serviceFacade.createBucket(bucket);
         publish(EventFactory.bucketCreated(createdBucket));
-
-        permissionsService.populateBucketPermissions(createdBucket);
-        linkService.populateLinks(createdBucket);
         return Response.status(Response.Status.OK).entity(createdBucket).build();
     }
 
@@ -134,7 +104,7 @@ public class BucketResource extends AuthorizableApplicationResource {
     )
     @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getBuckets() {
-
+        // ServiceFacade will determine which buckets the user is authorized for
         // Note: We don't explicitly check for access to (READ, /buckets) because
         // a user might have access to individual buckets without top-level access.
         // For example, a user that has (READ, /buckets/bucket-id-1) but not access
@@ -142,18 +112,7 @@ public class BucketResource extends AuthorizableApplicationResource {
         // This has the side effect that a user with no access to any buckets
         // gets an empty array returned from this endpoint instead of 403 as one
         // might expect.
-
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
-        }
-
-        final List<Bucket> buckets = registryService.getBuckets(authorizedBucketIds);
-        permissionsService.populateBucketPermissions(buckets);
-        linkService.populateLinks(buckets);
-
+        final List<Bucket> buckets = serviceFacade.getBuckets();
         return Response.status(Response.Status.OK).entity(buckets).build();
     }
 
@@ -180,11 +139,7 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiParam("The bucket identifier")
             final String bucketId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-        final Bucket bucket = registryService.getBucket(bucketId);
-        permissionsService.populateBucketPermissions(bucket);
-        linkService.populateLinks(bucket);
-
+        final Bucket bucket = serviceFacade.getBucket(bucketId);
         return Response.status(Response.Status.OK).entity(bucket).build();
     }
 
@@ -211,9 +166,9 @@ public class BucketResource extends AuthorizableApplicationResource {
     public Response updateBucket(
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-            final String bucketId,
+                final String bucketId,
             @ApiParam(value = "The updated bucket", required = true)
-            final Bucket bucket) {
+                final Bucket bucket) {
 
         if (StringUtils.isBlank(bucketId)) {
             throw new BadRequestException("Bucket id cannot be blank");
@@ -229,13 +184,8 @@ public class BucketResource extends AuthorizableApplicationResource {
             bucket.setIdentifier(bucketId);
         }
 
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
-
-        final Bucket updatedBucket = registryService.updateBucket(bucket);
+        final Bucket updatedBucket = serviceFacade.updateBucket(bucket);
         publish(EventFactory.bucketUpdated(updatedBucket));
-
-        permissionsService.populateBucketPermissions(updatedBucket);
-        linkService.populateLinks(updatedBucket);
         return Response.status(Response.Status.OK).entity(updatedBucket).build();
     }
 
@@ -259,16 +209,23 @@ public class BucketResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404) })
     public Response deleteBucket(
+            @ApiParam(value = "The version is used to verify the client is working with the latest version of the entity.", required = true)
+            @QueryParam(VERSION)
+                final LongParameter version,
+            @ApiParam(value = "If the client id is not specified, new one will be generated. This value (whether specified or generated) is included in the response.")
+            @QueryParam(CLIENT_ID)
+            @DefaultValue(StringUtils.EMPTY)
+                final ClientIdParameter clientId,
             @PathParam("bucketId")
             @ApiParam("The bucket identifier")
-            final String bucketId) {
+                final String bucketId) {
 
         if (StringUtils.isBlank(bucketId)) {
             throw new BadRequestException("Bucket id cannot be blank");
         }
-        authorizeBucketAccess(RequestAction.DELETE, bucketId);
 
-        final Bucket deletedBucket = registryService.deleteBucket(bucketId);
+        final RevisionInfo revisionInfo = getRevisionInfo(version, clientId);
+        final Bucket deletedBucket = serviceFacade.deleteBucket(bucketId, revisionInfo);
         publish(EventFactory.bucketDeleted(deletedBucket));
 
         return Response.status(Response.Status.OK).entity(deletedBucket).build();
@@ -284,14 +241,9 @@ public class BucketResource extends AuthorizableApplicationResource {
             response = Fields.class
     )
     public Response getAvailableBucketFields() {
-        final Set<String> bucketFields = registryService.getBucketFields();
+        final Set<String> bucketFields = serviceFacade.getBucketFields();
         final Fields fields = new Fields(bucketFields);
         return Response.status(Response.Status.OK).entity(fields).build();
-    }
-
-    private void authorizeAccess(RequestAction actionType) throws AccessDeniedException {
-        final Authorizable bucketsAuthorizable = authorizableLookup.getBucketsAuthorizable();
-        authorizationService.authorize(bucketsAuthorizable, actionType);
     }
 
 }

@@ -30,11 +30,7 @@ import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleType;
 import org.apache.nifi.registry.extension.bundle.BundleTypeValues;
 import org.apache.nifi.registry.extension.bundle.BundleVersion;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.security.PermissionsService;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
@@ -61,25 +57,13 @@ import java.util.List;
         description = "Create extension bundles scoped to an existing bucket in the registry. ",
         authorizations = { @Authorization("Authorization") }
 )
-public class BucketBundleResource extends AuthorizableApplicationResource {
+public class BucketBundleResource extends ApplicationResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BucketBundleResource.class);
 
-    private final RegistryService registryService;
-    private final LinkService linkService;
-    private final PermissionsService permissionsService;
-
     @Autowired
-    public BucketBundleResource(
-            final RegistryService registryService,
-            final LinkService linkService,
-            final PermissionsService permissionsService,
-            final AuthorizationService authorizationService,
-            final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
-        this.permissionsService =permissionsService;
+    public BucketBundleResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     @POST
@@ -124,21 +108,13 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
             @FormDataParam("sha256")
                 final String clientSha256) throws IOException {
 
-        authorizeBucketAccess(RequestAction.WRITE, bucketId);
-
         LOGGER.debug("Creating extension bundle version for bundle type {}", new Object[]{bundleType});
 
-        final BundleVersion createdBundleVersion = registryService.createBundleVersion(
+        final BundleVersion createdBundleVersion = serviceFacade.createBundleVersion(
                 bucketId, bundleType, fileInputStream, clientSha256);
 
         publish(EventFactory.extensionBundleCreated(createdBundleVersion.getBundle()));
         publish(EventFactory.extensionBundleVersionCreated(createdBundleVersion));
-
-        linkService.populateLinks(createdBundleVersion.getVersionMetadata());
-        linkService.populateLinks(createdBundleVersion.getBundle());
-        linkService.populateLinks(createdBundleVersion.getBucket());
-
-        permissionsService.populateItemPermissions(createdBundleVersion.getBundle());
 
         return Response.status(Response.Status.OK).entity(createdBundleVersion).build();
     }
@@ -166,14 +142,9 @@ public class BucketBundleResource extends AuthorizableApplicationResource {
     public Response getExtensionBundles(
             @PathParam("bucketId")
             @ApiParam(value = "The bucket identifier", required = true)
-                final String bucketId
-    ) {
-        authorizeBucketAccess(RequestAction.READ, bucketId);
+                final String bucketId) {
 
-        final List<Bundle> bundles = registryService.getBundlesByBucket(bucketId);
-        permissionsService.populateItemPermissions(bundles);
-        linkService.populateLinks(bundles);
-
+        final List<Bundle> bundles = serviceFacade.getBundlesByBucket(bucketId);
         return Response.status(Response.Status.OK).entity(bundles).build();
     }
 

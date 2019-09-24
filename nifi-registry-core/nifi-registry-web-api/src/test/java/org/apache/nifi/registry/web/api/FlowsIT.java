@@ -21,6 +21,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -108,6 +109,7 @@ public class FlowsIT extends UnsecuredITBase {
 
     @Test
     public void testCreateFlowGetFlow() throws Exception {
+        final RevisionInfo initialRevision = new RevisionInfo("FlowsIT", 0L);
 
         // Given: an empty bucket with id "3" (see FlowsIT.sql)
 
@@ -120,6 +122,7 @@ public class FlowsIT extends UnsecuredITBase {
         flow.setBucketIdentifier(bucketId);
         flow.setName("Test Flow");
         flow.setDescription("This is a flow created by an integration test.");
+        flow.setRevision(initialRevision);
 
         final VersionedFlow createdFlow = client
                 .target(createURL("buckets/{bucketId}/flows"))
@@ -138,6 +141,9 @@ public class FlowsIT extends UnsecuredITBase {
         assertEquals(createdFlow.getCreatedTimestamp(), createdFlow.getModifiedTimestamp());
         assertNotNull(createdFlow.getLink());
         assertNotNull(createdFlow.getLink().getUri());
+        assertNotNull(createdFlow.getRevision());
+        assertEquals(initialRevision.getClientId(), createdFlow.getRevision().getClientId());
+        assertEquals(initialRevision.getVersion() + 1, createdFlow.getRevision().getVersion().longValue());
 
         // And when .../flows is queried, then the newly created flow is returned in the list
 
@@ -167,11 +173,15 @@ public class FlowsIT extends UnsecuredITBase {
                 .request()
                 .get(VersionedFlow.class);
         assertFlowsEqual(createdFlow, flowById, true);
+        assertNotNull(flowById.getRevision());
+        assertEquals(initialRevision.getClientId(), flowById.getRevision().getClientId());
+        assertEquals(initialRevision.getVersion() + 1, flowById.getRevision().getVersion().longValue());
 
     }
 
     @Test
     public void testUpdateFlow() throws Exception {
+        final RevisionInfo initialRevision = new RevisionInfo("FlowsIT", 0L);
 
         // Given: a flow exists on the server
 
@@ -180,6 +190,8 @@ public class FlowsIT extends UnsecuredITBase {
         flow.setBucketIdentifier(bucketId);
         flow.setName("Test Flow");
         flow.setDescription("This is a flow created by an integration test.");
+        flow.setRevision(initialRevision);
+
         final VersionedFlow createdFlow = client
                 .target(createURL("buckets/{bucketId}/flows"))
                 .resolveTemplate("bucketId", bucketId)
@@ -203,11 +215,11 @@ public class FlowsIT extends UnsecuredITBase {
         assertTrue(updatedFlow.getModifiedTimestamp() > createdFlow.getModifiedTimestamp());
         createdFlow.setModifiedTimestamp(updatedFlow.getModifiedTimestamp());
         assertFlowsEqual(createdFlow, updatedFlow, true);
-
     }
 
     @Test
-    public void testDeleteBucket() throws Exception {
+    public void testUpdateFlowWithIncorrectRevision() throws Exception {
+        final RevisionInfo initialRevision = new RevisionInfo("FlowsIT", 0L);
 
         // Given: a flow exists on the server
 
@@ -216,6 +228,47 @@ public class FlowsIT extends UnsecuredITBase {
         flow.setBucketIdentifier(bucketId);
         flow.setName("Test Flow");
         flow.setDescription("This is a flow created by an integration test.");
+        flow.setRevision(initialRevision);
+
+        final VersionedFlow createdFlow = client
+                .target(createURL("buckets/{bucketId}/flows"))
+                .resolveTemplate("bucketId", bucketId)
+                .request()
+                .post(Entity.entity(flow, MediaType.APPLICATION_JSON), VersionedFlow.class);
+
+        // When: the flow revision has no clientId and the incorrect version
+
+        createdFlow.setName("Renamed Flow");
+        createdFlow.setDescription("This flow has been updated by an integration test.");
+        createdFlow.getRevision().setClientId(null);
+        createdFlow.getRevision().setVersion(99L);
+
+        final Response response = client
+                .target(createURL("buckets/{bucketId}/flows/{flowId}"))
+                .resolveTemplate("bucketId", bucketId)
+                .resolveTemplate("flowId", createdFlow.getIdentifier())
+                .request()
+                .put(Entity.entity(createdFlow, MediaType.APPLICATION_JSON));
+
+        // Then: 400 bad request because of the incorrect version sent
+
+        assertEquals(400, response.getStatus());
+
+    }
+
+    @Test
+    public void testDeleteFlow() throws Exception {
+        final RevisionInfo initialRevision = new RevisionInfo("FlowsIT", 0L);
+
+        // Given: a flow exists on the server
+
+        final String bucketId = "3";
+        final VersionedFlow flow = new VersionedFlow();
+        flow.setBucketIdentifier(bucketId);
+        flow.setName("Test Flow");
+        flow.setDescription("This is a flow created by an integration test.");
+        flow.setRevision(initialRevision);
+
         final VersionedFlow createdFlow = client
                 .target(createURL("buckets/{bucketId}/flows"))
                 .resolveTemplate("bucketId", bucketId)
@@ -228,6 +281,7 @@ public class FlowsIT extends UnsecuredITBase {
                 .target(createURL("buckets/{bucketId}/flows/{flowId}"))
                 .resolveTemplate("bucketId", bucketId)
                 .resolveTemplate("flowId", createdFlow.getIdentifier())
+                .queryParam("version", createdFlow.getRevision().getVersion().longValue())
                 .request()
                 .delete(VersionedFlow.class);
 
@@ -245,6 +299,40 @@ public class FlowsIT extends UnsecuredITBase {
                 .get();
         assertEquals(404, response.getStatus());
 
+    }
+
+    @Test
+    public void testDeleteFlowWithIncorrectRevision() throws Exception {
+        final RevisionInfo initialRevision = new RevisionInfo("FlowsIT", 0L);
+
+        // Given: a flow exists on the server
+
+        final String bucketId = "3";
+        final VersionedFlow flow = new VersionedFlow();
+        flow.setBucketIdentifier(bucketId);
+        flow.setName("Test Flow");
+        flow.setDescription("This is a flow created by an integration test.");
+        flow.setRevision(initialRevision);
+
+        final VersionedFlow createdFlow = client
+                .target(createURL("buckets/{bucketId}/flows"))
+                .resolveTemplate("bucketId", bucketId)
+                .request()
+                .post(Entity.entity(flow, MediaType.APPLICATION_JSON), VersionedFlow.class);
+
+        // When: the flow is deleted
+
+        final Response response = client
+                .target(createURL("buckets/{bucketId}/flows/{flowId}"))
+                .resolveTemplate("bucketId", bucketId)
+                .resolveTemplate("flowId", createdFlow.getIdentifier())
+                .queryParam("version", 99L)
+                .request()
+                .delete();
+
+        // Then: 400 bad request because of the incorrect version sent
+
+        assertEquals(400, response.getStatus());
     }
 
     @Test
@@ -312,6 +400,7 @@ public class FlowsIT extends UnsecuredITBase {
 
     @Test
     public void testCreateFlowVersionGetFlowVersion() throws Exception {
+        final RevisionInfo initialRevision = new RevisionInfo("FlowsIT", 0L);
 
         // Given: an empty Bucket "3" (see FlowsIT.sql) with a newly created flow
 
@@ -321,6 +410,8 @@ public class FlowsIT extends UnsecuredITBase {
         flow.setBucketIdentifier(bucketId);
         flow.setName("Test Flow for creating snapshots");
         flow.setDescription("This is a randomly named flow created by an integration test for the purpose of holding snapshots.");
+        flow.setRevision(initialRevision);
+
         final VersionedFlow createdFlow = client
                 .target(createURL("buckets/{bucketId}/flows"))
                 .resolveTemplate("bucketId", bucketId)
@@ -422,6 +513,7 @@ public class FlowsIT extends UnsecuredITBase {
         flow.setBucketIdentifier(bucketId);
         flow.setName(flowName);
         flow.setDescription("This is a flow created by an integration test.");
+        flow.setRevision(new RevisionInfo("FlowsIT", 0L));
 
         // saving this flow to bucket 3 should work because bucket 3 is empty
 

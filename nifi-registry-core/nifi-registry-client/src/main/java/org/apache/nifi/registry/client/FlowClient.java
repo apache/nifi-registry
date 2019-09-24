@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import java.io.IOException;
 import java.util.List;
@@ -79,11 +80,12 @@ public interface FlowClient {
      *
      * @param bucketId a bucket id
      * @param flowId the id of the flow to delete
+     * @param revision the revision information for the entity being deleted
      * @return the deleted flow
      * @throws NiFiRegistryException if an error is encountered other than IOException
      * @throws IOException if an I/O error is encountered
      */
-    VersionedFlow delete(String bucketId, String flowId) throws NiFiRegistryException, IOException;
+    VersionedFlow delete(String bucketId, String flowId, RevisionInfo revision) throws NiFiRegistryException, IOException;
 
     /**
      * Gets the field info for flows.
