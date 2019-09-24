@@ -24,18 +24,12 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.security.authorization.exception.AccessDeniedException;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.security.PermissionsService;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,22 +50,11 @@ import java.util.SortedSet;
         description = "Gets metadata about flows.",
         authorizations = { @Authorization("Authorization") }
 )
-public class FlowResource extends AuthorizableApplicationResource {
-
-    private final RegistryService registryService;
-    private final LinkService linkService;
-    private final PermissionsService permissionsService;
+public class FlowResource extends ApplicationResource {
 
     @Autowired
-    public FlowResource(final RegistryService registryService,
-                        final LinkService linkService,
-                        final PermissionsService permissionsService,
-                        final AuthorizationService authorizationService,
-                        final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
-        this.permissionsService = permissionsService;
+    public FlowResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     @GET
@@ -84,7 +67,7 @@ public class FlowResource extends AuthorizableApplicationResource {
             response = Fields.class
     )
     public Response getAvailableFlowFields() {
-        final Set<String> flowFields = registryService.getFlowFields();
+        final Set<String> flowFields = serviceFacade.getFlowFields();
         final Fields fields = new Fields(flowFields);
         return Response.status(Response.Status.OK).entity(fields).build();
     }
@@ -113,20 +96,9 @@ public class FlowResource extends AuthorizableApplicationResource {
     public Response getFlow(
             @PathParam("flowId")
             @ApiParam("The flow identifier")
-            final String flowId) {
+                final String flowId) {
 
-        final VersionedFlow flow = registryService.getFlow(flowId);
-
-        // this should never happen, but if somehow the back-end didn't populate the bucket id let's make sure the flow isn't returned
-        if (StringUtils.isBlank(flow.getBucketIdentifier())) {
-            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
-        }
-
-        authorizeBucketAccess(RequestAction.READ, flow.getBucketIdentifier());
-
-        permissionsService.populateItemPermissions(flow);
-        linkService.populateLinks(flow);
-
+        final VersionedFlow flow = serviceFacade.getFlow(flowId);
         return Response.status(Response.Status.OK).entity(flow).build();
     }
 
@@ -154,22 +126,9 @@ public class FlowResource extends AuthorizableApplicationResource {
     public Response getFlowVersions(
             @PathParam("flowId")
             @ApiParam("The flow identifier")
-            final String flowId) {
+                final String flowId) {
 
-        final VersionedFlow flow = registryService.getFlow(flowId);
-
-        final String bucketId = flow.getBucketIdentifier();
-        if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
-        }
-
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = registryService.getFlowSnapshots(bucketId, flowId);
-        if (snapshots != null ) {
-            linkService.populateLinks(snapshots);
-        }
-
+        final SortedSet<VersionedFlowSnapshotMetadata> snapshots = serviceFacade.getFlowSnapshots(flowId);
         return Response.status(Response.Status.OK).entity(snapshots).build();
     }
 
@@ -197,22 +156,12 @@ public class FlowResource extends AuthorizableApplicationResource {
     public Response getFlowVersion(
             @PathParam("flowId")
             @ApiParam("The flow identifier")
-            final String flowId,
+                final String flowId,
             @PathParam("versionNumber")
             @ApiParam("The version number")
-            final Integer versionNumber) {
+                final Integer versionNumber) {
 
-        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(flowId);
-
-        final String bucketId = latestMetadata.getBucketIdentifier();
-        if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
-        }
-
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final VersionedFlowSnapshot snapshot = registryService.getFlowSnapshot(bucketId, flowId, versionNumber);
-        populateLinksAndPermissions(snapshot);
+        final VersionedFlowSnapshot snapshot = serviceFacade.getFlowSnapshot(flowId, versionNumber);
         return Response.status(Response.Status.OK).entity(snapshot).build();
     }
 
@@ -239,20 +188,9 @@ public class FlowResource extends AuthorizableApplicationResource {
     public Response getLatestFlowVersion(
             @PathParam("flowId")
             @ApiParam("The flow identifier")
-            final String flowId) {
+                final String flowId) {
 
-        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(flowId);
-
-        final String bucketId = latestMetadata.getBucketIdentifier();
-        if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
-        }
-
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketId, flowId, latestMetadata.getVersion());
-        populateLinksAndPermissions(lastSnapshot);
-
+        final VersionedFlowSnapshot lastSnapshot = serviceFacade.getLatestFlowSnapshot(flowId);
         return Response.status(Response.Status.OK).entity(lastSnapshot).build();
     }
 
@@ -279,43 +217,10 @@ public class FlowResource extends AuthorizableApplicationResource {
     public Response getLatestFlowVersionMetadata(
             @PathParam("flowId")
             @ApiParam("The flow identifier")
-            final String flowId) {
+                final String flowId) {
 
-        final VersionedFlowSnapshotMetadata latestMetadata = registryService.getLatestFlowSnapshotMetadata(flowId);
-
-        final String bucketId = latestMetadata.getBucketIdentifier();
-        if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalStateException("Unable to authorize access because bucket identifier is null or blank");
-        }
-
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        linkService.populateLinks(latestMetadata);
+        final VersionedFlowSnapshotMetadata latestMetadata = serviceFacade.getLatestFlowSnapshotMetadata(flowId);
         return Response.status(Response.Status.OK).entity(latestMetadata).build();
     }
 
-    // override the base implementation so we can provide a different error message that doesn't include the bucket id
-    protected void authorizeBucketAccess(RequestAction action, String bucketId) {
-        try {
-            super.authorizeBucketAccess(RequestAction.READ, bucketId);
-        } catch (AccessDeniedException e) {
-            throw new AccessDeniedException("User not authorized to view the specified flow.", e);
-        }
-    }
-
-    private void populateLinksAndPermissions(VersionedFlowSnapshot snapshot) {
-        if (snapshot.getSnapshotMetadata() != null) {
-            linkService.populateLinks(snapshot.getSnapshotMetadata());
-        }
-
-        if (snapshot.getFlow() != null) {
-            linkService.populateLinks(snapshot.getFlow());
-        }
-
-        if (snapshot.getBucket() != null) {
-            permissionsService.populateBucketPermissions(snapshot.getBucket());
-            linkService.populateLinks(snapshot.getBucket());
-        }
-
-    }
 }

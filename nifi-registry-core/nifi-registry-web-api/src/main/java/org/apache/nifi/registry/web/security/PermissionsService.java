@@ -16,9 +16,9 @@
  */
 package org.apache.nifi.registry.web.security;
 
+import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.bucket.BucketItem;
-import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.security.authorization.AuthorizableLookup;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.service.AuthorizationService;
@@ -64,29 +64,24 @@ public class PermissionsService {
     }
 
     private void populateBucketPermissions(final Bucket bucket, final Permissions knownPermissions) {
-
         if (bucket == null) {
             return;
         }
 
         Permissions bucketPermissions = createPermissionsForBucketId(bucket.getIdentifier(), knownPermissions);
         bucket.setPermissions(bucketPermissions);
-
     }
 
     private void populateItemPermissions(final BucketItem bucketItem, final Permissions knownPermissions) {
-
         if (bucketItem == null) {
             return;
         }
 
         Permissions bucketItemPermissions = createPermissionsForBucketId(bucketItem.getBucketIdentifier(), knownPermissions);
         bucketItem.setPermissions(bucketItemPermissions);
-
     }
 
     private Permissions createPermissionsForBucketId(String bucketId, final Permissions knownPermissions) {
-
         Authorizable bucketResource = authorizableLookup.getBucketAuthorizable(bucketId);
 
         Permissions permissions = knownPermissions == null
@@ -94,7 +89,6 @@ public class PermissionsService {
                 : authorizationService.getPermissionsForResource(bucketResource, knownPermissions);
 
         return permissions;
-
     }
 
 }

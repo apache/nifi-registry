@@ -31,10 +31,7 @@ import org.apache.nifi.registry.extension.component.ExtensionMetadataContainer;
 import org.apache.nifi.registry.extension.component.TagCount;
 import org.apache.nifi.registry.extension.component.manifest.ExtensionType;
 import org.apache.nifi.registry.extension.component.manifest.ProvidedServiceAPI;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.Consumes;
@@ -44,7 +41,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import java.util.SortedSet;
@@ -56,18 +52,10 @@ import java.util.SortedSet;
         description = "Find and retrieve extensions. ",
         authorizations = { @Authorization("Authorization") }
 )
-public class ExtensionResource extends AuthorizableApplicationResource {
+public class ExtensionResource extends ApplicationResource {
 
-    private final RegistryService registryService;
-    private final LinkService linkService;
-
-    public ExtensionResource(final AuthorizationService authorizationService,
-                             final EventService eventService,
-                             final RegistryService registryService,
-                             final LinkService linkService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
+    public ExtensionResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
     @GET
@@ -98,20 +86,13 @@ public class ExtensionResource extends AuthorizableApplicationResource {
                 final Set<String> tags
             ) {
 
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
-        }
-
         final ExtensionFilterParams filterParams = new ExtensionFilterParams.Builder()
                 .bundleType(bundleType)
                 .extensionType(extensionType)
                 .addTags(tags == null ? Collections.emptyList() : tags)
                 .build();
 
-        final SortedSet<ExtensionMetadata> extensionMetadata = registryService.getExtensionMetadata(authorizedBucketIds, filterParams);
-        linkService.populateLinks(extensionMetadata);
+        final SortedSet<ExtensionMetadata> extensionMetadata = serviceFacade.getExtensionMetadata(filterParams);
 
         final ExtensionMetadataContainer container = new ExtensionMetadataContainer();
         container.setExtensions(extensionMetadata);
@@ -152,21 +133,13 @@ public class ExtensionResource extends AuthorizableApplicationResource {
             @ApiParam(value = "The version of the bundle containing the service API class", required = true)
                 final String version
     ) {
-
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<>()).build();
-        }
-
         final ProvidedServiceAPI serviceAPI = new ProvidedServiceAPI();
         serviceAPI.setClassName(className);
         serviceAPI.setGroupId(groupId);
         serviceAPI.setArtifactId(artifactId);
         serviceAPI.setVersion(version);
 
-        final SortedSet<ExtensionMetadata> extensionMetadata = registryService.getExtensionMetadata(authorizedBucketIds, serviceAPI);
-        linkService.populateLinks(extensionMetadata);
+        final SortedSet<ExtensionMetadata> extensionMetadata = serviceFacade.getExtensionMetadata(serviceAPI);
 
         final ExtensionMetadataContainer container = new ExtensionMetadataContainer();
         container.setExtensions(extensionMetadata);
@@ -193,7 +166,7 @@ public class ExtensionResource extends AuthorizableApplicationResource {
             @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
             @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
     public Response getTags() {
-        final SortedSet<TagCount> tags = registryService.getExtensionTags();
+        final SortedSet<TagCount> tags = serviceFacade.getExtensionTags();
         return Response.status(Response.Status.OK).entity(tags).build();
     }
 

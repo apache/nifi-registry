@@ -26,6 +26,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,16 +83,20 @@ public class DBFlowStorageIT extends IntegrationTestBase {
 
     @Test
     public void testAll() throws IOException, NiFiRegistryException {
+        final RevisionInfo initialRevision = new RevisionInfo("DBFlowStorageIT", 0L);
+
         // Create two buckets...
 
         final Bucket b1 = new Bucket();
         b1.setName("b1");
+        b1.setRevision(initialRevision);
 
         final Bucket createdB1 = client.getBucketClient().create(b1);
         assertNotNull(createdB1);
 
         final Bucket b2 = new Bucket();
         b2.setName("b2");
+        b2.setRevision(initialRevision);
 
         final Bucket createdB2 = client.getBucketClient().create(b2);
         assertNotNull(createdB2);
@@ -101,6 +106,7 @@ public class DBFlowStorageIT extends IntegrationTestBase {
         final VersionedFlow f1 = new VersionedFlow();
         f1.setName("f1");
         f1.setBucketIdentifier(createdB1.getIdentifier());
+        f1.setRevision(initialRevision);
 
         final VersionedFlow createdF1 = client.getFlowClient().create(f1);
         assertNotNull(createdF1);
@@ -108,6 +114,7 @@ public class DBFlowStorageIT extends IntegrationTestBase {
         final VersionedFlow f2 = new VersionedFlow();
         f2.setName("f2");
         f2.setBucketIdentifier(createdB2.getIdentifier());
+        f2.setRevision(initialRevision);
 
         final VersionedFlow createdF2 = client.getFlowClient().create(f2);
         assertNotNull(createdF2);
@@ -144,7 +151,7 @@ public class DBFlowStorageIT extends IntegrationTestBase {
 
         // Verify deleting a flow...
 
-        client.getFlowClient().delete(createdB1.getIdentifier(), createdF1.getIdentifier());
+        client.getFlowClient().delete(createdB1.getIdentifier(), createdF1.getIdentifier(), createdF1.getRevision());
 
         // All versions of f1 should be deleted
         try {

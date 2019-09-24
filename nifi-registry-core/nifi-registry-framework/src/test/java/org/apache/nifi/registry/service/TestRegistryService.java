@@ -34,8 +34,6 @@ import org.apache.nifi.registry.flow.VersionedProcessor;
 import org.apache.nifi.registry.serialization.FlowContent;
 import org.apache.nifi.registry.serialization.FlowContentSerializer;
 import org.apache.nifi.registry.service.alias.RegistryUrlAliasService;
-import org.apache.nifi.registry.service.extension.ExtensionService;
-import org.apache.nifi.registry.service.extension.StandardExtensionService;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +76,6 @@ public class TestRegistryService {
     private FlowPersistenceProvider flowPersistenceProvider;
     private BundlePersistenceProvider bundlePersistenceProvider;
     private FlowContentSerializer flowContentSerializer;
-    private ExtensionService extensionService;
     private Validator validator;
     private RegistryUrlAliasService registryUrlAliasService;
 
@@ -90,14 +87,13 @@ public class TestRegistryService {
         flowPersistenceProvider = mock(FlowPersistenceProvider.class);
         bundlePersistenceProvider = mock(BundlePersistenceProvider.class);
         flowContentSerializer = mock(FlowContentSerializer.class);
-        extensionService = mock(StandardExtensionService.class);
         registryUrlAliasService = mock(RegistryUrlAliasService.class);
 
         final ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
         validator = validatorFactory.getValidator();
 
         registryService = new RegistryService(metadataService, flowPersistenceProvider, bundlePersistenceProvider,
-                flowContentSerializer, extensionService, validator, registryUrlAliasService);
+                flowContentSerializer, validator, registryUrlAliasService);
     }
 
     // ---------------------- Test Bucket methods ---------------------------------------------
@@ -105,6 +101,7 @@ public class TestRegistryService {
     @Test
     public void testCreateBucketValid() {
         final Bucket bucket = new Bucket();
+        bucket.setIdentifier("1");
         bucket.setName("My Bucket");
         bucket.setDescription("This is my bucket.");
 
@@ -117,6 +114,7 @@ public class TestRegistryService {
         assertNotNull(createdBucket.getIdentifier());
         assertNotNull(createdBucket.getCreatedTimestamp());
 
+        assertEquals(bucket.getIdentifier(), createdBucket.getIdentifier());
         assertEquals(bucket.getName(), createdBucket.getName());
         assertEquals(bucket.getDescription(), createdBucket.getDescription());
     }
@@ -124,6 +122,7 @@ public class TestRegistryService {
     @Test(expected = IllegalStateException.class)
     public void testCreateBucketWithSameName() {
         final Bucket bucket = new Bucket();
+        bucket.setIdentifier("b2");
         bucket.setName("My Bucket");
         bucket.setDescription("This is my bucket.");
 
@@ -313,6 +312,7 @@ public class TestRegistryService {
         when(metadataService.getBucketById(any(String.class))).thenReturn(null);
 
         final VersionedFlow versionedFlow = new VersionedFlow();
+        versionedFlow.setIdentifier("f1");
         versionedFlow.setName("My Flow");
         versionedFlow.setBucketIdentifier("b1");
 
@@ -341,6 +341,7 @@ public class TestRegistryService {
         when(metadataService.getFlowsByName(existingBucket.getId(), flowWithSameName.getName())).thenReturn(Collections.singletonList(flowWithSameName));
 
         final VersionedFlow versionedFlow = new VersionedFlow();
+        versionedFlow.setIdentifier("flow2");
         versionedFlow.setName(flowWithSameName.getName());
         versionedFlow.setBucketIdentifier("b1");
 
@@ -358,6 +359,7 @@ public class TestRegistryService {
         when(metadataService.getBucketById(existingBucket.getId())).thenReturn(existingBucket);
 
         final VersionedFlow versionedFlow = new VersionedFlow();
+        versionedFlow.setIdentifier("f1");
         versionedFlow.setName("My Flow");
         versionedFlow.setBucketIdentifier("b1");
 
@@ -368,6 +370,7 @@ public class TestRegistryService {
         assertNotNull(createdFlow.getIdentifier());
         assertTrue(createdFlow.getCreatedTimestamp() > 0);
         assertTrue(createdFlow.getModifiedTimestamp() > 0);
+        assertEquals(versionedFlow.getIdentifier(), createdFlow.getIdentifier());
         assertEquals(versionedFlow.getName(), createdFlow.getName());
         assertEquals(versionedFlow.getBucketIdentifier(), createdFlow.getBucketIdentifier());
         assertEquals(versionedFlow.getDescription(), createdFlow.getDescription());

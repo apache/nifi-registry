@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.web.security;
 
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
+import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.service.AuthorizationService;
 import org.apache.nifi.registry.web.security.authentication.AnonymousIdentityFilter;
@@ -62,6 +63,9 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AuthorizationService authorizationService;
+
+    @Autowired
+    private Authorizer authorizer;
 
     private AnonymousIdentityFilter anonymousAuthenticationFilter = new AnonymousIdentityFilter();
 
@@ -142,7 +146,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider x509AuthenticationProvider() {
         if (x509AuthenticationProvider == null) {
-            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizationService.getAuthorizer(), x509IdentityProvider);
+            x509AuthenticationProvider = new X509IdentityAuthenticationProvider(properties, authorizer, x509IdentityProvider);
         }
         return x509AuthenticationProvider;
     }
@@ -156,7 +160,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     private IdentityAuthenticationProvider jwtAuthenticationProvider() {
         if (jwtAuthenticationProvider == null) {
-            jwtAuthenticationProvider = new IdentityAuthenticationProvider(properties, authorizationService.getAuthorizer(), jwtIdentityProvider);
+            jwtAuthenticationProvider = new IdentityAuthenticationProvider(properties, authorizer, jwtIdentityProvider);
         }
         return jwtAuthenticationProvider;
     }

@@ -22,6 +22,7 @@ import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -138,7 +139,8 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
     }
 
     @Override
-    public VersionedFlow delete(final String bucketId, final String flowId) throws NiFiRegistryException, IOException {
+    public VersionedFlow delete(final String bucketId, final String flowId, final RevisionInfo revision)
+            throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket Identifier cannot be blank");
         }
@@ -147,11 +149,17 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
             throw new IllegalArgumentException("Flow Identifier cannot be blank");
         }
 
+        if (revision == null) {
+            throw new IllegalArgumentException("RevisionInfo cannot be null");
+        }
+
         return executeAction("Error deleting flow", () -> {
-            final WebTarget target = bucketFlowsTarget
+            WebTarget target = bucketFlowsTarget
                     .path("/{flowId}")
                     .resolveTemplate("bucketId", bucketId)
                     .resolveTemplate("flowId", flowId);
+
+            target = addRevisionQueryParams(target, revision);
 
             return getRequestBuilder(target).delete(VersionedFlow.class);
         });

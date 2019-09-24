@@ -32,6 +32,7 @@ import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
 import org.apache.nifi.registry.authorization.CurrentUser;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -105,23 +106,28 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         final Bucket bucket = new Bucket();
         bucket.setName("Bucket 1 " + System.currentTimeMillis());
         bucket.setDescription("This is bucket 1");
+        bucket.setRevision(new RevisionInfo(null, 0L));
 
         final BucketClient bucketClient = client.getBucketClient();
         final Bucket createdBucket = bucketClient.create(bucket);
         Assert.assertNotNull(createdBucket);
         Assert.assertNotNull(createdBucket.getIdentifier());
+        Assert.assertNotNull(createdBucket.getRevision());
 
         final List<Bucket> buckets = bucketClient.getAll();
         Assert.assertEquals(4, buckets.size());
+        buckets.forEach(b -> Assert.assertNotNull(b.getRevision()));
 
         final VersionedFlow flow = new VersionedFlow();
         flow.setBucketIdentifier(createdBucket.getIdentifier());
         flow.setName("Flow 1 - " + System.currentTimeMillis());
+        flow.setRevision(new RevisionInfo(null, 0L));
 
         final FlowClient flowClient = client.getFlowClient();
         final VersionedFlow createdFlow = flowClient.create(flow);
         Assert.assertNotNull(createdFlow);
         Assert.assertNotNull(createdFlow.getIdentifier());
+        Assert.assertNotNull(createdFlow.getRevision());
 
         final VersionedFlowSnapshotMetadata snapshotMetadata = new VersionedFlowSnapshotMetadata();
         snapshotMetadata.setBucketIdentifier(createdFlow.getBucketIdentifier());
@@ -160,6 +166,7 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         final Bucket bucket = new Bucket();
         bucket.setName("Bucket 1");
         bucket.setDescription("This is bucket 1");
+        bucket.setRevision(new RevisionInfo(null, 0L));
 
         try {
             bucketClient.create(bucket);

@@ -20,9 +20,12 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.bucket.BucketItemType;
+import org.apache.nifi.registry.revision.entity.RevisableEntity;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.validation.constraints.Min;
 import javax.xml.bind.annotation.XmlRootElement;
+import java.util.Objects;
 
 /**
  * <p>
@@ -35,10 +38,12 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @ApiModel
-public class VersionedFlow extends BucketItem {
+public class VersionedFlow extends BucketItem implements RevisableEntity {
 
     @Min(0)
     private long versionCount;
+
+    private RevisionInfo revision;
 
     public VersionedFlow() {
         super(BucketItemType.Flow);
@@ -51,6 +56,25 @@ public class VersionedFlow extends BucketItem {
 
     public void setVersionCount(long versionCount) {
         this.versionCount = versionCount;
+    }
+
+    @ApiModelProperty(
+            value = "The revision of this entity used for optimistic-locking during updates.",
+            readOnly = true
+    )
+    @Override
+    public RevisionInfo getRevision() {
+        return revision;
+    }
+
+    @Override
+    public void setRevision(RevisionInfo revision) {
+        this.revision = revision;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.getIdentifier());
     }
 
 }

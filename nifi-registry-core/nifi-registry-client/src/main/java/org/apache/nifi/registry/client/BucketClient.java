@@ -18,6 +18,7 @@ package org.apache.nifi.registry.client;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import java.io.IOException;
 import java.util.List;
@@ -55,9 +56,10 @@ public interface BucketClient {
      * Deletes the bucket with the given id.
      *
      * @param bucketId the id of the bucket to delete
+     * @param revision the revision info for the bucket being deleted
      * @return the deleted bucket
      */
-    Bucket delete(String bucketId) throws NiFiRegistryException, IOException;
+    Bucket delete(String bucketId, RevisionInfo revision) throws NiFiRegistryException, IOException;
 
     /**
      * Gets the fields that can be used to sort/search buckets.

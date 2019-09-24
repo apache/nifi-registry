@@ -19,23 +19,28 @@ package org.apache.nifi.registry.authorization;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.nifi.registry.revision.entity.RevisableEntity;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 /**
  * Access policy summary of which actions ("read', "write", "delete") are allowable for a specified web resource.
  */
 @ApiModel
-public class AccessPolicySummary {
+public class AccessPolicySummary implements RevisableEntity {
 
     private String identifier;
     private String resource;
     private String action;
     private Boolean configurable;
+    private RevisionInfo revision;
 
     @ApiModelProperty(value = "The id of the policy. Set by server at creation time.", readOnly = true)
+    @Override
     public String getIdentifier() {
         return identifier;
     }
 
+    @Override
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
     }
@@ -71,4 +76,19 @@ public class AccessPolicySummary {
     public void setConfigurable(Boolean configurable) {
         this.configurable = configurable;
     }
+
+    @ApiModelProperty(
+            value = "The revision of this entity used for optimistic-locking during updates.",
+            readOnly = true
+    )
+    @Override
+    public RevisionInfo getRevision() {
+        return revision;
+    }
+
+    @Override
+    public void setRevision(RevisionInfo revision) {
+        this.revision = revision;
+    }
+
 }

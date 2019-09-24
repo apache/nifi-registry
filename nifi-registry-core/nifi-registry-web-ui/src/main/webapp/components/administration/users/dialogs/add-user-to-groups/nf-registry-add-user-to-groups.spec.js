@@ -21,12 +21,13 @@ import NfRegistryAddUserToGroups
     from 'components/administration/users/dialogs/add-user-to-groups/nf-registry-add-user-to-groups';
 import { of } from 'rxjs';
 import { TdDataTableService } from '@covalent/core/data-table';
-import { FdsSnackBarService } from '@nifi-fds/core';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 
 describe('NfRegistryAddUserToGroups Component isolated unit tests', function () {
     var comp;
     var nfRegistryService;
     var nfRegistryApi;
+    var dialogService;
     var snackBarService;
     var dataTableService;
 
@@ -37,14 +38,17 @@ describe('NfRegistryAddUserToGroups Component isolated unit tests', function () 
         nfRegistryService.groups = [{identifier: 1, identity: 'Group 1', configurable: true, checked: true, users: []}];
 
         nfRegistryApi = new NfRegistryApi();
+        dialogService = new FdsDialogService();
         snackBarService = new FdsSnackBarService();
         dataTableService = new TdDataTableService();
         comp = new NfRegistryAddUserToGroups(nfRegistryApi, dataTableService, nfRegistryService, {
             close: function () {
             }
-        }, snackBarService, {user: nfRegistryService.user});
+        }, dialogService, snackBarService, {user: nfRegistryService.user});
 
         // Spy
+        spyOn(nfRegistryApi, 'getUserGroups').and.callFake(function () {
+        }).and.returnValue(of([{identifier: 1, identity: 'Group 1', configurable: true, checked: true, users: []}]));
         spyOn(nfRegistryApi, 'getUserGroup').and.callFake(function () {
         }).and.returnValue(of({identifier: 1, identity: 'Group 1'}));
         spyOn(nfRegistryApi, 'updateUserGroup').and.callFake(function () {

@@ -18,10 +18,9 @@
 import { TdDataTableService } from '@covalent/core/data-table';
 import NfRegistryApi from 'services/nf-registry.api';
 import { Component } from '@angular/core';
-import { FdsSnackBarService } from '@nifi-fds/core';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
-import $ from 'jquery';
 
 /**
  * NfRegistryAddUsersToGroup constructor.
@@ -31,13 +30,15 @@ import $ from 'jquery';
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
  * @param fdsSnackBarService    The FDS snack bar service module.
+ * @param fdsDialogService      The FDS dialog service.
  * @param data                  The data passed into this component.
  * @constructor
  */
-function NfRegistryAddUsersToGroup(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService, data) {
+function NfRegistryAddUsersToGroup(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsDialogService, fdsSnackBarService, data) {
     //  Services
     this.dataTableService = tdDataTableService;
     this.snackBarService = fdsSnackBarService;
+    this.dialogService = fdsDialogService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
@@ -45,7 +46,7 @@ function NfRegistryAddUsersToGroup(nfRegistryApi, tdDataTableService, nfRegistry
 
     // local state
     //make an independent copy of the users for sorting and selecting within the scope of this component
-    this.users = $.extend(true, [], this.nfRegistryService.users);
+    this.users = [];
     this.filteredUsers = [];
     this.isAddSelectedUsersToGroupDisabled = true;
     this.usersSearchTerms = [];
@@ -70,15 +71,29 @@ NfRegistryAddUsersToGroup.prototype = {
     ngOnInit: function () {
         var self = this;
 
-        this.data.group.users.forEach(function (groupUser) {
-            self.users = self.users.filter(function (user) {
-                return (user.identifier !== groupUser.identifier);
-            });
-        });
+        // retrieve the fresh list of users
+        self.nfRegistryApi.getUsers().subscribe(function (response) {
+            if (!response.status || response.status === 200) {
+                self.users = response;
 
-        this.filterUsers();
-        this.deselectAllUsers();
-        this.determineAllUsersSelectedState();
+                self.data.group.users.forEach(function (groupUser) {
+                    self.users = self.users.filter(function (user) {
+                        return (user.identifier !== groupUser.identifier);
+                    });
+                });
+
+                self.filterUsers();
+                self.deselectAllUsers();
+                self.determineAllUsersSelectedState();
+            } else {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Close',
+                    acceptButtonColor: 'fds-warn'
+                });
+            }
+        });
     },
 
     /**
@@ -208,17 +223,26 @@ NfRegistryAddUsersToGroup.prototype = {
         }).forEach(function (filteredUser) {
             self.data.group.users.push(filteredUser);
         });
-        this.nfRegistryApi.updateUserGroup(self.data.group.identifier, self.data.group.identity, self.data.group.users).subscribe(function (group) {
+        this.nfRegistryApi.updateUserGroup(self.data.group.identifier, self.data.group.identity, self.data.group.users, self.data.group.revision).subscribe(function (response) {
             self.dialogRef.close();
-            self.snackBarService.openCoaster({
-                title: 'Success',
-                message: 'Selected users have been added to the ' + self.data.group.identity + ' group.',
-                verticalPosition: 'bottom',
-                horizontalPosition: 'right',
-                icon: 'fa fa-check-circle-o',
-                color: '#1EB475',
-                duration: 3000
-            });
+            if (!response.status || response.status === 200) {
+                self.snackBarService.openCoaster({
+                    title: 'Success',
+                    message: 'Selected users have been added to the ' + self.data.group.identity + ' group.',
+                    verticalPosition: 'bottom',
+                    horizontalPosition: 'right',
+                    icon: 'fa fa-check-circle-o',
+                    color: '#1EB475',
+                    duration: 3000
+                });
+            } else {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Close',
+                    acceptButtonColor: 'fds-warn'
+                });
+            }
         });
     },
 
@@ -241,6 +265,7 @@ NfRegistryAddUsersToGroup.parameters = [
     TdDataTableService,
     NfRegistryService,
     MatDialogRef,
+    FdsDialogService,
     FdsSnackBarService,
     MAT_DIALOG_DATA
 ];

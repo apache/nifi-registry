@@ -21,6 +21,7 @@ import org.apache.nifi.registry.authorization.ResourcePermissions;
 import org.apache.nifi.registry.authorization.Tenant;
 import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -32,6 +33,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -108,8 +111,13 @@ public class SecureFileIT extends IntegrationTestBase {
 
         // Given: the server has been configured with FileUserGroupProvider, which is configurable,
         //   and: the initial admin client wants to create a tenant
+        Long initialVersion = new Long(0);
+        String clientId = UUID.randomUUID().toString();
+        RevisionInfo revisionInfo = new RevisionInfo(clientId, initialVersion);
+
         Tenant tenant = new Tenant();
         tenant.setIdentity("New User");
+        tenant.setRevision(revisionInfo);
 
         // When: the POST /tenants/users endpoint is accessed
         final Response createUserResponse = client
@@ -121,6 +129,9 @@ public class SecureFileIT extends IntegrationTestBase {
         assertEquals(201, createUserResponse.getStatus());
         User actualUser = createUserResponse.readEntity(User.class);
         assertNotNull(actualUser.getIdentifier());
+        assertNotNull(actualUser.getRevision());
+        assertNotNull(actualUser.getRevision().getVersion());
+
         try {
             assertEquals(tenant.getIdentity(), actualUser.getIdentity());
             assertEquals(true, actualUser.getConfigurable());
@@ -129,7 +140,8 @@ public class SecureFileIT extends IntegrationTestBase {
             assertEquals(new ResourcePermissions(), actualUser.getResourcePermissions());
         } finally {
             // cleanup user for other tests
-            client.target(createURL("tenants/users/" + actualUser.getIdentifier()))
+            final long version = actualUser.getRevision().getVersion();
+            client.target(createURL("tenants/users/" + actualUser.getIdentifier() + "?version=" + version))
                     .request()
                     .delete();
         }
@@ -141,8 +153,13 @@ public class SecureFileIT extends IntegrationTestBase {
 
         // Given: the server has been configured with FileUserGroupProvider, which is configurable,
         //   and: the initial admin client wants to create a tenant
+        Long initialVersion = new Long(0);
+        String clientId = UUID.randomUUID().toString();
+        RevisionInfo revisionInfo = new RevisionInfo(clientId, initialVersion);
+
         Tenant tenant = new Tenant();
         tenant.setIdentity("New Group");
+        tenant.setRevision(revisionInfo);
 
         // When: the POST /tenants/user-groups endpoint is used
         final Response createUserGroupResponse = client
@@ -154,6 +171,9 @@ public class SecureFileIT extends IntegrationTestBase {
         assertEquals(201, createUserGroupResponse.getStatus());
         UserGroup actualUserGroup = createUserGroupResponse.readEntity(UserGroup.class);
         assertNotNull(actualUserGroup.getIdentifier());
+        assertNotNull(actualUserGroup.getRevision());
+        assertNotNull(actualUserGroup.getRevision().getVersion());
+
         try {
             assertEquals(tenant.getIdentity(), actualUserGroup.getIdentity());
             assertEquals(true, actualUserGroup.getConfigurable());
@@ -162,7 +182,8 @@ public class SecureFileIT extends IntegrationTestBase {
             assertEquals(new ResourcePermissions(), actualUserGroup.getResourcePermissions());
         } finally {
             // cleanup user for other tests
-            client.target(createURL("tenants/user-groups/" + actualUserGroup.getIdentifier()))
+            final long version = actualUserGroup.getRevision().getVersion();
+            client.target(createURL("tenants/user-groups/" + actualUserGroup.getIdentifier() + "?version=" + version))
                     .request()
                     .delete();
         }

@@ -28,6 +28,7 @@ import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.AESSensitivePropertyProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.properties.SensitivePropertyProvider;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
 import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
@@ -38,6 +39,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONAssert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -59,6 +62,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -83,6 +87,8 @@ import static org.junit.Assert.assertTrue;
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = "classpath:db/clearDB.sql")
 public class SecureLdapIT extends IntegrationTestBase {
 
+    private static Logger LOGGER = LoggerFactory.getLogger(SecureLdapIT.class);
+
     private static final String tokenLoginPath = "access/token/login";
     private static final String tokenIdentityProviderPath = "access/token/identity-provider";
 
@@ -95,7 +101,10 @@ public class SecureLdapIT extends IntegrationTestBase {
         @Primary
         @Bean
         @DependsOn({"directoryServer"}) // Can't load LdapUserGroupProvider until the embedded LDAP server, which creates the "directoryServer" bean, is running
-        public static Authorizer getAuthorizer(@Autowired NiFiRegistryProperties properties, ExtensionManager extensionManager, RegistryService registryService) throws Exception {
+        public static Authorizer getAuthorizer(
+                @Autowired NiFiRegistryProperties properties,
+                ExtensionManager extensionManager,
+                RegistryService registryService) throws Exception {
             if (authorizerFactory == null) {
                 authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService);
             }
@@ -367,11 +376,15 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     @Test
     public void testCreateTenantFails() throws Exception {
+        Long initialVersion = new Long(0);
+        String clientId = UUID.randomUUID().toString();
+        RevisionInfo initialRevisionInfo = new RevisionInfo(clientId, initialVersion);
 
         // Given: the server has been configured with the LdapUserGroupProvider, which is non-configurable,
         //   and: the client wants to create a tenant
         Tenant tenant = new Tenant();
         tenant.setIdentity("new_tenant");
+        tenant.setRevision(initialRevisionInfo);
 
         // When: the POST /tenants/users endpoint is accessed
         final Response createUserResponse = client
@@ -396,6 +409,9 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     @Test
     public void testAccessPolicyCreation() throws Exception {
+        Long initialVersion = new Long(0);
+        String clientId = UUID.randomUUID().toString();
+        RevisionInfo initialRevisionInfo = new RevisionInfo(clientId, initialVersion);
 
         // Given: the server has been configured with an initial admin "nifiadmin" and a user with no accessPolicies "nobel"
         String nobelId = getTenantIdentifierByIdentity("nobel");
@@ -425,6 +441,8 @@ public class SecureLdapIT extends IntegrationTestBase {
         final Bucket bucket = new Bucket();
         bucket.setName("Integration Test Bucket");
         bucket.setDescription("A bucket created by an integration test.");
+        bucket.setRevision(new RevisionInfo(null, 0L));
+
         Response adminCreatesBucketResponse = client
                 .target(createURL("buckets"))
                 .request()
@@ -453,6 +471,8 @@ public class SecureLdapIT extends IntegrationTestBase {
         readPolicy.setResource("/buckets/" + createdBucket.getIdentifier());
         readPolicy.setAction("read");
         readPolicy.addUserGroups(Arrays.asList(new Tenant(chemistsId, "chemists")));
+        readPolicy.setRevision(initialRevisionInfo);
+
         Response adminGrantsReadAccessResponse = client
                 .target(createURL("policies"))
                 .request()
@@ -496,6 +516,8 @@ public class SecureLdapIT extends IntegrationTestBase {
         writePolicy.setResource("/buckets/" + createdBucket.getIdentifier());
         writePolicy.setAction("write");
         writePolicy.addUsers(Arrays.asList(new Tenant(nobelId, "nobel")));
+        writePolicy.setRevision(initialRevisionInfo);
+
         Response adminGrantsWriteAccessResponse = client
                 .target(createURL("policies"))
                 .request()
@@ -609,9 +631,8 @@ public class SecureLdapIT extends IntegrationTestBase {
                 .map(AccessPolicy::getIdentifier)
                 .collect(Collectors.toSet());
 
-        Set<String> policiesToDelete = currentAccessPolicies.stream()
+        Set<AccessPolicy> policiesToDelete = currentAccessPolicies.stream()
                 .filter(p -> !policiesToRestore.contains(p.getIdentifier()))
-                .map(AccessPolicy::getIdentifier)
                 .collect(Collectors.toSet());
 
         for (AccessPolicy originalPolicy : accessPoliciesSnapshot) {
@@ -638,14 +659,17 @@ public class SecureLdapIT extends IntegrationTestBase {
 
         }
 
-        for (String id : policiesToDelete) {
+        for (AccessPolicy policyToDelete : policiesToDelete) {
             try {
-                client.target(createURL("policies/" + id))
+                final RevisionInfo revisionInfo = policyToDelete.getRevision();
+                final Long version = revisionInfo == null ? 0 : revisionInfo.getVersion();
+                client.target(createURL("policies/" + policyToDelete.getIdentifier()))
+                        .queryParam("version", version.longValue())
                         .request()
                         .header("Authorization", "Bearer " + adminAuthToken)
                         .delete();
             } catch (Exception e) {
-                // do nothing
+                LOGGER.error("Error cleaning up policies after test due to: " + e.getMessage(), e);
             }
         }
 

@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.link.LinkableEntity;
+import org.apache.nifi.registry.revision.entity.RevisableEntity;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -28,7 +30,7 @@ import java.util.Objects;
 
 @XmlRootElement
 @ApiModel
-public class Bucket extends LinkableEntity {
+public class Bucket extends LinkableEntity implements RevisableEntity {
 
     @NotBlank
     private String identifier;
@@ -46,6 +48,8 @@ public class Bucket extends LinkableEntity {
     private Boolean allowPublicRead;
 
     private Permissions permissions;
+
+    private RevisionInfo revision;
 
     @ApiModelProperty(value = "An ID to uniquely identify this object.", readOnly = true)
     public String getIdentifier() {
@@ -108,6 +112,20 @@ public class Bucket extends LinkableEntity {
 
     public void setPermissions(Permissions permissions) {
         this.permissions = permissions;
+    }
+
+    @ApiModelProperty(
+            value = "The revision of this entity used for optimistic-locking during updates.",
+            readOnly = true
+    )
+    @Override
+    public RevisionInfo getRevision() {
+        return revision;
+    }
+
+    @Override
+    public void setRevision(RevisionInfo revision) {
+        this.revision = revision;
     }
 
     @Override

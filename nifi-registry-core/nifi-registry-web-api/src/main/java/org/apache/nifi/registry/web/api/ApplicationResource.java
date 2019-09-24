@@ -20,6 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.hook.Event;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
+import org.apache.nifi.registry.revision.web.ClientIdParameter;
+import org.apache.nifi.registry.revision.web.LongParameter;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +38,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class ApplicationResource {
+
+    public static final String CLIENT_ID = "clientId";
+    public static final String VERSION = "version";
 
     public static final String PROXY_SCHEME_HTTP_HEADER = "X-ProxyScheme";
     public static final String PROXY_HOST_HTTP_HEADER = "X-ProxyHost";
@@ -55,10 +62,14 @@ public class ApplicationResource {
     @Context
     private UriInfo uriInfo;
 
+    protected final ServiceFacade serviceFacade;
     private final EventService eventService;
 
-    public ApplicationResource(final EventService eventService) {
+    public ApplicationResource(final ServiceFacade serviceFacade,
+                               final EventService eventService) {
+        this.serviceFacade = serviceFacade;
         this.eventService = eventService;
+        Validate.notNull(this.serviceFacade);
         Validate.notNull(this.eventService);
     }
 
@@ -194,6 +205,20 @@ public class ApplicationResource {
 
         // unable to find any matching keys
         return null;
+    }
+
+    /**
+     * Creates a RevisionInfo from the version and clientId parameters.
+     *
+     * @param version the version
+     * @param clientId the client id
+     * @return the RevisionInfo
+     */
+    protected RevisionInfo getRevisionInfo(final LongParameter version, final ClientIdParameter clientId) {
+        final RevisionInfo revisionInfo = new RevisionInfo();
+        revisionInfo.setVersion(version == null ? null : version.getLong());
+        revisionInfo.setClientId(clientId.getClientId());
+        return revisionInfo;
     }
 
 }

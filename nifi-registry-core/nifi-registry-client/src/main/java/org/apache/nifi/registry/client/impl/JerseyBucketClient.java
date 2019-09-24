@@ -21,6 +21,7 @@ import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.field.Fields;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -105,15 +106,21 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
     }
 
     @Override
-    public Bucket delete(final String bucketId) throws NiFiRegistryException, IOException {
+    public Bucket delete(final String bucketId, final RevisionInfo revision) throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket ID cannot be blank");
         }
 
+        if (revision == null) {
+            throw new IllegalArgumentException("RevisionInfo cannot be null");
+        }
+
         return executeAction("Error deleting bucket", () -> {
-            final WebTarget target = bucketsTarget
+            WebTarget target = bucketsTarget
                     .path("/{bucketId}")
                     .resolveTemplate("bucketId", bucketId);
+
+            target = addRevisionQueryParams(target, revision);
 
             return getRequestBuilder(target).delete(Bucket.class);
         });

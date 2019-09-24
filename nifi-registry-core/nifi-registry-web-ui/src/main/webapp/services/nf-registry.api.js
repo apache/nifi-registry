@@ -162,7 +162,13 @@ NfRegistryApi.prototype = {
      */
     createBucket: function (name, allowPublicRead) {
         var self = this;
-        return this.http.post('../nifi-registry-api/buckets', {'name': name, 'allowPublicRead': allowPublicRead}, headers).pipe(
+        return this.http.post('../nifi-registry-api/buckets', {
+            'name': name,
+            'allowPublicRead': allowPublicRead,
+            'revision': {
+                'version': 0
+            }
+        }, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -182,11 +188,12 @@ NfRegistryApi.prototype = {
      * Delete an existing bucket in the registry, along with all the objects it is storing.
      *
      * @param {string} bucketId     The identifier of the bucket to be deleted.
+     * @param {int} version         The version from the revision of the bucket
      * @returns {*}
      */
-    deleteBucket: function (bucketId) {
+    deleteBucket: function (bucketId, version) {
         var self = this;
-        return this.http.delete('../nifi-registry-api/buckets/' + bucketId, headers).pipe(
+        return this.http.delete('../nifi-registry-api/buckets/' + bucketId + '?version=' + version, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -331,6 +338,9 @@ NfRegistryApi.prototype = {
                     canWrite: false,
                     canDelete: false
                 }
+            },
+            revision: {
+                version: 0
             }
         }, headers).pipe(
             map(function (response) {
@@ -353,12 +363,14 @@ NfRegistryApi.prototype = {
      *
      * @param {string} identifier   The identifier of the user.
      * @param {string} identity     The identity of the user.
+     * @param {string} revision     The revision of the user.
      * @returns {*}
      */
-    updateUser: function (identifier, identity) {
+    updateUser: function (identifier, identity, revision) {
         return this.http.put('../nifi-registry-api/tenants/users/' + identifier, {
             'identifier': identifier,
-            'identity': identity
+            'identity': identity,
+            'revision': revision
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -396,11 +408,12 @@ NfRegistryApi.prototype = {
      * Delete an existing user from the registry.
      *
      * @param {string} userId     The identifier of the user to be deleted.
+     * @param {int} version       The version from the user's revision
      * @returns {*}
      */
-    deleteUser: function (userId) {
+    deleteUser: function (userId, version) {
         var self = this;
-        return this.http.delete('../nifi-registry-api/tenants/users/' + userId, headers).pipe(
+        return this.http.delete('../nifi-registry-api/tenants/users/' + userId + '?version=' + version, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -467,11 +480,12 @@ NfRegistryApi.prototype = {
      * Delete an existing user group from the registry.
      *
      * @param {string} userGroupId     The identifier of the user group to be deleted.
+     * @param {int} version            The version from the group's revision
      * @returns {*}
      */
-    deleteUserGroup: function (userGroupId) {
+    deleteUserGroup: function (userGroupId, version) {
         var self = this;
-        return this.http.delete('../nifi-registry-api/tenants/user-groups/' + userGroupId, headers).pipe(
+        return this.http.delete('../nifi-registry-api/tenants/user-groups/' + userGroupId + '?version=' + version, headers).pipe(
             map(function (response) {
                 return response;
             }),
@@ -500,7 +514,10 @@ NfRegistryApi.prototype = {
         return this.http.post('../nifi-registry-api/tenants/user-groups', {
             'identifier': identifier,
             'identity': identity,
-            'users': users
+            'users': users,
+            'revision': {
+                'version': 0
+            }
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -522,14 +539,16 @@ NfRegistryApi.prototype = {
      *
      * @param {string}  identifier   The identifier of the group.
      * @param {string}  identity     The identity of the group.
-     * @param {array}   users         The array of users in the new group.
+     * @param {array}   users        The array of users in the new group.
+     * @param {string}  revision     The revision of the group.
      * @returns {*}
      */
-    updateUserGroup: function (identifier, identity, users) {
+    updateUserGroup: function (identifier, identity, users, revision) {
         return this.http.put('../nifi-registry-api/tenants/user-groups/' + identifier, {
             'identifier': identifier,
             'identity': identity,
-            'users': users
+            'users': users,
+            'revision': revision
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -604,14 +623,15 @@ NfRegistryApi.prototype = {
      * @param {string} userGroups   The user groups with resource privileges.
      * @returns {*}
      */
-    putPolicyActionResource: function (identifier, action, resource, users, userGroups) {
+    putPolicyActionResource: function (identifier, action, resource, users, userGroups, revision) {
         var self = this;
         return this.http.put('../nifi-registry-api/policies/' + identifier, {
             'identifier': identifier,
             'resource': resource,
             'action': action,
             'users': users,
-            'userGroups': userGroups
+            'userGroups': userGroups,
+            'revision': revision
         }, headers).pipe(
             map(function (response) {
                 return response;
@@ -643,7 +663,10 @@ NfRegistryApi.prototype = {
             'resource': resource,
             'action': action,
             'users': users,
-            'userGroups': userGroups
+            'userGroups': userGroups,
+            'revision': {
+                'version': 0
+            }
         }, headers).pipe(
             map(function (response) {
                 return response;

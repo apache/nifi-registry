@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.web.api;
 
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.test.annotation.IfProfileValue;
@@ -25,6 +26,8 @@ import org.springframework.test.context.jdbc.Sql;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import java.util.UUID;
 
 import static org.apache.nifi.registry.web.api.IntegrationTestUtils.assertBucketsEqual;
 import static org.junit.Assert.assertEquals;
@@ -105,6 +108,8 @@ public class BucketsIT extends UnsecuredITBase {
 
     @Test
     public void testCreateBucketGetBucket() throws Exception {
+        final String clientId = UUID.randomUUID().toString();
+        final RevisionInfo initialRevision = new RevisionInfo(clientId, 0L);
 
         // Given:
 
@@ -112,6 +117,7 @@ public class BucketsIT extends UnsecuredITBase {
         final Bucket bucket = new Bucket();
         bucket.setName("Integration Test Bucket");
         bucket.setDescription("A bucket created by an integration test.");
+        bucket.setRevision(initialRevision);
 
         // When: a bucket is created on the server
 
@@ -127,6 +133,9 @@ public class BucketsIT extends UnsecuredITBase {
         assertTrue(createdBucket.getCreatedTimestamp() - testStartTime > 0L); // both server and client in same JVM, so there shouldn't be skew
         assertNotNull(createdBucket.getLink());
         assertNotNull(createdBucket.getLink().getUri());
+        assertNotNull(createdBucket.getRevision());
+        assertEquals(initialRevision.getVersion() + 1, createdBucket.getRevision().getVersion().longValue());
+        assertEquals(initialRevision.getClientId(), createdBucket.getRevision().getClientId());
 
         // And when /buckets is queried, then the newly created bucket is returned in the list
 
@@ -153,16 +162,23 @@ public class BucketsIT extends UnsecuredITBase {
                 .request()
                 .get(Bucket.class);
         assertBucketsEqual(createdBucket, bucketById, true);
+        assertNotNull(bucketById.getRevision());
+        assertEquals(initialRevision.getVersion() + 1, bucketById.getRevision().getVersion().longValue());
+        assertEquals(initialRevision.getClientId(), bucketById.getRevision().getClientId());
     }
 
     @Test
     public void testUpdateBucket() throws Exception {
+        final String clientId = UUID.randomUUID().toString();
+        final RevisionInfo initialRevision = new RevisionInfo(clientId, 0L);
 
         // Given: a bucket exists on the server
 
         final Bucket bucket = new Bucket();
         bucket.setName("Integration Test Bucket");
         bucket.setDescription("A bucket created by an integration test.");
+        bucket.setRevision(initialRevision);
+
         Bucket createdBucket = client
                 .target(createURL("buckets"))
                 .request()
@@ -181,17 +197,55 @@ public class BucketsIT extends UnsecuredITBase {
         // Then: the server returns the updated bucket
 
         assertBucketsEqual(createdBucket, updatedBucket, true);
+    }
 
+    @Test
+    public void testUpdateBucketWithIncorrectRevision() throws Exception {
+        final String clientId = UUID.randomUUID().toString();
+        final RevisionInfo initialRevision = new RevisionInfo(clientId, 0L);
+
+        // Given: a bucket exists on the server
+
+        final Bucket bucket = new Bucket();
+        bucket.setName("Integration Test Bucket");
+        bucket.setDescription("A bucket created by an integration test.");
+        bucket.setRevision(initialRevision);
+
+        Bucket createdBucket = client
+                .target(createURL("buckets"))
+                .request()
+                .post(Entity.entity(bucket, MediaType.APPLICATION_JSON), Bucket.class);
+
+        // When: the bucket is modified by the client and updated on the server
+
+        createdBucket.setName("Renamed Bucket");
+        createdBucket.setDescription("This bucket has been updated by an integration test.");
+
+        // Change version to incorrect number and don't send a client id
+        createdBucket.getRevision().setClientId(null);
+        createdBucket.getRevision().setVersion(99L);
+
+        final Response response = client
+                .target(createURL("buckets/" + createdBucket.getIdentifier()))
+                .request()
+                .put(Entity.entity(createdBucket, MediaType.APPLICATION_JSON));
+
+        // Then: we get a bad request for sending a wrong revision
+
+        assertEquals(400, response.getStatus());
     }
 
     @Test
     public void testDeleteBucket() throws Exception {
+        final String clientId = UUID.randomUUID().toString();
+        final RevisionInfo initialRevision = new RevisionInfo(clientId, 0L);
 
         // Given: a bucket has been created
 
         final Bucket bucket = new Bucket();
         bucket.setName("Integration Test Bucket");
         bucket.setDescription("A bucket created by an integration test.");
+        bucket.setRevision(initialRevision);
 
         Bucket createdBucket = client
                 .target(createURL("buckets"))
@@ -202,6 +256,7 @@ public class BucketsIT extends UnsecuredITBase {
 
         final Bucket deletedBucket = client
                 .target(createURL("buckets/" + createdBucket.getIdentifier()))
+                .queryParam("version", createdBucket.getRevision().getVersion().longValue())
                 .request()
                 .delete(Bucket.class);
 
@@ -217,6 +272,36 @@ public class BucketsIT extends UnsecuredITBase {
                 .request()
                 .get();
         assertEquals(404, response.getStatus());
+    }
+
+    @Test
+    public void testDeleteBucketWithIncorrectRevision() throws Exception {
+        final String clientId = UUID.randomUUID().toString();
+        final RevisionInfo initialRevision = new RevisionInfo(clientId, 0L);
+
+        // Given: a bucket has been created
+
+        final Bucket bucket = new Bucket();
+        bucket.setName("Integration Test Bucket");
+        bucket.setDescription("A bucket created by an integration test.");
+        bucket.setRevision(initialRevision);
+
+        Bucket createdBucket = client
+                .target(createURL("buckets"))
+                .request()
+                .post(Entity.entity(bucket, MediaType.APPLICATION_JSON), Bucket.class);
+
+        // When: that bucket deleted
+
+        final Response response = client
+                .target(createURL("buckets/" + createdBucket.getIdentifier()))
+                .queryParam("version", 99L)
+                .request()
+                .delete();
+
+        // Then: we get a bad request for sending the wrong revision version
+
+        assertEquals(400, response.getStatus());
     }
 
     @Test

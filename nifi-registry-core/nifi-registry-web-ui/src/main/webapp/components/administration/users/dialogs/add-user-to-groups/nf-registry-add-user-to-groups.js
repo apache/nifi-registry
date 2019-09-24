@@ -18,10 +18,9 @@
 import { TdDataTableService } from '@covalent/core/data-table';
 import NfRegistryApi from 'services/nf-registry.api';
 import { Component } from '@angular/core';
-import { FdsSnackBarService } from '@nifi-fds/core';
+import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryService from 'services/nf-registry.service';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
-import $ from 'jquery';
 
 /**
  * NfRegistryAddUserToGroups constructor.
@@ -30,22 +29,23 @@ import $ from 'jquery';
  * @param tdDataTableService    The covalent data table service module.
  * @param nfRegistryService     The nf-registry.service module.
  * @param matDialogRef          The angular material dialog ref.
+ * @param fdsDialogService      The FDS dialog service.
  * @param fdsSnackBarService    The FDS snack bar service module.
  * @param data                  The data passed into this component.
  * @constructor
  */
-function NfRegistryAddUserToGroups(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsSnackBarService, data) {
+function NfRegistryAddUserToGroups(nfRegistryApi, tdDataTableService, nfRegistryService, matDialogRef, fdsDialogService, fdsSnackBarService, data) {
     //Services
     this.dataTableService = tdDataTableService;
     this.snackBarService = fdsSnackBarService;
+    this.dialogService = fdsDialogService;
     this.nfRegistryService = nfRegistryService;
     this.nfRegistryApi = nfRegistryApi;
     this.dialogRef = matDialogRef;
     this.data = data;
 
     // local state
-    //make an independent copy of the groups for sorting and selecting within the scope of this component
-    this.groups = $.extend(true, [], this.nfRegistryService.groups);
+    this.groups = [];
     this.filteredUserGroups = [];
     this.isAddToSelectedGroupsDisabled = true;
     this.userGroupsSearchTerms = [];
@@ -70,21 +70,35 @@ NfRegistryAddUserToGroups.prototype = {
     ngOnInit: function () {
         var self = this;
 
-        // filter out any groups that
-        // 1) that are not configurable
-        self.groups = self.groups.filter(function (group) {
-            return !!(group.configurable);
-        });
-        // 2) the user already belongs to
-        this.data.user.userGroups.forEach(function (userGroup) {
-            self.groups = self.groups.filter(function (group) {
-                return (group.identifier !== userGroup.identifier);
-            });
-        });
+        // retrieve the fresh list of groups
+        self.nfRegistryApi.getUserGroups().subscribe(function (response) {
+            if (!response.status || response.status === 200) {
+                self.groups = response;
 
-        this.filterGroups();
-        this.deselectAllUserGroups();
-        this.determineAllUserGroupsSelectedState();
+                // filter out any groups that
+                // 1) that are not configurable
+                self.groups = self.groups.filter(function (group) {
+                    return !!(group.configurable);
+                });
+                // 2) the user already belongs to
+                self.data.user.userGroups.forEach(function (userGroup) {
+                    self.groups = self.groups.filter(function (group) {
+                        return (group.identifier !== userGroup.identifier);
+                    });
+                });
+
+                self.filterGroups();
+                self.deselectAllUserGroups();
+                self.determineAllUserGroupsSelectedState();
+            } else {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Close',
+                    acceptButtonColor: 'fds-warn'
+                });
+            }
+        });
     },
 
     /**
@@ -214,17 +228,26 @@ NfRegistryAddUserToGroups.prototype = {
         });
         selectedGroups.forEach(function (selectedGroup) {
             selectedGroup.users.push(self.data.user);
-            self.nfRegistryApi.updateUserGroup(selectedGroup.identifier, selectedGroup.identity, selectedGroup.users).subscribe(function (group) {
+            self.nfRegistryApi.updateUserGroup(selectedGroup.identifier, selectedGroup.identity, selectedGroup.users, selectedGroup.revision).subscribe(function (response) {
                 self.dialogRef.close();
-                self.snackBarService.openCoaster({
-                    title: 'Success',
-                    message: 'User has been added to the ' + group.identity + ' group.',
-                    verticalPosition: 'bottom',
-                    horizontalPosition: 'right',
-                    icon: 'fa fa-check-circle-o',
-                    color: '#1EB475',
-                    duration: 3000
-                });
+                if (!response.status || response.status === 200) {
+                    self.snackBarService.openCoaster({
+                        title: 'Success',
+                        message: 'User has been added to the ' + response.identity + ' group.',
+                        verticalPosition: 'bottom',
+                        horizontalPosition: 'right',
+                        icon: 'fa fa-check-circle-o',
+                        color: '#1EB475',
+                        duration: 3000
+                    });
+                } else {
+                    self.dialogService.openConfirm({
+                        title: 'Error',
+                        message: response.error,
+                        acceptButton: 'Close',
+                        acceptButtonColor: 'fds-warn'
+                    });
+                }
             });
         });
     },
@@ -248,6 +271,7 @@ NfRegistryAddUserToGroups.parameters = [
     TdDataTableService,
     NfRegistryService,
     MatDialogRef,
+    FdsDialogService,
     FdsSnackBarService,
     MAT_DIALOG_DATA
 ];

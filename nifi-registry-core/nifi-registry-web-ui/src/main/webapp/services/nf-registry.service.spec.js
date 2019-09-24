@@ -795,10 +795,10 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
-        const bucket = {identifier: '999'};
+        const bucket = {identifier: '999', revision: { version: 0}};
 
         // set up the bucket to be deleted
-        nfRegistryService.buckets = [bucket, {identifier: 1}];
+        nfRegistryService.buckets = [bucket, {identifier: 1, revision: { version: 0}}];
 
         // The function to test
         nfRegistryService.executeBucketAction({name: 'delete'}, bucket);
@@ -847,10 +847,10 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
-        const user = {identifier: '999'};
+        const user = {identifier: '999', revision: {version: 0}};
 
         // set up the user to be deleted
-        nfRegistryService.users = [user, {identifier: 1}];
+        nfRegistryService.users = [user, {identifier: 1, revision: { version: 0}}];
 
         // The function to test
         nfRegistryService.executeUserAction({name: 'delete'}, user);
@@ -899,10 +899,10 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         }).and.returnValue(of({identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc', link: null}));
 
         // object to be updated by the test
-        const group = {identifier: '999'};
+        const group = {identifier: '999', revision: {version: 0}};
 
         // set up the user to be deleted
-        nfRegistryService.groups = [group, {identifier: 1}];
+        nfRegistryService.groups = [group, {identifier: 1, revision: {version: 0}}];
 
         // The function to test
         nfRegistryService.executeGroupAction({name: 'delete'}, group);
@@ -1023,10 +1023,10 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         }).and.returnValue(of({identifier: 999, link: null}));
 
         // object to be updated by the test
-        const bucket = {identifier: 999, checked: true};
+        const bucket = {identifier: 999, checked: true, revision: { version: 0}};
 
         // set up the bucket to be deleted
-        nfRegistryService.buckets = [bucket, {identifier: 1}];
+        nfRegistryService.buckets = [bucket, {identifier: 1, revision: { version: 0}}];
         nfRegistryService.filteredBuckets = nfRegistryService.buckets;
 
         // The function to test
@@ -1065,13 +1065,13 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         }).and.returnValue(of({identifier: 99, link: null}));
 
         // object to be updated by the test
-        const group = {identifier: 999, checked: true};
-        const user = {identifier: 999, checked: true};
+        const group = {identifier: 999, checked: true, revision: { version: 0}};
+        const user = {identifier: 999, checked: true, revision: { version: 0}};
 
         // set up the group to be deleted
-        nfRegistryService.groups = [group, {identifier: 1}];
+        nfRegistryService.groups = [group, {identifier: 1, revision: { version: 0}}];
         nfRegistryService.filteredUserGroups = nfRegistryService.groups;
-        nfRegistryService.users = [user, {identifier: 12}];
+        nfRegistryService.users = [user, {identifier: 12, revision: { version: 0}}];
         nfRegistryService.filteredUsers = nfRegistryService.users;
 
         // The function to test

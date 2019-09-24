@@ -27,13 +27,7 @@ import io.swagger.annotations.ExtensionProperty;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.event.EventService;
 import org.apache.nifi.registry.field.Fields;
-import org.apache.nifi.registry.security.authorization.RequestAction;
-import org.apache.nifi.registry.service.AuthorizationService;
-import org.apache.nifi.registry.service.RegistryService;
-import org.apache.nifi.registry.web.link.LinkService;
-import org.apache.nifi.registry.web.security.PermissionsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -46,8 +40,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -58,28 +50,14 @@ import java.util.Set;
         description = "Retrieve items across all buckets for which the user is authorized.",
         authorizations = { @Authorization("Authorization") }
 )
-public class ItemResource extends AuthorizableApplicationResource {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ItemResource.class);
+public class ItemResource extends ApplicationResource {
 
     @Context
     UriInfo uriInfo;
 
-    private final LinkService linkService;
-    private final PermissionsService permissionsService;
-    private final RegistryService registryService;
-
     @Autowired
-    public ItemResource(
-            final RegistryService registryService,
-            final LinkService linkService,
-            final PermissionsService permissionsService,
-            final AuthorizationService authorizationService,
-            final EventService eventService) {
-        super(authorizationService, eventService);
-        this.registryService = registryService;
-        this.linkService = linkService;
-        this.permissionsService = permissionsService;
+    public ItemResource(final ServiceFacade serviceFacade, final EventService eventService) {
+        super(serviceFacade, eventService);
     }
 
 
@@ -95,7 +73,7 @@ public class ItemResource extends AuthorizableApplicationResource {
     )
     @ApiResponses({ @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401) })
     public Response getItems() {
-
+        // Service facade with return only items from authorized buckets
         // Note: We don't explicitly check for access to (READ, /buckets) or
         // (READ, /items ) because a user might have access to individual buckets
         // without top-level access. For example, a user that has
@@ -103,20 +81,7 @@ public class ItemResource extends AuthorizableApplicationResource {
         // get a 403 error returned from this endpoint. This has the side effect
         // that a user with no access to any buckets gets an empty array returned
         // from this endpoint instead of 403 as one might expect.
-
-        final Set<String> authorizedBucketIds = getAuthorizedBucketIds(RequestAction.READ);
-        if (authorizedBucketIds == null || authorizedBucketIds.isEmpty()) {
-            // not authorized for any bucket, return empty list of items
-            return Response.status(Response.Status.OK).entity(new ArrayList<BucketItem>()).build();
-        }
-
-        List<BucketItem> items = registryService.getBucketItems(authorizedBucketIds);
-        if (items == null) {
-            items = Collections.emptyList();
-        }
-        permissionsService.populateItemPermissions(items);
-        linkService.populateLinks(items);
-
+        final List<BucketItem> items = serviceFacade.getBucketItems();
         return Response.status(Response.Status.OK).entity(items).build();
     }
 
@@ -146,12 +111,7 @@ public class ItemResource extends AuthorizableApplicationResource {
             @ApiParam("The bucket identifier")
             final String bucketId) {
 
-        authorizeBucketAccess(RequestAction.READ, bucketId);
-
-        final List<BucketItem> items = registryService.getBucketItems(bucketId);
-        permissionsService.populateItemPermissions(items);
-        linkService.populateLinks(items);
-
+        final List<BucketItem> items = serviceFacade.getBucketItems(bucketId);
         return Response.status(Response.Status.OK).entity(items).build();
     }
 
@@ -165,7 +125,7 @@ public class ItemResource extends AuthorizableApplicationResource {
             response = Fields.class
     )
     public Response getAvailableBucketItemFields() {
-        final Set<String> bucketFields = registryService.getBucketItemFields();
+        final Set<String> bucketFields = serviceFacade.getBucketItemFields();
         final Fields fields = new Fields(bucketFields);
         return Response.status(Response.Status.OK).entity(fields).build();
     }

@@ -16,7 +16,9 @@
  */
 package org.apache.nifi.registry.client.impl;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Invocation;
@@ -42,6 +44,32 @@ public class AbstractJerseyClient {
 
     protected Map<String,String> getHeaders() {
         return headers;
+    }
+
+    /**
+     * Adds query parameters for the given RevisionInfo if populated.
+     *
+     * @param target the WebTarget
+     * @param revision the RevisionInfo
+     * @return the target with query params added
+     */
+    protected WebTarget addRevisionQueryParams(WebTarget target, RevisionInfo revision) {
+        if (revision == null) {
+            return target;
+        }
+
+        WebTarget localTarget = target;
+
+        final Long version = revision.getVersion();
+        if (version != null) {
+            localTarget = localTarget.queryParam("version", version.longValue());
+        }
+
+        final String clientId = revision.getClientId();
+        if (!StringUtils.isBlank(clientId)) {
+            localTarget = localTarget.queryParam("clientId", clientId);
+        }
+        return localTarget;
     }
 
     /**
