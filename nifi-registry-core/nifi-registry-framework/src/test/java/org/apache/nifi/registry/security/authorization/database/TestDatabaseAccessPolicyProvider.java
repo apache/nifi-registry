@@ -57,6 +57,7 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
     private static final String UGP_IDENTIFIER = "mock-user-group-provider";
 
     private static final User ADMIN_USER = new User.Builder().identifierGenerateRandom().identity("admin").build();
+    private static final User ADMIN_USER2 = new User.Builder().identifierGenerateRandom().identity("admin2").build();
 
     private static final User NIFI1_USER = new User.Builder().identifierGenerateRandom().identity("nifi1").build();
     private static final User NIFI2_USER = new User.Builder().identifierGenerateRandom().identity("nifi2").build();
@@ -83,6 +84,7 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
 
         userGroupProvider = mock(UserGroupProvider.class);
         when(userGroupProvider.getUserByIdentity(ADMIN_USER.getIdentity())).thenReturn(ADMIN_USER);
+        when(userGroupProvider.getUserByIdentity(ADMIN_USER2.getIdentity())).thenReturn(ADMIN_USER2);
         when(userGroupProvider.getUserByIdentity(NIFI1_USER.getIdentity())).thenReturn(NIFI1_USER);
         when(userGroupProvider.getUserByIdentity(NIFI2_USER.getIdentity())).thenReturn(NIFI2_USER);
         when(userGroupProvider.getUserByIdentity(NIFI3_USER.getIdentity())).thenReturn(NIFI3_USER);
@@ -215,13 +217,30 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
     }
 
     @Test
-    public void testOnConfiguredDoesNotCreateInitialPoliciesWhenPoliciesAlreadyExist() {
+    public void testOnConfiguredStillCreatesInitialPoliciesWhenPoliciesAlreadyExist() {
         // create one policy
-        createPolicy("policy1", ResourceFactory.getBucketsResource().getIdentifier(), RequestAction.READ);
+        createPolicy("policy1", "/foo", RequestAction.READ);
         assertEquals(1, getPolicyCount());
 
         configure(ADMIN_USER.getIdentity(), NIFI_IDENTITIES);
-        assertEquals(1, getPolicyCount());
+        assertTrue(getPolicyCount() > 1);
+    }
+
+    @Test
+    public void testOnConfiguredWhenChangingInitialAdmin() {
+        configure(ADMIN_USER.getIdentity(), NIFI_IDENTITIES);
+        configure(ADMIN_USER.getIdentity(), NIFI_IDENTITIES);
+        configure("admin2", NIFI_IDENTITIES);
+
+        final AccessPolicy readBuckets = policyProvider.getAccessPolicy(
+                ResourceFactory.getBucketsResource().getIdentifier(), RequestAction.READ);
+        assertNotNull(readBuckets);
+        assertEquals(5, readBuckets.getUsers().size());
+        assertTrue(readBuckets.getUsers().contains(ADMIN_USER.getIdentifier()));
+        assertTrue(readBuckets.getUsers().contains(ADMIN_USER2.getIdentifier()));
+        assertTrue(readBuckets.getUsers().contains(NIFI1_USER.getIdentifier()));
+        assertTrue(readBuckets.getUsers().contains(NIFI2_USER.getIdentifier()));
+        assertTrue(readBuckets.getUsers().contains(NIFI3_USER.getIdentifier()));
     }
 
     @Test

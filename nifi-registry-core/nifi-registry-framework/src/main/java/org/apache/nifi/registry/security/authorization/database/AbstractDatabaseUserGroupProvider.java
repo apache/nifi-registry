@@ -63,16 +63,7 @@ public abstract class AbstractDatabaseUserGroupProvider implements ConfigurableU
     @Override
     public void onConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         jdbcTemplate = new JdbcTemplate(getDataSource());
-
-        // create initial users when none exist
-        final Integer userCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM UGP_USER", Integer.class);
-        final Integer groupCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM UGP_GROUP", Integer.class);
-
-        if (userCount > 0 || groupCount > 0) {
-            LOGGER.info("Found existing users and/or groups, will not create initial users");
-        } else  {
-            populateInitialUsers(configurationContext);
-        }
+        populateInitialUsers(configurationContext);
     }
 
     /**
@@ -86,8 +77,6 @@ public abstract class AbstractDatabaseUserGroupProvider implements ConfigurableU
 
     /**
      * Creates any initial users during @{method onConfigured} based on the configuration context.
-     *
-     * NOTE: This method will only be called if no users and groups exist.
      *
      * @param configurationContext the configuration context
      */

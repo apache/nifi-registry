@@ -59,14 +59,7 @@ public abstract class AbstractDatabaseAccessPolicyProvider extends AbstractConfi
     @Override
     public void doOnConfigured(final AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
         jdbcTemplate = new JdbcTemplate(getDataSource());
-
-        // create initial policies when none exist
-        final Integer policyCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM APP_POLICY", Integer.class);
-        if (policyCount > 0) {
-            LOGGER.info("Found existing policies, will not create any initial policies");
-        } else {
-            populateInitialPolicies(configurationContext);
-        }
+        populateInitialPolicies(configurationContext);
     }
 
     /**
@@ -80,8 +73,6 @@ public abstract class AbstractDatabaseAccessPolicyProvider extends AbstractConfi
 
     /**
      * Creates any initial policies during @{method onConfigured} based on the configuration context.
-     *
-     * NOTE: This method will only be called when no policies already exist.
      *
      * @param configurationContext the configuration context
      */
@@ -297,6 +288,7 @@ public abstract class AbstractDatabaseAccessPolicyProvider extends AbstractConfi
     }
 
     protected void populateInitialPolicy(final User initialUser, final ResourceAndAction resourceAndAction) {
+        final String userIdentifier = initialUser.getIdentifier();
         final String resourceIdentifier = resourceAndAction.getResource().getIdentifier();
         final RequestAction action = resourceAndAction.getAction();
 
@@ -308,13 +300,20 @@ public abstract class AbstractDatabaseAccessPolicyProvider extends AbstractConfi
                     .identifierGenerateRandom()
                     .resource(resourceIdentifier)
                     .action(action)
-                    .addUser(initialUser.getIdentifier())
+                    .addUser(userIdentifier)
                     .build();
 
             addAccessPolicy(accessPolicy);
         } else {
             // a policy already exists for the given resource and action, so just associate the user with that policy
-            insertPolicyUser(existingPolicy.getIdentifier(), initialUser.getIdentifier());
+            if (existingPolicy.getUsers().contains(initialUser.getIdentifier())) {
+                LOGGER.debug("'{}' is already part of the policy for {} {}",
+                        new Object[]{initialUser.getIdentity(), action.toString(), resourceIdentifier});
+            } else {
+                LOGGER.debug("Adding '{}' to the policy for {} {}",
+                        new Object[]{initialUser.getIdentity(), action.toString(), resourceIdentifier});
+                insertPolicyUser(existingPolicy.getIdentifier(), userIdentifier);
+            }
         }
     }
 

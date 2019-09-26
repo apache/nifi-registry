@@ -138,7 +138,7 @@ public class TestDatabaseUserGroupProvider extends DatabaseBaseTest {
     }
 
     @Test
-    public void testOnConfiguredDoesNotCreateInitialUsersWhenExistingUsersAndGroups() {
+    public void testOnConfiguredStillCreatesInitialUsersWhenExistingUsersAndGroups() {
         // Create a user in the DB before we call onConfigured
         final String existingUserIdentity= "existingUser";
         final String existingUserIdentifier = UUID.randomUUID().toString();
@@ -150,6 +150,24 @@ public class TestDatabaseUserGroupProvider extends DatabaseBaseTest {
         configureWithInitialUsers(userIdentity1, userIdentity2);
 
         // Verify the initial users were not created
+        final Set<User> users = userGroupProvider.getUsers();
+        assertEquals(3, users.size());
+        assertNotNull(users.stream().filter(u -> u.getIdentity().equals(existingUserIdentity)).findFirst().orElse(null));
+        assertNotNull(users.stream().filter(u -> u.getIdentity().equals(userIdentity1)).findFirst().orElse(null));
+        assertNotNull(users.stream().filter(u -> u.getIdentity().equals(userIdentity2)).findFirst().orElse(null));
+    }
+
+    @Test
+    public void testOnConfiguredWithSameUsers() {
+        // Create a user in the DB before we call onConfigured
+        final String existingUserIdentity= "existingUser";
+        final String existingUserIdentifier = UUID.randomUUID().toString();
+        createUser(existingUserIdentifier, existingUserIdentity);
+
+        // Call onConfigured with same identity that already exists
+        configureWithInitialUsers(existingUserIdentity);
+
+        // Verify there is only one user
         final Set<User> users = userGroupProvider.getUsers();
         assertEquals(1, users.size());
         assertNotNull(users.stream().filter(u -> u.getIdentity().equals(existingUserIdentity)).findFirst().orElse(null));

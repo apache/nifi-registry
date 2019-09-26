@@ -33,6 +33,8 @@ import org.apache.nifi.registry.security.exception.SecurityProviderDestructionEx
 import org.apache.nifi.registry.security.util.ClassLoaderUtils;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.apache.nifi.registry.service.RegistryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -59,6 +61,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -78,6 +81,8 @@ import java.util.Set;
 @Transactional
 @Configuration("authorizerFactory")
 public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyProviderLookup, AuthorizerLookup, DisposableBean {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthorizerFactory.class);
 
     private static final String AUTHORIZERS_XSD = "/authorizers.xsd";
     private static final String JAXB_GENERATED_PATH = "org.apache.nifi.registry.security.authorization.generated";
@@ -849,8 +854,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             final UserGroupProvider userGroupProvider = accessPolicyProvider.getUserGroupProvider();
 
             // ensure that only one policy per resource-action exists
-            for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
-                if (policyExists(accessPolicyProvider, accessPolicy)) {
+            final Set<AccessPolicy> allPolicies = accessPolicyProvider.getAccessPolicies();
+            for (AccessPolicy accessPolicy : allPolicies) {
+                if (policyExists(allPolicies, accessPolicy)) {
                     throw new SecurityProviderCreationException(String.format("Found multiple policies for '%s' with '%s'.", accessPolicy.getResource(), accessPolicy.getAction()));
                 }
             }
@@ -939,7 +945,17 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
      * @return true if another access policy exists with the same resource and action, false otherwise
      */
     private static boolean policyExists(final AccessPolicyProvider accessPolicyProvider, final AccessPolicy checkAccessPolicy) {
-        for (AccessPolicy accessPolicy : accessPolicyProvider.getAccessPolicies()) {
+        return policyExists(accessPolicyProvider.getAccessPolicies(), checkAccessPolicy);
+    }
+
+    /**
+     * Checks if another policy exists with the same resource and action as the given policy.
+     *
+     * @param checkAccessPolicy an access policy being checked
+     * @return true if another access policy exists with the same resource and action, false otherwise
+     */
+    private static boolean policyExists(final Collection<AccessPolicy> policies, final AccessPolicy checkAccessPolicy) {
+        for (AccessPolicy accessPolicy : policies) {
             if (!accessPolicy.getIdentifier().equals(checkAccessPolicy.getIdentifier())
                     && accessPolicy.getResource().equals(checkAccessPolicy.getResource())
                     && accessPolicy.getAction().equals(checkAccessPolicy.getAction())) {
@@ -948,6 +964,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         }
         return false;
     }
+
 
     /**
      * Checks if another user or group exists with the same identity.

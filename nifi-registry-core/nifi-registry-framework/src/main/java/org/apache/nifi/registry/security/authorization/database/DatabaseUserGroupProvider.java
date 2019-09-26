@@ -62,12 +62,17 @@ public class DatabaseUserGroupProvider extends AbstractDatabaseUserGroupProvider
         final Set<String> initialUserIdentities = UserGroupProviderUtils.getInitialUserIdentities(configurationContext, identityMappings);
 
         for (final String initialUserIdentity : initialUserIdentities) {
-            final User initialUser = new User.Builder()
-                    .identifierGenerateFromSeed(initialUserIdentity)
-                    .identity(initialUserIdentity)
-                    .build();
-            addUser(initialUser);
-            LOGGER.info("Created initial user with identity {}", new Object[]{initialUserIdentity});
+            final User existingUser = getUserByIdentity(initialUserIdentity);
+            if (existingUser == null) {
+                final User initialUser = new User.Builder()
+                        .identifierGenerateFromSeed(initialUserIdentity)
+                        .identity(initialUserIdentity)
+                        .build();
+                addUser(initialUser);
+                LOGGER.info("Created initial user with identity {}", new Object[]{initialUserIdentity});
+            } else {
+                LOGGER.debug("User already exists with identity {}", new Object[]{initialUserIdentity});
+            }
         }
     }
 
