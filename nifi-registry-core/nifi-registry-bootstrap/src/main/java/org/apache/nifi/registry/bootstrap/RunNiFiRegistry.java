@@ -1055,6 +1055,7 @@ public class RunNiFiRegistry {
                     }
 
                     defaultLogger.warn("Apache NiFi Registry appears to have died. Restarting...");
+                    secretKey = null;
                     process = builder.start();
                     handleLogging(process);
 
