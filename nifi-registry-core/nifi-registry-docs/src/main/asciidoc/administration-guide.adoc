@@ -348,6 +348,7 @@ The default AccessPolicyProvider is the FileAccessPolicyProvider, however, you c
 |`Authorizations File`| The file where the FileAccessPolicyProvider will store policies. By default, _authorizations.xml_ in the `conf` directory is chosen.
 |`Initial Admin Identity`| The identity of an initial admin user that will be granted access to the UI and given the ability to create additional users, groups, and policies. For example, a certificate DN, LDAP identity, or Kerberos principal.
 |`NiFi Identity`| The identity of a NiFi instance/node that will be accessing this registry. Each NiFi Identity will be granted permission to proxy user requests, as well as read any bucket to perform synchronization status checks.
+|`NiFi Group Name`| The name of the group, whose members are NiFi instance/node identities, that will be accessing this registry. The members of this group will be granted permission to proxy user requests, as well as read any bucket to perform synchronization checks.
 |==================================================================================================================================================
 
 NOTE: The identities configured in the Initial Admin Identity and NiFi Identity properties must be available in the configured User Group Provider. Initial Admin Identity and NiFi Identity properties are only read by NiFi Registry when the Authorizations File is missing or empty on startup in order to seed the initial Authorizations File.
