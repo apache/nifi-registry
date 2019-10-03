@@ -24,6 +24,7 @@ import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
+import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.User;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
@@ -73,6 +74,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -147,6 +149,7 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
 
     static final String PROP_NIFI_IDENTITY_PREFIX = "NiFi Identity ";
     static final String PROP_USER_GROUP_PROVIDER = "User Group Provider";
+    static final String PROP_NIFI_IDENTITY_GROUP_NAME = "Identity Group Name";
     static final String PROP_AUTHORIZATIONS_FILE = "Authorizations File";
     static final String PROP_INITIAL_ADMIN_IDENTITY = "Initial Admin Identity";
     static final Pattern NIFI_IDENTITY_PATTERN = Pattern.compile(PROP_NIFI_IDENTITY_PREFIX + "\\S+");
@@ -156,6 +159,7 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
     private File authorizationsFile;
     private String initialAdminIdentity;
     private Set<String> nifiIdentities;
+    private String nifiIdentityGroupIdentifier;
     private List<IdentityMapping> identityMappings;
 
     private UserGroupProvider userGroupProvider;
@@ -215,6 +219,23 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
                 }
             }
 
+            PropertyValue identityGroupNameProp = configurationContext.getProperty(PROP_NIFI_IDENTITY_GROUP_NAME);
+            String identityGroupName = (identityGroupNameProp != null && identityGroupNameProp.isSet()) ? identityGroupNameProp.getValue() : null;
+            if (identityGroupName != null) {
+                logger.debug("{} is: {}", PROP_NIFI_IDENTITY_GROUP_NAME, identityGroupName);
+                Set<Group> groups = userGroupProvider.getGroups();
+                logger.trace("All authorization groups: {}", groups);
+                Optional<Group> identityGroupsOptional =
+                        groups.stream()
+                            .filter(group -> group.getName().equals(identityGroupName))
+                            .findFirst();
+                Group identityGroup = identityGroupsOptional
+                        .orElseThrow(() ->
+                            new SecurityProviderCreationException(String.format("Authorizations node group '%s' could not be found", identityGroupName))
+                        );
+                logger.debug("Identity Group is: {}", identityGroup);
+                nifiIdentityGroupIdentifier = identityGroup.getIdentifier();
+            }
             // load the authorizations
             load();
 
@@ -508,6 +529,13 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
                 populateNiFiIdentities(authorizations);
             }
 
+            if (!StringUtils.isEmpty(nifiIdentityGroupIdentifier)) {
+                logger.info("Populating proxy authorizations for NiFi identity group: [{}]", nifiIdentityGroupIdentifier);
+                // grant access to the resources needed for initial nifi-proxy identities
+                for (ResourceActionPair resourceAction : NIFI_ACCESS_POLICIES) {
+                    addGroupToAccessPolicy(authorizations, resourceAction.resource, nifiIdentityGroupIdentifier, resourceAction.actionCode);
+                }
+            }
             saveAndRefreshHolder(authorizations);
         } else {
             this.authorizationsHolder.set(authorizationsHolder);
@@ -564,6 +592,34 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
         }
     }
 
+    private void addGroupToAccessPolicy(Authorizations authorizations, String resource, String nifiIdentityGroupIdentifier, String action) {
+    Optional<Policy> policyOptional = authorizations.getPolicies().getPolicy().stream()
+            .filter(policy -> policy.getResource().equals(resource))
+            .filter(policy -> policy.getAction().equals(action))
+        .findAny();
+    if (policyOptional.isPresent()) {
+        Policy policy = policyOptional.get();
+        Policy.Group group = new Policy.Group();
+        group.setIdentifier(nifiIdentityGroupIdentifier);
+        policy.getGroup().add(group);
+    } else {
+        AccessPolicy.Builder accessPolicyBuilder =
+            new AccessPolicy.Builder()
+              .identifierGenerateFromSeed(resource + action)
+              .resource(resource)
+              .addGroup(nifiIdentityGroupIdentifier);
+      if (action.equals(READ_CODE)) {
+          accessPolicyBuilder.action(RequestAction.READ);
+      } else if (action.equals(WRITE_CODE)) {
+          accessPolicyBuilder.action(RequestAction.WRITE);
+      } else if (action.equals(DELETE_CODE)) {
+          accessPolicyBuilder.action(RequestAction.DELETE);
+      } else {
+          throw new IllegalStateException("Unknown Policy Action: " + action);
+      }
+      authorizations.getPolicies().getPolicy().add(createJAXBPolicy(accessPolicyBuilder.build()));
+    }
+  }
 
     /**
      * Creates and adds an access policy for the given resource, identity, and actions to the specified authorizations.
