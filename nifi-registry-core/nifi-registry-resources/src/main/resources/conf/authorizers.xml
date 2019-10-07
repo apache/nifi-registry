@@ -232,6 +232,9 @@
             NOTE: Any identity mapping rules specified in nifi-registry.properties will also be applied to the nifi identities,
             so the values should be the unmapped identities (i.e. full DN from a certificate). This identity must be found
             in the configured User Group Provider.
+        - NiFi Group Name: The name of the group, whose members are NiFi instance/node identities,
+            that will have access to this NiFi Registry and will be able to act as a proxy on behalf of a NiFi Registry end user.
+            The members of this group will be granted permission to proxy user requests, as well as read any bucket to perform synchronization checks.
     -->
     <accessPolicyProvider>
         <identifier>file-access-policy-provider</identifier>
@@ -239,6 +242,7 @@
         <property name="User Group Provider">file-user-group-provider</property>
         <property name="Authorizations File">./conf/authorizations.xml</property>
         <property name="Initial Admin Identity"><!-- CN=abc, OU=xyz --></property>
+        <property name="NiFi Group Name"></property>
 
         <!--<property name="NiFi Identity 1"></property>-->
     </accessPolicyProvider>

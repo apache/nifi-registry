@@ -149,7 +149,7 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
 
     static final String PROP_NIFI_IDENTITY_PREFIX = "NiFi Identity ";
     static final String PROP_USER_GROUP_PROVIDER = "User Group Provider";
-    static final String PROP_NIFI_IDENTITY_GROUP_NAME = "Identity Group Name";
+    static final String PROP_NIFI_GROUP_NAME = "NiFi Group Name";
     static final String PROP_AUTHORIZATIONS_FILE = "Authorizations File";
     static final String PROP_INITIAL_ADMIN_IDENTITY = "Initial Admin Identity";
     static final Pattern NIFI_IDENTITY_PATTERN = Pattern.compile(PROP_NIFI_IDENTITY_PREFIX + "\\S+");
@@ -219,10 +219,10 @@ public class FileAccessPolicyProvider implements ConfigurableAccessPolicyProvide
                 }
             }
 
-            PropertyValue identityGroupNameProp = configurationContext.getProperty(PROP_NIFI_IDENTITY_GROUP_NAME);
+            PropertyValue identityGroupNameProp = configurationContext.getProperty(PROP_NIFI_GROUP_NAME);
             String identityGroupName = (identityGroupNameProp != null && identityGroupNameProp.isSet()) ? identityGroupNameProp.getValue() : null;
-            if (identityGroupName != null) {
-                logger.debug("{} is: {}", PROP_NIFI_IDENTITY_GROUP_NAME, identityGroupName);
+            if (!StringUtils.isBlank(identityGroupName)) {
+                logger.debug("{} is: {}", PROP_NIFI_GROUP_NAME, identityGroupName);
                 Set<Group> groups = userGroupProvider.getGroups();
                 logger.trace("All authorization groups: {}", groups);
                 Optional<Group> identityGroupsOptional =
