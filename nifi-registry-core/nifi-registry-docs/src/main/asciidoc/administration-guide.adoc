@@ -66,6 +66,16 @@ When NiFi Registry first starts up, the following directories are created:
 
 See the <<system_properties>> section of this guide for more information about NiFi Registry configuration files.
 
+== Recommended Antivirus Exclusions
+Antivirus software can take a long time to scan large directories and the numerous files within them. Additionally, if the antivirus software locks files or directories during a scan, those resources are unavailable to NiFi Registry processes, causing latency or unavailability of these resources in a NiFi Registry instance. To prevent these performance and reliability issues from occurring, it is highly recommended to configure your antivirus software to skip scans on the following NiFi Registry directories:
+
+* `database`
+* `extension_bundles`
+* `flow_storage`
+* `logs`
+
+NOTE: The directories listed are generated at startup for a default NiFi Registry installation. Consider your configuration when determining directories to exclude during antivirus scans. For example, if an external database has been setup or if a different flow storage directory is specified in your configuration.
+
 [[security_configuration]]
 == Security Configuration
 
