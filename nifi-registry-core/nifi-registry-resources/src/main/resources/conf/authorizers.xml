@@ -265,7 +265,8 @@
             NOTE: Any identity mapping rules specified in nifi-registry.properties will also be applied to the nifi identities,
             so the values should be the unmapped identities (i.e. full DN from a certificate). This identity must be found
             in the configured User Group Provider.
-        - NiFi Group Name: The name of the group, whose members are NiFi instance/node identities,
+
+        - NiFi Group Name - The name of the group, whose members are NiFi instance/node identities,
             that will have access to this NiFi Registry and will be able to act as a proxy on behalf of a NiFi Registry end user.
             The members of this group will be granted permission to proxy user requests, as well as read any bucket to perform synchronization checks.
     -->
@@ -289,6 +290,8 @@
         - Initial Admin Identity - Same as Initial Admin Identity in the FileAccessPolicyProvider
 
         - NiFi Identity [unique key] - Same as NiFi Identity in the FileAccessPolicyProvider
+
+        - NiFi Group Name - Same as NiFi Group Name in the FileAccessPolicyProvider
     -->
     <!-- To enable the database-access-policy-provider remove 2 lines. This is 1 of 2.
     <accessPolicyProvider>
@@ -297,6 +300,7 @@
         <property name="User Group Provider">database-user-group-provider</property>
         <property name="Initial Admin Identity"></property>
         <property name="NiFi Identity 1"></property>
+        <property name="NiFi Group Name"></property>
     </accessPolicyProvider>
     To enable the database-access-policy-provider remove 2 lines. This is 2 of 2. -->
 

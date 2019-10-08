@@ -121,6 +121,7 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
     private Set<String> nifiIdentities;
     private String nifiGroupName;
     private List<IdentityMapping> identityMappings;
+    private List<IdentityMapping> groupMappings;
 
     private final AtomicReference<AuthorizationsHolder> authorizationsHolder = new AtomicReference<>();
 
@@ -151,6 +152,7 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
 
             // extract the identity mappings from nifi-registry.properties if any are provided
             identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
+            groupMappings = Collections.unmodifiableList(IdentityMappingUtil.getGroupMappings(properties));
 
             // get the value of the initial admin identity
             initialAdminIdentity = AccessPolicyProviderUtils.getInitialAdminIdentity(configurationContext, identityMappings);
@@ -159,7 +161,7 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
             nifiIdentities = AccessPolicyProviderUtils.getNiFiIdentities(configurationContext, identityMappings);
 
             // extract the group for nifi identities, if one exists
-            nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext);
+            nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext, groupMappings);
 
             // load the authorizations
             load();

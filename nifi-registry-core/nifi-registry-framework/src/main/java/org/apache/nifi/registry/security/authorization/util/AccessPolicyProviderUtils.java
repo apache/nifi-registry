@@ -98,18 +98,18 @@ public final class AccessPolicyProviderUtils {
      * Returns the value for the property 'NiFi Group Name' from the given configuration context.
      *
      * @param configurationContext the configuration context
-     * @return the group name, or null if not sepcified
+     * @return the group name, or null if not specified
      */
-    public static String getNiFiGroupName(final AuthorizerConfigurationContext configurationContext) {
+    public static String getNiFiGroupName(final AuthorizerConfigurationContext configurationContext, final List<IdentityMapping> groupMappings) {
         final PropertyValue identityGroupNameProp = configurationContext.getProperty(PROP_NIFI_GROUP_NAME);
-
         final String identityGroupName = (identityGroupNameProp != null && identityGroupNameProp.isSet()) ? identityGroupNameProp.getValue() : null;
+
         if (StringUtils.isBlank(identityGroupName)) {
             LOGGER.debug("NiFi Group Name was not specified");
             return null;
         }
 
-        return identityGroupName;
+        return IdentityMappingUtil.mapIdentity(identityGroupName, groupMappings);
     }
 
     /**

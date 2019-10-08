@@ -65,9 +65,11 @@ public class DatabaseAccessPolicyProvider extends AbstractDatabaseAccessPolicyPr
     @Override
     protected void populateInitialPolicies(final AuthorizerConfigurationContext configurationContext) {
         final List<IdentityMapping> identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
+        final List<IdentityMapping> groupMappings = Collections.unmodifiableList(IdentityMappingUtil.getGroupMappings(properties));
+
         final String initialAdminIdentity = AccessPolicyProviderUtils.getInitialAdminIdentity(configurationContext, identityMappings);
         final Set<String> nifiIdentities = AccessPolicyProviderUtils.getNiFiIdentities(configurationContext, identityMappings);
-        final String nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext);
+        final String nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext, groupMappings);
 
         if (!StringUtils.isBlank(initialAdminIdentity)) {
             LOGGER.info("Populating authorizations for Initial Admin: '" + initialAdminIdentity + "'");

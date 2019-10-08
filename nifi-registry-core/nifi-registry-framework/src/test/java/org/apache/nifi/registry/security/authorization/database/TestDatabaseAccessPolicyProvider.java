@@ -23,6 +23,7 @@ import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.AuthorizerInitializationContext;
 import org.apache.nifi.registry.security.authorization.ConfigurableAccessPolicyProvider;
+import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.RequestAction;
 import org.apache.nifi.registry.security.authorization.User;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
@@ -66,6 +67,9 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
     private static final Set<String> NIFI_IDENTITIES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
                     NIFI1_USER.getIdentity(), NIFI2_USER.getIdentity(), NIFI3_USER.getIdentity())));
 
+    private static final Group NIFI_GROUP = new Group.Builder().identifierGenerateRandom().name("nifi-nodes").build();
+    private static final Group OTHERS_GROUP = new Group.Builder().identifierGenerateRandom().name("other-members").build();
+
     @Autowired
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
@@ -88,6 +92,8 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
         when(userGroupProvider.getUserByIdentity(NIFI1_USER.getIdentity())).thenReturn(NIFI1_USER);
         when(userGroupProvider.getUserByIdentity(NIFI2_USER.getIdentity())).thenReturn(NIFI2_USER);
         when(userGroupProvider.getUserByIdentity(NIFI3_USER.getIdentity())).thenReturn(NIFI3_USER);
+        when(userGroupProvider.getGroups()).thenReturn(Collections.unmodifiableSet(
+                new HashSet<>(Arrays.asList(OTHERS_GROUP, NIFI_GROUP))));
 
         userGroupProviderLookup = mock(UserGroupProviderLookup.class);
         when(userGroupProviderLookup.getUserGroupProvider(UGP_IDENTIFIER)).thenReturn(userGroupProvider);
@@ -103,13 +109,18 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
         policyProvider = databaseProvider;
     }
 
+    private void configure(final String initialAdmin, final Set<String> nifiIdentifies) {
+        configure(initialAdmin, nifiIdentifies, null);
+    }
+
     /**
      * Helper method to call onConfigured with a configuration context.
      *
      * @param initialAdmin the initial admin identity to put in the context, or null
      * @param nifiIdentifies the nifi identities to put in the context, or null
+     * @param nifiGroupName the name of the nifi group
      */
-    private void configure(final String initialAdmin, final Set<String> nifiIdentifies) {
+    private void configure(final String initialAdmin, final Set<String> nifiIdentifies, final String nifiGroupName) {
         final Map<String,String> properties = new HashMap<>();
         properties.put(AbstractConfigurableAccessPolicyProvider.PROP_USER_GROUP_PROVIDER, UGP_IDENTIFIER);
 
@@ -124,17 +135,23 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
             }
         }
 
+        if (nifiGroupName != null) {
+            properties.put(AccessPolicyProviderUtils.PROP_NIFI_GROUP_NAME, nifiGroupName);
+        }
+
         final AuthorizerConfigurationContext configurationContext = mock(AuthorizerConfigurationContext.class);
         when(configurationContext.getProperties()).thenReturn(properties);
         when(configurationContext.getProperty(AbstractConfigurableAccessPolicyProvider.PROP_USER_GROUP_PROVIDER))
                 .thenReturn(new StandardPropertyValue(UGP_IDENTIFIER));
         when(configurationContext.getProperty(AccessPolicyProviderUtils.PROP_INITIAL_ADMIN_IDENTITY))
                 .thenReturn(new StandardPropertyValue(initialAdmin));
+        when(configurationContext.getProperty(AccessPolicyProviderUtils.PROP_NIFI_GROUP_NAME))
+                .thenReturn(new StandardPropertyValue(nifiGroupName));
         policyProvider.onConfigured(configurationContext);
     }
 
     private void configure() {
-        configure(null, null);
+        configure(null, null, null);
     }
 
     // -- Helper methods for accessing the DB outside of the provider
@@ -164,11 +181,11 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
     // -- Test onConfigured
 
     @Test
-    public void testOnConfiguredCreatesInitialPoliciesWhenNoPolicies() {
+    public void testOnConfiguredCreatesInitialPolicies() {
         // verify no policies in DB
         assertEquals(0, getPolicyCount());
 
-        configure(ADMIN_USER.getIdentity(), NIFI_IDENTITIES);
+        configure(ADMIN_USER.getIdentity(), NIFI_IDENTITIES, NIFI_GROUP.getName());
 
         // verify policies got created for admin and NiFi identities
         final Set<AccessPolicy> policies = policyProvider.getAccessPolicies();
@@ -213,6 +230,26 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
             assertNotNull(p.getUsers());
             assertEquals(3, p.getUsers().size());
             assertFalse(p.getUsers().contains(ADMIN_USER.getIdentifier()));
+        });
+    }
+
+    @Test
+    public void testOnConfiguredWhenOnlyNiFiGroupName() {
+        // verify no policies in DB
+        assertEquals(0, getPolicyCount());
+
+        configure(null, null, NIFI_GROUP.getName());
+
+        // verify policies got created for admin and NiFi identities
+        final Set<AccessPolicy> policies = policyProvider.getAccessPolicies();
+        assertNotNull(policies);
+        assertEquals(4, policies.size());
+
+        // verify each policy only has the initial admin
+        policies.forEach(p -> {
+            assertNotNull(p.getGroups());
+            assertEquals(1, p.getGroups().size());
+            assertTrue(p.getGroups().contains(NIFI_GROUP.getIdentifier()));
         });
     }
 
@@ -262,6 +299,29 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
             assertNotNull(p.getUsers());
             assertEquals(1, p.getUsers().size());
             assertTrue(p.getUsers().contains(ADMIN_USER.getIdentifier()));
+        });
+    }
+
+    @Test
+    public void testOnConfiguredAppliesGroupMappings() {
+        // Set up an identity mapping for kerberos principals
+        properties.setProperty("nifi.registry.security.group.mapping.pattern.anyGroup", "^(.*)$");
+        properties.setProperty("nifi.registry.security.group.mapping.value.anyGroup", "$1");
+        properties.setProperty("nifi.registry.security.group.mapping.transform.anyGroup", "LOWER");
+
+        // Call configure with NiFi Group in all uppercase, should get mapped to lower case
+        configure(null, null, NIFI_GROUP.getName().toUpperCase());
+
+        // verify policies got created for admin and NiFi identities
+        final Set<AccessPolicy> policies = policyProvider.getAccessPolicies();
+        assertNotNull(policies);
+        assertEquals(4, policies.size());
+
+        // verify each policy only has the initial admin
+        policies.forEach(p -> {
+            assertNotNull(p.getGroups());
+            assertEquals(1, p.getGroups().size());
+            assertTrue(p.getGroups().contains(NIFI_GROUP.getIdentifier()));
         });
     }
 
