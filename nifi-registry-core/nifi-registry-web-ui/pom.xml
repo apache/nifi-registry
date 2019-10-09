@@ -235,7 +235,7 @@
                         </goals>
                         <phase>initialize</phase>
                         <configuration>
-                            <nodeVersion>v8.10.0</nodeVersion>
+                            <nodeVersion>v10.16.3</nodeVersion>
                         </configuration>
                     </execution>
                     <!--
