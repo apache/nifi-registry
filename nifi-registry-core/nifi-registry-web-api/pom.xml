@@ -282,6 +282,28 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!-- This profile provides configuration to allow NiFi Registry to be compiled on JDKs above 1.8. -->
+            <id>jigsaw</id>
+            <activation>
+                <jdk>(1.8,)</jdk>
+            </activation>
+            <!-- These dependencies would normally be transitive deps of framework and data model, but we want to
+                redeclare them with provided scope so that they don't end up in WEB-INF/lib of the WAR, they will
+                be added to the lib/java11 directory and added to the classpath based on the JVM being used -->
+            <dependencies>
+                <dependency>
+                    <groupId>jakarta.xml.bind</groupId>
+                    <artifactId>jakarta.xml.bind-api</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 
     <dependencies>
@@ -299,6 +321,11 @@
                 <exclusion>
                     <groupId>org.springframework</groupId>
                     <artifactId>spring-aop</artifactId>
+                </exclusion>
+                <!-- JDK 8 will already have jaxb-api, and JDKs above 8 we activate a profile to include it -->
+                <exclusion>
+                    <groupId>javax.xml.bind</groupId>
+                    <artifactId>jaxb-api</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -424,13 +451,11 @@
         <dependency>
             <groupId>org.spockframework</groupId>
             <artifactId>spock-core</artifactId>
-            <version>1.0-groovy-2.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>2.4.12</version>
+            <artifactId>groovy-test</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
