@@ -17,12 +17,14 @@
 
 package org.apache.nifi.registry.bootstrap.util;
 
-import java.lang.reflect.Field;
-
-import org.slf4j.Logger;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
 import com.sun.jna.platform.win32.WinNT;
+import org.slf4j.Logger;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * OS specific utilities with generic method interfaces
@@ -94,14 +96,39 @@ public final class OSUtils {
      * Purpose for the Logger is to log any interaction for debugging.
      */
     public static Long getProcessId(final Process process, final Logger logger) {
-        if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
-            return getUnicesPid(process, logger);
+        /*
+         * NiFi Registry built with Java 1.8 and running on Java 9.  Reflectively invoke Process.pid() on the given process
+         * instance to get the PID of this Java process.  Reflection is required in this scenario due to NiFi Registry being
+         * compiled on Java 1.8, which does not have the Process API improvements available in Java 9.
+         *
+         * Otherwise, if NiFi is running on Java 1.8, attempt to get PID using capabilities available on Java 1.8.
+         *
+         * TODO: When minimum Java version updated to Java 9+, this class should be removed with the addition
+         *  of the pid method to the Process API.
+         */
+        Long pid = null;
+        if (!System.getProperty("java.version").startsWith("1.")) {
+            try {
+                Method pidMethod = process.getClass().getMethod("pid");
+                pidMethod.setAccessible(true);
+                Object pidMethodResult = pidMethod.invoke(process);
+                if (Long.class.isAssignableFrom(pidMethodResult.getClass())) {
+                    pid = (Long) pidMethodResult;
+                } else {
+                    logger.debug("Could not determine PID for child process because returned PID was not " +
+                            "assignable to type " + Long.class.getName());
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                logger.debug("Could not find PID for child process due to {}", e);
+            }
+        } else if (process.getClass().getName().equals("java.lang.UNIXProcess")) {
+            pid = getUnicesPid(process, logger);
         } else if (process.getClass().getName().equals("java.lang.Win32Process")
                 || process.getClass().getName().equals("java.lang.ProcessImpl")) {
-            return getWindowsProcessId(process, logger);
+            pid = getWindowsProcessId(process, logger);
         }
 
-        return null;
+        return pid;
     }
 
 }

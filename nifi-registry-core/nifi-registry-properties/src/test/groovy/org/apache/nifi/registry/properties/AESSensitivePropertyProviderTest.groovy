@@ -17,7 +17,6 @@
 package org.apache.nifi.registry.properties
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.util.encoders.DecoderException
 import org.bouncycastle.util.encoders.Hex
 import org.junit.*
 import org.junit.runner.RunWith
@@ -83,7 +82,7 @@ class AESSensitivePropertyProviderTest extends GroovyTestCase {
                 if (Cipher.getMaxAllowedKeyLength("AES") < keySize) {
                     throw new IllegalArgumentException("The JCE unlimited strength cryptographic jurisdiction policies are not installed, so the max key size is 128 bits")
                 }
-                return KEY_256_HEX[0..<(keySize / 4)]
+                return KEY_256_HEX[0..<keySize.intdiv(4)]
             default:
                 throw new IllegalArgumentException("Key size ${keySize} bits is not valid")
         }

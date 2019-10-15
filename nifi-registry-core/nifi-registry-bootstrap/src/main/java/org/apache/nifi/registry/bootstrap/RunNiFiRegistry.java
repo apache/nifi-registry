@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -920,6 +921,20 @@ public class RunNiFiRegistry {
             cpFiles.add(file.getAbsolutePath());
         }
 
+        final String runtimeJavaVersion = System.getProperty("java.version");
+        defaultLogger.info("Runtime Java version: {}", runtimeJavaVersion);
+        if (Integer.parseInt(runtimeJavaVersion.substring(0, runtimeJavaVersion.indexOf('.'))) >= 11) {
+            // If running on Java 11 or greater, add lib/java11 to the classpath.
+            // TODO: Once the minimum Java version requirement of NiFi Registry is 11, this processing should be removed.
+            final String libJava11Filename = replaceNull(props.get("lib.dir"), "./lib").trim() + "/java11";
+            final File libJava11Dir = getFile(libJava11Filename, workingDir);
+            if (libJava11Dir.exists()) {
+                for (final File file : Objects.requireNonNull(libJava11Dir.listFiles((dir, filename) -> filename.toLowerCase().endsWith(".jar")))) {
+                    cpFiles.add(file.getAbsolutePath());
+                }
+            }
+        }
+
         final StringBuilder classPathBuilder = new StringBuilder();
         for (int i = 0; i < cpFiles.size(); i++) {
             final String filename = cpFiles.get(i);
@@ -961,6 +976,13 @@ public class RunNiFiRegistry {
         cmd.add("-Dnifi.registry.bootstrap.config.docs.dir=" + nifiRegistryDocsDir);
         cmd.add("-Dapp=NiFiRegistry");
         cmd.add("-Dorg.apache.nifi.registry.bootstrap.config.log.dir=" + nifiRegistryLogDir);
+
+        if (runtimeJavaVersion.startsWith("9") || runtimeJavaVersion.startsWith("10")) {
+            // running on Java 9+, java.xml.bind module must be made available
+            // running on Java 9 or 10, internal module java.xml.bind module must be made available
+            cmd.add("--add-modules=java.xml.bind");
+        }
+
         cmd.add("org.apache.nifi.registry.NiFiRegistry");
 
         builder.command(cmd);
