@@ -64,31 +64,23 @@ Registry—a subproject of Apache NiFi—is a complementary application that pro
 
 ## Database Testing
 
-In order to ensure that NiFi Registry works correctly against different relational databases, the existing integration tests can be run against different databases by leveraging the [Testcontainers framework](https://www.testcontainers.org/).
+In order to ensure that NiFi Registry works correctly against different relational databases, 
+the existing integration tests can be run against different databases by leveraging the [Testcontainers framework](https://www.testcontainers.org/).
 
-Spring profiles are used to control the DataSource factory that will be made available to the Spring application context. DataSource factories are provided that use the Testcontainers framework to start a Docker container for a given database and create a corresponding DataSource. If no profile is specified then an H2 DataSource will be used by default and no Docker containers are required.
+Spring profiles are used to control the DataSource factory that will be made available to the Spring application context. 
+DataSource factories are provided that use the Testcontainers framework to start a Docker container for a given database and create a corresponding DataSource. 
+If no profile is specified then an H2 DataSource will be used by default and no Docker containers are required.
 
 Assuming Docker is running on the system where the build is running, then the following commands can be run:
 
-* H2 (default)
-    
-      mvn clean install -Pcontrib-check,integration-tests
-      
-* Postgres
-
-      mvn clean install -Pcontrib-check,integration-tests -Dspring.profiles.active=postgres
-      
-* MySQL 5.6
-
-      mvn clean install -Pcontrib-check,integration-tests -Dspring.profiles.active=mysql-56
-      
-* MySQL 5.7
-
-      mvn clean install -Pcontrib-check,integration-tests -Dspring.profiles.active=mysql-57
-      
-* MySQL 8.0
-
-      mvn clean install -Pcontrib-check,integration-tests -Dspring.profiles.active=mysql-8
+| Target Database | Build Command | 
+| --------------- | ------------- |
+| All supported   | `mvn verify -Ptest-all-dbs` |
+| H2 (default)    | `mvn verify` |
+| PostgreSQL      | `mvn verify -Dspring.profiles.active=postgres` | 
+| MySQL 5.6       | `mvn verify -Pcontrib-check -Dspring.profiles.active=mysql-56` |
+| MySQL 5.7       | `mvn verify -Pcontrib-check -Dspring.profiles.active=mysql-57` |
+| MySQL 8         | `mvn verify -Pcontrib-check -Dspring.profiles.active=mysql-8`  |
       
  When one of the Testcontainer profiles is activated, the test output should show logs that indicate a container has been started, such as the following:
  
