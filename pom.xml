@@ -105,6 +105,7 @@
 	    <h2.version>1.4.197</h2.version>
         <groovy.version>2.5.4</groovy.version>
         <groovy.eclipse.compiler.version>3.4.0-01</groovy.eclipse.compiler.version>
+        <jaxb.version>2.3.2</jaxb.version>
     </properties>
 
     <repositories>
@@ -210,6 +211,17 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>3.5</version>
+            </dependency>
+        <!-- lib/java11 -->
+            <dependency>
+                <groupId>jakarta.xml.bind</groupId>
+                <artifactId>jakarta.xml.bind-api</artifactId>
+                <version>${jaxb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jaxb</groupId>
+                <artifactId>jaxb-runtime</artifactId>
+                <version>${jaxb.version}</version>
             </dependency>
 	    <!-- NiFi Registry Modules -->
             <dependency>
@@ -390,7 +402,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>jaxb2-maven-plugin</artifactId>
-                    <version>2.3.1</version>
+                    <version>2.5.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -493,8 +505,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
                 <dependencies>
                     <dependency>
@@ -762,6 +774,17 @@
                     </plugins>
                 </pluginManagement>
             </build>
+        </profile>
+        <profile>
+            <!-- This profile provides configuration to allow NiFi Registry to be compiled on JDKs above 1.8. -->
+            <id>jigsaw</id>
+            <activation>
+                <jdk>(1.8,)</jdk>
+            </activation>
+            <properties>
+                <maven.compiler.source>11</maven.compiler.source>
+                <maven.compiler.target>11</maven.compiler.target>
+            </properties>
         </profile>
     </profiles>
 
