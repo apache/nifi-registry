@@ -588,6 +588,19 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.rat</groupId>
                 <artifactId>apache-rat-plugin</artifactId>
                 <configuration>
@@ -664,13 +677,8 @@
             </build>
         </profile>
         <profile>
-            <!-- Performs execution of Integration Tests using the Maven
-                FailSafe Plugin. The view of integration tests in this context are those
-                tests loading a full web server with API war with no mocks. -->
-            <id>integration-tests</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <!-- Disables execution of integration tests managed by the Maven FailSafe plugin. -->
+            <id>no-integration-tests</id>
             <build>
                 <plugins>
                     <plugin>
@@ -682,7 +690,7 @@
                                     <goal>integration-test</goal>
                                     <goal>verify</goal>
                                 </goals>
-                                <phase>verify</phase>
+                                <phase>none</phase>
                             </execution>
                         </executions>
                     </plugin>
