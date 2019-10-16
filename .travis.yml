@@ -15,15 +15,49 @@
 
 language: java
 
-env:
-    - USER_LANGUAGE=en USER_REGION=US'
-    - USER_LANGUAGE=fr USER_REGION=FR'
-    - USER_LANGUAGE=ja USER_REGION=JP'
+matrix:
+  include:
+    - stage: "Build"
+      name: "Build Java 8 EN"
+      jdk: openjdk8
+      script: >-
+        mvn clean install -Pcontrib-check,jsUnitTests
+        -Dmaven.surefire.arguments="-Duser.language=en -Duser.region=US"
+        | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
+    - stage: "Build"
+      name: "Build Java 8 FR"
+      jdk: openjdk8
+      script: >-
+        mvn clean install -Pcontrib-check,jsUnitTests
+        -Dmaven.surefire.arguments="-Duser.language=fr -Duser.region=FR"
+        | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
+    - stage: "Build"
+      name: "Build Java 8 JP"
+      jdk: openjdk8
+      script: >-
+        mvn clean install -Pcontrib-check,jsUnitTests
+        -Dmaven.surefire.arguments="-Duser.language=ja -Duser.region=JP"
+        | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
+  - stage: "Build"
+      name: "Build Java 11 EN"
+      # Do not specify "jdk:" here, install-jdk.sh will download the JDK set JAVA_HOME appropriately
+      before_script:
+        # Download the newest version of sormuras' install-jdk.sh to /tmp
+        # install-jdk.sh is used by Travis internally, sormoras is the maintainer of that script
+        - wget -O /tmp/install-jdk.sh https://github.com/sormuras/bach/raw/master/install-jdk.sh
+        # Need to specifically install AdoptOpenJDK 11.0.4 (Linux, HotSpot) since Travis does not offer it by default
+        # The link to the AdoptOpenJDK 11.0.4 .tar.gz is taken directly from AdoptOpenJDK's website
+        - >-
+          source /tmp/install-jdk.sh
+          --url 'https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.4%2B11/OpenJDK11U-jdk_x64_linux_hotspot_11.0.4_11.tar.gz'
+      script:
+        - >-
+          mvn clean install -Pcontrib-check,jsUnitTests
+          -Dmaven.surefire.arguments="-Duser.language=en -Duser.region=US"
+          | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
+
 
 os: linux
-
-jdk:
-    - openjdk8
 
 # Caches mvn repository in order to speed up builds
 cache:
@@ -55,7 +89,4 @@ before_script:
 # skip the installation step entirely
 install: true
 
-#build commands
-script:
-    - mvn clean install -Pcontrib-check,jsUnitTests | grep -v -F -f .travis-output-filters && exit ${PIPESTATUS[0]}
 
