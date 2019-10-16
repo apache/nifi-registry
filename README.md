@@ -42,10 +42,6 @@ Registry—a subproject of Apache NiFi—is a complementary application that pro
     If you wish to enable style and license checks, specify the contrib-check profile:
     
         mvn clean install -Pcontrib-check
-        
-    If you wish to run integration tests and contrib-check, specify both profiles:
-    
-        mvn clean install -Pcontrib-check,integration-tests
 
 3) Start the application
 
