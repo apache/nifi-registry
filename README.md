@@ -77,7 +77,8 @@ Assuming Docker is running on the system where the build is running, then the fo
 | --------------- | ------------- |
 | All supported   | `mvn verify -Ptest-all-dbs` |
 | H2 (default)    | `mvn verify` |
-| PostgreSQL      | `mvn verify -Dspring.profiles.active=postgres` | 
+| PostgreSQL 9.x  | `mvn verify -Dspring.profiles.active=postgres` | 
+| PostgreSQL 10.x | `mvn verify -Dspring.profiles.active=postgres-10` | 
 | MySQL 5.6       | `mvn verify -Pcontrib-check -Dspring.profiles.active=mysql-56` |
 | MySQL 5.7       | `mvn verify -Pcontrib-check -Dspring.profiles.active=mysql-57` |
 | MySQL 8         | `mvn verify -Pcontrib-check -Dspring.profiles.active=mysql-8`  |
