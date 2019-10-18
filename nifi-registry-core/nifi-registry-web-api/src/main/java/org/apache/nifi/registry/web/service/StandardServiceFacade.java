@@ -46,6 +46,7 @@ import org.apache.nifi.registry.extension.repo.ExtensionRepoVersionSummary;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
+import org.apache.nifi.registry.revision.api.InvalidRevisionException;
 import org.apache.nifi.registry.revision.entity.RevisableEntity;
 import org.apache.nifi.registry.revision.entity.RevisableEntityService;
 import org.apache.nifi.registry.revision.entity.RevisionInfo;
@@ -60,6 +61,7 @@ import org.apache.nifi.registry.service.RegistryService;
 import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.web.link.LinkService;
 import org.apache.nifi.registry.web.security.PermissionsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +79,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -88,11 +91,15 @@ import java.util.stream.Collectors;
 @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Throwable.class)
 public class StandardServiceFacade implements ServiceFacade {
 
+    private static final String INVALID_REVISION_MSG = "The %s you attempted to %s is out of date with the server. " +
+            "You may need to refresh your client and try again.";
+
     public static final String USER_GROUP_ENTITY_TYPE = "User Group";
     public static final String USER_ENTITY_TYPE = "User";
     public static final String ACCESS_POLICY_ENTITY_TYPE = "Access Policy";
     public static final String VERSIONED_FLOW_ENTITY_TYPE = "Versioned Flow";
     public static final String BUCKET_ENTITY_TYPE = "Bucket";
+
     private final RegistryService registryService;
     private final ExtensionService extensionService;
     private final AuthorizationService authorizationService;
@@ -101,6 +108,7 @@ public class StandardServiceFacade implements ServiceFacade {
     private final PermissionsService permissionsService;
     private final LinkService linkService;
 
+    @Autowired
     public StandardServiceFacade(final RegistryService registryService,
                                  final ExtensionService extensionService,
                                  final AuthorizationService authorizationService,
@@ -130,7 +138,8 @@ public class StandardServiceFacade implements ServiceFacade {
 
         bucket.setIdentifier(UUID.randomUUID().toString());
 
-        final Bucket createdBucket = entityService.create(bucket, currentUserIdentity(), () -> registryService.createBucket(bucket));
+        final Bucket createdBucket = createRevisableEntity(bucket, BUCKET_ENTITY_TYPE, currentUserIdentity(),
+                () -> registryService.createBucket(bucket));
         permissionsService.populateBucketPermissions(createdBucket);
         linkService.populateLinks(createdBucket);
         return createdBucket;
@@ -165,7 +174,7 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.WRITE, bucket.getIdentifier());
         validateUpdateOfRevisableEntity(bucket, BUCKET_ENTITY_TYPE);
 
-        final Bucket updatedBucket = entityService.update(bucket, currentUserIdentity(),
+        final Bucket updatedBucket = updateRevisableEntity(bucket, BUCKET_ENTITY_TYPE, currentUserIdentity(),
                 () -> registryService.updateBucket(bucket));
         permissionsService.populateBucketPermissions(updatedBucket);
         linkService.populateLinks(updatedBucket);
@@ -177,7 +186,8 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.DELETE, bucketIdentifier);
         validateDeleteOfRevisableEntity(bucketIdentifier, revisionInfo, BUCKET_ENTITY_TYPE);
 
-        return entityService.delete(bucketIdentifier, revisionInfo, () -> registryService.deleteBucket(bucketIdentifier));
+        return deleteRevisableEntity(bucketIdentifier, BUCKET_ENTITY_TYPE, revisionInfo,
+                () -> registryService.deleteBucket(bucketIdentifier));
     }
 
     // ---------------------- BucketItem methods ----------------------------------------------
@@ -217,7 +227,7 @@ public class StandardServiceFacade implements ServiceFacade {
 
         versionedFlow.setIdentifier(UUID.randomUUID().toString());
 
-        final VersionedFlow createdFlow = entityService.create(versionedFlow, currentUserIdentity(),
+        final VersionedFlow createdFlow = createRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE, currentUserIdentity(),
                 () -> registryService.createFlow(bucketIdentifier, versionedFlow));
         permissionsService.populateItemPermissions(createdFlow);
         linkService.populateLinks(createdFlow);
@@ -260,7 +270,7 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.WRITE, versionedFlow);
         validateUpdateOfRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE);
 
-        final VersionedFlow updatedFlow =  entityService.update(versionedFlow, currentUserIdentity(),
+        final VersionedFlow updatedFlow =  updateRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE, currentUserIdentity(),
                 () -> registryService.updateFlow(versionedFlow));
         permissionsService.populateItemPermissions(updatedFlow);
         linkService.populateLinks(updatedFlow);
@@ -272,7 +282,8 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.DELETE, bucketIdentifier);
         validateDeleteOfRevisableEntity(flowIdentifier, revisionInfo, VERSIONED_FLOW_ENTITY_TYPE);
 
-        return entityService.delete(flowIdentifier, revisionInfo, () -> registryService.deleteFlow(bucketIdentifier, flowIdentifier));
+        return deleteRevisableEntity(flowIdentifier, VERSIONED_FLOW_ENTITY_TYPE, revisionInfo,
+                () -> registryService.deleteFlow(bucketIdentifier, flowIdentifier));
     }
 
     // ---------------------- Flow Snapshot methods ----------------------------------------------
@@ -783,7 +794,7 @@ public class StandardServiceFacade implements ServiceFacade {
         validateCreationOfRevisableEntity(user, USER_ENTITY_TYPE);
 
         user.setIdentifier(UUID.randomUUID().toString());
-        return entityService.create(user, currentUserIdentity(), () -> authorizationService.createUser(user));
+        return createRevisableEntity(user, USER_ENTITY_TYPE, currentUserIdentity(), () -> authorizationService.createUser(user));
     }
 
     @Override
@@ -805,7 +816,7 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.WRITE);
         validateUpdateOfRevisableEntity(user, USER_ENTITY_TYPE);
-        return entityService.update(user, currentUserIdentity(), () -> authorizationService.updateUser(user));
+        return updateRevisableEntity(user, USER_ENTITY_TYPE, currentUserIdentity(), () -> authorizationService.updateUser(user));
     }
 
     @Override
@@ -814,7 +825,7 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeTenantsAccess(RequestAction.DELETE);
         validateDeleteOfRevisableEntity(identifier, revisionInfo, USER_ENTITY_TYPE);
 
-        return entityService.delete(identifier, revisionInfo, () -> authorizationService.deleteUser(identifier));
+        return deleteRevisableEntity(identifier, USER_ENTITY_TYPE, revisionInfo, () -> authorizationService.deleteUser(identifier));
     }
 
     // ---------------------- UserGroup methods ----------------------------------------------
@@ -826,7 +837,8 @@ public class StandardServiceFacade implements ServiceFacade {
         validateCreationOfRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE);
 
         userGroup.setIdentifier(UUID.randomUUID().toString());
-        return entityService.create(userGroup, currentUserIdentity(), () -> authorizationService.createUserGroup(userGroup));
+        return createRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE, currentUserIdentity(),
+                () -> authorizationService.createUserGroup(userGroup));
     }
 
     @Override
@@ -848,7 +860,8 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.WRITE);
         validateUpdateOfRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE);
-        return entityService.update(userGroup, currentUserIdentity(), () -> authorizationService.updateUserGroup(userGroup));
+        return updateRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE, currentUserIdentity(),
+                () -> authorizationService.updateUserGroup(userGroup));
     }
 
     @Override
@@ -857,7 +870,8 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeTenantsAccess(RequestAction.DELETE);
         validateDeleteOfRevisableEntity(identifier, revisionInfo, USER_GROUP_ENTITY_TYPE);
 
-        return entityService.delete(identifier, revisionInfo, () -> authorizationService.deleteUserGroup(identifier));
+        return deleteRevisableEntity(identifier, USER_GROUP_ENTITY_TYPE, revisionInfo,
+                () -> authorizationService.deleteUserGroup(identifier));
     }
 
     // ---------------------- AccessPolicy methods ----------------------------------------------
@@ -869,7 +883,8 @@ public class StandardServiceFacade implements ServiceFacade {
         validateCreationOfRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE);
 
         accessPolicy.setIdentifier(UUID.randomUUID().toString());
-        return entityService.create(accessPolicy, currentUserIdentity(), () -> authorizationService.createAccessPolicy(accessPolicy));
+        return createRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE, currentUserIdentity(),
+                () -> authorizationService.createAccessPolicy(accessPolicy));
     }
 
     @Override
@@ -898,7 +913,8 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurablePolicies();
         authorizePoliciesAccess(RequestAction.WRITE);
         validateUpdateOfRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE);
-        return entityService.update(accessPolicy, currentUserIdentity(), () -> authorizationService.updateAccessPolicy(accessPolicy));
+        return updateRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE, currentUserIdentity(),
+                () -> authorizationService.updateAccessPolicy(accessPolicy));
     }
 
     @Override
@@ -907,7 +923,8 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizePoliciesAccess(RequestAction.DELETE);
         validateDeleteOfRevisableEntity(identifier, revisionInfo, ACCESS_POLICY_ENTITY_TYPE);
 
-        return entityService.delete(identifier, revisionInfo, () -> authorizationService.deleteAccessPolicy(identifier));
+        return deleteRevisableEntity(identifier, ACCESS_POLICY_ENTITY_TYPE, revisionInfo,
+                () -> authorizationService.deleteAccessPolicy(identifier));
     }
 
     @Override
@@ -1096,4 +1113,35 @@ public class StandardServiceFacade implements ServiceFacade {
             throw new IllegalArgumentException("Revision info must be specified.");
         }
     }
+
+    private <T extends RevisableEntity> T createRevisableEntity(final T requestEntity, final String entityTypeName,
+                                                                final String creatorIdentity, final Supplier<T> createEntity) {
+        try {
+            return entityService.create(requestEntity, creatorIdentity, createEntity);
+        } catch (InvalidRevisionException e) {
+            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "create");
+            throw new InvalidRevisionException(msg, e);
+        }
+    }
+
+    private <T extends RevisableEntity> T updateRevisableEntity(final T requestEntity, final String entityTypeName,
+                                                                final String updaterIdentity, final Supplier<T> updateEntity) {
+        try {
+            return entityService.update(requestEntity, updaterIdentity, updateEntity);
+        } catch (InvalidRevisionException e) {
+            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "update");
+            throw new InvalidRevisionException(msg, e);
+        }
+    }
+
+    private <T extends RevisableEntity> T deleteRevisableEntity(final String entityIdentifier, final String entityTypeName,
+                                                 final RevisionInfo revisionInfo, final Supplier<T> deleteEntity) {
+        try {
+            return entityService.delete(entityIdentifier, revisionInfo, deleteEntity);
+        } catch (InvalidRevisionException e) {
+            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "delete");
+            throw new InvalidRevisionException(msg, e);
+        }
+    }
+
 }
