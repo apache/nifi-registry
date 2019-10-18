@@ -461,9 +461,18 @@ NfRegistryManageGroup.prototype = {
         }).afterClosed().subscribe(function () {
             self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier)
                 .subscribe(function (response) {
-                    self.nfRegistryService.group = response;
-                    self.groupname = response.identity;
-                    self.filterUsers();
+                    if (!response.status || response.status === 200) {
+                        self.nfRegistryService.group = response;
+                        self.groupname = response.identity;
+                        self.filterUsers();
+
+                        self.nfRegistryService.groups.filter(function (group) {
+                            return self.nfRegistryService.group.identifier === group.identifier;
+                        }).forEach(function (group) {
+                            group.identity = response.identity;
+                            group.revision = response.revision;
+                        });
+                    }
                 });
         });
     },
@@ -588,6 +597,7 @@ NfRegistryManageGroup.prototype = {
                     return self.nfRegistryService.group.identifier === group.identifier;
                 }).forEach(function (group) {
                     group.identity = response.identity;
+                    group.revision = response.revision;
                 });
                 self.snackBarService.openCoaster({
                     title: 'Success',
@@ -616,9 +626,13 @@ NfRegistryManageGroup.prototype = {
                 }).afterClosed().subscribe(function (accept) {
                     self.nfRegistryApi.getUserGroup(self.nfRegistryService.group.identifier)
                         .subscribe(function (response) {
-                            self.nfRegistryService.group = response;
-                            self.groupname = response.identity;
-                            self.filterUsers();
+                            if (!response.status || response.status === 200) {
+                                self.nfRegistryService.group = response;
+                                self.groupname = response.identity;
+                                self.filterUsers();
+                            } else if (response.status === 404) {
+                                self.router.navigateByUrl('administration/users');
+                            }
                         });
                 });
             }

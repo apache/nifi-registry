@@ -462,9 +462,18 @@ NfRegistryManageUser.prototype = {
         }).afterClosed().subscribe(function () {
             self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                 .subscribe(function (response) {
-                    self.nfRegistryService.user = response;
-                    self.username = response.identity;
-                    self.filterGroups(this.sortBy, this.sortOrder);
+                    if (!response.status || response.status === 200) {
+                        self.nfRegistryService.user = response;
+                        self.username = response.identity;
+                        self.filterGroups(this.sortBy, this.sortOrder);
+
+                        self.nfRegistryService.users.filter(function (user) {
+                            return self.nfRegistryService.user.identifier === user.identifier;
+                        }).forEach(function (user) {
+                            user.identity = response.identity;
+                            user.revision = response.revision;
+                        });
+                    }
                 });
         });
     },
@@ -595,6 +604,7 @@ NfRegistryManageUser.prototype = {
                     return self.nfRegistryService.user.identifier === user.identifier;
                 }).forEach(function (user) {
                     user.identity = response.identity;
+                    user.revision = response.revision;
                 });
                 self.snackBarService.openCoaster({
                     title: 'Success',
@@ -623,9 +633,13 @@ NfRegistryManageUser.prototype = {
                 }).afterClosed().subscribe(function (accept) {
                     self.nfRegistryApi.getUser(self.nfRegistryService.user.identifier)
                         .subscribe(function (response) {
-                            self.nfRegistryService.user = response;
-                            self.username = response.identity;
-                            self.filterGroups(this.sortBy, this.sortOrder);
+                            if (!response.status || response.status === 200) {
+                                self.nfRegistryService.user = response;
+                                self.username = response.identity;
+                                self.filterGroups(this.sortBy, this.sortOrder);
+                            } else if (response.status === 404) {
+                                self.router.navigateByUrl('administration/users');
+                            }
                         });
                 });
             }

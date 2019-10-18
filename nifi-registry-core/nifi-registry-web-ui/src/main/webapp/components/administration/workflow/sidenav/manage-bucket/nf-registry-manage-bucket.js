@@ -416,11 +416,12 @@ NfRegistryManageBucket.prototype = {
         }).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.bucket = response;
-                // update the bucket identity in the buckets table
+                // update the bucket identity and revision in the buckets table
                 self.nfRegistryService.buckets.filter(function (bucket) {
                     return self.nfRegistryService.bucket.identifier === bucket.identifier;
                 }).forEach(function (bucket) {
                     bucket.name = response.name;
+                    bucket.revision = response.revision;
                 });
                 self.snackBarService.openCoaster({
                     title: 'Success',
@@ -443,15 +444,23 @@ NfRegistryManageBucket.prototype = {
                     acceptButtonColor: 'fds-warn'
                 });
             } else if (response.status === 400) {
-                self.bucketname = self.nfRegistryService.bucket.name;
-                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
-                self.allowPublicRead = self.nfRegistryService.bucket.allowPublicRead;
-
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(function (accept) {
+                    self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier)
+                        .subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.nfRegistryService.bucket = response;
+                                self.bucketname = self.nfRegistryService.bucket.name;
+                                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
+                                self.allowPublicRead = self.nfRegistryService.bucket.allowPublicRead;
+                            } else if (response.status === 404) {
+                                self.router.navigateByUrl('administration/workflow');
+                            }
+                        });
                 });
             }
         });
@@ -467,9 +476,16 @@ NfRegistryManageBucket.prototype = {
         this.nfRegistryApi.updateBucket({
             'identifier': this.nfRegistryService.bucket.identifier,
             'allowBundleRedeploy': event.checked,
+            'revision': this.nfRegistryService.bucket.revision
         }).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.bucket = response;
+                // update the bucket revision in the buckets table
+                self.nfRegistryService.buckets.filter(function (bucket) {
+                    return self.nfRegistryService.bucket.identifier === bucket.identifier;
+                }).forEach(function (bucket) {
+                    bucket.revision = response.revision;
+                });
                 self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'Bundle settings have been updated.',
@@ -480,12 +496,23 @@ NfRegistryManageBucket.prototype = {
                     duration: 3000
                 });
             } else if (response.status === 400) {
-                self.allowBundleRedeploy = !event.checked;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(function (accept) {
+                    self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier)
+                        .subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.nfRegistryService.bucket = response;
+                                self.bucketname = self.nfRegistryService.bucket.name;
+                                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
+                                self.allowPublicRead = self.nfRegistryService.bucket.allowPublicRead;
+                            } else if (response.status === 404) {
+                                self.router.navigateByUrl('administration/workflow');
+                            }
+                        });
                 });
             }
         });
@@ -501,9 +528,16 @@ NfRegistryManageBucket.prototype = {
         this.nfRegistryApi.updateBucket({
             'identifier': this.nfRegistryService.bucket.identifier,
             'allowPublicRead': event.checked,
+            'revision': this.nfRegistryService.bucket.revision
         }).subscribe(function (response) {
             if (!response.status || response.status === 200) {
                 self.nfRegistryService.bucket = response;
+                // update the bucket revision in the buckets table
+                self.nfRegistryService.buckets.filter(function (bucket) {
+                    return self.nfRegistryService.bucket.identifier === bucket.identifier;
+                }).forEach(function (bucket) {
+                    bucket.revision = response.revision;
+                });
                 self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'Bucket settings have been updated.',
@@ -514,12 +548,23 @@ NfRegistryManageBucket.prototype = {
                     duration: 3000
                 });
             } else if (response.status === 400) {
-                self.allowPublicRead = !event.checked;
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
+                }).afterClosed().subscribe(function (accept) {
+                    self.nfRegistryApi.getBucket(self.nfRegistryService.bucket.identifier)
+                        .subscribe(function (response) {
+                            if (!response.status || response.status === 200) {
+                                self.nfRegistryService.bucket = response;
+                                self.bucketname = self.nfRegistryService.bucket.name;
+                                self.allowBundleRedeploy = self.nfRegistryService.bucket.allowBundleRedeploy;
+                                self.allowPublicRead = self.nfRegistryService.bucket.allowPublicRead;
+                            } else if (response.status === 404) {
+                                self.router.navigateByUrl('administration/workflow');
+                            }
+                        });
                 });
             }
         });

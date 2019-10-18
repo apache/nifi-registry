@@ -663,7 +663,10 @@ NfRegistryApi.prototype = {
             'resource': resource,
             'action': action,
             'users': users,
-            'userGroups': userGroups
+            'userGroups': userGroups,
+            'revision': {
+                'version': 0
+            }
         }, headers).pipe(
             map(function (response) {
                 return response;

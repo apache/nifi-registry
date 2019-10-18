@@ -91,7 +91,7 @@ import java.util.stream.Collectors;
 @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Throwable.class)
 public class StandardServiceFacade implements ServiceFacade {
 
-    private static final String INVALID_REVISION_MSG = "The %s you attempted to %s is out of date with the server. " +
+    private static final String INVALID_REVISION_MSG = "The %s you attempted to %s with id '%s' is out of date with the server. " +
             "You may need to refresh your client and try again.";
 
     public static final String USER_GROUP_ENTITY_TYPE = "User Group";
@@ -1119,7 +1119,7 @@ public class StandardServiceFacade implements ServiceFacade {
         try {
             return entityService.create(requestEntity, creatorIdentity, createEntity);
         } catch (InvalidRevisionException e) {
-            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "create");
+            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "create", requestEntity.getIdentifier());
             throw new InvalidRevisionException(msg, e);
         }
     }
@@ -1129,7 +1129,7 @@ public class StandardServiceFacade implements ServiceFacade {
         try {
             return entityService.update(requestEntity, updaterIdentity, updateEntity);
         } catch (InvalidRevisionException e) {
-            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "update");
+            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "update", requestEntity.getIdentifier());
             throw new InvalidRevisionException(msg, e);
         }
     }
@@ -1139,7 +1139,7 @@ public class StandardServiceFacade implements ServiceFacade {
         try {
             return entityService.delete(entityIdentifier, revisionInfo, deleteEntity);
         } catch (InvalidRevisionException e) {
-            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "delete");
+            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "delete", entityIdentifier);
             throw new InvalidRevisionException(msg, e);
         }
     }
