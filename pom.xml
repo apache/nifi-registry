@@ -34,6 +34,7 @@
         <module>nifi-registry-extensions</module>
         <module>nifi-registry-assembly</module>
         <module>nifi-registry-toolkit</module>
+        <module>nifi-registry-docker-maven</module>
     </modules>
     <url>https://nifi.apache.org/registry.html</url>
     <organization>
