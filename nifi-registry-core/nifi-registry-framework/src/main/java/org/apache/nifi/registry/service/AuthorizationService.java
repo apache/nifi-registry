@@ -241,6 +241,14 @@ public class AuthorizationService {
         return userToDTO(user);
     }
 
+    public void verifyUserExists(final String identifier) {
+        final org.apache.nifi.registry.security.authorization.User user = userGroupProvider.getUser(identifier);
+        if (user == null) {
+            LOGGER.warn("The specified user id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified user ID does not exist in this registry.");
+        }
+    }
+
     public User updateUser(final User user) {
         verifyUserGroupProviderIsConfigurable();
 
@@ -295,6 +303,14 @@ public class AuthorizationService {
         }
 
         return userGroupToDTO(group);
+    }
+
+    public void verifyUserGroupExists(final String identifier) {
+        final org.apache.nifi.registry.security.authorization.Group group = userGroupProvider.getGroup(identifier);
+        if (group == null) {
+            LOGGER.warn("The specified user group id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified user group ID does not exist in this registry.");
+        }
     }
 
     public UserGroup updateUserGroup(final UserGroup userGroup) {
@@ -392,6 +408,15 @@ public class AuthorizationService {
                 .filter(accessPolicy -> accessPolicy.getGroups().contains(userGroupIdentifier))
                 .map(this::accessPolicyToSummaryDTO)
                 .collect(Collectors.toList());
+    }
+
+    public void verifyAccessPolicyExists(final String identifier) {
+        final org.apache.nifi.registry.security.authorization.AccessPolicy accessPolicy =
+                accessPolicyProvider.getAccessPolicy(identifier);
+        if (accessPolicy == null) {
+            LOGGER.warn("The specified access policy id [{}] does not exist.", identifier);
+            throw new ResourceNotFoundException("The specified policy does not exist in this registry.");
+        }
     }
 
     public AccessPolicy updateAccessPolicy(final AccessPolicy accessPolicy) {

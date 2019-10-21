@@ -174,6 +174,9 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.WRITE, bucket.getIdentifier());
         validateUpdateOfRevisableEntity(bucket, BUCKET_ENTITY_TYPE);
 
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        registryService.verifyBucketExists(bucket.getIdentifier());
+
         final Bucket updatedBucket = updateRevisableEntity(bucket, BUCKET_ENTITY_TYPE, currentUserIdentity(),
                 () -> registryService.updateBucket(bucket));
         permissionsService.populateBucketPermissions(updatedBucket);
@@ -185,6 +188,9 @@ public class StandardServiceFacade implements ServiceFacade {
     public Bucket deleteBucket(final String bucketIdentifier, final RevisionInfo revisionInfo) {
         authorizeBucketAccess(RequestAction.DELETE, bucketIdentifier);
         validateDeleteOfRevisableEntity(bucketIdentifier, revisionInfo, BUCKET_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        registryService.verifyBucketExists(bucketIdentifier);
 
         return deleteRevisableEntity(bucketIdentifier, BUCKET_ENTITY_TYPE, revisionInfo,
                 () -> registryService.deleteBucket(bucketIdentifier));
@@ -270,6 +276,9 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.WRITE, versionedFlow);
         validateUpdateOfRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE);
 
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        registryService.verifyFlowExists(versionedFlow.getIdentifier());
+
         final VersionedFlow updatedFlow =  updateRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE, currentUserIdentity(),
                 () -> registryService.updateFlow(versionedFlow));
         permissionsService.populateItemPermissions(updatedFlow);
@@ -281,6 +290,9 @@ public class StandardServiceFacade implements ServiceFacade {
     public VersionedFlow deleteFlow(final String bucketIdentifier, final String flowIdentifier, final RevisionInfo revisionInfo) {
         authorizeBucketAccess(RequestAction.DELETE, bucketIdentifier);
         validateDeleteOfRevisableEntity(flowIdentifier, revisionInfo, VERSIONED_FLOW_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        registryService.verifyFlowExists(flowIdentifier);
 
         return deleteRevisableEntity(flowIdentifier, VERSIONED_FLOW_ENTITY_TYPE, revisionInfo,
                 () -> registryService.deleteFlow(bucketIdentifier, flowIdentifier));
@@ -816,6 +828,10 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.WRITE);
         validateUpdateOfRevisableEntity(user, USER_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        authorizationService.verifyUserExists(user.getIdentifier());
+
         return updateRevisableEntity(user, USER_ENTITY_TYPE, currentUserIdentity(), () -> authorizationService.updateUser(user));
     }
 
@@ -824,6 +840,9 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.DELETE);
         validateDeleteOfRevisableEntity(identifier, revisionInfo, USER_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        authorizationService.verifyUserExists(identifier);
 
         return deleteRevisableEntity(identifier, USER_ENTITY_TYPE, revisionInfo, () -> authorizationService.deleteUser(identifier));
     }
@@ -860,6 +879,10 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.WRITE);
         validateUpdateOfRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        authorizationService.verifyUserGroupExists(userGroup.getIdentifier());
+
         return updateRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE, currentUserIdentity(),
                 () -> authorizationService.updateUserGroup(userGroup));
     }
@@ -869,6 +892,9 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.DELETE);
         validateDeleteOfRevisableEntity(identifier, revisionInfo, USER_GROUP_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        authorizationService.verifyUserGroupExists(identifier);
 
         return deleteRevisableEntity(identifier, USER_GROUP_ENTITY_TYPE, revisionInfo,
                 () -> authorizationService.deleteUserGroup(identifier));
@@ -913,6 +939,10 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurablePolicies();
         authorizePoliciesAccess(RequestAction.WRITE);
         validateUpdateOfRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        authorizationService.verifyAccessPolicyExists(accessPolicy.getIdentifier());
+
         return updateRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE, currentUserIdentity(),
                 () -> authorizationService.updateAccessPolicy(accessPolicy));
     }
@@ -922,6 +952,9 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurablePolicies();
         authorizePoliciesAccess(RequestAction.DELETE);
         validateDeleteOfRevisableEntity(identifier, revisionInfo, ACCESS_POLICY_ENTITY_TYPE);
+
+        // verify outside of the revisable update so ResourceNotFoundException will be thrown instead of InvalidRevisionException
+        authorizationService.verifyAccessPolicyExists(identifier);
 
         return deleteRevisableEntity(identifier, ACCESS_POLICY_ENTITY_TYPE, revisionInfo,
                 () -> authorizationService.deleteAccessPolicy(identifier));

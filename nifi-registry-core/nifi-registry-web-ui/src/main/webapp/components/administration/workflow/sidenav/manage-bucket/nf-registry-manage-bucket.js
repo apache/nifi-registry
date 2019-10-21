@@ -443,7 +443,14 @@ NfRegistryManageBucket.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
-            } else if (response.status === 400) {
+            } else if (response.status === 404) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+            } else {
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
@@ -495,7 +502,14 @@ NfRegistryManageBucket.prototype = {
                     color: '#1EB475',
                     duration: 3000
                 });
-            } else if (response.status === 400) {
+            } else if (response.status === 404) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+            } else {
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,
@@ -547,7 +561,14 @@ NfRegistryManageBucket.prototype = {
                     color: '#1EB475',
                     duration: 3000
                 });
-            } else if (response.status === 400) {
+            } else if (response.status === 404) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+            } else {
                 self.dialogService.openConfirm({
                     title: 'Error',
                     message: response.error,

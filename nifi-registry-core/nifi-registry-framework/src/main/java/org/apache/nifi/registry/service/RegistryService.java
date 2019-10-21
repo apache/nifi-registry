@@ -154,6 +154,18 @@ public class RegistryService {
         return BucketMappings.map(bucket);
     }
 
+    public void verifyBucketExists(final String bucketIdentifier) {
+        if (bucketIdentifier == null) {
+            throw new IllegalArgumentException("Bucket identifier cannot be null");
+        }
+
+        final BucketEntity bucket = metadataService.getBucketById(bucketIdentifier);
+        if (bucket == null) {
+            LOGGER.warn("The specified bucket id [{}] does not exist.", bucketIdentifier);
+            throw new ResourceNotFoundException("The specified bucket ID does not exist in this registry.");
+        }
+    }
+
     public Bucket getBucketByName(final String bucketName) {
         if (bucketName == null) {
             throw new IllegalArgumentException("Bucket name cannot be null");
@@ -396,6 +408,18 @@ public class RegistryService {
 
         final BucketEntity existingBucket = metadataService.getBucketById(existingFlow.getBucketId());
         return FlowMappings.map(existingBucket, existingFlow);
+    }
+
+    public void verifyFlowExists(final String flowIdentifier) {
+        if (StringUtils.isBlank(flowIdentifier)) {
+            throw new IllegalArgumentException("Versioned flow identifier cannot be null or blank");
+        }
+
+        final FlowEntity existingFlow = metadataService.getFlowById(flowIdentifier);
+        if (existingFlow == null) {
+            LOGGER.warn("The specified flow id [{}] does not exist.", flowIdentifier);
+            throw new ResourceNotFoundException("The specified flow ID does not exist.");
+        }
     }
 
     public List<VersionedFlow> getFlows(final String bucketId) {

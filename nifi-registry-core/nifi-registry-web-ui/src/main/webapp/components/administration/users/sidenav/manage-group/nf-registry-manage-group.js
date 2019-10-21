@@ -616,6 +616,13 @@ NfRegistryManageGroup.prototype = {
                     acceptButton: 'Ok',
                     acceptButtonColor: 'fds-warn'
                 });
+            } else if (response.status === 404) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: response.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
             } else {
                 self.groupname = self.nfRegistryService.group.identity;
                 self.dialogService.openConfirm({
