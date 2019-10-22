@@ -223,11 +223,6 @@ public abstract class AbstractDatabaseAccessPolicyProvider extends AbstractConfi
         return accessPolicy;
     }
 
-    @Override
-    public AccessPolicy deleteAccessPolicy(final String accessPolicyIdentifier) throws AuthorizationAccessException {
-        throw new UnsupportedOperationException("Deleting a policy by identifier is not supported by this provider");
-    }
-
     protected void createPolicyUserAndGroups(final AccessPolicy accessPolicy) {
         if (accessPolicy.getUsers() != null) {
             for (final String userIdentifier : accessPolicy.getUsers()) {

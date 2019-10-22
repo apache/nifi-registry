@@ -229,11 +229,6 @@ public abstract class AbstractDatabaseUserGroupProvider implements ConfigurableU
         return user;
     }
 
-    @Override
-    public User deleteUser(final String userIdentifier) throws AuthorizationAccessException {
-        throw new UnsupportedOperationException("Deleting a user by identifier is not supported by this provider");
-    }
-
     private DatabaseUser getDatabaseUser(final String userIdentifier) {
         final String sql = "SELECT * FROM UGP_USER WHERE IDENTIFIER = ?";
         return queryForObject(sql, new Object[] {userIdentifier}, new DatabaseUserRowMapper());
@@ -333,11 +328,6 @@ public abstract class AbstractDatabaseUserGroupProvider implements ConfigurableU
         }
 
         return group;
-    }
-
-    @Override
-    public Group deleteGroup(final String groupIdentifier) throws AuthorizationAccessException {
-        throw new UnsupportedOperationException("Deleting a group by identifier is not supported by this provider");
     }
 
     private void createUserGroups(final Group group) {

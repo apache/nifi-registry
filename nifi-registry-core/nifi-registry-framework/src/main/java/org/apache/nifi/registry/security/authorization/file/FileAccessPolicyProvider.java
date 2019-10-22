@@ -250,8 +250,7 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
         return deleteAccessPolicy(accessPolicy.getIdentifier());
     }
 
-    @Override
-    public synchronized AccessPolicy deleteAccessPolicy(String accessPolicyIdentifer) throws AuthorizationAccessException {
+    private synchronized AccessPolicy deleteAccessPolicy(String accessPolicyIdentifer) throws AuthorizationAccessException {
         if (accessPolicyIdentifer == null) {
             throw new IllegalArgumentException("Access policy identifier cannot be null");
         }

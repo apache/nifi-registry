@@ -180,11 +180,6 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @Override
-    public synchronized Group deleteGroup(String groupId) throws AuthorizationAccessException {
-        return userGroupProvider.deleteGroup(groupId);
-    }
-
-    @Override
     public Set<Group> getGroups() throws AuthorizationAccessException {
         return userGroupProvider.getGroups();
     }
@@ -217,11 +212,6 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @Override
-    public synchronized User deleteUser(final String userId) throws AuthorizationAccessException {
-        return userGroupProvider.deleteUser(userId);
-    }
-
-    @Override
     public Set<User> getUsers() throws AuthorizationAccessException {
         return userGroupProvider.getUsers();
     }
@@ -246,11 +236,6 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     @Override
     public synchronized AccessPolicy deleteAccessPolicy(final AccessPolicy accessPolicy) throws AuthorizationAccessException {
         return accessPolicyProvider.deleteAccessPolicy(accessPolicy);
-    }
-
-    @Override
-    public synchronized AccessPolicy deleteAccessPolicy(final String accessPolicyIdentifier) throws AuthorizationAccessException {
-        return accessPolicyProvider.deleteAccessPolicy(accessPolicyIdentifier);
     }
 
     @Override

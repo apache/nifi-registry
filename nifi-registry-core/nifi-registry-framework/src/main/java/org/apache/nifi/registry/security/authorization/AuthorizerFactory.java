@@ -632,14 +632,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                     }
 
                     @Override
-                    public AccessPolicy deleteAccessPolicy(String accessPolicyIdentifier) throws AuthorizationAccessException {
-                        if (!baseConfigurableAccessPolicyProvider.isConfigurable(baseConfigurableAccessPolicyProvider.getAccessPolicy(accessPolicyIdentifier))) {
-                            throw new IllegalArgumentException("The specified access policy is not support modification.");
-                        }
-                        return baseConfigurableAccessPolicyProvider.deleteAccessPolicy(accessPolicyIdentifier);
-                    }
-
-                    @Override
                     public Set<AccessPolicy> getAccessPolicies() throws AuthorizationAccessException {
                         return baseConfigurableAccessPolicyProvider.getAccessPolicies();
                     }
@@ -708,14 +700,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                 }
 
                                 @Override
-                                public User deleteUser(String userIdentifier) throws AuthorizationAccessException {
-                                    if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getUser(userIdentifier))) {
-                                        throw new IllegalArgumentException("The specified user does not support modification.");
-                                    }
-                                    return baseConfigurableUserGroupProvider.deleteUser(userIdentifier);
-                                }
-
-                                @Override
                                 public Group addGroup(Group group) throws AuthorizationAccessException {
                                     if (groupExists(baseConfigurableUserGroupProvider, group.getIdentifier(), group.getName())) {
                                         throw new IllegalStateException(String.format("User/user group already exists with the identity '%s'.", group.getName()));
@@ -751,14 +735,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                                         throw new IllegalArgumentException("The specified group does not support modification.");
                                     }
                                     return baseConfigurableUserGroupProvider.deleteGroup(group);
-                                }
-
-                                @Override
-                                public Group deleteGroup(String groupId) throws AuthorizationAccessException {
-                                    if (!baseConfigurableUserGroupProvider.isConfigurable(baseConfigurableUserGroupProvider.getGroup(groupId))) {
-                                        throw new IllegalArgumentException("The specified group does not support modification.");
-                                    }
-                                    return baseConfigurableUserGroupProvider.deleteGroup(groupId);
                                 }
 
                                 @Override

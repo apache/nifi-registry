@@ -180,18 +180,6 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
     public abstract Group deleteGroup(Group group) throws AuthorizationAccessException;
 
     /**
-     * Deletes the group with the given identifier.
-     *
-     * @deprecated use {@link #deleteGroup(Group)} instead
-     *
-     * @param groupIdentifier the id of the group to delete
-     * @return the deleted group, or null if no matching group was found
-     * @throws AuthorizationAccessException if there was an unexpected error performing the operation
-     */
-    @Deprecated
-    public abstract Group deleteGroup(String groupIdentifier) throws AuthorizationAccessException;
-
-    /**
      * Retrieves all groups.
      *
      * @return a list of groups
@@ -270,18 +258,6 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
     public abstract User deleteUser(User user) throws AuthorizationAccessException;
 
     /**
-     * Deletes the user with the given id.
-     *
-     * @deprecated use {@link #deleteUser(User)} instead
-     *
-     * @param userIdentifier the identifier of the user to delete
-     * @return the user that was deleted, or null if no matching user was found
-     * @throws AuthorizationAccessException if there was an unexpected error performing the operation
-     */
-    @Deprecated
-    public abstract User deleteUser(String userIdentifier) throws AuthorizationAccessException;
-
-    /**
      * Retrieves all users.
      *
      * @return a list of users
@@ -335,15 +311,6 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
      * @throws AuthorizationAccessException if there was an unexpected error performing the operation
      */
     public abstract AccessPolicy deleteAccessPolicy(AccessPolicy policy) throws AuthorizationAccessException;
-
-    /**
-     * Deletes the policy with the given id.
-     *
-     * @param policyIdentifier the id of the policy to delete
-     * @return the deleted policy, or null if no matching policy was found
-     * @throws AuthorizationAccessException if there was an unexpected error performing the operation
-     */
-    public abstract AccessPolicy deleteAccessPolicy(String policyIdentifier) throws AuthorizationAccessException;
 
     /**
      * Retrieves all access policies.
@@ -524,11 +491,6 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
             }
 
             @Override
-            public AccessPolicy deleteAccessPolicy(String accessPolicyIdentifier) throws AuthorizationAccessException {
-                return AbstractPolicyBasedAuthorizer.this.deleteAccessPolicy(accessPolicyIdentifier);
-            }
-
-            @Override
             public AccessPolicy getAccessPolicy(String resourceIdentifier, RequestAction action) throws AuthorizationAccessException {
                 final UsersAndAccessPolicies usersAndAccessPolicies = AbstractPolicyBasedAuthorizer.this.getUsersAndAccessPolicies();
                 return usersAndAccessPolicies.getAccessPolicy(resourceIdentifier, action);
@@ -571,11 +533,6 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
                     }
 
                     @Override
-                    public User deleteUser(String userIdentifier) throws AuthorizationAccessException {
-                        return AbstractPolicyBasedAuthorizer.this.deleteUser(userIdentifier);
-                    }
-
-                    @Override
                     public Group addGroup(Group group) throws AuthorizationAccessException {
                         return AbstractPolicyBasedAuthorizer.this.addGroup(group);
                     }
@@ -588,11 +545,6 @@ public abstract class AbstractPolicyBasedAuthorizer implements ManagedAuthorizer
                     @Override
                     public Group deleteGroup(Group group) throws AuthorizationAccessException {
                         return AbstractPolicyBasedAuthorizer.this.deleteGroup(group);
-                    }
-
-                    @Override
-                    public Group deleteGroup(String groupIdentifier) throws AuthorizationAccessException {
-                        return AbstractPolicyBasedAuthorizer.this.deleteGroup(groupIdentifier);
                     }
 
                     @Override

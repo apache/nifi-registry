@@ -235,8 +235,7 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         return deleteUser(user.getIdentifier());
     }
 
-    @Override
-    public synchronized User deleteUser(String userIdentifier) throws AuthorizationAccessException {
+    private synchronized User deleteUser(String userIdentifier) throws AuthorizationAccessException {
         if (userIdentifier == null) {
             throw new IllegalArgumentException("User identifier cannot be null");
         }
@@ -382,8 +381,7 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
         return deleteGroup(group.getIdentifier());
     }
 
-    @Override
-    public synchronized Group deleteGroup(String groupIdentifier) throws AuthorizationAccessException {
+    private synchronized Group deleteGroup(String groupIdentifier) throws AuthorizationAccessException {
         if (groupIdentifier == null) {
             throw new IllegalArgumentException("Group identifier cannot be null");
         }
