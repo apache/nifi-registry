@@ -129,8 +129,8 @@ public class SecureFileIT extends IntegrationTestBase {
         assertEquals(201, createUserResponse.getStatus());
         User actualUser = createUserResponse.readEntity(User.class);
         assertNotNull(actualUser.getIdentifier());
-
-        // TODO verify revision of returned user
+        assertNotNull(actualUser.getRevision());
+        assertNotNull(actualUser.getRevision().getVersion());
 
         try {
             assertEquals(tenant.getIdentity(), actualUser.getIdentity());
@@ -140,7 +140,8 @@ public class SecureFileIT extends IntegrationTestBase {
             assertEquals(new ResourcePermissions(), actualUser.getResourcePermissions());
         } finally {
             // cleanup user for other tests
-            client.target(createURL("tenants/users/" + actualUser.getIdentifier()))
+            final long version = actualUser.getRevision().getVersion();
+            client.target(createURL("tenants/users/" + actualUser.getIdentifier() + "?version=" + version))
                     .request()
                     .delete();
         }
@@ -170,6 +171,9 @@ public class SecureFileIT extends IntegrationTestBase {
         assertEquals(201, createUserGroupResponse.getStatus());
         UserGroup actualUserGroup = createUserGroupResponse.readEntity(UserGroup.class);
         assertNotNull(actualUserGroup.getIdentifier());
+        assertNotNull(actualUserGroup.getRevision());
+        assertNotNull(actualUserGroup.getRevision().getVersion());
+
         try {
             assertEquals(tenant.getIdentity(), actualUserGroup.getIdentity());
             assertEquals(true, actualUserGroup.getConfigurable());
@@ -178,7 +182,8 @@ public class SecureFileIT extends IntegrationTestBase {
             assertEquals(new ResourcePermissions(), actualUserGroup.getResourcePermissions());
         } finally {
             // cleanup user for other tests
-            client.target(createURL("tenants/user-groups/" + actualUserGroup.getIdentifier()))
+            final long version = actualUserGroup.getRevision().getVersion();
+            client.target(createURL("tenants/user-groups/" + actualUserGroup.getIdentifier() + "?version=" + version))
                     .request()
                     .delete();
         }
