@@ -347,15 +347,33 @@ public class TestDatabaseUserGroupProvider extends DatabaseBaseTest {
         final String user1Identity = "user1";
         configureWithInitialUsers(user1Identity);
 
+        // verify user1 exists
         final User retrievedUser1 = userGroupProvider.getUserByIdentity(user1Identity);
         assertNotNull(retrievedUser1);
         assertEquals(user1Identity, retrievedUser1.getIdentity());
 
+        // add user1 to a group to test deleting group association when deleting a user
+        final Group group1 = new Group.Builder()
+                .identifier(UUID.randomUUID().toString())
+                .name("group1")
+                .addUser(retrievedUser1.getIdentifier())
+                .build();
+
+        final Group createdGroup1 = userGroupProvider.addGroup(group1);
+        assertNotNull(createdGroup1);
+
+        // delete user1
         final User deletedUser1 = userGroupProvider.deleteUser(retrievedUser1);
         assertNotNull(deletedUser1);
 
+        // verify user1 no longer exists
         final User retrievedUser1AfterDelete = userGroupProvider.getUserByIdentity(user1Identity);
         assertNull(retrievedUser1AfterDelete);
+
+        // verify user1 no longer a member of group1
+        final Group retrievedGroup1 = userGroupProvider.getGroup(group1.getIdentifier());
+        assertNotNull(retrievedGroup1);
+        assertEquals(0, retrievedGroup1.getUsers().size());
     }
 
     @Test
@@ -392,7 +410,7 @@ public class TestDatabaseUserGroupProvider extends DatabaseBaseTest {
     }
 
     @Test
-    public void testAddGroupWitUsers() {
+    public void testAddGroupWithUsers() {
         configureWithInitialUsers();
 
         final String user1Identifier = UUID.randomUUID().toString();

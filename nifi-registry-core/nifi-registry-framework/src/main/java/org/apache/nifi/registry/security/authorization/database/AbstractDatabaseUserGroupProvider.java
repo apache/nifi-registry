@@ -183,10 +183,10 @@ public abstract class AbstractDatabaseUserGroupProvider implements ConfigurableU
                     "SELECT " +
                             "G.IDENTIFIER AS IDENTIFIER, " +
                             "G.IDENTITY AS IDENTITY " +
-                            "FROM " +
+                    "FROM " +
                             "UGP_GROUP AS G, " +
                             "UGP_USER_GROUP AS UG " +
-                            "WHERE " +
+                    "WHERE " +
                             "G.IDENTIFIER = UG.GROUP_IDENTIFIER AND " +
                             "UG.USER_IDENTIFIER = ?";
 
@@ -217,9 +217,12 @@ public abstract class AbstractDatabaseUserGroupProvider implements ConfigurableU
     public User deleteUser(final User user) throws AuthorizationAccessException {
         Validate.notNull(user);
 
-        final String sql = "DELETE FROM UGP_USER WHERE IDENTIFIER = ?";
-        final int rowsUpdated = jdbcTemplate.update(sql, user.getIdentifier());
-        if (rowsUpdated <= 0) {
+        final String deleteFromUserGroupSql = "DELETE FROM UGP_USER_GROUP WHERE USER_IDENTIFIER = ?";
+        jdbcTemplate.update(deleteFromUserGroupSql, user.getIdentifier());
+
+        final String deleteFromUserSql = "DELETE FROM UGP_USER WHERE IDENTIFIER = ?";
+        final int rowsDeletedFromUser = jdbcTemplate.update(deleteFromUserSql, user.getIdentifier());
+        if (rowsDeletedFromUser <= 0) {
             return null;
         }
 
