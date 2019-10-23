@@ -17,12 +17,10 @@
 package org.apache.nifi.registry.security.authorization.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.properties.util.IdentityMapping;
-import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -36,12 +34,12 @@ public final class UserGroupProviderUtils {
     public static final String PROP_INITIAL_USER_IDENTITY_PREFIX = "Initial User Identity ";
     public static final Pattern INITIAL_USER_IDENTITY_PATTERN = Pattern.compile(PROP_INITIAL_USER_IDENTITY_PREFIX + "\\S+");
 
-    public static Set<String> getInitialUserIdentities(final AuthorizerConfigurationContext configurationContext, final List<IdentityMapping> identityMappings) {
+    public static Set<String> getInitialUserIdentities(final AuthorizerConfigurationContext configurationContext, final IdentityMapper identityMapper) {
         final Set<String> initialUserIdentities = new HashSet<>();
         for (Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
             Matcher matcher = UserGroupProviderUtils.INITIAL_USER_IDENTITY_PATTERN.matcher(entry.getKey());
             if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
-                initialUserIdentities.add(IdentityMappingUtil.mapIdentity(entry.getValue(), identityMappings));
+                initialUserIdentities.add(identityMapper.mapUser(entry.getValue()));
             }
         }
         return initialUserIdentities;

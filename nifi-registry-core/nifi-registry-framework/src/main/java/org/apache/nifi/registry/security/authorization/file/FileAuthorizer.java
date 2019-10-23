@@ -16,7 +16,6 @@
  */
 package org.apache.nifi.registry.security.authorization.file;
 
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.security.authorization.AbstractPolicyBasedAuthorizer;
 import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
@@ -35,6 +34,7 @@ import org.apache.nifi.registry.security.authorization.exception.AuthorizationAc
 import org.apache.nifi.registry.security.authorization.util.AccessPolicyProviderUtils;
 import org.apache.nifi.registry.security.authorization.util.UserGroupProviderUtils;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -244,9 +244,9 @@ public class FileAuthorizer extends AbstractPolicyBasedAuthorizer {
     }
 
     @AuthorizerContext
-    public void setNiFiProperties(NiFiRegistryProperties properties) {
-        userGroupProvider.setNiFiProperties(properties);
-        accessPolicyProvider.setNiFiProperties(properties);
+    public void setIdentityMapper(final IdentityMapper identityMapper) {
+        userGroupProvider.setIdentityMapper(identityMapper);
+        accessPolicyProvider.setIdentityMapper(identityMapper);
     }
 
     @Override

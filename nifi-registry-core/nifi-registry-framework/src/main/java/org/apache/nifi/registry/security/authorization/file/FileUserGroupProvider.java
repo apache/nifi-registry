@@ -17,9 +17,6 @@
 package org.apache.nifi.registry.security.authorization.file;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.properties.util.IdentityMapping;
-import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProvider;
 import org.apache.nifi.registry.security.authorization.Group;
@@ -35,6 +32,7 @@ import org.apache.nifi.registry.security.authorization.file.tenants.generated.Us
 import org.apache.nifi.registry.security.authorization.util.UserGroupProviderUtils;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.util.PropertyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,10 +105,9 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
     static final String PROP_TENANTS_FILE = "Users File";
 
     private Schema tenantsSchema;
-    private NiFiRegistryProperties properties;
     private File tenantsFile;
     private Set<String> initialUserIdentities;
-    private List<IdentityMapping> identityMappings;
+    private IdentityMapper identityMapper;
 
     private final AtomicReference<UserGroupHolder> userGroupHolder = new AtomicReference<>();
 
@@ -139,11 +136,8 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
                 saveTenants(new Tenants());
             }
 
-            // extract the identity mappings from nifi-registry.properties if any are provided
-            identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
-
             // extract any nifi identities
-            initialUserIdentities = UserGroupProviderUtils.getInitialUserIdentities(configurationContext, identityMappings);
+            initialUserIdentities = UserGroupProviderUtils.getInitialUserIdentities(configurationContext, identityMapper);
 
             load();
 
@@ -412,8 +406,8 @@ public class FileUserGroupProvider implements ConfigurableUserGroupProvider {
     }
 
     @AuthorizerContext
-    public void setNiFiProperties(NiFiRegistryProperties properties) {
-        this.properties = properties;
+    public void setIdentityMapper(final IdentityMapper identityMapper) {
+        this.identityMapper = identityMapper;
     }
 
     @Override

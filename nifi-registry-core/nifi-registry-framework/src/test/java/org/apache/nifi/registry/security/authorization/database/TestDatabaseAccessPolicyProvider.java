@@ -31,6 +31,8 @@ import org.apache.nifi.registry.security.authorization.UserGroupProviderLookup;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.util.AccessPolicyProviderUtils;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.identity.DefaultIdentityMapper;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.util.StandardPropertyValue;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,6 +76,7 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
     private DataSource dataSource;
     private JdbcTemplate jdbcTemplate;
     private NiFiRegistryProperties properties;
+    private IdentityMapper identityMapper;
 
     private UserGroupProviderLookup userGroupProviderLookup;
     private UserGroupProvider userGroupProvider;
@@ -84,6 +87,7 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
     @Before
     public void setup() {
         properties = new NiFiRegistryProperties();
+        identityMapper = new DefaultIdentityMapper(properties);
         jdbcTemplate = new JdbcTemplate(dataSource);
 
         userGroupProvider = mock(UserGroupProvider.class);
@@ -103,7 +107,7 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
 
         final DatabaseAccessPolicyProvider databaseProvider = new DatabaseAccessPolicyProvider();
         databaseProvider.setDataSource(dataSource);
-        databaseProvider.setProperties(properties);
+        databaseProvider.setIdentityMapper(identityMapper);
         databaseProvider.initialize(initializationContext);
 
         policyProvider = databaseProvider;
@@ -286,6 +290,9 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
         properties.setProperty("nifi.registry.security.identity.mapping.pattern.kerb", "^(.*?)@(.*?)$");
         properties.setProperty("nifi.registry.security.identity.mapping.value.kerb", "$1");
 
+        identityMapper = new DefaultIdentityMapper(properties);
+        ((DatabaseAccessPolicyProvider)policyProvider).setIdentityMapper(identityMapper);
+
         // Call configure with full admin identity, should get mapped to just 'admin' before looking up user
         configure("admin@HDF.COM", null);
 
@@ -308,6 +315,9 @@ public class TestDatabaseAccessPolicyProvider extends DatabaseBaseTest {
         properties.setProperty("nifi.registry.security.group.mapping.pattern.anyGroup", "^(.*)$");
         properties.setProperty("nifi.registry.security.group.mapping.value.anyGroup", "$1");
         properties.setProperty("nifi.registry.security.group.mapping.transform.anyGroup", "LOWER");
+
+        identityMapper = new DefaultIdentityMapper(properties);
+        ((DatabaseAccessPolicyProvider)policyProvider).setIdentityMapper(identityMapper);
 
         // Call configure with NiFi Group in all uppercase, should get mapped to lower case
         configure(null, null, NIFI_GROUP.getName().toUpperCase());

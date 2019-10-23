@@ -29,6 +29,8 @@ import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.UserAndGroups;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.identity.DefaultIdentityMapper;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.security.ldap.LdapAuthenticationStrategy;
 import org.apache.nifi.registry.security.ldap.ReferralStrategy;
 import org.apache.nifi.registry.util.StandardPropertyValue;
@@ -82,14 +84,17 @@ public class LdapUserGroupProviderTest extends AbstractLdapTestUnit {
     private static final String GROUP_SEARCH_BASE = "ou=groups,o=nifi";
 
     private LdapUserGroupProvider ldapUserGroupProvider;
+    private IdentityMapper identityMapper;
 
     @Before
     public void setup() {
         final UserGroupProviderInitializationContext initializationContext = mock(UserGroupProviderInitializationContext.class);
         when(initializationContext.getIdentifier()).thenReturn("identifier");
 
+        identityMapper = new DefaultIdentityMapper(getNiFiProperties(new Properties()));
+
         ldapUserGroupProvider = new LdapUserGroupProvider();
-        ldapUserGroupProvider.setNiFiProperties(getNiFiProperties(new Properties()));
+        ldapUserGroupProvider.setIdentityMapper(identityMapper);
         ldapUserGroupProvider.initialize(initializationContext);
     }
 
@@ -508,7 +513,8 @@ public class LdapUserGroupProviderTest extends AbstractLdapTestUnit {
         props.setProperty("nifi.registry.security.identity.mapping.value.dn1", "$1");
 
         final NiFiRegistryProperties properties = getNiFiProperties(props);
-        ldapUserGroupProvider.setNiFiProperties(properties);
+        identityMapper = new DefaultIdentityMapper(properties);
+        ldapUserGroupProvider.setIdentityMapper(identityMapper);
 
         final AuthorizerConfigurationContext configurationContext = getBaseConfiguration(USER_SEARCH_BASE, null);
         when(configurationContext.getProperty(PROP_USER_SEARCH_FILTER)).thenReturn(new StandardPropertyValue("(uid=user1)"));
@@ -526,7 +532,8 @@ public class LdapUserGroupProviderTest extends AbstractLdapTestUnit {
         props.setProperty("nifi.registry.security.identity.mapping.transform.dn1", "UPPER");
 
         final NiFiRegistryProperties properties = getNiFiProperties(props);
-        ldapUserGroupProvider.setNiFiProperties(properties);
+        identityMapper = new DefaultIdentityMapper(properties);
+        ldapUserGroupProvider.setIdentityMapper(identityMapper);
 
         final AuthorizerConfigurationContext configurationContext = getBaseConfiguration(USER_SEARCH_BASE, null);
         when(configurationContext.getProperty(PROP_USER_SEARCH_FILTER)).thenReturn(new StandardPropertyValue("(uid=user1)"));
@@ -547,7 +554,8 @@ public class LdapUserGroupProviderTest extends AbstractLdapTestUnit {
         props.setProperty("nifi.registry.security.group.mapping.transform.dn1", "UPPER");
 
         final NiFiRegistryProperties properties = getNiFiProperties(props);
-        ldapUserGroupProvider.setNiFiProperties(properties);
+        identityMapper = new DefaultIdentityMapper(properties);
+        ldapUserGroupProvider.setIdentityMapper(identityMapper);
 
         final AuthorizerConfigurationContext configurationContext = getBaseConfiguration(USER_SEARCH_BASE, GROUP_SEARCH_BASE);
         when(configurationContext.getProperty(PROP_USER_SEARCH_FILTER)).thenReturn(new StandardPropertyValue("(uid=user1)"));

@@ -17,18 +17,16 @@
 package org.apache.nifi.registry.security.authorization.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.properties.util.IdentityMapping;
-import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authorization.AuthorizerConfigurationContext;
 import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.util.PropertyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -66,28 +64,28 @@ public final class AccessPolicyProviderUtils {
      * Returns the value of the 'Initial Admin Identity' property with any identity mappings applied.
      *
      * @param configurationContext the configuration context
-     * @param identityMappings the identity mappings
+     * @param identityMapper the identity mapper
      * @return the value for the initial admin identity
      */
-    public static String getInitialAdminIdentity(final AuthorizerConfigurationContext configurationContext, final List<IdentityMapping> identityMappings) {
+    public static String getInitialAdminIdentity(final AuthorizerConfigurationContext configurationContext, final IdentityMapper identityMapper) {
         final PropertyValue initialAdminIdentityProp = configurationContext.getProperty(PROP_INITIAL_ADMIN_IDENTITY);
-        return initialAdminIdentityProp.isSet() ? IdentityMappingUtil.mapIdentity(initialAdminIdentityProp.getValue(), identityMappings) : null;
+        return initialAdminIdentityProp.isSet() ? identityMapper.mapUser(initialAdminIdentityProp.getValue()) : null;
     }
 
     /**
      * Returns the values for the 'NiFi Identity' properties with any identity mappings applied.
      *
      * @param configurationContext the configuration context
-     * @param identityMappings the identity mappings
+     * @param identityMapper the identity mapper
      * @return the values for the NiFi identities
      */
-    public static Set<String> getNiFiIdentities(final AuthorizerConfigurationContext configurationContext, final List<IdentityMapping> identityMappings) {
+    public static Set<String> getNiFiIdentities(final AuthorizerConfigurationContext configurationContext, final IdentityMapper identityMapper) {
         final Set<String> nifiIdentities = new HashSet<>();
 
         for (final Map.Entry<String,String> entry : configurationContext.getProperties().entrySet()) {
             final Matcher matcher = NIFI_IDENTITY_PATTERN.matcher(entry.getKey());
             if (matcher.matches() && !StringUtils.isBlank(entry.getValue())) {
-                nifiIdentities.add(IdentityMappingUtil.mapIdentity(entry.getValue(), identityMappings));
+                nifiIdentities.add(identityMapper.mapUser(entry.getValue()));
             }
         }
 
@@ -100,16 +98,16 @@ public final class AccessPolicyProviderUtils {
      * @param configurationContext the configuration context
      * @return the group name, or null if not specified
      */
-    public static String getNiFiGroupName(final AuthorizerConfigurationContext configurationContext, final List<IdentityMapping> groupMappings) {
-        final PropertyValue identityGroupNameProp = configurationContext.getProperty(PROP_NIFI_GROUP_NAME);
-        final String identityGroupName = (identityGroupNameProp != null && identityGroupNameProp.isSet()) ? identityGroupNameProp.getValue() : null;
+    public static String getNiFiGroupName(final AuthorizerConfigurationContext configurationContext, final IdentityMapper identityMapper) {
+        final PropertyValue nifiGroupNameProp = configurationContext.getProperty(PROP_NIFI_GROUP_NAME);
+        final String nifiGroupName = (nifiGroupNameProp != null && nifiGroupNameProp.isSet()) ? nifiGroupNameProp.getValue() : null;
 
-        if (StringUtils.isBlank(identityGroupName)) {
+        if (StringUtils.isBlank(nifiGroupName)) {
             LOGGER.debug("NiFi Group Name was not specified");
             return null;
         }
 
-        return IdentityMappingUtil.mapIdentity(identityGroupName, groupMappings);
+        return identityMapper.mapGroup(nifiGroupName);
     }
 
     /**
@@ -125,17 +123,17 @@ public final class AccessPolicyProviderUtils {
         final Set<Group> groups = userGroupProvider.getGroups();
         LOGGER.trace("All groups: {}", groups);
 
-        final Optional<Group> identityGroupsOptional = groups.stream()
+        final Optional<Group> groupOptional = groups.stream()
                 .filter(group -> group.getName().equals(groupName))
                 .findFirst();
 
-        final Group identityGroup = identityGroupsOptional.orElseThrow(() ->
+        final Group group = groupOptional.orElseThrow(() ->
                         new SecurityProviderCreationException(
-                                String.format("Authorizations node group '%s' could not be found", groupName))
+                                String.format("Group '%s' could not be found", groupName))
         );
 
-        LOGGER.debug("Group identifier is: {}", identityGroup);
-        return identityGroup;
+        LOGGER.debug("Group identifier is: {}", group);
+        return group;
     }
 
     private AccessPolicyProviderUtils() {

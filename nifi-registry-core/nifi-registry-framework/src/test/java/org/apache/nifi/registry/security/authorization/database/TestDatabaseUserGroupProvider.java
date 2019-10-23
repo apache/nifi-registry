@@ -25,6 +25,8 @@ import org.apache.nifi.registry.security.authorization.User;
 import org.apache.nifi.registry.security.authorization.UserAndGroups;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
 import org.apache.nifi.registry.security.authorization.util.UserGroupProviderUtils;
+import org.apache.nifi.registry.security.identity.DefaultIdentityMapper;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,16 +50,18 @@ public class TestDatabaseUserGroupProvider extends DatabaseBaseTest {
     @Autowired
     private DataSource dataSource;
     private NiFiRegistryProperties properties;
+    private IdentityMapper identityMapper;
 
     private ConfigurableUserGroupProvider userGroupProvider;
 
     @Before
     public void setup() {
         properties = new NiFiRegistryProperties();
+        identityMapper = new DefaultIdentityMapper(properties);
 
         final DatabaseUserGroupProvider databaseUserGroupProvider = new DatabaseUserGroupProvider();
         databaseUserGroupProvider.setDataSource(dataSource);
-        databaseUserGroupProvider.setProperties(properties);
+        databaseUserGroupProvider.setIdentityMapper(identityMapper);
 
         final UserGroupProviderInitializationContext initializationContext = mock(UserGroupProviderInitializationContext.class);
         databaseUserGroupProvider.initialize(initializationContext);
@@ -178,6 +182,9 @@ public class TestDatabaseUserGroupProvider extends DatabaseBaseTest {
         // Set up an identity mapping for kerberos principals
         properties.setProperty("nifi.registry.security.identity.mapping.pattern.kerb", "^(.*?)@(.*?)$");
         properties.setProperty("nifi.registry.security.identity.mapping.value.kerb", "$1");
+
+        identityMapper = new DefaultIdentityMapper(properties);
+        ((DatabaseUserGroupProvider)userGroupProvider).setIdentityMapper(identityMapper);
 
         // Call onConfigured with two initial users - one kerberos principal, one DN
         final String userIdentity1 = "user1@NIFI.COM";

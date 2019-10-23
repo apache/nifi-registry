@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 import org.apache.nifi.registry.extension.ExtensionClassLoader;
 import org.apache.nifi.registry.extension.ExtensionCloseable;
 import org.apache.nifi.registry.extension.ExtensionManager;
@@ -30,6 +31,7 @@ import org.apache.nifi.registry.security.authorization.generated.Authorizers;
 import org.apache.nifi.registry.security.authorization.generated.Prop;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.security.util.ClassLoaderUtils;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.apache.nifi.registry.service.RegistryService;
@@ -104,6 +106,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     private final SensitivePropertyProvider sensitivePropertyProvider;
     private final RegistryService registryService;
     private final DataSource dataSource;
+    private final IdentityMapper identityMapper;
 
     private Authorizer authorizer;
     private final Map<String, UserGroupProvider> userGroupProviders = new HashMap<>();
@@ -116,29 +119,15 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             final ExtensionManager extensionManager,
             @Nullable final SensitivePropertyProvider sensitivePropertyProvider,
             final RegistryService registryService,
-            final DataSource dataSource) {
+            final DataSource dataSource,
+            final IdentityMapper identityMapper) {
 
-        this.properties = properties;
-        this.extensionManager = extensionManager;
+        this.properties = Validate.notNull(properties);
+        this.extensionManager = Validate.notNull(extensionManager);
         this.sensitivePropertyProvider = sensitivePropertyProvider;
-        this.registryService = registryService;
-        this.dataSource = dataSource;
-
-        if (this.properties == null) {
-            throw new IllegalStateException("NiFiRegistryProperties cannot be null");
-        }
-
-        if (this.extensionManager == null) {
-            throw new IllegalStateException("ExtensionManager cannot be null");
-        }
-
-        if (this.registryService == null) {
-            throw new IllegalStateException("RegistryService cannot be null");
-        }
-
-        if (this.dataSource == null) {
-            throw new IllegalStateException("DataSource cannot be null");
-        }
+        this.registryService = Validate.notNull(registryService);
+        this.dataSource = Validate.notNull(dataSource);
+        this.identityMapper = Validate.notNull(identityMapper);
     }
 
     /***** UserGroupProviderLookup *****/
@@ -458,6 +447,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         } else if (DataSource.class.isAssignableFrom(argumentType)) {
                             // data source injection
                             method.invoke(instance, dataSource);
+                        } else if (IdentityMapper.class.isAssignableFrom(argumentType)) {
+                            // identity mapper injection
+                            method.invoke(instance, identityMapper);
                         }
                     }
                 } finally {
@@ -492,6 +484,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         } else if (DataSource.class.isAssignableFrom(fieldType)) {
                             // data source injection
                             field.set(instance, dataSource);
+                        } else if (IdentityMapper.class.isAssignableFrom(fieldType)) {
+                            // identity mapper injection
+                            field.set(instance, identityMapper);
                         }
                     }
 

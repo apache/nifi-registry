@@ -33,6 +33,7 @@ import org.apache.nifi.registry.security.authorization.Authorizer;
 import org.apache.nifi.registry.security.authorization.AuthorizerFactory;
 import org.apache.nifi.registry.security.crypto.BootstrapFileCryptoKeyProvider;
 import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.service.RegistryService;
 import org.junit.After;
 import org.junit.Before;
@@ -112,9 +113,17 @@ public class SecureLdapIT extends IntegrationTestBase {
                 @Autowired NiFiRegistryProperties properties,
                 ExtensionManager extensionManager,
                 RegistryService registryService,
-                DataSource dataSource) throws Exception {
+                DataSource dataSource,
+                IdentityMapper identityMapper) throws Exception {
+
             if (authorizerFactory == null) {
-                authorizerFactory = new AuthorizerFactory(properties, extensionManager, sensitivePropertyProvider(), registryService, dataSource);
+                authorizerFactory = new AuthorizerFactory(
+                        properties,
+                        extensionManager,
+                        sensitivePropertyProvider(),
+                        registryService,
+                        dataSource,
+                        identityMapper);
             }
             return authorizerFactory.getAuthorizer();
         }

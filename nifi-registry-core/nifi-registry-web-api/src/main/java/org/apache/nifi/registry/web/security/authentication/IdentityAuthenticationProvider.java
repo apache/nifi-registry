@@ -16,9 +16,6 @@
  */
 package org.apache.nifi.registry.web.security.authentication;
 
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.properties.util.IdentityMapping;
-import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authentication.AuthenticationRequest;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.authentication.IdentityProvider;
@@ -30,6 +27,7 @@ import org.apache.nifi.registry.security.authorization.UserAndGroups;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserDetails;
 import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -38,7 +36,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,19 +43,17 @@ public class IdentityAuthenticationProvider implements AuthenticationProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentityAuthenticationProvider.class);
 
-    protected NiFiRegistryProperties properties;
     protected Authorizer authorizer;
     protected final IdentityProvider identityProvider;
-    private List<IdentityMapping> mappings;
+    protected final IdentityMapper identityMapper;
 
     public IdentityAuthenticationProvider(
-            NiFiRegistryProperties properties,
             Authorizer authorizer,
-            IdentityProvider identityProvider) {
-        this.properties = properties;
+            IdentityProvider identityProvider,
+            IdentityMapper identityMapper) {
         this.authorizer = authorizer;
         this.identityProvider = identityProvider;
-        this.mappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
+        this.identityMapper = identityMapper;
     }
 
     @Override
@@ -114,7 +109,7 @@ public class IdentityAuthenticationProvider implements AuthenticationProvider {
     }
 
     protected String mapIdentity(final String identity) {
-        return IdentityMappingUtil.mapIdentity(identity, mappings);
+        return identityMapper.mapUser(identity);
     }
 
     protected Set<String> getUserGroups(final String identity) {

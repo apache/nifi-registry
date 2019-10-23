@@ -17,9 +17,6 @@
 package org.apache.nifi.registry.security.authorization.file;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.registry.properties.NiFiRegistryProperties;
-import org.apache.nifi.registry.properties.util.IdentityMapping;
-import org.apache.nifi.registry.properties.util.IdentityMappingUtil;
 import org.apache.nifi.registry.security.authorization.AbstractConfigurableAccessPolicyProvider;
 import org.apache.nifi.registry.security.authorization.AccessPolicy;
 import org.apache.nifi.registry.security.authorization.AccessPolicyProviderInitializationContext;
@@ -38,6 +35,7 @@ import org.apache.nifi.registry.security.authorization.util.InitialPolicies;
 import org.apache.nifi.registry.security.authorization.util.ResourceAndAction;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.util.PropertyValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,14 +112,12 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
 
     static final String PROP_AUTHORIZATIONS_FILE = "Authorizations File";
 
+    private IdentityMapper identityMapper;
     private Schema authorizationsSchema;
-    private NiFiRegistryProperties properties;
     private File authorizationsFile;
     private String initialAdminIdentity;
     private Set<String> nifiIdentities;
     private String nifiGroupName;
-    private List<IdentityMapping> identityMappings;
-    private List<IdentityMapping> groupMappings;
 
     private final AtomicReference<AuthorizationsHolder> authorizationsHolder = new AtomicReference<>();
 
@@ -150,18 +146,14 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
                 saveAuthorizations(new Authorizations());
             }
 
-            // extract the identity mappings from nifi-registry.properties if any are provided
-            identityMappings = Collections.unmodifiableList(IdentityMappingUtil.getIdentityMappings(properties));
-            groupMappings = Collections.unmodifiableList(IdentityMappingUtil.getGroupMappings(properties));
-
             // get the value of the initial admin identity
-            initialAdminIdentity = AccessPolicyProviderUtils.getInitialAdminIdentity(configurationContext, identityMappings);
+            initialAdminIdentity = AccessPolicyProviderUtils.getInitialAdminIdentity(configurationContext, identityMapper);
 
             // extract any nifi identities
-            nifiIdentities = AccessPolicyProviderUtils.getNiFiIdentities(configurationContext, identityMappings);
+            nifiIdentities = AccessPolicyProviderUtils.getNiFiIdentities(configurationContext, identityMapper);
 
             // extract the group for nifi identities, if one exists
-            nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext, groupMappings);
+            nifiGroupName = AccessPolicyProviderUtils.getNiFiGroupName(configurationContext, identityMapper);
 
             // load the authorizations
             load();
@@ -281,8 +273,8 @@ public class FileAccessPolicyProvider extends AbstractConfigurableAccessPolicyPr
     }
 
     @AuthorizerContext
-    public void setNiFiProperties(NiFiRegistryProperties properties) {
-        this.properties = properties;
+    public void setIdentityMapper(final IdentityMapper identityMapper) {
+        this.identityMapper = identityMapper;
     }
 
     @Override
