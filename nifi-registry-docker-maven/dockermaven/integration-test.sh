@@ -40,7 +40,7 @@ docker run -d --name ${container_name} apache/nifi-registry:${TAG}
 IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${container_name})
 
 for i in $(seq 1 10) :; do
-    if docker exec ${container_name} bash -c "ss -ntl | grep 8080"; then
+    if docker exec ${container_name} bash -c "ss -ntl | grep 18080"; then
         break
     fi
     sleep 10

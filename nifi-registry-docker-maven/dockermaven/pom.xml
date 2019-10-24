@@ -84,6 +84,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
+                                    <skip>${skipTests}</skip>
                                     <arguments>
                                         <argument>${project.version}-dockermaven</argument>
                                         <argument>${project.version}</argument>
