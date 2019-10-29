@@ -16,6 +16,8 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
+import org.apache.nifi.registry.util.FileUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -39,8 +41,12 @@ class Flow {
         return versions.containsKey(version);
     }
 
-    public FlowPointer getFlowVersion(int version) {
+    public FlowPointer getFlowVersion(int version){
         return versions.get(version);
+    }
+
+    public String getFlowId(){
+        return this.flowId;
     }
 
     public void putVersion(int version, FlowPointer pointer) {
@@ -65,7 +71,7 @@ class Flow {
 
         /**
          * Create new FlowPointer instance.
-         * @param fileName The filename must be sanitized, use {@link org.apache.nifi.registry.util.FileUtils#sanitizeFilename(String)} to do so.
+         * @param fileName The filename must be sanitized, use {@link FileUtils#sanitizeFilename(String)} to do so.
          */
         public FlowPointer(String fileName) {
             this.fileName = fileName;

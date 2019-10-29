@@ -16,13 +16,19 @@
  */
 package org.apache.nifi.registry.provider.flow.git;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -30,6 +36,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteConfig;
+import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.slf4j.Logger;
@@ -42,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -79,6 +87,7 @@ class GitFlowMetaData {
     private Repository gitRepo;
     private String remoteToPush;
     private CredentialsProvider credentialsProvider;
+    private ScheduledExecutorService executorService;
 
     private final BlockingQueue<Long> pushQueue = new ArrayBlockingQueue<>(1);
 
@@ -100,10 +109,25 @@ class GitFlowMetaData {
      * @param gitProjectRootDir a root directory of a Git project
      * @return created Repository
      * @throws IOException thrown when the specified directory does not exist,
-     * does not have read/write privilege or not containing .git directory
+     *                     does not have read/write privilege or not containing .git directory
      */
-    private Repository openRepository(final File gitProjectRootDir) throws IOException {
+    private Repository openRepository(final File gitProjectRootDir, Boolean enforceRecreate) throws IOException {
+        if (this.gitRepo != null && !enforceRecreate) {
+            return this.gitRepo;
+        }
 
+        final FileRepositoryBuilder builder = createRepositoryBuilder(gitProjectRootDir);
+
+        if (builder.getGitDir() == null) {
+            throw new IOException(format("Directory '%s' does not contain a .git directory." +
+                            " Please init and configure the directory with 'git init' command before using it from NiFi Registry.",
+                    gitProjectRootDir));
+        }
+
+        return builder.build();
+    }
+
+    private FileRepositoryBuilder createRepositoryBuilder(File gitProjectRootDir) throws IOException {
         // Instead of using FileUtils.ensureDirectoryExistAndCanReadAndWrite, check availability manually here.
         // Because the util will try to create a dir if not exist.
         // The git dir should be initialized and configured by users.
@@ -116,37 +140,140 @@ class GitFlowMetaData {
         }
 
         // Search .git dir but avoid searching parent directories.
-        final FileRepositoryBuilder builder = new FileRepositoryBuilder()
+        return new FileRepositoryBuilder()
                 .readEnvironment()
                 .setMustExist(true)
                 .addCeilingDirectory(gitProjectRootDir)
                 .findGitDir(gitProjectRootDir);
+    }
 
-        if (builder.getGitDir() == null) {
-            throw new IOException(format("Directory '%s' does not contain a .git directory." +
-                    " Please init and configure the directory with 'git init' command before using it from NiFi Registry.",
-                    gitProjectRootDir));
+
+    public void resetGitRepository(File gitProjectRootDir) throws IOException, GitAPIException, InterruptedException {
+        URI gitRepositoryUrl = URI.create("");
+        if (this.isGitRepositoryExisting(gitProjectRootDir)) {
+            gitRepo = openRepository(gitProjectRootDir, false);
+
+            try (final Git git = new Git(gitRepo)) {
+                TerminateWhenRemotePathDoesNotExist(git);
+
+                if (!git.status().call().isClean()) {
+                    throw new IOException("Directory '%s' contains changes. " +
+                            "Therefore a complete reset of the repository is not possible.\n" +
+                            "Please commit your changes and push to remote repository manually." +
+                            "Git persistence provider does not recover from conflicting changes automatically.");
+                }
+
+                Optional<RemoteConfig> remoteConfig = git.remoteList().call()
+                        .stream().filter(r -> r.getName().equalsIgnoreCase(remoteToPush)).findFirst();
+                if (remoteConfig.isPresent() && !remoteConfig.get().getURIs().isEmpty()) {
+                    URIish remoteUri = remoteConfig.get().getURIs().get(0);
+                    if (remoteUri.getHost() == null) {
+                        gitRepositoryUrl = new File(remoteUri.toString()).toURI();
+                    } else {
+                        gitRepositoryUrl = URI.create(remoteUri.toString());
+                    }
+                } else {
+                    throw new IOException("Cannot find/derive a remote git repository uri. Please provide a valid " +
+                            "remote origin by initializing your git repository correctly (for example: " +
+                            "git remote add origin repositoryUri).");
+                }
+            }
         }
 
-        return builder.build();
+        closeRepository();
+
+        File backupDir = deriveBackupDir(gitProjectRootDir);
+        try {
+            backupProjectDir(gitProjectRootDir, backupDir);
+            FileUtils.deleteDirectory(gitProjectRootDir);
+            cloneRepository(gitProjectRootDir, gitRepositoryUrl);
+        } catch (Exception ex) {
+            restoreProjectDir(gitProjectRootDir, backupDir);
+            throw ex;
+        } finally {
+            safeDeleteDir(backupDir);
+        }
+    }
+
+    private void safeDeleteDir(File dir) throws IOException {
+        if (dir.exists()) {
+            FileUtils.deleteDirectory(dir);
+        }
+    }
+
+    private void restoreProjectDir(File gitProjectRootDir, File backupDir) throws IOException {
+        safeDeleteDir(gitProjectRootDir);
+        FileUtils.copyDirectory(backupDir, gitProjectRootDir);
+    }
+
+    private void backupProjectDir(File gitProjectRootDir, File backupDir) throws IOException {
+        safeDeleteDir(backupDir);
+        FileUtils.copyDirectory(gitProjectRootDir, backupDir);
+    }
+
+    private File deriveBackupDir(File gitProjectRootDir) {
+        return new File(gitProjectRootDir.getParentFile(), "backup");
+    }
+
+    private void cloneRepository(File gitProjectRootDir, URI gitRepositoryUrl) throws GitAPIException {
+        CloneCommand command = Git.cloneRepository()
+                .setURI(gitRepositoryUrl.toString())
+                .setDirectory(gitProjectRootDir);
+        if (credentialsProvider != null) {
+            command.setCredentialsProvider(credentialsProvider);
+        }
+
+        command.call().close();
+    }
+
+    public void closeRepository() throws InterruptedException {
+        this.stopPushThread();
+        if (gitRepo != null) {
+            gitRepo.close();
+        }
+    }
+
+    public void pullChanges(File gitProjectRootDir) throws IOException, GitAPIException {
+        // TODO: prevent others from pushing during the pull command
+        // TODO: wait until push thread has terminated
+        gitRepo = openRepository(gitProjectRootDir, false);
+
+        try (final Git git = new Git(gitRepo)) {
+            TerminateWhenRemotePathDoesNotExist(git);
+
+            if (!git.status().call().isClean()) {
+                throw new IOException("Directory '%s' contains changes. " +
+                        "Therefore a complete reset of the repository is not possible.\n" +
+                        "Please commit your changes and push to remote repository.");
+            }
+
+            final PullCommand pullCommand = git.pull().setRemote(this.remoteToPush)
+                    .setRemoteBranchName(gitRepo.getFullBranch());
+
+            if (credentialsProvider != null) {
+                pullCommand.setCredentialsProvider(credentialsProvider);
+            }
+
+            final PullResult pullResult = pullCommand.call();
+            if (!pullResult.isSuccessful()) {
+                final Ref ref = git.reset().setMode(ResetCommand.ResetType.HARD).call();
+                logger.info("reset git repository to {}, because pull request was not successful.", ref.toString());
+                throw new IOException(
+                        format("The pull command was not successful because '%s'.", pullResult.toString()));
+            } else {
+                this.loadGitRepository(gitProjectRootDir);
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
     public void loadGitRepository(File gitProjectRootDir) throws IOException, GitAPIException {
-        gitRepo = openRepository(gitProjectRootDir);
+        gitRepo = openRepository(gitProjectRootDir, false);
 
         try (final Git git = new Git(gitRepo)) {
 
             // Check if remote exists.
-            if (!isEmpty(remoteToPush)) {
-                final List<RemoteConfig> remotes = git.remoteList().call();
-                final boolean isRemoteExist = remotes.stream().anyMatch(remote -> remote.getName().equals(remoteToPush));
-                if (!isRemoteExist) {
-                    final List<String> remoteNames = remotes.stream().map(RemoteConfig::getName).collect(Collectors.toList());
-                    throw new IllegalArgumentException(
-                            format("The configured remote '%s' to push does not exist. Available remotes are %s", remoteToPush, remoteNames));
-                }
-            }
+            TerminateWhenRemotePathDoesNotExist(git);
 
             boolean isLatestCommit = true;
             try {
@@ -192,6 +319,18 @@ class GitFlowMetaData {
         }
     }
 
+    private void TerminateWhenRemotePathDoesNotExist(Git git) throws GitAPIException {
+        if (!isEmpty(remoteToPush)) {
+            final List<RemoteConfig> remotes = git.remoteList().call();
+            final boolean isRemoteExist = remotes.stream().anyMatch(remote -> remote.getName().equals(remoteToPush));
+            if (!isRemoteExist) {
+                final List<String> remoteNames = remotes.stream().map(RemoteConfig::getName).collect(Collectors.toList());
+                throw new IllegalArgumentException(
+                        format("The configured remote '%s' to push does not exist. Available remotes are %s", remoteToPush, remoteNames));
+            }
+        }
+    }
+
     void startPushThread() {
         // If successfully loaded, start pushing thread if necessary.
         if (isEmpty(remoteToPush)) {
@@ -204,7 +343,7 @@ class GitFlowMetaData {
         // Use scheduled fixed delay to control the minimum interval between push activities.
         // The necessity of executing push is controlled by offering messages to the pushQueue.
         // If multiple commits are made within this time window, those are pushed by a single push execution.
-        final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
+        this.executorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
         executorService.scheduleWithFixedDelay(() -> {
 
             final Long offeredTimestamp;
@@ -231,6 +370,18 @@ class GitFlowMetaData {
             }
 
         }, 10, 10, TimeUnit.SECONDS);
+    }
+
+    void stopPushThread() throws InterruptedException {
+        if(this.executorService == null)
+            return;
+
+        this.executorService.shutdown();
+        // push latest changes
+        this.pushQueue.offer(System.currentTimeMillis());
+        while (!this.executorService.isTerminated()) {
+            Thread.sleep(100);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -315,7 +466,7 @@ class GitFlowMetaData {
             if (!flow.hasVersion(version)) {
                 final Flow.FlowPointer pointer = new Flow.FlowPointer(flowSnapshotFilename);
                 final File flowSnapshotFile = new File(new File(backetFilePath).getParent(), flowSnapshotFilename);
-                final ObjectId objectId = flowSnapshotObjectIds.get(flowSnapshotFile.getPath());
+                final ObjectId objectId = flowSnapshotObjectIds.get(flowSnapshotFile.getPath().replaceAll("\\\\", "/"));
                 if (objectId == null) {
                     logger.warn("Git object id for Flow {} version {} with path {} in bucket {}:{} was not found. Ignoring this entry.",
                             flowId, version, flowSnapshotFile.getPath(), bucket.getBucketDirName(), bucket.getBucketId());
@@ -332,12 +483,18 @@ class GitFlowMetaData {
                 }
                 if (flowMeta.containsKey(AUTHOR)) {
                     pointer.setAuthor((String)flowMeta.get(AUTHOR));
+                }else{
+                    pointer.setAuthor(commit.getCommitterIdent().getName());
                 }
                 if (flowMeta.containsKey(COMMENTS)) {
                     pointer.setComment((String)flowMeta.get(COMMENTS));
+                }else{
+                    pointer.setComment(commit.getFullMessage());
                 }
                 if (flowMeta.containsKey(CREATED)) {
                     pointer.setCreated((long)flowMeta.get(CREATED));
+                }else{
+                    pointer.setCreated(commit.getCommitTime() * 1000L);
                 }
 
                 flow.putVersion(version, pointer);
@@ -345,7 +502,7 @@ class GitFlowMetaData {
         }
     }
 
-    private boolean validateRequiredValue(final Map map, String nameOfMap, Object ... keys) {
+    private boolean validateRequiredValue(final Map map, String nameOfMap, Object... keys) {
         for (Object key : keys) {
             if (!map.containsKey(key)) {
                 logger.warn("{} does not have {}. Skipping it.", nameOfMap, key);
@@ -383,11 +540,16 @@ class GitFlowMetaData {
         return status.isClean() && !status.hasUncommittedChanges();
     }
 
+    boolean isGitRepositoryExisting(File gitRepository) throws IOException {
+        return this.createRepositoryBuilder(gitRepository).getGitDir() != null;
+    }
+
     /**
      * Create a Git commit.
-     * @param author The name of a NiFi Registry user who created the snapshot. It will be added to the commit message.
-     * @param message Commit message.
-     * @param bucket A bucket to commit.
+     *
+     * @param author      The name of a NiFi Registry user who created the snapshot. It will be added to the commit message.
+     * @param message     Commit message.
+     * @param bucket      A bucket to commit.
      * @param flowPointer A flow pointer for the flow snapshot which is updated.
      *                    After a commit is created, new commit rev id and flow snapshot file object id are set to this pointer.
      *                    It can be null if none of flow content is modified.
@@ -448,4 +610,11 @@ class GitFlowMetaData {
         return gitRepo.newObjectReader().open(flowSnapshotObjectId).getBytes();
     }
 
+    public SyncStatus getStatus() throws GitAPIException {
+        final Status status = new Git(this.gitRepo).status().call();
+        return new SyncStatus(
+                status.isClean(),
+                status.hasUncommittedChanges(),
+                status.getConflictingStageState().keySet()) ;
+    }
 }

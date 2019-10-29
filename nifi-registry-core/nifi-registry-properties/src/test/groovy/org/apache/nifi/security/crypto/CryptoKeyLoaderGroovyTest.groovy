@@ -19,6 +19,7 @@ package org.apache.nifi.security.crypto
 import org.apache.nifi.registry.security.crypto.CryptoKeyLoader
 import org.apache.nifi.registry.security.crypto.CryptoKeyProvider
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.junit.Assume
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -97,6 +98,8 @@ class CryptoKeyLoaderGroovyTest extends GroovyTestCase {
 
     @Test
     public void testShouldNotExtractKeyFromUnreadableBootstrapFile() throws Exception {
+        //dirty hack to prevent execution of this test on windows systems because of incompatibility with posix permissions
+        Assume.assumeFalse(System.getProperty("os.name").toLowerCase().startsWith("win"))
         // Arrange
         File unreadableFile = new File("src/test/resources/conf/bootstrap.unreadable_file_permissions.conf")
         Set<PosixFilePermission> originalPermissions = Files.getPosixFilePermissions(unreadableFile.toPath())

@@ -24,6 +24,8 @@ import org.apache.nifi.registry.metadata.FlowMetadata;
 import org.apache.nifi.registry.metadata.FlowSnapshotMetadata;
 import org.apache.nifi.registry.provider.ProviderConfigurationContext;
 import org.apache.nifi.registry.provider.ProviderCreationException;
+import org.apache.nifi.registry.provider.StandardProviderConfigurationContext;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 import org.apache.nifi.registry.util.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
@@ -47,19 +49,22 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
     private static final Logger logger = LoggerFactory.getLogger(GitFlowMetaData.class);
     static final String FLOW_STORAGE_DIR_PROP = "Flow Storage Directory";
-    private static final String REMOTE_TO_PUSH = "Remote To Push";
+    protected static final String REMOTE_TO_PUSH = "Remote To Push";
     private static final String REMOTE_ACCESS_USER = "Remote Access User";
     private static final String REMOTE_ACCESS_PASSWORD = "Remote Access Password";
     static final String SNAPSHOT_EXTENSION = ".snapshot";
 
     private File flowStorageDir;
-    private GitFlowMetaData flowMetaData;
+    protected GitFlowMetaData flowMetaData;
+    private Map<String, String> props;
+
+
 
     @Override
     public void onConfigured(ProviderConfigurationContext configurationContext) throws ProviderCreationException {
         flowMetaData = new GitFlowMetaData();
 
-        final Map<String,String> props = configurationContext.getProperties();
+        this.props = configurationContext.getProperties();
         if (!props.containsKey(FLOW_STORAGE_DIR_PROP)) {
             throw new ProviderCreationException("The property " + FLOW_STORAGE_DIR_PROP + " must be provided");
         }
@@ -274,6 +279,46 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
         // TODO: Do nothing? This signature is not used. Actually there's nothing to do to the old versions as those exist in old commits even if this method is called.
     }
 
+
+    @Override
+    public Boolean canBeSynchronized() {
+        return true;
+    }
+
+    @Override
+    public void getLatestChangesOfRemoteRepository() throws IOException {
+        try {
+            this.flowMetaData.pullChanges(flowStorageDir);
+        }catch(GitAPIException apiException){
+            throw new IOException(apiException);
+        }
+    }
+
+    @Override
+    public void resetRepository() throws IOException {
+        try {
+            this.flowMetaData.resetGitRepository(flowStorageDir);
+            this.onConfigured(new StandardProviderConfigurationContext(this.props));
+        } catch (GitAPIException e) {
+            throw new IOException(e);
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        }
+    }
+
+    @Override
+    public RepositorySyncStatus getStatus() throws IOException {
+        try{
+            SyncStatus status = this.flowMetaData.getStatus();
+            return new RepositorySyncStatus(
+                    status.isClean(),
+                    status.hasUncommittedChanges(),
+                    status.getConflictingChanges());
+        }catch(GitAPIException e){
+            throw new IOException(e);
+        }
+
+    }
     @Override
     public List<BucketMetadata> getMetadata() {
         final Map<String, Bucket> gitBuckets = flowMetaData.getBuckets();

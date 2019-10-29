@@ -13,7 +13,6 @@ nb-configuration.xml
 *.iml
 *.iws
 *~
-
 /bin/
 
 # Node JS

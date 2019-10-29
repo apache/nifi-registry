@@ -1358,4 +1358,35 @@ public class TestRegistryService {
             return flowEntity;
         };
     }
+
+    // -----------------Test Buckets Sync Service Method---------------------
+
+    @Test
+    public void testSyncBucketsMetadata() {
+        when(flowPersistenceProvider.getFlowContent(
+                anyString(), anyString(), anyInt()
+        )).thenReturn(new byte[10], new byte[10]);
+
+        final VersionedProcessGroup pgA = createVersionedProcessGroupA();
+        final VersionedProcessGroup pgB = createVersionedProcessGroupB();
+        when(snapshotSerializer.deserialize(any())).thenReturn(pgA, pgB);
+
+        // getFlowDiff orders the changes in ascending order of version number regardless of param order
+        final VersionedFlowDifference diff = registryService.getFlowDiff(
+                "bucketIdentifier", "flowIdentifier", 2, 1);
+
+        assertNotNull(diff);
+        Optional<ComponentDifferenceGroup> nameChangedComponent = diff.getComponentDifferenceGroups().stream()
+                .filter(p -> p.getComponentId().equals("ProcessorFirstV1")).findFirst();
+
+        assertTrue(nameChangedComponent.isPresent());
+
+        ComponentDifference nameChangeDifference = nameChangedComponent.get().getDifferences().stream()
+                .filter(d -> d.getDifferenceType().equals("NAME_CHANGED")).findFirst().get();
+
+        assertEquals("ProcessorFirstV1", nameChangeDifference.getValueA());
+        assertEquals("ProcessorFirstV2", nameChangeDifference.getValueB());
+    }
+
+    // -------------------------------------------------------------------
 }

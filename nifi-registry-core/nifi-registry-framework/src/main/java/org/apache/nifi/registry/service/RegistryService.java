@@ -60,6 +60,7 @@ import org.apache.nifi.registry.flow.diff.FlowComparison;
 import org.apache.nifi.registry.flow.diff.FlowDifference;
 import org.apache.nifi.registry.flow.diff.StandardComparableDataFlow;
 import org.apache.nifi.registry.flow.diff.StandardFlowComparator;
+import org.apache.nifi.registry.provider.flow.FlowMetadataSynchronizer;
 import org.apache.nifi.registry.provider.extension.StandardBundleCoordinate;
 import org.apache.nifi.registry.provider.flow.StandardFlowSnapshotContext;
 import org.apache.nifi.registry.serialization.FlowContent;
@@ -69,6 +70,7 @@ import org.apache.nifi.registry.service.extension.ExtensionService;
 import org.apache.nifi.registry.service.mapper.BucketMappings;
 import org.apache.nifi.registry.service.mapper.ExtensionMappings;
 import org.apache.nifi.registry.service.mapper.FlowMappings;
+import org.apache.nifi.registry.sync.RepositorySyncStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +86,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -95,6 +98,8 @@ import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Main service for all back-end operations, REST resources should only interact with this service.
@@ -222,7 +227,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getAllBuckets();
-            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(toList());
         } finally {
             readLock.unlock();
         }
@@ -232,7 +237,7 @@ public class RegistryService {
         readLock.lock();
         try {
             final List<BucketEntity> buckets = metadataService.getBuckets(bucketIds);
-            return buckets.stream().map(b -> BucketMappings.map(b)).collect(Collectors.toList());
+            return buckets.stream().map(b -> BucketMappings.map(b)).collect(toList());
         } finally {
             readLock.unlock();
         }
@@ -510,7 +515,7 @@ public class RegistryService {
 
             // return non-verbose set of flows for the given bucket
             final List<FlowEntity> flows = metadataService.getFlowsByBucket(existingBucket.getId());
-            return flows.stream().map(f -> FlowMappings.map(existingBucket, f)).collect(Collectors.toList());
+            return flows.stream().map(f -> FlowMappings.map(existingBucket, f)).collect(toList());
         } finally {
             readLock.unlock();
         }
@@ -1313,4 +1318,55 @@ public class RegistryService {
         return metadataService.getFlowFields();
     }
 
+
+    public Collection<Bucket> syncBuckets(){
+        if (this.flowPersistenceProvider.canBeSynchronized()) {
+            deleteAllBucketsInMetaDatabase();
+            return createBucketsFromProvider();
+        }
+
+        return this.metadataService.getAllBuckets()
+                .stream().map(BucketMappings::map)
+                .collect(toList());
+    }
+
+    private void deleteAllBucketsInMetaDatabase() {
+        for (BucketEntity bucketEntity : this.metadataService.getAllBuckets()) {
+            this.metadataService.deleteBucket(bucketEntity);
+        }
+    }
+
+    private Collection<Bucket> createBucketsFromProvider() {
+        FlowMetadataSynchronizer metadataSynchronizer =
+                new FlowMetadataSynchronizer(this.metadataService, this.flowPersistenceProvider);
+        metadataSynchronizer.synchronize();
+
+        return this.metadataService.getAllBuckets().stream().map(BucketMappings::map).collect(toList());
+    }
+
+    public void resetProviderRepository() throws IOException {
+        if (this.flowPersistenceProvider.canBeSynchronized()) {
+            flowPersistenceProvider.resetRepository();
+            return;
+        }
+
+        throw new IOException("Cannot reset provider repository "+
+                "because the current provider does not support synchronization tasks.");
+    }
+
+    public void getLatestChangesOfRemoteRepository() throws IOException {
+        if (this.flowPersistenceProvider.canBeSynchronized()) {
+            this.flowPersistenceProvider.getLatestChangesOfRemoteRepository();
+            return;
+        }
+
+        throw new IOException("Cannot get latest changes of remote repository " +
+                "because the current provider does not support synchronization tasks.");
+    }
+
+    public RepositorySyncStatus getStatus() throws IOException {
+        org.apache.nifi.registry.provider.sync.RepositorySyncStatus status = this.flowPersistenceProvider.getStatus();
+        RepositorySyncStatus dataTransferObject = new RepositorySyncStatus(status.isClean(), status.hasChanges(), status.changes());
+        return dataTransferObject;
+    }
 }

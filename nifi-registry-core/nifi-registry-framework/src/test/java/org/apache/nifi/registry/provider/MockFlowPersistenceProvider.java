@@ -16,9 +16,10 @@
  */
 package org.apache.nifi.registry.provider;
 
+import org.apache.nifi.registry.flow.FlowPersistenceException;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.flow.FlowSnapshotContext;
-import org.apache.nifi.registry.flow.FlowPersistenceException;
+import org.apache.nifi.registry.provider.sync.RepositorySyncStatus;
 
 import java.util.Map;
 
@@ -53,5 +54,25 @@ public class MockFlowPersistenceProvider implements FlowPersistenceProvider {
 
     public Map<String,String> getProperties() {
         return properties;
+    }
+
+    @Override
+    public Boolean canBeSynchronized() {
+        return false;
+    }
+
+    @Override
+    public void getLatestChangesOfRemoteRepository() {
+
+    }
+
+    @Override
+    public void resetRepository() {
+
+    }
+
+    @Override
+    public RepositorySyncStatus getStatus() {
+        return RepositorySyncStatus.SuccessfulSynchronizedRepository();
     }
 }
