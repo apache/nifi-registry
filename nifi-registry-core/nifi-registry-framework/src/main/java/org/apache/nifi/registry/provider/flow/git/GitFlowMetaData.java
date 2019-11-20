@@ -182,7 +182,7 @@ class GitFlowMetaData {
         Git.cloneRepository()
                 .setURI(remoteRepository)
                 .setCredentialsProvider(this.credentialsProvider)
-                .setDirectory(new File(localRepo.getPath()))
+                .setDirectory(localRepo)
                 .call();
     }
 
