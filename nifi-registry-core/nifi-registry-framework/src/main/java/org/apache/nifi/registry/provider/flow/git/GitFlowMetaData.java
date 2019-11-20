@@ -171,13 +171,12 @@ class GitFlowMetaData {
             lsCmd.setRemote(remoteRepository);
             lsCmd.setCredentialsProvider(this.credentialsProvider);
             lsCmd.call();
-        }
-        catch (Exception e){
+        } catch (Exception e){
             throw new IllegalArgumentException("InvalidRemoteRepository : Given remote repository is not valid");
         }
     }
 
-    public void cloneRepository (File localRepo, String remoteRepository) throws GitAPIException {
+    public void cloneRepository(File localRepo, String remoteRepository) throws GitAPIException {
         logger.info("Cloning the repository {} in {}", remoteRepository, localRepo.getPath());
         Git.cloneRepository()
                 .setURI(remoteRepository)
