@@ -50,6 +50,7 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
     private static final String REMOTE_TO_PUSH = "Remote To Push";
     private static final String REMOTE_ACCESS_USER = "Remote Access User";
     private static final String REMOTE_ACCESS_PASSWORD = "Remote Access Password";
+    private static final String REMOTE_CLONE_REPOSITORY = "Remote Clone Repository";
     static final String SNAPSHOT_EXTENSION = ".snapshot";
 
     private File flowStorageDir;
@@ -73,6 +74,12 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
         final String remoteUser = props.get(REMOTE_ACCESS_USER);
         final String remotePassword = props.get(REMOTE_ACCESS_PASSWORD);
+        final String remoteRepo = props.get(REMOTE_CLONE_REPOSITORY);
+        if (!isEmpty(remoteRepo)) {
+            if (isEmpty(remoteUser) || isEmpty(remotePassword))
+                throw new ProviderCreationException(format("The property %s needs remote username and remote password",
+                        REMOTE_CLONE_REPOSITORY));
+        }
         if (!isEmpty(remoteUser) && isEmpty(remotePassword)) {
             throw new ProviderCreationException(format("The property %s is specified but %s is not." +
                     " %s is required for username password authentication.",
@@ -84,6 +91,11 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
         try {
             flowStorageDir = new File(flowStorageDirValue);
+            boolean localRepoExists = flowMetaData.localRepoExists(flowStorageDir);
+            if (remoteRepo != null && !remoteRepo.isEmpty() && !localRepoExists){
+                flowMetaData.remoteRepoExists(remoteRepo);
+                flowMetaData.cloneRepository(flowStorageDir, remoteRepo);
+            }
             flowMetaData.loadGitRepository(flowStorageDir);
             flowMetaData.startPushThread();
             logger.info("Configured GitFlowPersistenceProvider with Flow Storage Directory {}",
