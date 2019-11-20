@@ -18,12 +18,15 @@ package org.apache.nifi.registry.provider.flow.git;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LsRemoteCommand;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.RepositoryCache;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -32,6 +35,7 @@ import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteConfig;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -129,6 +133,78 @@ class GitFlowMetaData {
         }
 
         return builder.build();
+    }
+
+    private static boolean hasAtLeastOneReference(Repository repo) {
+        logger.info("Checking references for repository {}", repo.toString());
+        for (Ref ref : repo.getAllRefs().values()) {
+            if (ref.getObjectId() == null) {
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Check if the provided local repository exists or not, provided by the 'Flow Storage Directory'
+     * configuration in the providers.xml.
+     * @param localRepo  {@link File} object of the 'Flow Storage Directory' configuration
+     * @return true if the local repository exists, false otherwise
+     * @throws IOException if the .git directory of the local repository cannot be opened
+     */
+    public boolean localRepoExists(File localRepo) throws IOException {
+        if (!localRepo.isDirectory()) {
+            logger.info("{} is not a directory or does not exist.", localRepo.getPath());
+            return false;
+        }
+
+        if (RepositoryCache.FileKey.isGitRepository(new File(localRepo.getPath()+"/.git"), FS.DETECTED)) {
+            final Git git = Git.open(new File(localRepo.getPath() + "/.git"));
+            final Repository repository = git.getRepository();
+            logger.info("Checking for git references in {}", localRepo.getPath());
+            final boolean referenceExists = hasAtLeastOneReference(repository);
+            if (referenceExists) {
+                logger.info("{} local repository exists with references so no need to clone remote", localRepo.getPath());
+            }
+            // Can be an empty repository if no references are present should we pull from remote?
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Validate if the provided 'Remote Clone Repository' configuration in the providers.xml exists or not.
+     * If the remote repository does not exist, an {@link IllegalArgumentException} will be thrown.
+     * @param remoteRepository the URI value of the 'Remote Clone Repository' configuration
+     * @throws IOException if creating the repository fails
+     */
+    public void remoteRepoExists(String remoteRepository) throws IOException {
+        final Git git = new Git(FileRepositoryBuilder.create(new File(remoteRepository)));
+        final LsRemoteCommand lsCmd = git.lsRemote();
+        try {
+            lsCmd.setRemote(remoteRepository);
+            lsCmd.setCredentialsProvider(this.credentialsProvider);
+            lsCmd.call();
+        } catch (Exception e){
+            throw new IllegalArgumentException("InvalidRemoteRepository : Given remote repository is not valid");
+        }
+    }
+
+    /**
+     * If validation of remote clone repository throws no exception then clone the repository given
+     * in the 'Remote Clone Repository' configuration. Currently the default branch of remote will be cloned.
+     * @param localRepo {@link File} object of the 'Flow Storage Directory' configuration
+     * @param remoteRepository the URI value of the 'Remote Clone Repository' configuration
+     * @throws GitAPIException if unable to call the remote repository
+     */
+    public void cloneRepository(File localRepo, String remoteRepository) throws GitAPIException {
+        logger.info("Cloning the repository {} in {}", remoteRepository, localRepo.getPath());
+        Git.cloneRepository()
+                .setURI(remoteRepository)
+                .setCredentialsProvider(this.credentialsProvider)
+                .setDirectory(localRepo)
+                .call();
     }
 
     @SuppressWarnings("unchecked")

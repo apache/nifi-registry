@@ -33,6 +33,7 @@
         <property name="Remote To Push"></property>
         <property name="Remote Access User"></property>
         <property name="Remote Access Password"></property>
+        <property name="Remote Clone Repository"></property>
     </flowPersistenceProvider>
     -->
 
