@@ -136,15 +136,22 @@ class GitFlowMetaData {
     }
 
     private static boolean hasAtLeastOneReference(Repository repo) {
-        logger.info(repo.toString());
+        logger.info("Checking references for repository {}", repo.toString());
         for (Ref ref : repo.getAllRefs().values()) {
-            if (ref.getObjectId() == null)
+            if (ref.getObjectId() == null) {
                 continue;
+            }
             return true;
         }
         return false;
     }
 
+    /**
+     * Check if provided local repository exists or not at given 'Flow Storage Directory' in providers.xml
+     * @param localRepo file object of 'Flow Storage Directory'
+     * @return true if local repository exists else false
+     * @throws IOException if .git of local repository cannot be opened
+     */
     public boolean localRepoExists(File localRepo) throws IOException {
         if (!localRepo.isDirectory()) {
             logger.info("{} is not a directory or does not exist.", localRepo.getPath());
@@ -152,20 +159,27 @@ class GitFlowMetaData {
         }
 
         if (RepositoryCache.FileKey.isGitRepository(new File(localRepo.getPath()+"/.git"), FS.DETECTED)) {
-            Git git = Git.open(new File(localRepo.getPath() + "/.git"));
-            Repository repository = git.getRepository();
+            final Git git = Git.open(new File(localRepo.getPath() + "/.git"));
+            final Repository repository = git.getRepository();
             logger.info("Checking for git references in {}", localRepo.getPath());
-            boolean referenceExists = hasAtLeastOneReference(repository);
-            if (referenceExists)
+            final boolean referenceExists = hasAtLeastOneReference(repository);
+            if (referenceExists) {
                 logger.info("{} local repository exists with references so no need to clone remote", localRepo.getPath());
+            }
             // Can be an empty repository if no references are present should we pull from remote?
             return true;
         }
         return false;
     }
 
+    /**
+     * Validate if provided 'Remote Clone Repository' in providers.xml exists or not. If remote repository
+     * doesn't exist then will throw IllegalArgumentException
+     * @param remoteRepository URI value of 'Remote Clone Repository'
+     * @throws IOException if unable to create repository
+     */
     public void remoteRepoExists(String remoteRepository) throws IOException {
-        Git git = new Git(FileRepositoryBuilder.create(new File(remoteRepository)));
+        final Git git = new Git(FileRepositoryBuilder.create(new File(remoteRepository)));
         final LsRemoteCommand lsCmd = git.lsRemote();
         try {
             lsCmd.setRemote(remoteRepository);
@@ -176,6 +190,13 @@ class GitFlowMetaData {
         }
     }
 
+    /**
+     * If validation of remote clone repository throws no exception then clone the given 'Remote Clone Repository' in
+     * provided 'Flow Storage Directory'. Currently the default branch of remote will be cloned.
+     * @param localRepo file object of 'Flow Storage Directory'
+     * @param remoteRepository URI value of 'Remote Clone Repository'
+     * @throws GitAPIException if unable to call the remote repository
+     */
     public void cloneRepository(File localRepo, String remoteRepository) throws GitAPIException {
         logger.info("Cloning the repository {} in {}", remoteRepository, localRepo.getPath());
         Git.cloneRepository()

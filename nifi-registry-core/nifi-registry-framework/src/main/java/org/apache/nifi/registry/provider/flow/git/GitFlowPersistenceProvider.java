@@ -76,9 +76,10 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
         final String remotePassword = props.get(REMOTE_ACCESS_PASSWORD);
         final String remoteRepo = props.get(REMOTE_CLONE_REPOSITORY);
         if (!isEmpty(remoteRepo)) {
-            if (isEmpty(remoteUser) || isEmpty(remotePassword))
+            if (isEmpty(remoteUser) || isEmpty(remotePassword)) {
                 throw new ProviderCreationException(format("The property %s needs remote username and remote password",
                         REMOTE_CLONE_REPOSITORY));
+            }
         }
         if (!isEmpty(remoteUser) && isEmpty(remotePassword)) {
             throw new ProviderCreationException(format("The property %s is specified but %s is not." +
@@ -91,7 +92,7 @@ public class GitFlowPersistenceProvider implements MetadataAwareFlowPersistenceP
 
         try {
             flowStorageDir = new File(flowStorageDirValue);
-            boolean localRepoExists = flowMetaData.localRepoExists(flowStorageDir);
+            final boolean localRepoExists = flowMetaData.localRepoExists(flowStorageDir);
             if (remoteRepo != null && !remoteRepo.isEmpty() && !localRepoExists){
                 flowMetaData.remoteRepoExists(remoteRepo);
                 flowMetaData.cloneRepository(flowStorageDir, remoteRepo);

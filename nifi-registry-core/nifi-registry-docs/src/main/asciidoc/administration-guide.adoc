@@ -1315,11 +1315,14 @@ Qualified class name: `org.apache.nifi.registry.provider.flow.git.GitFlowPersist
 link:https://git-scm.com/book/en/v2/Git-Internals-The-Refspec[https://git-scm.com/book/en/v2/Git-Internals-The-Refspec^]).
 |`Remote Access User`|This username is used to make push requests to the remote repository when `Remote To Push` is enabled, and the remote repository is accessed by HTTP protocol. If SSH is used, user authentication is done with SSH keys.
 |`Remote Access Password`|The password for the `Remote Access User`.
+|`Remote Clone Repository`|Remote repository URI to clone into `Flow Storage Directory` if local repository is not present in `Flow Storage Directory`. If left empty then you will have to configure git directory as per <<Initialize Git directory>> but if remote URI is provided then correct `Remote Access User` and `Remote Access Password` also should be present.
+Currently, default branch of remote will be cloned.
 |====
 
 ===== Initialize Git directory
 
-In order to use `GitFlowPersistenceRepository`, you need to prepare a Git directory on the local file system. You can do so by initializing a directory with `git init` command, or clone an existing Git project from a remote Git repository by `git clone` command.
+In order to use `GitFlowPersistenceRepository`, you need to prepare a Git directory on the local file system. You can do so by initializing a directory with `git init` command, or clone an existing Git project from a remote Git repository by `git clone` command. If you want to clone the default branch of remote then you can set `Remote Clone Repository`
+as described above.
 
 - `git init` command
 link:https://git-scm.com/docs/git-init[https://git-scm.com/docs/git-init^]
