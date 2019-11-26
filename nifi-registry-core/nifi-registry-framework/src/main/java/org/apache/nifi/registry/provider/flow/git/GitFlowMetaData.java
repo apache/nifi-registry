@@ -147,10 +147,11 @@ class GitFlowMetaData {
     }
 
     /**
-     * Check if provided local repository exists or not at given 'Flow Storage Directory' in providers.xml
-     * @param localRepo file object of 'Flow Storage Directory'
-     * @return true if local repository exists else false
-     * @throws IOException if .git of local repository cannot be opened
+     * Check if the provided local repository exists or not, provided by the 'Flow Storage Directory'
+     * configuration in the providers.xml.
+     * @param localRepo  {@link File} object of the 'Flow Storage Directory' configuration
+     * @return true if the local repository exists, false otherwise
+     * @throws IOException if the .git directory of the local repository cannot be opened
      */
     public boolean localRepoExists(File localRepo) throws IOException {
         if (!localRepo.isDirectory()) {
@@ -173,10 +174,10 @@ class GitFlowMetaData {
     }
 
     /**
-     * Validate if provided 'Remote Clone Repository' in providers.xml exists or not. If remote repository
-     * doesn't exist then will throw IllegalArgumentException
-     * @param remoteRepository URI value of 'Remote Clone Repository'
-     * @throws IOException if unable to create repository
+     * Validate if the provided 'Remote Clone Repository' configuration in the providers.xml exists or not.
+     * If the remote repository does not exist, an {@link IllegalArgumentException} will be thrown.
+     * @param remoteRepository the URI value of the 'Remote Clone Repository' configuration
+     * @throws IOException if creating the repository fails
      */
     public void remoteRepoExists(String remoteRepository) throws IOException {
         final Git git = new Git(FileRepositoryBuilder.create(new File(remoteRepository)));
@@ -191,10 +192,10 @@ class GitFlowMetaData {
     }
 
     /**
-     * If validation of remote clone repository throws no exception then clone the given 'Remote Clone Repository' in
-     * provided 'Flow Storage Directory'. Currently the default branch of remote will be cloned.
-     * @param localRepo file object of 'Flow Storage Directory'
-     * @param remoteRepository URI value of 'Remote Clone Repository'
+     * If validation of remote clone repository throws no exception then clone the repository given
+     * in the 'Remote Clone Repository' configuration. Currently the default branch of remote will be cloned.
+     * @param localRepo {@link File} object of the 'Flow Storage Directory' configuration
+     * @param remoteRepository the URI value of the 'Remote Clone Repository' configuration
      * @throws GitAPIException if unable to call the remote repository
      */
     public void cloneRepository(File localRepo, String remoteRepository) throws GitAPIException {
