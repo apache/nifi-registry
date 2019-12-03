@@ -58,7 +58,7 @@ You can also pass in environment variables to change the NiFi Registry communica
     docker run --name nifi-registry \
       -p 19090:19090 \
       -d \
-      -e NIFI_REGISTRY_WEB_HTTP_PORT='19090'
+      -e NIFI_REGISTRY_WEB_HTTP_PORT='19090' \
       apache/nifi-registry:latest
 
 For a list of the environment variables recognised in this build, look into the .sh/secure.sh and .sh/start.sh scripts
