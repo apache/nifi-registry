@@ -21,6 +21,7 @@ import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 import org.apache.nifi.registry.flow.VersionedProcessGroup;
+import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +93,7 @@ public class TestRestAPI {
         final Bucket bucket = new Bucket();
         bucket.setName("Bucket #" + num);
         bucket.setDescription("This is bucket #" + num);
+        bucket.setRevision(new RevisionInfo("clientId", 0L));
 
         final Bucket createdBucket = client.target(REGISTRY_API_BUCKETS_URL)
                 .request()
@@ -107,6 +109,7 @@ public class TestRestAPI {
         final VersionedFlow versionedFlow = new VersionedFlow();
         versionedFlow.setName(bucket.getName() + " Flow #" + num);
         versionedFlow.setDescription("This is " + bucket.getName() + " flow #" + num);
+        versionedFlow.setRevision(new RevisionInfo("clientId", 0L));
 
         final VersionedFlow createdFlow = client.target(REGISTRY_API_BUCKETS_URL)
                 .path("/{bucketId}/flows")
