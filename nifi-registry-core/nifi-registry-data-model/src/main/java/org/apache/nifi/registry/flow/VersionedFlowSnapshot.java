@@ -35,6 +35,11 @@ import java.util.Objects;
  * is saved as a snapshot, representing information such as the name of the flow, the
  * version of the flow, the timestamp when it was saved, the contents of the flow, etc.
  * </p>
+ * <p>
+ * With the advent of download and upload flow in NiFi, this class is now used outside of
+ * NiFi Registry to represent a snapshot of an unversioned flow, which is purely the
+ * flow contents without any versioning or snapshot metadata.
+ * </p>
  */
 @ApiModel
 @XmlRootElement
@@ -52,7 +57,7 @@ public class VersionedFlowSnapshot {
     private Map<String,ExternalControllerServiceReference> externalControllerServices;
 
     // optional parameter contexts mapped by their name
-    private Map<String,VersionedParameterContext> parameterContexts;;
+    private Map<String,VersionedParameterContext> parameterContexts;
 
     // optional encoding version that clients may specify to track how the flow contents are encoded
     private String flowEncodingVersion;
@@ -159,8 +164,14 @@ public class VersionedFlowSnapshot {
 
     @Override
     public String toString() {
-        final String flowName = (flow == null ? "null" : flow.getName());
-        return "VersionedFlowSnapshot[flowId=" + snapshotMetadata.getFlowIdentifier() + ", flowName=" + flowName
-            + ", version=" + snapshotMetadata.getVersion() + ", comments=" + snapshotMetadata.getComments() + "]";
+        // snapshotMetadata and flow will be null when this is used to represent an unversioned flow
+        if (snapshotMetadata == null) {
+            return "VersionedFlowSnapshot[flowContentsId=" + flowContents.getIdentifier() + ", flowContentsName="
+                    + flowContents.getName() + ", NoMetadataAvailable]";
+        } else {
+            final String flowName = (flow == null ? "null" : flow.getName());
+            return "VersionedFlowSnapshot[flowId=" + snapshotMetadata.getFlowIdentifier() + ", flowName=" + flowName
+                    + ", version=" + snapshotMetadata.getVersion() + ", comments=" + snapshotMetadata.getComments() + "]";
+        }
     }
 }
