@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.provider;
 
 import org.apache.nifi.registry.extension.BundlePersistenceProvider;
+import org.apache.nifi.registry.extension.ExtensionClassLoader;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.flow.FlowPersistenceProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.sql.DataSource;
+import java.net.URL;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,7 +40,8 @@ public class TestStandardProviderFactory {
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-good.xml");
 
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
-        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+        when(extensionManager.getExtensionClassLoader(any(String.class)))
+                .thenReturn(new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader()));
 
         final DataSource dataSource = Mockito.mock(DataSource.class);
 
@@ -68,7 +71,8 @@ public class TestStandardProviderFactory {
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-good.xml");
 
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
-        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+        when(extensionManager.getExtensionClassLoader(any(String.class)))
+                .thenReturn(new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader()));
 
         final DataSource dataSource = Mockito.mock(DataSource.class);
 
@@ -82,7 +86,8 @@ public class TestStandardProviderFactory {
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-does-not-exist.xml");
 
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
-        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+        when(extensionManager.getExtensionClassLoader(any(String.class)))
+                .thenReturn(new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader()));
 
         final DataSource dataSource = Mockito.mock(DataSource.class);
 
@@ -96,7 +101,8 @@ public class TestStandardProviderFactory {
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/providers-class-not-found.xml");
 
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
-        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+        when(extensionManager.getExtensionClassLoader(any(String.class)))
+                .thenReturn(new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader()));
 
         final DataSource dataSource = Mockito.mock(DataSource.class);
 

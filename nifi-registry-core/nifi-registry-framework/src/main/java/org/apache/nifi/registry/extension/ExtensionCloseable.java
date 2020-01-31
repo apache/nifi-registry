@@ -40,6 +40,13 @@ public class ExtensionCloseable implements Closeable {
         return closeable;
     }
 
+    public static ExtensionCloseable withClassLoader(final ClassLoader componentClassLoader) {
+        final ClassLoader current = Thread.currentThread().getContextClassLoader();
+        final ExtensionCloseable closeable = new ExtensionCloseable(current);
+        Thread.currentThread().setContextClassLoader(componentClassLoader);
+        return closeable;
+    }
+
     @Override
     public void close() throws IOException {
         if (toSet != null) {

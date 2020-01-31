@@ -17,6 +17,7 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.extension.ExtensionClassLoader;
 import org.apache.nifi.registry.extension.ExtensionCloseable;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
@@ -30,6 +31,7 @@ import org.apache.nifi.registry.security.authorization.generated.Authorizers;
 import org.apache.nifi.registry.security.authorization.generated.Prop;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
+import org.apache.nifi.registry.security.util.ClassLoaderUtils;
 import org.apache.nifi.registry.security.util.XmlUtils;
 import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
@@ -55,7 +57,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -201,11 +207,12 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
                         // configure each authorizer
                         for (final org.apache.nifi.registry.security.authorization.generated.Authorizer provider : authorizerConfiguration.getAuthorizer()) {
+                            if (provider.getIdentifier().equals(authorizerIdentifier)) {
+                                continue;
+                            }
                             final Authorizer instance = authorizers.get(provider.getIdentifier());
-                            final Class authorizerClass = instance instanceof WrappedAuthorizer
-                                    ? ((WrappedAuthorizer) instance).getBaseAuthorizer().getClass()
-                                    : instance.getClass();
-                            try (ExtensionCloseable extCloseable = ExtensionCloseable.withComponentClassLoader(extensionManager, authorizerClass)) {
+                            final ClassLoader instanceClassLoader = instance.getClass().getClassLoader();
+                            try (final ExtensionCloseable extClosable = ExtensionCloseable.withClassLoader(instanceClassLoader)) {
                                 instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
                             }
                         }
@@ -216,7 +223,37 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         // ensure it was found
                         if (authorizer == null) {
                             throw new AuthorizerFactoryException(String.format("The specified authorizer '%s' could not be found.", authorizerIdentifier));
+                        } else {
+                            // get the ClassLoader of the Authorizer before wrapping it with anything
+                            final ClassLoader authorizerClassLoader = authorizer.getClass().getClassLoader();
+
+                            // install integrity checks
+                            authorizer = AuthorizerFactory.installIntegrityChecks(authorizer);
+
+                            // load the configuration context for the selected authorizer
+                            AuthorizerConfigurationContext authorizerConfigurationContext = null;
+                            for (final org.apache.nifi.registry.security.authorization.generated.Authorizer provider : authorizerConfiguration.getAuthorizer()) {
+                                if (provider.getIdentifier().equals(authorizerIdentifier)) {
+                                    authorizerConfigurationContext = loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty());
+                                    break;
+                                }
+                            }
+
+                            if (authorizerConfigurationContext == null) {
+                                throw new IllegalStateException("Unable to load configuration for authorizer with id: " + authorizerIdentifier);
+                            }
+
+                            // configure the authorizer that is wrapped with integrity checks
+                            // set the context ClassLoader the wrapped authorizer's ClassLoader
+                            try (final ExtensionCloseable extClosable = ExtensionCloseable.withClassLoader(authorizerClassLoader)) {
+                                authorizer.onConfigured(authorizerConfigurationContext);
+                            }
+
+                            // wrap the integrity checked Authorizer with the FrameworkAuthorizer
+                            authorizer = createFrameworkAuthorizer(authorizer);
                         }
+
+
                     } catch (AuthorizerFactoryException e) {
                         throw e;
                     } catch (Exception e) {
@@ -281,7 +318,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     }
 
     private UserGroupProvider createUserGroupProvider(final String identifier, final String userGroupProviderClassName) throws Exception {
-
         final UserGroupProvider instance;
 
         final ClassLoader classLoader = extensionManager.getExtensionClassLoader(userGroupProviderClassName);
@@ -289,22 +325,24 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             throw new IllegalStateException("Extension not found in any of the configured class loaders: " + userGroupProviderClassName);
         }
 
-        // attempt to load the class
-        Class<?> rawUserGroupProviderClass = Class.forName(userGroupProviderClassName, true, classLoader);
-        Class<? extends UserGroupProvider> userGroupProviderClass = rawUserGroupProviderClass.asSubclass(UserGroupProvider.class);
+        try (final ExtensionCloseable closeable = ExtensionCloseable.withClassLoader(classLoader)) {
+            // attempt to load the class
+            Class<?> rawUserGroupProviderClass = Class.forName(userGroupProviderClassName, true, classLoader);
+            Class<? extends UserGroupProvider> userGroupProviderClass = rawUserGroupProviderClass.asSubclass(UserGroupProvider.class);
 
-        // otherwise create a new instance
-        Constructor constructor = userGroupProviderClass.getConstructor();
-        instance = (UserGroupProvider) constructor.newInstance();
+            // otherwise create a new instance
+            Constructor constructor = userGroupProviderClass.getConstructor();
+            instance = (UserGroupProvider) constructor.newInstance();
 
-        // method injection
-        performMethodInjection(instance, userGroupProviderClass);
+            // method injection
+            performMethodInjection(instance, userGroupProviderClass);
 
-        // field injection
-        performFieldInjection(instance, userGroupProviderClass);
+            // field injection
+            performFieldInjection(instance, userGroupProviderClass);
 
-        // call post construction lifecycle event
-        instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+            // call post construction lifecycle event
+            instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+        }
 
         return instance;
     }
@@ -317,22 +355,24 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
             throw new IllegalStateException("Extension not found in any of the configured class loaders: " + accessPolicyProviderClassName);
         }
 
-        // attempt to load the class
-        Class<?> rawAccessPolicyProviderClass = Class.forName(accessPolicyProviderClassName, true, classLoader);
-        Class<? extends AccessPolicyProvider> accessPolicyClass = rawAccessPolicyProviderClass.asSubclass(AccessPolicyProvider.class);
+        try (final ExtensionCloseable closeable = ExtensionCloseable.withClassLoader(classLoader)) {
+            // attempt to load the class
+            Class<?> rawAccessPolicyProviderClass = Class.forName(accessPolicyProviderClassName, true, classLoader);
+            Class<? extends AccessPolicyProvider> accessPolicyClass = rawAccessPolicyProviderClass.asSubclass(AccessPolicyProvider.class);
 
-        // otherwise create a new instance
-        Constructor constructor = accessPolicyClass.getConstructor();
-        instance = (AccessPolicyProvider) constructor.newInstance();
+            // otherwise create a new instance
+            Constructor constructor = accessPolicyClass.getConstructor();
+            instance = (AccessPolicyProvider) constructor.newInstance();
 
-        // method injection
-        performMethodInjection(instance, accessPolicyClass);
+            // method injection
+            performMethodInjection(instance, accessPolicyClass);
 
-        // field injection
-        performFieldInjection(instance, accessPolicyClass);
+            // field injection
+            performFieldInjection(instance, accessPolicyClass);
 
-        // call post construction lifecycle event
-        instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+            // call post construction lifecycle event
+            instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+        }
 
         return instance;
     }
@@ -340,33 +380,51 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
     private Authorizer createAuthorizer(final String identifier, final String authorizerClassName, final String classpathResources) throws Exception {
         final Authorizer instance;
 
-        final ClassLoader classLoader = extensionManager.getExtensionClassLoader(authorizerClassName);
-        if (classLoader == null) {
+        ClassLoader classLoader;
+
+        final ExtensionClassLoader extensionClassLoader = extensionManager.getExtensionClassLoader(authorizerClassName);
+        if (extensionClassLoader == null) {
             throw new IllegalStateException("Extension not found in any of the configured class loaders: " + authorizerClassName);
         }
 
-        // attempt to load the class
-        Class<?> rawAuthorizerClass = Class.forName(authorizerClassName, true, classLoader);
-        Class<? extends Authorizer> authorizerClass = rawAuthorizerClass.asSubclass(Authorizer.class);
+        // if additional classpath resources were specified, replace with a new ClassLoader that contains
+        // the combined resources of the original ClassLoader + the additional resources
+        if (StringUtils.isNotEmpty(classpathResources)) {
+            logger.info(String.format("Replacing Authorizer ClassLoader for '%s' to include additional resources: %s", identifier, classpathResources));
+            final URL[] originalUrls = extensionClassLoader.getURLs();
+            final URL[] additionalUrls = ClassLoaderUtils.getURLsForClasspath(classpathResources, null, true);
 
-        // otherwise create a new instance
-        Constructor constructor = authorizerClass.getConstructor();
-        instance = (Authorizer) constructor.newInstance();
+            final Set<URL> combinedUrls = new HashSet<>();
+            combinedUrls.addAll(Arrays.asList(originalUrls));
+            combinedUrls.addAll(Arrays.asList(additionalUrls));
 
-        // method injection
-        performMethodInjection(instance, authorizerClass);
+            final URL[] urls = combinedUrls.toArray(new URL[combinedUrls.size()]);
+            classLoader = new URLClassLoader(urls, extensionClassLoader.getParent());
+        } else {
+            // no additional resources so just use the ExtensionClassLoader
+            classLoader = extensionClassLoader;
+        }
 
-        // field injection
-        performFieldInjection(instance, authorizerClass);
+        try (final ExtensionCloseable closeable = ExtensionCloseable.withClassLoader(classLoader)) {
+            // attempt to load the class
+            Class<?> rawAuthorizerClass = Class.forName(authorizerClassName, true, classLoader);
+            Class<? extends Authorizer> authorizerClass = rawAuthorizerClass.asSubclass(Authorizer.class);
 
-        // call post construction lifecycle event
-        instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+            // otherwise create a new instance
+            Constructor constructor = authorizerClass.getConstructor();
+            instance = (Authorizer) constructor.newInstance();
 
-        // wrap the instance Authorizer with checks to ensure integrity of data
-        final Authorizer integrityCheckAuthorizer = installIntegrityChecks(instance);
+            // method injection
+            performMethodInjection(instance, authorizerClass);
 
-        // wrap the integrity checked Authorizer with the FrameworkAuthorizer
-        return createFrameworkAuthorizer(integrityCheckAuthorizer);
+            // field injection
+            performFieldInjection(instance, authorizerClass);
+
+            // call post construction lifecycle event
+            instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+        }
+
+        return instance;
     }
 
     private Authorizer createFrameworkAuthorizer(final Authorizer baseAuthorizer) {
