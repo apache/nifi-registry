@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.security.authorization
 
+import org.apache.nifi.registry.extension.ExtensionClassLoader
 import org.apache.nifi.registry.extension.ExtensionManager
 import org.apache.nifi.registry.properties.NiFiRegistryProperties
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory
@@ -32,7 +33,7 @@ class AuthorizerFactorySpec extends Specification {
 
     // runs before every feature method
     def setup() {
-        mockExtensionManager.getExtensionClassLoader(_) >> this.getClass().getClassLoader()
+        mockExtensionManager.getExtensionClassLoader(_) >> new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader())
         mockProperties.getPropertyKeys() >> new HashSet<String>() // Called by IdentityMappingUtil.getIdentityMappings()
 
         authorizerFactory = new AuthorizerFactory(mockProperties, mockExtensionManager, null, mockRegistryService)

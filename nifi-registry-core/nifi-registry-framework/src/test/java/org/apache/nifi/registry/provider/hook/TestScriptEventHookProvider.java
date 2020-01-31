@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.provider.hook;
 
+import org.apache.nifi.registry.extension.ExtensionClassLoader;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.provider.ProviderCreationException;
@@ -25,6 +26,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import javax.sql.DataSource;
+
+import java.net.URL;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -37,7 +40,8 @@ public class TestScriptEventHookProvider {
         props.setProperty(NiFiRegistryProperties.PROVIDERS_CONFIGURATION_FILE, "src/test/resources/provider/hook/bad-script-provider.xml");
 
         final ExtensionManager extensionManager = Mockito.mock(ExtensionManager.class);
-        when(extensionManager.getExtensionClassLoader(any(String.class))).thenReturn(this.getClass().getClassLoader());
+        when(extensionManager.getExtensionClassLoader(any(String.class)))
+                .thenReturn(new ExtensionClassLoader("/tmp", new URL[0],this.getClass().getClassLoader()));
 
         final DataSource dataSource = Mockito.mock(DataSource.class);
 

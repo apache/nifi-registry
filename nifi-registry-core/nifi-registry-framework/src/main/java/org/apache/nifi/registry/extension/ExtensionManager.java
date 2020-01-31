@@ -33,7 +33,6 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,7 +87,7 @@ public class ExtensionManager {
         }
     }
 
-    public ClassLoader getExtensionClassLoader(final String canonicalClassName) {
+    public ExtensionClassLoader getExtensionClassLoader(final String canonicalClassName) {
         if (StringUtils.isBlank(canonicalClassName)) {
             throw new IllegalArgumentException("Class name can not be null");
         }
@@ -199,20 +198,4 @@ public class ExtensionManager {
         return new ExtensionClassLoader(dir, urls, parentClassLoader);
     }
 
-    /**
-     * Extend URLClassLoader to keep track of the root directory.
-     */
-    private static class ExtensionClassLoader extends URLClassLoader {
-
-        private final String rootDir;
-
-        public ExtensionClassLoader(final String rootDir, final URL[] urls, final ClassLoader parent) {
-            super(urls, parent);
-            this.rootDir = rootDir;
-        }
-
-        public String getRootDir() {
-            return rootDir;
-        }
-    }
 }
