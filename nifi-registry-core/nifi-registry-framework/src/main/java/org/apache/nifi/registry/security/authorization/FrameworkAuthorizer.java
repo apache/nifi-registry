@@ -24,7 +24,6 @@ import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
 import org.apache.nifi.registry.security.authorization.user.NiFiUser;
-import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.security.exception.SecurityProviderDestructionException;
 import org.apache.nifi.registry.service.RegistryService;
@@ -106,22 +105,21 @@ public class FrameworkAuthorizer implements Authorizer {
         * to /buckets/12345, then we need to determine if proxy1 is authorized to proxy WRITE requests.
         */
 
-        final List<String> proxyChainIdentities = request.getProxyIdentities();
+        final List<NiFiUser> proxyChainUsers = request.getProxyNiFiUsers();
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Found {} proxy identities", new Object[]{proxyChainIdentities.size()});
+            LOGGER.debug("Found {} proxy identities", new Object[]{proxyChainUsers.size()});
         }
 
-        for (final String proxyIdentity : proxyChainIdentities) {
-            final NiFiUser proxyNiFiUser = createProxyNiFiUser(proxyIdentity);
+        for (final NiFiUser proxyUser : proxyChainUsers) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Authorizing proxy [{}] for {}", new Object[]{proxyIdentity, requestAction});
+                LOGGER.debug("Authorizing proxy [{}] for {}", new Object[]{proxyUser, requestAction});
             }
 
             try {
-                PROXY_AUTHORIZABLE.authorize(wrappedAuthorizer, requestAction, proxyNiFiUser);
+                PROXY_AUTHORIZABLE.authorize(wrappedAuthorizer, requestAction, proxyUser);
             } catch (final AccessDeniedException e) {
                 final String actionString = requestAction.toString();
-                return AuthorizationResult.denied(String.format("Untrusted proxy [%s] for %s operation.", proxyIdentity, actionString));
+                return AuthorizationResult.denied(String.format("Untrusted proxy [%s] for %s operation.", proxyUser.getIdentity(), actionString));
             }
         }
 
@@ -166,19 +164,6 @@ public class FrameworkAuthorizer implements Authorizer {
             LOGGER.error("Error checking public access to bucket with id [{}]", new Object[]{bucketId}, e);
             return false;
         }
-    }
-
-    /**
-     * Creates a NiFiUser for the given proxy identity.
-     *
-     * This is only intended to be used for authorizing the given proxy identity against the /proxy resource, so we
-     * don't need to populate the rest of the info on this user.
-     *
-     * @param proxyIdentity the proxy identity
-     * @return the NiFiUser
-     */
-    private NiFiUser createProxyNiFiUser(final String proxyIdentity) {
-        return new StandardNiFiUser.Builder().identity(proxyIdentity).build();
     }
 
     @Override

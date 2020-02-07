@@ -212,9 +212,11 @@ public interface Authorizable {
         }
 
         final List<String> proxyChain = new ArrayList<>();
+        final List<NiFiUser> proxyNiFiUsers = new ArrayList<>();
         NiFiUser proxyUser = user.getChain();
         while (proxyUser  != null) {
             proxyChain.add(proxyUser.getIdentity());
+            proxyNiFiUsers.add(proxyUser);
             proxyUser = proxyUser.getChain();
         }
 
@@ -223,6 +225,7 @@ public interface Authorizable {
         final AuthorizationRequest request = new AuthorizationRequest.Builder()
                 .identity(user.getIdentity())
                 .proxyIdentities(proxyChain)
+                .proxyNiFiUsers(proxyNiFiUsers)
                 .groups(user.getGroups())
                 .anonymous(user.isAnonymous())
                 .accessAttempt(true)

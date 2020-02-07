@@ -16,6 +16,8 @@
  */
 package org.apache.nifi.registry.security.authorization;
 
+import org.apache.nifi.registry.security.authorization.user.NiFiUser;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ public class AuthorizationRequest {
     private final Resource requestedResource;
     private final String identity;
     private final List<String> proxyIdentities;
+    private final List<NiFiUser> proxyNiFiUsers;
     private final Set<String> groups;
     private final RequestAction action;
     private final boolean isAccessAttempt;
@@ -52,6 +55,7 @@ public class AuthorizationRequest {
         this.resource = builder.resource;
         this.identity = builder.identity;
         this.proxyIdentities = builder.proxyIdentities == null ? Collections.emptyList() : Collections.unmodifiableList(builder.proxyIdentities);
+        this.proxyNiFiUsers = builder.proxyNiFiUsers == null ? Collections.emptyList() : Collections.unmodifiableList(builder.proxyNiFiUsers);
         this.groups = builder.groups == null ? null : Collections.unmodifiableSet(builder.groups);
         this.action = builder.action;
         this.isAccessAttempt = builder.isAccessAttempt;
@@ -109,9 +113,20 @@ public class AuthorizationRequest {
      * The identities in the proxy chain for the request. Will be empty if the request was not proxied.
      *
      * @return The identities in the proxy chain
+     *
+     * @deprecated use getProxyNiFiUsers instead
      */
     public List<String> getProxyIdentities() {
         return proxyIdentities;
+    }
+
+    /**
+     * The NiFiUser instances for the proxy chain for the request. Will be empty if the request was not proxied.
+     *
+     * @return the NiFiUsers for the proxy chain
+     */
+    public List<NiFiUser> getProxyNiFiUsers() {
+        return proxyNiFiUsers;
     }
 
     /**
@@ -187,6 +202,7 @@ public class AuthorizationRequest {
         private Resource requestedResource;
         private String identity;
         private List<String> proxyIdentities;
+        private List<NiFiUser> proxyNiFiUsers;
         private Set<String> groups;
         private Boolean isAnonymous;
         private Boolean isAccessAttempt;
@@ -210,8 +226,16 @@ public class AuthorizationRequest {
             return this;
         }
 
+        /**
+         * @deprecated use proxyNiFiUsers instead
+         */
         public Builder proxyIdentities(final List<String> proxyIdentities) {
             this.proxyIdentities = proxyIdentities;
+            return this;
+        }
+
+        public Builder proxyNiFiUsers(final List<NiFiUser> proxyNiFiUsers) {
+            this.proxyNiFiUsers = proxyNiFiUsers;
             return this;
         }
 

@@ -18,6 +18,7 @@ package org.apache.nifi.registry.security.authorization;
 
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
+import org.apache.nifi.registry.security.authorization.user.StandardNiFiUser;
 import org.apache.nifi.registry.service.RegistryService;
 import org.junit.Before;
 import org.junit.Test;
@@ -138,7 +139,9 @@ public class TestFrameworkAuthorizer {
                 .accessAttempt(true)
                 .identity("user1")
                 .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
+                .proxyNiFiUsers(Arrays.asList(
+                        new StandardNiFiUser.Builder().identity("proxy1").build(),
+                        new StandardNiFiUser.Builder().identity("proxy2").build()))
                 .build();
 
         final AuthorizationResult result = frameworkAuthorizer.authorize(request);
@@ -160,7 +163,9 @@ public class TestFrameworkAuthorizer {
                 .accessAttempt(true)
                 .identity("user1")
                 .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
+                .proxyNiFiUsers(Arrays.asList(
+                        new StandardNiFiUser.Builder().identity("proxy1").build(),
+                        new StandardNiFiUser.Builder().identity("proxy2").build()))
                 .build();
 
         // since the bucket is not public it will fall through to the wrapped authorizer
@@ -186,7 +191,9 @@ public class TestFrameworkAuthorizer {
                 .accessAttempt(true)
                 .identity("user1")
                 .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
+                .proxyNiFiUsers(Arrays.asList(
+                        new StandardNiFiUser.Builder().identity("proxy1").build(),
+                        new StandardNiFiUser.Builder().identity("proxy2").build()))
                 .build();
 
         // since the bucket is not public and the user is not anonymous, it will continue to proxy authorization
@@ -220,7 +227,9 @@ public class TestFrameworkAuthorizer {
                 .accessAttempt(true)
                 .identity("user1")
                 .anonymous(false)
-                .proxyIdentities(Arrays.asList("proxy1", "proxy2"))
+                .proxyNiFiUsers(Arrays.asList(
+                        new StandardNiFiUser.Builder().identity("proxy1").build(),
+                        new StandardNiFiUser.Builder().identity("proxy2").build()))
                 .build();
 
         // since the bucket is not public and the user is not anonymous, it will continue to proxy authorization
