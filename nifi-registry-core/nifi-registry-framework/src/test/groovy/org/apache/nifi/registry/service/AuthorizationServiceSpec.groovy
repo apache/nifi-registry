@@ -40,8 +40,7 @@ class AuthorizationServiceSpec extends Specification {
     def setup() {
         accessPolicyProvider.getUserGroupProvider() >> userGroupProvider
         def standardAuthorizer = new StandardManagedAuthorizer(accessPolicyProvider, userGroupProvider)
-        def frameworkAuthorizer = new FrameworkManagedAuthorizer(standardAuthorizer, registryService)
-        authorizationService = new AuthorizationService(authorizableLookup, frameworkAuthorizer, registryService)
+        authorizationService = new AuthorizationService(authorizableLookup, standardAuthorizer, registryService)
     }
 
     // ----- User tests -------------------------------------------------------

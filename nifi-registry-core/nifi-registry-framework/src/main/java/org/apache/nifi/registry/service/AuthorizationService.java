@@ -37,6 +37,7 @@ import org.apache.nifi.registry.security.authorization.ConfigurableUserGroupProv
 import org.apache.nifi.registry.security.authorization.Group;
 import org.apache.nifi.registry.security.authorization.ManagedAuthorizer;
 import org.apache.nifi.registry.security.authorization.RequestAction;
+import org.apache.nifi.registry.security.authorization.UntrustedProxyException;
 import org.apache.nifi.registry.security.authorization.UserAndGroups;
 import org.apache.nifi.registry.security.authorization.UserGroupProvider;
 import org.apache.nifi.registry.security.authorization.UserGroupProviderInitializationContext;
@@ -454,7 +455,7 @@ public class AuthorizationService {
                                         .getAuthorizableByResource(resource.getIdentifier())
                                         .authorize(authorizer, actionType, NiFiUserUtils.getNiFiUser());
                                 return true;
-                            } catch (AccessDeniedException e) {
+                            } catch (AccessDeniedException | UntrustedProxyException e) {
                                 return false;
                             }
                         })
