@@ -20,6 +20,7 @@ import org.apache.nifi.registry.security.authorization.exception.AccessDeniedExc
 import org.apache.nifi.registry.security.authorization.resource.Authorizable
 import org.apache.nifi.registry.security.authorization.resource.ResourceType
 import org.apache.nifi.registry.service.AuthorizationService
+import org.apache.nifi.registry.service.RegistryService
 import org.apache.nifi.registry.web.security.authorization.HttpMethodAuthorizationRules
 import org.apache.nifi.registry.web.security.authorization.ResourceAuthorizationFilter
 import org.apache.nifi.registry.web.security.authorization.StandardHttpMethodAuthorizationRules
@@ -34,7 +35,8 @@ import javax.servlet.http.HttpServletResponse
 
 class ResourceAuthorizationFilterSpec extends Specification {
 
-    AuthorizableLookup authorizableLookup = new StandardAuthorizableLookup()
+    RegistryService registryService = Mock(RegistryService)
+    AuthorizableLookup authorizableLookup = new StandardAuthorizableLookup(registryService)
     AuthorizationService mockAuthorizationService = Mock(AuthorizationService)
     FilterChain mockFilterChain = Mock(FilterChain)
     ResourceAuthorizationFilter.Builder resourceAuthorizationFilterBuilder

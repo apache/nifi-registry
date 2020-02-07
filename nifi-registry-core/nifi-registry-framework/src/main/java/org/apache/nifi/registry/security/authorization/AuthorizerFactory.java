@@ -248,11 +248,7 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                             try (final ExtensionCloseable extClosable = ExtensionCloseable.withClassLoader(authorizerClassLoader)) {
                                 authorizer.onConfigured(authorizerConfigurationContext);
                             }
-
-                            // wrap the integrity checked Authorizer with the FrameworkAuthorizer
-                            authorizer = createFrameworkAuthorizer(authorizer);
                         }
-
 
                     } catch (AuthorizerFactoryException e) {
                         throw e;
@@ -425,14 +421,6 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         }
 
         return instance;
-    }
-
-    private Authorizer createFrameworkAuthorizer(final Authorizer baseAuthorizer) {
-        if (baseAuthorizer instanceof ManagedAuthorizer) {
-            return new FrameworkManagedAuthorizer((ManagedAuthorizer) baseAuthorizer, registryService);
-        } else {
-            return new FrameworkAuthorizer(baseAuthorizer, registryService);
-        }
     }
 
     private void performMethodInjection(final Object instance, final Class authorizerClass) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
