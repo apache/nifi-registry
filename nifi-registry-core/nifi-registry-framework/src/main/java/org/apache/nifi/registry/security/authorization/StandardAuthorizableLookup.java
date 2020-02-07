@@ -17,14 +17,21 @@
 package org.apache.nifi.registry.security.authorization;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.exception.ResourceNotFoundException;
 import org.apache.nifi.registry.security.authorization.resource.Authorizable;
 import org.apache.nifi.registry.security.authorization.resource.InheritingAuthorizable;
+import org.apache.nifi.registry.security.authorization.resource.ProxyChainAuthorizable;
+import org.apache.nifi.registry.security.authorization.resource.PublicCheckingAuthorizable;
 import org.apache.nifi.registry.security.authorization.resource.ResourceFactory;
 import org.apache.nifi.registry.security.authorization.resource.ResourceType;
+import org.apache.nifi.registry.service.RegistryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Component
 public class StandardAuthorizableLookup implements AuthorizableLookup {
@@ -103,14 +110,21 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
         }
     };
 
+    private final RegistryService registryService;
+
+    @Autowired
+    public StandardAuthorizableLookup(final RegistryService registryService) {
+        this.registryService = Objects.requireNonNull(registryService);
+    }
+
     @Override
     public Authorizable getActuatorAuthorizable() {
-        return ACTUATOR_AUTHORIZABLE;
+        return new ProxyChainAuthorizable(ACTUATOR_AUTHORIZABLE, PROXY_AUTHORIZABLE, this::isPublicAccessAllowed);
     }
 
     @Override
     public Authorizable getSwaggerAuthorizable() {
-        return SWAGGER_AUTHORIZABLE;
+        return new ProxyChainAuthorizable(SWAGGER_AUTHORIZABLE, PROXY_AUTHORIZABLE, this::isPublicAccessAllowed);
     }
 
     @Override
@@ -120,34 +134,42 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
 
     @Override
     public Authorizable getTenantsAuthorizable() {
-        return TENANTS_AUTHORIZABLE;
+        return new ProxyChainAuthorizable(TENANTS_AUTHORIZABLE, PROXY_AUTHORIZABLE, this::isPublicAccessAllowed);
     }
 
     @Override
     public Authorizable getPoliciesAuthorizable() {
-        return POLICIES_AUTHORIZABLE;
+        return new ProxyChainAuthorizable(POLICIES_AUTHORIZABLE, PROXY_AUTHORIZABLE, this::isPublicAccessAllowed);
     }
 
     @Override
     public Authorizable getBucketsAuthorizable() {
-        return BUCKETS_AUTHORIZABLE;
+        return new ProxyChainAuthorizable(BUCKETS_AUTHORIZABLE, PROXY_AUTHORIZABLE, this::isPublicAccessAllowed);
     }
 
     @Override
     public Authorizable getBucketAuthorizable(String bucketIdentifier) {
-        // Note - this returns a special Authorizable type that inherits permissions from the parent Authorizable
-        return new InheritingAuthorizable() {
+        // Note - this creates a special Authorizable type that inherits permissions from the parent Authorizable
+        final Authorizable inheritingAuthorizable = new InheritingAuthorizable() {
 
             @Override
             public Authorizable getParentAuthorizable() {
-                return getBucketsAuthorizable();
+                // Use the unwrapped buckets authorizable here so that we don't reauthorize the proxy chain
+                return BUCKETS_AUTHORIZABLE;
             }
 
             @Override
             public Resource getResource() {
                 return ResourceFactory.getBucketResource(bucketIdentifier, "Bucket with ID " + bucketIdentifier);
             }
+
         };
+
+        // Wrap the inheriting Authorizable with logic that first checks if public access is allowed, if not then delegates to the inheriting Authorizable
+        final Authorizable publicCheckingAuthorizable = new PublicCheckingAuthorizable(inheritingAuthorizable, this::isPublicAccessAllowed);
+
+        // Return ProxyChainAuthorizable -> public checking Authorizable -> inheriting Authorizable
+        return new ProxyChainAuthorizable(publicCheckingAuthorizable, PROXY_AUTHORIZABLE, this::isPublicAccessAllowed);
     }
 
     @Override
@@ -215,6 +237,46 @@ public class StandardAuthorizableLookup implements AuthorizableLookup {
         }
 
         return authorizable;
+    }
+
+    /**
+     * Determines if the given Resource is considered public for the action being performed.
+     *
+     * @param resource a Resource being authorized
+     * @param action the action being performed
+     * @return true if the resource is public for the given action, false otherwise
+     */
+    private boolean isPublicAccessAllowed(final Resource resource, final RequestAction action) {
+        if (resource == null || action == null) {
+            return false;
+        }
+
+        if (action != RequestAction.READ) {
+            return false;
+        }
+
+        final String resourceIdentifier = resource.getIdentifier();
+        if (resourceIdentifier == null || !resourceIdentifier.startsWith(ResourceType.Bucket.getValue() + "/")) {
+            return false;
+        }
+
+        final int lastSlashIndex = resourceIdentifier.lastIndexOf("/");
+        if (lastSlashIndex < 0 || lastSlashIndex >= resourceIdentifier.length() - 1) {
+            return false;
+        }
+
+        final String bucketId = resourceIdentifier.substring(lastSlashIndex + 1);
+        try {
+            final Bucket bucket = registryService.getBucket(bucketId);
+            return bucket.isAllowPublicRead();
+        } catch (ResourceNotFoundException rnfe) {
+            // if not found then we can't determine public access, so return false to delegate to regular authorizer
+            logger.debug("Cannot determine public access, bucket not found with id [{}]", new Object[]{bucketId});
+            return false;
+        } catch (Exception e) {
+            logger.error("Error checking public access to bucket with id [{}]", new Object[]{bucketId}, e);
+            return false;
+        }
     }
 
 }

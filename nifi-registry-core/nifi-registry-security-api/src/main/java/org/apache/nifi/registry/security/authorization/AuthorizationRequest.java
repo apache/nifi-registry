@@ -109,6 +109,8 @@ public class AuthorizationRequest {
      * The identities in the proxy chain for the request. Will be empty if the request was not proxied.
      *
      * @return The identities in the proxy chain
+     *
+     * @deprecated no longer populated
      */
     public List<String> getProxyIdentities() {
         return proxyIdentities;
@@ -210,6 +212,9 @@ public class AuthorizationRequest {
             return this;
         }
 
+        /**
+         * @deprecated no longer populated by the framework
+         */
         public Builder proxyIdentities(final List<String> proxyIdentities) {
             this.proxyIdentities = proxyIdentities;
             return this;
