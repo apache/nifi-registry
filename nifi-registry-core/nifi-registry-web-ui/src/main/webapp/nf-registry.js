@@ -71,9 +71,24 @@ NfRegistry.prototype = {
      * Invalidate old tokens and route to login page
      */
     logout: function () {
+    /**
+        $.ajax({
+            type: 'DELETE',
+            url: '../nifi-registry-api/access/logout',
+        }).done(function () {
+            delete this.nfRegistryService.currentUser.identity;
+            delete this.nfRegistryService.currentUser.anonymous;
+            this.nfStorage.removeItem('jwt');
+            this.router.navigateByUrl('login');
+        }).fail(nfErrorHandler.handleAjaxError);
+        **/
+
+
+        this.nfRegistryApi.deleteToLogout().subscribe(function () {
+
+        });
         delete this.nfRegistryService.currentUser.identity;
         delete this.nfRegistryService.currentUser.anonymous;
-        this.nfStorage.removeItem('jwt');
         this.router.navigateByUrl('login');
     },
 

@@ -170,6 +170,20 @@ public class JwtService {
 
     }
 
+    public void logOut(String userIdentity) {
+        if (userIdentity == null || userIdentity.isEmpty()) {
+            throw new JwtException("Log out failed: The user identity was not present in the request token to log out user.");
+        }
+
+        try {
+            keyService.deleteKey(userIdentity);
+            logger.info("Deleted token from database.");
+        } catch (Exception e) {
+            logger.error("Unable to log out user: " + userIdentity + ". Failed to remove their token from database.");
+            throw e;
+        }
+    }
+
     private static long validateTokenExpiration(long proposedTokenExpiration, String identity) {
         final long maxExpiration = TimeUnit.MILLISECONDS.convert(12, TimeUnit.HOURS);
         final long minExpiration = TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES);

@@ -160,6 +160,15 @@ public class ApplicationResource {
     }
 
     /**
+     * Generates an Ok response with no content.
+     *
+     * @return an Ok response with no content
+     */
+    protected Response.ResponseBuilder generateOkResponse() {
+        return noCache(Response.ok());
+    }
+
+    /**
      * Generates a 201 Created response with the specified content.
      *
      * @param uri    The URI
