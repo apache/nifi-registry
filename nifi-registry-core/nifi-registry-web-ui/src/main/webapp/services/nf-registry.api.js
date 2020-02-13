@@ -726,6 +726,37 @@ NfRegistryApi.prototype = {
     },
 
     /**
+     * Logout a user.
+     *
+     * @returns {*}
+     */
+    deleteToLogout: function () {
+        var self = this;
+        var options = {
+            headers: headers,
+            withCredentials: true,
+            responseType: 'text'
+        };
+
+        return this.http.delete('../nifi-registry-api/access/logout', options).pipe(
+            map(function (response) {
+                // remove the token from local storage
+                self.nfStorage.removeItem('jwt');
+                return response;
+            }),
+            catchError(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: 'Please contact your System Administrator.',
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return of('');
+            })
+        );
+    },
+
+    /**
      * Kerberos ticket exchange.
      *
      * @returns {*}

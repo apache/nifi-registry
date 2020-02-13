@@ -91,6 +91,12 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     private static final String tokenLoginPath = "access/token/login";
     private static final String tokenIdentityProviderPath = "access/token/identity-provider";
+    // A JWT signed by a key of 'secret'
+    private static final String SIGNED_BY_WRONG_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+            ".eyJzdWIiOiJuaWZpYWRtaW4iLCJpc3MiOiJMZGFwSWRlbnRpdHlQcm92aWRlciIsImF1ZCI6IkxkYXB" +
+            "JZGVudGl0eVByb3ZpZGVyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoibmlmaWFkbWluIiwia2lkIjoiNDd" +
+            "lMjA1NzctY2I3Yi00M2MzLWFhOGYtZjI0ZDcyODQ3MDEwIiwiaWF0IjoxNTgxNTI5NTA1LCJleHAiOjE" +
+            "1ODE1NzI3MDV9.vvMpwLJt1w_6Id_tlS1knxTkJ2gv7_j5ySG6PmNjF0s";
 
     @TestConfiguration
     @Profile("ITSecureLdap")
@@ -294,6 +300,60 @@ public class SecureLdapIT extends IntegrationTestBase {
         String actualJson = response.readEntity(String.class);
         JSONAssert.assertEquals(expectedJson, actualJson, false);
 
+    }
+
+    @Test
+    public void testLogout() {
+
+        // Given: the client is connected to an unsecured NiFi Registry
+        // and the /access endpoint is queried using a JWT for the nifiadmin LDAP user
+        final Response response = client
+                .target(createURL("/access"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Response.class);
+
+        // and the server returns a 200 OK with the expected current user
+        assertEquals(200, response.getStatus());
+
+        // When: the /access/logout endpoint with the JWT for the nifiadmin logs out the user
+        final Response logout_response = client
+                .target(createURL("/access/logout"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .delete(Response.class);
+
+        assertEquals(200, logout_response.getStatus());
+
+        // Then: the /access endpoint is queried using the logged out JWT
+        final Response retryResponse = client
+                .target(createURL("/access"))
+                .request()
+                .header("Authorization", "Bearer " + adminAuthToken)
+                .get(Response.class);
+
+        // and the server returns a 401 Unauthorized as the user is now logged out
+        assertEquals(401, retryResponse.getStatus());
+        String retryJson = retryResponse.readEntity(String.class);
+        assertEquals("Unable to validate the access token. Contact the system administrator.\n", retryJson);
+
+        // Reset: We successfully logged out our user. Run setup to fix up the user, so the @After code can run to re-establish authorizations.
+        setup();
+    }
+
+    @Test
+    public void testLogoutWithJWTSignedByWrongKey() throws Exception {
+
+        // Given: use the /access/logout endpoint with the JWT for the nifiadmin LDAP user to log out
+        final Response logoutResponse = client
+                .target(createURL("/access"))
+                .request()
+                .header("Authorization", "Bearer " + SIGNED_BY_WRONG_KEY)
+                .delete(Response.class);
+
+        assertEquals(401, logoutResponse.getStatus());
+        String responseMessage = logoutResponse.readEntity(String.class);
+        assertEquals("Unable to validate the access token. Contact the system administrator.\n", responseMessage);
     }
 
     @Test
