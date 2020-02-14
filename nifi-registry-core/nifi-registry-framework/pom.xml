@@ -300,7 +300,7 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>4.11.8.201904181247-r</version>
+            <version>4.11.9.201909030838-r</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
