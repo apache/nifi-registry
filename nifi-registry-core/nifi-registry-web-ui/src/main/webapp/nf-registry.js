@@ -71,12 +71,22 @@ NfRegistry.prototype = {
      * Invalidate old tokens and route to login page
      */
     logout: function () {
-        this.nfRegistryApi.deleteToLogout().subscribe(function () {
-
-        });
-        delete this.nfRegistryService.currentUser.identity;
-        delete this.nfRegistryService.currentUser.anonymous;
-        this.router.navigateByUrl('login');
+        var self = this;
+        self.nfRegistryApi.deleteToLogout().subscribe(
+            function () {
+                // next call
+            },
+            function () {
+                // error callback
+            },
+            function () {
+                // complete callback... clean up and navigate on complete only
+                self.nfStorage.removeItem('jwt');
+                delete self.nfRegistryService.currentUser.identity;
+                delete self.nfRegistryService.currentUser.anonymous;
+                self.router.navigateByUrl('login');
+            }
+        );
     },
 
     /**

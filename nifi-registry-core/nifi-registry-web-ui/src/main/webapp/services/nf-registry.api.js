@@ -740,8 +740,6 @@ NfRegistryApi.prototype = {
 
         return this.http.delete('../nifi-registry-api/access/logout', options).pipe(
             map(function (response) {
-                // remove the token from local storage
-                self.nfStorage.removeItem('jwt');
                 return response;
             }),
             catchError(function (error) {
