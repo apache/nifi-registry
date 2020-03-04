@@ -41,6 +41,7 @@ fi
 prop_replace 'nifi.registry.security.keystore'           "${KEYSTORE_PATH}"
 prop_replace 'nifi.registry.security.keystoreType'       "${KEYSTORE_TYPE}"
 prop_replace 'nifi.registry.security.keystorePasswd'     "${KEYSTORE_PASSWORD}"
+prop_replace 'nifi.registry.security.keyPasswd'          "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
 prop_replace 'nifi.registry.security.truststore'         "${TRUSTSTORE_PATH}"
 prop_replace 'nifi.registry.security.truststoreType'     "${TRUSTSTORE_TYPE}"
 prop_replace 'nifi.registry.security.truststorePasswd'   "${TRUSTSTORE_PASSWORD}"
