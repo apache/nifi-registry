@@ -31,7 +31,7 @@
             <outputDirectory>lib</outputDirectory>
             <useProjectArtifact>false</useProjectArtifact>
             <directoryMode>0770</directoryMode>
-            <fileMode>0660</fileMode>
+            <fileMode>0664</fileMode>
         </dependencySet>
     </dependencySets>
     <fileSets>
