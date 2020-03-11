@@ -133,6 +133,34 @@ public class TestStandardRevisableEntityService {
         assertEquals("user2", updatedEntity.getRevision().getLastModifier());
     }
 
+    @Test
+    public void testUpdateWithClientId() {
+        final RevisionInfo revisionInfo = new RevisionInfo("client-1", 0L);
+        final TestEntity requestEntity = new TestEntity("1", revisionInfo);
+
+        final RevisableEntity createdEntity = entityService.create(
+                requestEntity, "user1", () -> requestEntity);
+        assertNotNull(createdEntity);
+        assertEquals(requestEntity.getIdentifier(), createdEntity.getIdentifier());
+        assertNotNull(createdEntity.getRevision());
+        assertEquals(1, createdEntity.getRevision().getVersion().longValue());
+
+        final RevisableEntity updatedEntity = entityService.update(
+                createdEntity, "user2", () -> createdEntity);
+        assertNotNull(updatedEntity.getRevision());
+        assertEquals(2, updatedEntity.getRevision().getVersion().longValue());
+        assertEquals("user2", updatedEntity.getRevision().getLastModifier());
+
+        // set the version back to 0 to prove that we can update based on client id being the same
+        updatedEntity.getRevision().setVersion(0L);
+
+        final RevisableEntity updatedEntity2 = entityService.update(
+                createdEntity, "user3", () -> updatedEntity);
+        assertNotNull(updatedEntity2.getRevision());
+        assertEquals(3, updatedEntity2.getRevision().getVersion().longValue());
+        assertEquals("user3", updatedEntity2.getRevision().getLastModifier());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateWhenMissingRevision() {
         final RevisionInfo revisionInfo = new RevisionInfo(null, 0L);
