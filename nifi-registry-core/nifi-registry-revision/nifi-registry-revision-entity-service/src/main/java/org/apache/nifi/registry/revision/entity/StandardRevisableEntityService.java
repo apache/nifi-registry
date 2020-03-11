@@ -58,7 +58,22 @@ public class StandardRevisableEntityService implements RevisableEntityService {
             throw new IllegalArgumentException("Creator identity is required");
         }
 
-        return createOrUpdate(requestEntity, creatorIdentity, createEntity);
+        final Revision revision = createRevision(requestEntity.getIdentifier(), requestEntity.getRevision());
+        final RevisionClaim claim = new StandardRevisionClaim(revision);
+
+        final RevisionUpdate<T> revisionUpdate = revisionManager.updateRevision(claim, () -> {
+            final T updatedEntity = createEntity.get();
+
+            final Revision updatedRevision = revision.incrementRevision(revision.getClientId());
+            final EntityModification entityModification = new EntityModification(updatedRevision, creatorIdentity);
+
+            final RevisionInfo updatedRevisionInfo = createRevisionInfo(updatedRevision, entityModification);
+            updatedEntity.setRevision(updatedRevisionInfo);
+
+            return new StandardRevisionUpdate<>(updatedEntity, entityModification);
+        });
+
+        return revisionUpdate.getEntity();
     }
 
     @Override
@@ -91,7 +106,22 @@ public class StandardRevisableEntityService implements RevisableEntityService {
             throw new IllegalArgumentException("Updater identity is required");
         }
 
-        return createOrUpdate(requestEntity, updaterIdentity, updateEntity);
+        final Revision revision = createRevision(requestEntity.getIdentifier(), requestEntity.getRevision());
+        final RevisionClaim claim = new StandardRevisionClaim(revision);
+
+        final RevisionUpdate<T> revisionUpdate = revisionManager.updateRevision(claim, () -> {
+            final T updatedEntity = updateEntity.get();
+
+            final Revision updatedRevision = revisionManager.getRevision(requestEntity.getIdentifier()).incrementRevision(revision.getClientId());
+            final EntityModification entityModification = new EntityModification(updatedRevision, updaterIdentity);
+
+            final RevisionInfo updatedRevisionInfo = createRevisionInfo(updatedRevision, entityModification);
+            updatedEntity.setRevision(updatedRevisionInfo);
+
+            return new StandardRevisionUpdate<>(updatedEntity, entityModification);
+        });
+
+        return revisionUpdate.getEntity();
     }
 
     @Override
@@ -125,25 +155,6 @@ public class StandardRevisableEntityService implements RevisableEntityService {
                 populateRevision(revisionMap, (RevisableEntity) obj);
             }
         }
-    }
-
-    private <T extends RevisableEntity> T createOrUpdate(final T requestEntity, final String userIdentity, final Supplier<T> updateOrCreateEntity) {
-        final Revision revision = createRevision(requestEntity.getIdentifier(), requestEntity.getRevision());
-        final RevisionClaim claim = new StandardRevisionClaim(revision);
-
-        final RevisionUpdate<T> revisionUpdate = revisionManager.updateRevision(claim, () -> {
-            final T updatedEntity = updateOrCreateEntity.get();
-
-            final Revision updatedRevision = revision.incrementRevision(revision.getClientId());
-            final EntityModification entityModification = new EntityModification(updatedRevision, userIdentity);
-
-            final RevisionInfo updatedRevisionInfo = createRevisionInfo(updatedRevision, entityModification);
-            updatedEntity.setRevision(updatedRevisionInfo);
-
-            return new StandardRevisionUpdate<>(updatedEntity, entityModification);
-        });
-
-        return revisionUpdate.getEntity();
     }
 
     private <T extends RevisableEntity> void populateRevisableEntityRevisions(final Collection<T> revisableEntities) {
