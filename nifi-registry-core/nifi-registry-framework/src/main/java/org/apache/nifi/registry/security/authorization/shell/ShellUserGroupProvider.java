@@ -63,19 +63,22 @@ public class ShellUserGroupProvider implements UserGroupProvider {
     public static final String EXCLUDE_USER_PROPERTY = "Exclude Users";
     public static final String EXCLUDE_GROUP_PROPERTY = "Exclude Groups";
 
+    public static final String COMMAND_TIMEOUT_PROPERTY = "Command Timeout";
+
+    private static final String DEFAULT_COMMAND_TIMEOUT = "60 seconds";
+
     private long fixedDelay;
     private Pattern excludeUsers;
     private Pattern excludeGroups;
+    private int timeoutSeconds;
 
     // Our scheduler has one thread for users, one for groups:
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
-    // Our shell timeout, in seconds:
-    @SuppressWarnings("FieldCanBeLocal")
-    private final Integer shellTimeout = 10;
-
     // Commands selected during initialization:
     private ShellCommandsProvider selectedShellCommands;
+
+    private ShellRunner shellRunner;
 
     // Start of the UserGroupProvider implementation.  Javadoc strings
     // copied from the interface definition for reference.
@@ -243,7 +246,13 @@ public class ShellUserGroupProvider implements UserGroupProvider {
      */
     @Override
     public void onConfigured(AuthorizerConfigurationContext configurationContext) throws SecurityProviderCreationException {
+        logger.info("Configuring ShellUserGroupProvider");
+
         fixedDelay = getDelayProperty(configurationContext, REFRESH_DELAY_PROPERTY, "5 mins");
+        timeoutSeconds = getTimeoutProperty(configurationContext, COMMAND_TIMEOUT_PROPERTY, DEFAULT_COMMAND_TIMEOUT);
+        shellRunner = new ShellRunner(timeoutSeconds);
+        logger.debug("Configured ShellRunner with command timeout of '{}' seconds", new Object[]{timeoutSeconds});
+
 
         // Our next init step is to select the command set based on the operating system name:
         ShellCommandsProvider commands = getCommandsProvider();
@@ -256,7 +265,7 @@ public class ShellUserGroupProvider implements UserGroupProvider {
         // Our next init step is to run the system check from that command set to determine if the other commands
         // will work on this host or not.
         try {
-            ShellRunner.runShell(commands.getSystemCheck());
+            shellRunner.runShell(commands.getSystemCheck());
         } catch (final Exception e) {
             logger.error("initialize exception: " + e + " system check command: " + commands.getSystemCheck());
             throw new SecurityProviderCreationException(SYS_CHECK_ERROR, e);
@@ -282,6 +291,7 @@ public class ShellUserGroupProvider implements UserGroupProvider {
             }
         }, fixedDelay, fixedDelay, TimeUnit.MILLISECONDS);
 
+        logger.info("Completed configuration of ShellUserGroupProvider");
     }
 
     private static ShellCommandsProvider getCommandsProviderFromName(String osName) {
@@ -338,6 +348,26 @@ public class ShellUserGroupProvider implements UserGroupProvider {
         return syncInterval;
     }
 
+    private int getTimeoutProperty(AuthorizerConfigurationContext authContext, String propertyName, String defaultValue) {
+        final PropertyValue timeoutProperty = authContext.getProperty(propertyName);
+
+        final String propertyValue;
+        if (timeoutProperty.isSet()) {
+            propertyValue = timeoutProperty.getValue();
+        } else {
+            propertyValue = defaultValue;
+        }
+
+        final long timeoutValue;
+        try {
+            timeoutValue = Math.round(FormatUtils.getPreciseTimeDuration(propertyValue, TimeUnit.SECONDS));
+        } catch (final IllegalArgumentException ignored) {
+            throw new SecurityProviderCreationException(String.format("The %s '%s' is not a valid time interval.", propertyName, propertyValue));
+        }
+
+        return Math.toIntExact(timeoutValue);
+    }
+
     /**
      * Called immediately before instance destruction for implementers to release resources.
      *
@@ -347,7 +377,13 @@ public class ShellUserGroupProvider implements UserGroupProvider {
     public void preDestruction() throws SecurityProviderDestructionException {
         try {
             scheduler.shutdownNow();
-        } catch (final Exception ignored) {
+        } catch (final Exception e) {
+            logger.warn("Error shutting down refresh scheduler: " + e.getMessage(), e);
+        }
+        try {
+            shellRunner.shutdown();
+        } catch (final Exception e) {
+            logger.warn("Error shutting down ShellRunner: " + e.getMessage(), e);
         }
     }
 
@@ -373,7 +409,7 @@ public class ShellUserGroupProvider implements UserGroupProvider {
             List<String> userLines;
 
             try {
-                userLines = ShellRunner.runShell(command, description);
+                userLines = shellRunner.runShell(command, description);
                 rebuildUsers(userLines, idToUser, usernameToUser, gidToUser);
             } catch (final IOException ioexc) {
                 logger.error("refreshOneUser shell exception: " + ioexc);
@@ -407,7 +443,7 @@ public class ShellUserGroupProvider implements UserGroupProvider {
             List<String> groupLines;
 
             try {
-                groupLines = ShellRunner.runShell(command, description);
+                groupLines = shellRunner.runShell(command, description);
                 rebuildGroups(groupLines, gidToGroup);
             } catch (final IOException ioexc) {
                 logger.error("refreshOneGroup shell exception: " + ioexc);
@@ -429,6 +465,8 @@ public class ShellUserGroupProvider implements UserGroupProvider {
      * other methods for record parse, extract, and object construction.
      */
     private void refreshUsersAndGroups() {
+        final long startTime = System.currentTimeMillis();
+
         Map<String, User> uidToUser = new HashMap<>();
         Map<String, User> usernameToUser = new HashMap<>();
         Map<String, User> gidToUser = new HashMap<>();
@@ -438,8 +476,8 @@ public class ShellUserGroupProvider implements UserGroupProvider {
         List<String> groupLines;
 
         try {
-            userLines = ShellRunner.runShell(selectedShellCommands.getUsersList(), "Get Users List");
-            groupLines = ShellRunner.runShell(selectedShellCommands.getGroupsList(), "Get Groups List");
+            userLines = shellRunner.runShell(selectedShellCommands.getUsersList(), "Get Users List");
+            groupLines = shellRunner.runShell(selectedShellCommands.getGroupsList(), "Get Groups List");
         } catch (final IOException ioexc) {
             logger.error("refreshUsersAndGroups shell exception: " + ioexc);
             return;
@@ -479,6 +517,9 @@ public class ShellUserGroupProvider implements UserGroupProvider {
                 sortedGroups.forEach(g -> logger.trace("=== " + g.toString()));
             }
         }
+
+        final long endTime = System.currentTimeMillis();
+        logger.info("Refreshed users and groups, took {} seconds", (endTime - startTime) / 1000);
     }
 
     /**
@@ -547,7 +588,7 @@ public class ShellUserGroupProvider implements UserGroupProvider {
 
                 try {
                     String groupMembersCommand = selectedShellCommands.getGroupMembers(groupName);
-                    List<String> memberLines = ShellRunner.runShell(groupMembersCommand);
+                    List<String> memberLines = shellRunner.runShell(groupMembersCommand);
                     // Use the first line only, and log if the line count isn't exactly one:
                     if (!memberLines.isEmpty()) {
                         String memberLine = memberLines.get(0);
