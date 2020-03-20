@@ -53,10 +53,13 @@ NfRegistryUserLogin.prototype = {
         var self = this;
         this.nfRegistryApi.postToLogin(username.value, password.value).subscribe(function (response) {
             if (response || response.status === 200) {
-                //successful login
-                self.dialogRef.close();
-                self.nfRegistryService.currentUser.anonymous = false;
-                self.nfRegistryLoginAuthGuard.checkLogin(self.nfRegistryService.redirectUrl);
+                //successful login update registry config
+                self.nfRegistryApi.getRegistryConfig().subscribe(function (registryConfig) {
+                    self.nfRegistryService.registry.config = registryConfig;
+                    self.nfRegistryService.currentUser.anonymous = false;
+                    self.dialogRef.close();
+                    self.nfRegistryLoginAuthGuard.checkLogin(self.nfRegistryService.redirectUrl);
+                });
             }
         });
     },
