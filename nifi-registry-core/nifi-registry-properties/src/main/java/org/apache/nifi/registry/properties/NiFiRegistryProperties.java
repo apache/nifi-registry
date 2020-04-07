@@ -38,6 +38,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String WEB_HTTPS_HOST = "nifi.registry.web.https.host";
     public static final String WEB_WORKING_DIR = "nifi.registry.web.jetty.working.directory";
     public static final String WEB_THREADS = "nifi.registry.web.jetty.threads";
+    public static final String WEB_SHOULD_SEND_SERVER_VERSION = "nifi.registry.web.should.send.server.version";
 
     public static final String SECURITY_KEYSTORE = "nifi.registry.security.keystore";
     public static final String SECURITY_KEYSTORE_TYPE = "nifi.registry.security.keystoreType";
@@ -95,6 +96,7 @@ public class NiFiRegistryProperties extends Properties {
     public static final String DEFAULT_SECURITY_IDENTITY_PROVIDER_CONFIGURATION_FILE = "./conf/identity-providers.xml";
     public static final String DEFAULT_AUTHENTICATION_EXPIRATION = "12 hours";
     public static final String DEFAULT_EXTENSIONS_WORKING_DIR = "./work/extensions";
+    public static final String DEFAULT_WEB_SHOULD_SEND_SERVER_VERSION = "true";
 
     public int getWebThreads() {
         int webThreads = 200;
@@ -120,6 +122,10 @@ public class NiFiRegistryProperties extends Properties {
 
     public boolean isHTTPSConfigured() {
         return getSslPort() != null;
+    }
+
+    public boolean shouldSendServerVersion() {
+        return Boolean.parseBoolean(getProperty(WEB_SHOULD_SEND_SERVER_VERSION, DEFAULT_WEB_SHOULD_SEND_SERVER_VERSION));
     }
 
     public String getHttpsHost() {

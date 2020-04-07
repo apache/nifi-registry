@@ -148,6 +148,7 @@ public class JettyServer {
         final HttpConfiguration httpConfiguration = new HttpConfiguration();
         httpConfiguration.setRequestHeaderSize(HEADER_BUFFER_SIZE);
         httpConfiguration.setResponseHeaderSize(HEADER_BUFFER_SIZE);
+        httpConfiguration.setSendServerVersion(properties.shouldSendServerVersion());
 
         if (properties.getPort() != null) {
             final Integer port = properties.getPort();
