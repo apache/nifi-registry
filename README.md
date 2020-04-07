@@ -12,7 +12,9 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-# Apache NiFi Registry [![Build Status](https://travis-ci.org/apache/nifi-registry.svg?branch=master)](https://travis-ci.org/apache/nifi-registry)
+# Apache NiFi Registry 
+[![Build Status](https://travis-ci.org/apache/nifi-registry.svg?branch=master)](https://travis-ci.org/apache/nifi-registry)
+![ci-workflow](https://github.com/apache/nifi-registry/workflows/ci-workflow/badge.svg?branch=master)
 
 Registry—a subproject of Apache NiFi—is a complementary application that provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.
 

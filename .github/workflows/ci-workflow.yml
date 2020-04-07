@@ -24,7 +24,7 @@ jobs:
     strategy:
       matrix:
         java: [ '1.8', '11' ]
-    name: Ubuntu Build NiFi Registry - JDK${{ matrix.java }}
+    name: Ubuntu JDK${{ matrix.java }}
 
     steps:
     - name: Checkout Code
@@ -73,5 +73,5 @@ jobs:
         MAVEN_OPTS: -Xmx2g -XX:ReservedCodeCacheSize=1g -XX:+UseG1GC -Dorg.slf4j.simpleLogger.defaultLogLevel=WARN
       run: |
         mvn -version
-        mvn -T 1C install -B -Pcontrib-check -ntp -ff
+        mvn -T 1C install -B -Pcontrib-check,no-integration-tests -ntp -ff
         rm -rf ~/.m2/repository/org/apache/nifi
