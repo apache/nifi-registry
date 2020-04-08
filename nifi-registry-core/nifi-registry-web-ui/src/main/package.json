@@ -114,7 +114,7 @@
         "license-webpack-plugin": "2.1.1",
         "lint-staged": "8.1.7",
         "mini-css-extract-plugin": "0.6.0",
-        "node-sass": "4.12.0",
+        "node-sass": "4.13.1",
         "null-loader": "2.0.0",
         "optimize-css-assets-webpack-plugin": "5.0.1",
         "protractor": "5.4.0",
