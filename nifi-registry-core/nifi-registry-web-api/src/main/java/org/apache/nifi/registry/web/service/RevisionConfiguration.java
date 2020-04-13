@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.web.service;
 
+import org.apache.nifi.registry.properties.NiFiRegistryProperties;
 import org.apache.nifi.registry.revision.api.RevisionManager;
 import org.apache.nifi.registry.revision.entity.RevisableEntityService;
 import org.apache.nifi.registry.revision.entity.StandardRevisableEntityService;
@@ -38,6 +39,13 @@ public class RevisionConfiguration {
     @Bean
     public synchronized RevisableEntityService getRevisableEntityService(final RevisionManager revisionManager) {
         return new StandardRevisableEntityService(revisionManager);
+    }
+
+    @Bean
+    public synchronized RevisionFeature getRevisionFeature(final NiFiRegistryProperties properties) {
+        return () -> {
+            return properties.areRevisionsEnabled();
+        };
     }
 
 }
