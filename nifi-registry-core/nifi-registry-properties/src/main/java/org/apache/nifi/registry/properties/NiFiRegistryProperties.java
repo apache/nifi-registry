@@ -87,6 +87,9 @@ public class NiFiRegistryProperties extends Properties {
     public static final String KERBEROS_SERVICE_PRINCIPAL = "nifi.registry.kerberos.service.principal";
     public static final String KERBEROS_SERVICE_KEYTAB_LOCATION = "nifi.registry.kerberos.service.keytab.location";
 
+    // Revision Management Properties
+    public static final String REVISIONS_ENABLED = "nifi.registry.revisions.enabled";
+
     // Defaults
     public static final String DEFAULT_WEB_WORKING_DIR = "./work/jetty";
     public static final String DEFAULT_WAR_DIR = "./lib";
@@ -271,6 +274,10 @@ public class NiFiRegistryProperties extends Properties {
         final Set<String> extensionDirs = new HashSet<>();
         stringPropertyNames().stream().filter(key -> key.startsWith(EXTENSION_DIR_PREFIX)).forEach(key -> extensionDirs.add(getProperty(key)));
         return extensionDirs;
+    }
+
+    public boolean areRevisionsEnabled() {
+        return Boolean.parseBoolean(getPropertyAsTrimmedString(REVISIONS_ENABLED));
     }
 
     /**

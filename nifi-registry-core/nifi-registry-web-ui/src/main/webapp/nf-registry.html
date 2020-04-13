@@ -74,7 +74,7 @@ limitations under the License.
             <div *ngIf="nfRegistryService.currentUser.identity && nfRegistryService.perspective !== 'login' && nfRegistryService.perspective !== 'not-found'" fxLayout="column" fxLayoutAlign="space-around end" class="push-right-sm">
                 <div id="current-user" matTooltip="{{nfRegistryService.currentUser.identity}}">{{nfRegistryService.currentUser.identity}}</div>
                 <a id="logout-link-container" *ngIf="nfRegistryService.currentUser.canLogout" class="link" (click)="logout()">logout</a>
-                <a id="logout-link-container" *ngIf="!nfRegistryService.currentUser.canLogout && nfRegistryService.currentUser.anonymous && nfRegistryService.currentUser.loginSupported" class="link" (click)="login()">login</a>
+                <a id="login-link-container" *ngIf="!nfRegistryService.currentUser.canLogout && nfRegistryService.currentUser.anonymous && nfRegistryService.currentUser.loginSupported" class="link" (click)="login()">login</a>
             </div>
             <div id="nifi-registry-documentation" *ngIf="nfRegistryService.perspective !== 'login'" class="pad-right-sm">
                 <a matTooltip="Help" href="{{nfRegistryService.documentation.link}}" target="_blank"><i class="fa fa-question-circle help-icon" aria-hidden="true"></i></a>

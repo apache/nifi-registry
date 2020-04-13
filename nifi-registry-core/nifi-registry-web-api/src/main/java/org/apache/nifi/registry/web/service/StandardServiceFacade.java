@@ -105,6 +105,7 @@ public class StandardServiceFacade implements ServiceFacade {
     private final AuthorizationService authorizationService;
     private final AuthorizableLookup authorizableLookup;
     private final RevisableEntityService entityService;
+    private final RevisionFeature revisionFeature;
     private final PermissionsService permissionsService;
     private final LinkService linkService;
 
@@ -114,6 +115,7 @@ public class StandardServiceFacade implements ServiceFacade {
                                  final AuthorizationService authorizationService,
                                  final AuthorizableLookup authorizableLookup,
                                  final RevisableEntityService entityService,
+                                 final RevisionFeature revisionFeature,
                                  final PermissionsService permissionsService,
                                  final LinkService linkService) {
         this.registryService = registryService;
@@ -121,6 +123,7 @@ public class StandardServiceFacade implements ServiceFacade {
         this.authorizationService = authorizationService;
         this.authorizableLookup = authorizableLookup;
         this.entityService = entityService;
+        this.revisionFeature = revisionFeature;
         this.permissionsService = permissionsService;
         this.linkService = linkService;
     }
@@ -135,6 +138,7 @@ public class StandardServiceFacade implements ServiceFacade {
     public Bucket createBucket(final Bucket bucket) {
         authorizeBucketsAccess(RequestAction.WRITE);
         validateCreationOfRevisableEntity(bucket, BUCKET_ENTITY_TYPE);
+        validateIdentifierNotPresent(bucket, BUCKET_ENTITY_TYPE);
 
         bucket.setIdentifier(UUID.randomUUID().toString());
 
@@ -231,7 +235,11 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizeBucketAccess(RequestAction.WRITE, bucketIdentifier);
         validateCreationOfRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE);
 
-        versionedFlow.setIdentifier(UUID.randomUUID().toString());
+        // NOTE: Don't validate that identifier is null...
+        // NiFi has been sending an identifier, so we must maintain backwards compatibility
+        if (versionedFlow.getIdentifier() == null) {
+            versionedFlow.setIdentifier(UUID.randomUUID().toString());
+        }
 
         final VersionedFlow createdFlow = createRevisableEntity(versionedFlow, VERSIONED_FLOW_ENTITY_TYPE, currentUserIdentity(),
                 () -> registryService.createFlow(bucketIdentifier, versionedFlow));
@@ -804,6 +812,7 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.WRITE);
         validateCreationOfRevisableEntity(user, USER_ENTITY_TYPE);
+        validateIdentifierNotPresent(user, USER_ENTITY_TYPE);
 
         user.setIdentifier(UUID.randomUUID().toString());
         return createRevisableEntity(user, USER_ENTITY_TYPE, currentUserIdentity(), () -> authorizationService.createUser(user));
@@ -854,6 +863,7 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurableUserGroups();
         authorizeTenantsAccess(RequestAction.WRITE);
         validateCreationOfRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE);
+        validateIdentifierNotPresent(userGroup, USER_GROUP_ENTITY_TYPE);
 
         userGroup.setIdentifier(UUID.randomUUID().toString());
         return createRevisableEntity(userGroup, USER_GROUP_ENTITY_TYPE, currentUserIdentity(),
@@ -907,6 +917,7 @@ public class StandardServiceFacade implements ServiceFacade {
         verifyAuthorizerSupportsConfigurablePolicies();
         authorizePoliciesAccess(RequestAction.WRITE);
         validateCreationOfRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE);
+        validateIdentifierNotPresent(accessPolicy, ACCESS_POLICY_ENTITY_TYPE);
 
         accessPolicy.setIdentifier(UUID.randomUUID().toString());
         return createRevisableEntity(accessPolicy, ACCESS_POLICY_ENTITY_TYPE, currentUserIdentity(),
@@ -1111,14 +1122,19 @@ public class StandardServiceFacade implements ServiceFacade {
         authorizationService.authorize(tenantsAuthorizable, actionType);
     }
 
+    // ---------------------- Revision Helper Methods -------------------------------------
+
     private void validateCreationOfRevisableEntity(final RevisableEntity entity, final String entityTypeName) {
         if (entity == null) {
             throw new IllegalArgumentException(entityTypeName + " cannot be null");
         }
-        if (entity.getIdentifier() != null) {
-            throw new IllegalArgumentException(entityTypeName + " identifier cannot be specified when creating a new "
-                    + entityTypeName.toLowerCase() + ".");
+
+        // skip checking revision if feature is disabled
+        if (!revisionFeature.isEnabled()) {
+            return;
         }
+
+        // NOT: restore identifier check here when we no longer needs backwards compatibility
 
         if (entity.getRevision() == null
                 || entity.getRevision().getVersion() == null
@@ -1127,9 +1143,27 @@ public class StandardServiceFacade implements ServiceFacade {
         }
     }
 
+    /**
+     * NOTE: This logic should be moved back to validateCreationOfRevisableEntity once we no longer need to maintain
+     * backwards compatibility (i.e. on a major release like 1.0.0).
+     *
+     * Currently NiFi has been sending an identifier when creating a flow, so we need to continue to allow that.
+     */
+    private void validateIdentifierNotPresent(final RevisableEntity entity, final String entityTypeName) {
+        if (entity.getIdentifier() != null) {
+            throw new IllegalArgumentException(entityTypeName + " identifier cannot be specified when creating a new "
+                    + entityTypeName.toLowerCase() + ".");
+        }
+    }
+
     private void validateUpdateOfRevisableEntity(final RevisableEntity entity, final String entityTypeName) {
         if (entity == null) {
             throw new IllegalArgumentException(entityTypeName + " cannot be null");
+        }
+
+        // skip checking revision if feature is disabled
+        if (!revisionFeature.isEnabled()) {
+            return;
         }
 
         if (entity.getRevision() == null || entity.getRevision().getVersion() == null) {
@@ -1142,6 +1176,11 @@ public class StandardServiceFacade implements ServiceFacade {
             throw new IllegalArgumentException(entityTypeName + " identifier is required");
         }
 
+        // skip checking revision if feature is disabled
+        if (!revisionFeature.isEnabled()) {
+            return;
+        }
+
         if (revision == null || revision.getVersion() == null) {
             throw new IllegalArgumentException("Revision info must be specified.");
         }
@@ -1149,31 +1188,48 @@ public class StandardServiceFacade implements ServiceFacade {
 
     private <T extends RevisableEntity> T createRevisableEntity(final T requestEntity, final String entityTypeName,
                                                                 final String creatorIdentity, final Supplier<T> createEntity) {
-        try {
-            return entityService.create(requestEntity, creatorIdentity, createEntity);
-        } catch (InvalidRevisionException e) {
-            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "create", requestEntity.getIdentifier());
-            throw new InvalidRevisionException(msg, e);
+
+        // skip using the entity service if revision feature is disabled
+        if (!revisionFeature.isEnabled()) {
+            return createEntity.get();
+        } else {
+            try {
+                return entityService.create(requestEntity, creatorIdentity, createEntity);
+            } catch (InvalidRevisionException e) {
+                final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "create", requestEntity.getIdentifier());
+                throw new InvalidRevisionException(msg, e);
+            }
         }
     }
 
     private <T extends RevisableEntity> T updateRevisableEntity(final T requestEntity, final String entityTypeName,
                                                                 final String updaterIdentity, final Supplier<T> updateEntity) {
-        try {
-            return entityService.update(requestEntity, updaterIdentity, updateEntity);
-        } catch (InvalidRevisionException e) {
-            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "update", requestEntity.getIdentifier());
-            throw new InvalidRevisionException(msg, e);
+
+        // skip using the entity service if revision feature is disabled
+        if (!revisionFeature.isEnabled()) {
+            return updateEntity.get();
+        } else {
+            try {
+                return entityService.update(requestEntity, updaterIdentity, updateEntity);
+            } catch (InvalidRevisionException e) {
+                final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "update", requestEntity.getIdentifier());
+                throw new InvalidRevisionException(msg, e);
+            }
         }
     }
 
     private <T extends RevisableEntity> T deleteRevisableEntity(final String entityIdentifier, final String entityTypeName,
                                                  final RevisionInfo revisionInfo, final Supplier<T> deleteEntity) {
-        try {
-            return entityService.delete(entityIdentifier, revisionInfo, deleteEntity);
-        } catch (InvalidRevisionException e) {
-            final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "delete", entityIdentifier);
-            throw new InvalidRevisionException(msg, e);
+        // skip using the entity service if revision feature is disabled
+        if (!revisionFeature.isEnabled()) {
+            return deleteEntity.get();
+        } else {
+            try {
+                return entityService.delete(entityIdentifier, revisionInfo, deleteEntity);
+            } catch (InvalidRevisionException e) {
+                final String msg = String.format(INVALID_REVISION_MSG, entityTypeName, "delete", entityIdentifier);
+                throw new InvalidRevisionException(msg, e);
+            }
         }
     }
 

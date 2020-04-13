@@ -113,7 +113,8 @@ body {
   color: $grey5;
 }
 
-#logout-link-container {
+#logout-link-container,
+#login-link-container {
   font-size: 12px;
   text-transform: uppercase;
 }
