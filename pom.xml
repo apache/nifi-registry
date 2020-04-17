@@ -94,10 +94,11 @@
         <org.slf4j.version>1.7.12</org.slf4j.version>
         <jetty.version>9.4.19.v20190610</jetty.version>
         <jax.rs.api.version>2.1</jax.rs.api.version>
-        <jersey.version>2.27</jersey.version>
+        <jersey.server.version>2.29.1</jersey.server.version>
+        <jersey.client.version>2.27</jersey.client.version>
         <jackson.version>2.9.9</jackson.version>
         <jackson.databind.version>2.9.10.3</jackson.databind.version>
-        <spring.boot.version>2.1.12.RELEASE</spring.boot.version>
+        <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
         <spring.security.version>5.1.8.RELEASE</spring.security.version>
         <flyway.version>5.2.4</flyway.version>
         <flyway.tests.version>5.1.0</flyway.tests.version>
