@@ -30,7 +30,8 @@
         "webpack:development": "./node_modules/.bin/webpack --config webpack.dev.js",
         "webpack:production": "./node_modules/.bin/webpack --config webpack.prod.js",
         "watch": "npm run webpack:development && ./node_modules/.bin/webpack-dev-server --config webpack.dev.js",
-        "lint-staged": "./node_modules/.bin/lint-staged"
+        "lint-staged": "./node_modules/.bin/lint-staged",
+        "preinstall": "npx npm-force-resolutions"
     },
     "license": "Apache-2.0",
     "husky": {
@@ -114,7 +115,7 @@
         "license-webpack-plugin": "2.1.1",
         "lint-staged": "8.1.7",
         "mini-css-extract-plugin": "0.6.0",
-        "node-sass": "4.12.0",
+        "node-sass": "4.13.1",
         "null-loader": "2.0.0",
         "optimize-css-assets-webpack-plugin": "5.0.1",
         "protractor": "5.4.0",
@@ -137,5 +138,9 @@
     "engines": {
         "node": "=10.16.3",
         "npm": "=6.9.0"
+    },
+    "resolutions": {
+        "minimist": "1.2.5",
+        "kind-of": "6.0.3"
     }
 }
