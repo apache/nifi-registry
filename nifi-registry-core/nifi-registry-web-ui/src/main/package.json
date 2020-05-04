@@ -58,7 +58,7 @@
         "zone.js": "0.9.0",
         "tslib": "1.8.0",
         "material-design-icons": "3.0.1",
-        "jquery": "3.4.1",
+        "jquery": "3.5.0",
         "@angular/animations": "8.1.1",
         "@angular/cdk": "8.1.0",
         "@angular/common": "8.1.1",
@@ -103,10 +103,10 @@
         "husky": "2.3.0",
         "istanbul-instrumenter-loader": "3.0.1",
         "jasmine-core": "3.3.0",
-        "karma": "4.1.0",
+        "karma": "5.0.4",
         "karma-chrome-launcher": "2.2.0",
         "karma-cli": "2.0.0",
-        "karma-coverage": "1.1.2",
+        "karma-coverage": "2.0.2",
         "karma-coverage-istanbul-reporter": "2.0.5",
         "karma-jasmine": "2.0.1",
         "karma-jasmine-html-reporter": "1.4.0",
@@ -121,14 +121,14 @@
         "protractor": "5.4.0",
         "sass-loader": "7.1.0",
         "style-loader": "0.23.1",
-        "stylelint": "9.10.1",
+        "stylelint": "13.3.3",
         "stylelint-config-standard": "18.2.0",
         "terser-webpack-plugin": "2.3.1",
         "ts-loader": "5.4.4",
         "typescript": "3.3.4000",
         "url-loader": "1.1.2",
         "webpack": "4.29.6",
-        "webpack-cli": "3.3.1",
+        "webpack-cli": "3.3.11",
         "webpack-dev-server": "3.3.1",
         "webpack-fix-style-only-entries": "0.2.1",
         "webpack-merge": "4.2.1"
@@ -141,6 +141,7 @@
     },
     "resolutions": {
         "minimist": "1.2.5",
-        "kind-of": "6.0.3"
+        "kind-of": "6.0.3",
+        "yargs-parser": "18.1.3"
     }
 }
