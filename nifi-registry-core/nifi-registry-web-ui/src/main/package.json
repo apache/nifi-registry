@@ -31,7 +31,7 @@
         "webpack:production": "./node_modules/.bin/webpack --config webpack.prod.js",
         "watch": "npm run webpack:development && ./node_modules/.bin/webpack-dev-server --config webpack.dev.js",
         "lint-staged": "./node_modules/.bin/lint-staged",
-        "preinstall": "npx npm-force-resolutions"
+        "preinstall": "../../target/frontend-working-directory/node/node ../../target/frontend-working-directory/node/node_modules/npm/bin/npm-cli.js --ignore-scripts install npm-force-resolutions && ../../target/frontend-working-directory/node_modules/.bin/npm-force-resolutions"
     },
     "license": "Apache-2.0",
     "husky": {
@@ -51,14 +51,6 @@
         "url": "https://github.com/apache/nifi-registry"
     },
     "dependencies": {
-        "querystring": "0.2.0",
-        "reset-css": "4.0.1",
-        "rxjs": "6.5.2",
-        "superagent": "3.8.3",
-        "zone.js": "0.9.0",
-        "tslib": "1.8.0",
-        "material-design-icons": "3.0.1",
-        "jquery": "3.5.1",
         "@angular/animations": "8.1.1",
         "@angular/cdk": "8.1.0",
         "@angular/common": "8.1.1",
@@ -71,14 +63,23 @@
         "@angular/platform-browser": "8.1.1",
         "@angular/platform-browser-dynamic": "8.1.1",
         "@angular/router": "8.1.1",
-        "angular2-jwt": "0.2.3",
         "@covalent/core": "2.1.0",
         "@nifi-fds/core": "0.2.0",
+        "angular2-jwt": "0.2.3",
         "angular2-moment": "1.9.0",
         "font-awesome": "4.7.0",
-        "moment": "2.22.1",
         "hammerjs": "2.0.8",
-        "roboto-fontface": "0.10.0"
+        "jquery": "3.5.1",
+        "material-design-icons": "3.0.1",
+        "moment": "2.22.1",
+        "npm-force-resolutions": "0.0.3",
+        "querystring": "0.2.0",
+        "reset-css": "4.0.1",
+        "roboto-fontface": "0.10.0",
+        "rxjs": "6.5.2",
+        "superagent": "3.8.3",
+        "tslib": "1.8.0",
+        "zone.js": "0.9.0"
     },
     "devDependencies": {
         "@babel/core": "7.4.4",
@@ -142,6 +143,7 @@
     "resolutions": {
         "minimist": "1.2.5",
         "kind-of": "6.0.3",
-        "yargs-parser": "18.1.3"
+        "yargs-parser": "18.1.3",
+        "http-proxy": "1.18.1"
     }
 }
