@@ -180,7 +180,10 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         // configure each user group provider
                         for (final org.apache.nifi.registry.security.authorization.generated.UserGroupProvider provider : authorizerConfiguration.getUserGroupProvider()) {
                             final UserGroupProvider instance = userGroupProviders.get(provider.getIdentifier());
-                            instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            final ClassLoader instanceClassLoader = instance.getClass().getClassLoader();
+                            try (final ExtensionCloseable extClosable = ExtensionCloseable.withClassLoader(instanceClassLoader)) {
+                                instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            }
                         }
 
                         // create each access policy provider
@@ -194,7 +197,10 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                         // configure each access policy provider
                         for (final org.apache.nifi.registry.security.authorization.generated.AccessPolicyProvider provider : authorizerConfiguration.getAccessPolicyProvider()) {
                             final AccessPolicyProvider instance = accessPolicyProviders.get(provider.getIdentifier());
-                            instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            final ClassLoader instanceClassLoader = instance.getClass().getClassLoader();
+                            try (final ExtensionCloseable extClosable = ExtensionCloseable.withClassLoader(instanceClassLoader)) {
+                                instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            }
                         }
 
                         // create each authorizer
