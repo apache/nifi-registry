@@ -27,9 +27,14 @@ import {
 } from 'services/nf-registry.auth-guard.service';
 import { of } from 'rxjs';
 
+var kerbUrl = '../nifi-registry-api/access/token/kerberos';
+var oidcUrl = '../nifi-registry-api/access/oidc/exchange';
+var tokenVal = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJiYmVuZGVATklGSS5BUEFDSEUuT1JHIiwiaXNzIjoiS2VyYmVyb3NTcG5lZ29JZGVudGl0eVByb3ZpZGVyIiwiYXVkIjoiS2VyYmVyb3NTcG5lZ29JZGVudGl0eVByb3ZpZGVyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiYmJlbmRlQE5JRkkuQVBBQ0hFLk9SRyIsImtpZCI6IjQ3NWQwZWEyLTkzZGItNDhiNi05MjcxLTgyOGM3MzQ5ZTFkNiIsImlhdCI6MTUxMjQ4NTY4NywiZXhwIjoxNTEyNTI4ODg3fQ.lkaWPQw1ld7Qqb6-Zu8mAqu6r8mUVHBNP0ZfNpES3rA';
+
 describe('NfRegistry API w/ Angular testing utils', function () {
     let nfRegistryApi;
     let req;
+    let reqAgain;
 
     const providers = [
         NfRegistryUsersAdministrationAuthGuard,
@@ -94,11 +99,74 @@ describe('NfRegistry API w/ Angular testing utils', function () {
         });
 
         // the request it made
-        req = httpMock.expectOne('../nifi-registry-api/access/token/kerberos');
+        req = httpMock.expectOne(kerbUrl);
         expect(req.request.method).toEqual('POST');
 
         // Next, fulfill the request by transmitting a response.
         req.flush(null, {status: 401, statusText: 'POST exchange tickets mock error'});
+        reqAgain = httpMock.expectOne(oidcUrl);
+        reqAgain.flush(null, {status: 401, statusText: 'POST exchange tickets mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('ticketExchange should POST to Kerberos, fail, and then use the OIDC endpoint to retrieve a JWT.', inject([HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.nfStorage, 'setItem').and.callThrough();
+
+        // api call
+        nfRegistryApi.ticketExchange().subscribe(function (response) {
+            var setItemCall = nfRegistryApi.nfStorage.setItem.calls.first();
+
+            expect(setItemCall.args[1]).toBe(tokenVal);
+            expect(response).toBe(tokenVal);
+        });
+
+        req = httpMock.expectOne(kerbUrl);
+        req.flush(null, {status: 401, statusText: 'POST exchange tickets mock error'});
+        reqAgain = httpMock.expectOne(oidcUrl);
+        reqAgain.flush(tokenVal);
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('ticketExchange should POST to Kerberos and OIDC endpoints and fail to retrieve a JWT.', inject([HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.nfStorage, 'setItem').and.callThrough();
+
+        // api call
+        nfRegistryApi.ticketExchange().subscribe(
+            function (response) {
+                expect(response).toBe('');
+            }
+        );
+
+        req = httpMock.expectOne(kerbUrl);
+        req.flush(null, {status: 401, statusText: 'POST exchange tickets mock error'});
+        reqAgain = httpMock.expectOne(oidcUrl);
+        reqAgain.flush(null, {status: 401, statusText: 'POST exchange tickets mock error'});
+
+        // Finally, assert that there are no outstanding requests.
+        httpMock.verify();
+    }));
+
+    it('ticketExchange should POST to Kerberos to retrieve a JWT.', inject([HttpTestingController], function (httpMock) {
+        // Spy
+        spyOn(nfRegistryApi.nfStorage, 'setItem').and.callThrough();
+
+        // api call
+        nfRegistryApi.ticketExchange().subscribe(function (response) {
+            console.log('ticketExchange() response is: '.concat(response));
+            var setItemCall = nfRegistryApi.nfStorage.setItem.calls.first();
+
+            expect(setItemCall.args[1]).toBe(tokenVal);
+            expect(response).toBe(tokenVal);
+        });
+
+        req = httpMock.expectOne(kerbUrl);
+        req.flush(tokenVal);
 
         // Finally, assert that there are no outstanding requests.
         httpMock.verify();

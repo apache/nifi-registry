@@ -88,7 +88,8 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         // allow any client to access the endpoint for logging in to generate an access token
-        webSecurity.ignoring().antMatchers( "/access/token/**");
+        webSecurity.ignoring().antMatchers("/access/config", "/access/token", "/access/kerberos",
+                "/access/oidc/exchange", "/access/oidc/callback", "/access/oidc/request", "/access/token/identity-provider");
     }
 
     @Override
@@ -96,7 +97,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .rememberMe().disable()
                 .authorizeRequests()
-                    .anyRequest().fullyAuthenticated()
+                    .anyRequest().fullyAuthenticated() // requests must be authenticated
                     .and()
                 .exceptionHandling()
                     .authenticationEntryPoint(http401AuthenticationEntryPoint())
@@ -110,6 +111,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().httpStrictTransportSecurity().maxAgeInSeconds(31540000);
         http.headers().frameOptions().sameOrigin();
 
+        //request can be authenticated using these two mechanisms
         // x509
         http.addFilterBefore(x509AuthenticationFilter(), AnonymousAuthenticationFilter.class);
 
@@ -127,11 +129,11 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         // but before the Jersey application endpoints get the request,
         // insert the ResourceAuthorizationFilter to do its authorization checks
         http.addFilterAfter(resourceAuthorizationFilter(), FilterSecurityInterceptor.class);
-
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // does the order matter here?
         auth
                 .authenticationProvider(x509AuthenticationProvider())
                 .authenticationProvider(jwtAuthenticationProvider());

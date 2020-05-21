@@ -27,7 +27,8 @@ var headers = new Headers({'Content-Type': 'application/json'});
 var config = {
     urls: {
         currentUser: '../nifi-registry-api/access',
-        kerberos: '../nifi-registry-api/access/token/kerberos'
+        kerberos: '../nifi-registry-api/access/token/kerberos',
+        oidc: '../nifi-registry-api/access/oidc/exchange'
     }
 };
 
@@ -755,7 +756,7 @@ NfRegistryApi.prototype = {
     },
 
     /**
-     * Kerberos ticket exchange.
+     * Kerberos and OIDC ticket exchange.
      *
      * @returns {*}
      */
@@ -764,18 +765,28 @@ NfRegistryApi.prototype = {
         if (this.nfStorage.hasItem('jwt')) {
             return of(self.nfStorage.getItem('jwt'));
         }
+        var jwtHandler = function (jwt) {
+            // get the payload and store the token with the appropriate expiration
+            var token = self.nfStorage.getJwtPayload(jwt);
+            if (token) {
+                var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
+                self.nfStorage.setItem('jwt', jwt, expiration);
+            }
+            return jwt;
+        };
         return this.http.post(config.urls.kerberos, null, {responseType: 'text'}).pipe(
             map(function (jwt) {
-                // get the payload and store the token with the appropriate expiration
-                var token = self.nfStorage.getJwtPayload(jwt);
-                if (token) {
-                    var expiration = parseInt(token['exp'], 10) * MILLIS_PER_SECOND;
-                    self.nfStorage.setItem('jwt', jwt, expiration);
-                }
-                return jwt;
+                return jwtHandler(jwt);
             }),
             catchError(function (error) {
-                return of('');
+                return self.http.post(config.urls.oidc, null, {responseType: 'text', withCredentials: 'true'}).pipe(
+                    map(function (jwt) {
+                        return jwtHandler(jwt);
+                    }),
+                    catchError(function (error) {
+                        return of('');
+                    })
+                );
             })
         );
     },

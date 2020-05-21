@@ -21,10 +21,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class NiFiRegistryProperties extends Properties {
 
@@ -87,6 +92,19 @@ public class NiFiRegistryProperties extends Properties {
     public static final String KERBEROS_SERVICE_PRINCIPAL = "nifi.registry.kerberos.service.principal";
     public static final String KERBEROS_SERVICE_KEYTAB_LOCATION = "nifi.registry.kerberos.service.keytab.location";
 
+    // OIDC properties
+    public static final String SECURITY_USER_OIDC_DISCOVERY_URL = "nifi.registry.security.user.oidc.discovery.url";
+    public static final String SECURITY_USER_OIDC_CONNECT_TIMEOUT = "nifi.registry.security.user.oidc.connect.timeout";
+    public static final String SECURITY_USER_OIDC_READ_TIMEOUT = "nifi.registry.security.user.oidc.read.timeout";
+    public static final String SECURITY_USER_OIDC_CLIENT_ID = "nifi.registry.security.user.oidc.client.id";
+    public static final String SECURITY_USER_OIDC_CLIENT_SECRET = "nifi.registry.security.user.oidc.client.secret";
+    public static final String SECURITY_USER_OIDC_PREFERRED_JWSALGORITHM = "nifi.registry.security.user.oidc.preferred.jwsalgorithm";
+    public static final String SECURITY_USER_OIDC_ADDITIONAL_SCOPES = "nifi.registry.security.user.oidc.additional.scopes";
+    public static final String SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER = "nifi.registry.security.user.oidc.claim.identifying.user";
+
+    // Apache Knox
+    public static final String SECURITY_USER_KNOX_URL = "nifi.registry.security.user.knox.url";
+
     // Revision Management Properties
     public static final String REVISIONS_ENABLED = "nifi.registry.revisions.enabled";
 
@@ -100,6 +118,16 @@ public class NiFiRegistryProperties extends Properties {
     public static final String DEFAULT_AUTHENTICATION_EXPIRATION = "12 hours";
     public static final String DEFAULT_EXTENSIONS_WORKING_DIR = "./work/extensions";
     public static final String DEFAULT_WEB_SHOULD_SEND_SERVER_VERSION = "true";
+    public static final String DEFAULT_SECURITY_USER_OIDC_CONNECT_TIMEOUT = "5 secs";
+    public static final String DEFAULT_SECURITY_USER_OIDC_READ_TIMEOUT = "5 secs";
+
+    public NiFiRegistryProperties() {
+        super();
+    }
+
+    public NiFiRegistryProperties(Map<String, String> props) {
+        this.putAll(props);
+    }
 
     public int getWebThreads() {
         int webThreads = 200;
@@ -334,6 +362,121 @@ public class NiFiRegistryProperties extends Properties {
         } else {
             return new File(value);
         }
+    }
+
+    /**
+     * Returns true if the login identity provider has been configured.
+     *
+     * @return true if the login identity provider has been configured
+     */
+    public boolean isLoginIdentityProviderEnabled() {
+        return !StringUtils.isBlank(getProperty(NiFiRegistryProperties.SECURITY_IDENTITY_PROVIDER));
+    }
+
+    /**
+     * Returns whether an OpenId Connect (OIDC) URL is set.
+     *
+     * @return whether an OpenId Connect URL is set
+     */
+    public boolean isOidcEnabled() {
+        return !StringUtils.isBlank(getOidcDiscoveryUrl());
+    }
+
+    /**
+     * Returns whether Knox SSO is enabled.
+     *
+     * @return whether Knox SSO is enabled
+     */
+    public boolean isKnoxSsoEnabled() {
+        return !StringUtils.isBlank(getKnoxUrl());
+    }
+
+    /**
+     * Returns the Knox URL.
+     *
+     * @return Knox URL
+     */
+    public String getKnoxUrl() {
+        return getProperty(SECURITY_USER_KNOX_URL);
+    }
+
+    /**
+     * Returns the OpenId Connect (OIDC) URL. Null otherwise.
+     *
+     * @return OIDC discovery url
+     */
+    public String getOidcDiscoveryUrl() {
+        return getProperty(SECURITY_USER_OIDC_DISCOVERY_URL);
+    }
+
+    /**
+     * Returns the OpenId Connect connect timeout. Non null.
+     *
+     * @return OIDC connect timeout
+     */
+    public String getOidcConnectTimeout() {
+        return getProperty(SECURITY_USER_OIDC_CONNECT_TIMEOUT, DEFAULT_SECURITY_USER_OIDC_CONNECT_TIMEOUT);
+    }
+
+    /**
+     * Returns the OpenId Connect read timeout. Non null.
+     *
+     * @return OIDC read timeout
+     */
+    public String getOidcReadTimeout() {
+        return getProperty(SECURITY_USER_OIDC_READ_TIMEOUT, DEFAULT_SECURITY_USER_OIDC_READ_TIMEOUT);
+    }
+
+    /**
+     * Returns the OpenId Connect client id.
+     *
+     * @return OIDC client id
+     */
+    public String getOidcClientId() {
+        return getProperty(SECURITY_USER_OIDC_CLIENT_ID);
+    }
+
+    /**
+     * Returns the OpenId Connect client secret.
+     *
+     * @return OIDC client secret
+     */
+    public String getOidcClientSecret() {
+        return getProperty(SECURITY_USER_OIDC_CLIENT_SECRET);
+    }
+
+    /**
+     * Returns the preferred json web signature algorithm. May be null/blank.
+     *
+     * @return OIDC preferred json web signature algorithm
+     */
+    public String getOidcPreferredJwsAlgorithm() {
+        return getProperty(SECURITY_USER_OIDC_PREFERRED_JWSALGORITHM);
+    }
+
+    /**
+     * Returns additional scopes to be sent when requesting the access token from the IDP.
+     *
+     * @return List of additional scopes to be sent
+     */
+    public List<String> getOidcAdditionalScopes() {
+        String rawProperty = getProperty(SECURITY_USER_OIDC_ADDITIONAL_SCOPES, "");
+        if (rawProperty.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<String> additionalScopes = Arrays.asList(rawProperty.split(","));
+        return additionalScopes.stream().map(String::trim).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the claim to be used to identify a user.
+     * Claim must be requested by adding the scope for it.
+     * Default is 'email'.
+     *
+     * @return The claim to be used to identify the user.
+     */
+    public String getOidcClaimIdentifyingUser() {
+        return getProperty(SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER, "email").trim();
     }
 
 }

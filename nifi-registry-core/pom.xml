@@ -143,6 +143,17 @@
                 <artifactId>jersey-media-multipart</artifactId>
                 <version>${jersey.server.version}</version>
             </dependency>
+            <!-- open id connect - override transitive dependency version ranges -->
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>oauth2-oidc-sdk</artifactId>
+                <version>6.16.2</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>28.0-jre</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

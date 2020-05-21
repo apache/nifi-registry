@@ -206,6 +206,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
     this.explorerViewType = '';
     this.currentUser = {
         loginSupported: false,
+        oidcloginSupported: false,
         resourcePermissions: {
             anyTopLevelResource: {
                 canRead: false,

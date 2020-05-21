@@ -25,6 +25,7 @@ public class CurrentUser {
     private String identity;
     private boolean anonymous;
     private boolean loginSupported;
+    private boolean oidcLoginSupported;
     private ResourcePermissions resourcePermissions;
 
     @ApiModelProperty(value = "The identity of the current user", readOnly = true)
@@ -45,13 +46,20 @@ public class CurrentUser {
         this.anonymous = anonymous;
     }
 
-    @ApiModelProperty(value = "Indicates if the NiFi instance supports logging in")
+    @ApiModelProperty(value = "Indicates if the NiFi Registry instance supports logging in")
     public boolean isLoginSupported() {
         return loginSupported;
     }
 
+    @ApiModelProperty(value = "Indicates if the NiFi Registry instance supports logging in with an OIDC provider")
+    public boolean isOIDCLoginSupported() { return oidcLoginSupported; }
+
     public void setLoginSupported(boolean loginSupported) {
         this.loginSupported = loginSupported;
+    }
+
+    public void setOIDCLoginSupported(boolean oidcLoginSupported) {
+        this.oidcLoginSupported = oidcLoginSupported;
     }
 
     @ApiModelProperty(value = "The access that the current user has to top level resources", readOnly = true)

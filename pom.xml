@@ -91,7 +91,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2017</inceptionYear>
-        <org.slf4j.version>1.7.12</org.slf4j.version>
+        <org.slf4j.version>1.7.30</org.slf4j.version>
         <jetty.version>9.4.19.v20190610</jetty.version>
         <jax.rs.api.version>2.1</jax.rs.api.version>
         <jersey.server.version>2.29.1</jersey.server.version>

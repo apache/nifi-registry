@@ -292,6 +292,7 @@ public class JettyServer {
         }
 
         webUiContext = loadWar(webUiWar, "/nifi-registry");
+        webUiContext.getInitParams().put("oidc-supported", String.valueOf(properties.isOidcEnabled()));
 
         webApiContext = loadWar(webApiWar, "/nifi-registry-api", getWebApiAdditionalClasspath());
         logger.info("Adding {} object to ServletContext with key 'nifi-registry.properties'", properties.getClass().getSimpleName());
