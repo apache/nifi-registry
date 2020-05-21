@@ -174,13 +174,10 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
                             if (userGroupProviders.containsKey(userGroupProvider.getIdentifier())) {
                                 throw new AuthorizerFactoryException("Duplicate User Group Provider identifier in Authorizers configuration: " + userGroupProvider.getIdentifier());
                             }
-                            userGroupProviders.put(userGroupProvider.getIdentifier(), createUserGroupProvider(userGroupProvider.getIdentifier(), userGroupProvider.getClazz()));
-                        }
 
-                        // configure each user group provider
-                        for (final org.apache.nifi.registry.security.authorization.generated.UserGroupProvider provider : authorizerConfiguration.getUserGroupProvider()) {
-                            final UserGroupProvider instance = userGroupProviders.get(provider.getIdentifier());
-                            instance.onConfigured(loadAuthorizerConfiguration(provider.getIdentifier(), provider.getProperty()));
+                            AuthorizerConfigurationContext configContext = loadAuthorizerConfiguration(userGroupProvider.getIdentifier(), userGroupProvider.getProperty());
+                            UserGroupProvider provider = createUserGroupProvider(userGroupProvider, configContext);
+                            userGroupProviders.put(userGroupProvider.getIdentifier(), provider);
                         }
 
                         // create each access policy provider
@@ -313,7 +310,11 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         return new StandardAuthorizerConfigurationContext(identifier, authorizerProperties);
     }
 
-    private UserGroupProvider createUserGroupProvider(final String identifier, final String userGroupProviderClassName) throws Exception {
+    private UserGroupProvider createUserGroupProvider(final org.apache.nifi.registry.security.authorization.generated.UserGroupProvider userGroupProvider, final AuthorizerConfigurationContext configurationContext) throws Exception {
+
+        final String identifier = userGroupProvider.getIdentifier();
+        final String userGroupProviderClassName = userGroupProvider.getClazz();
+
         final UserGroupProvider instance;
 
         final ClassLoader classLoader = extensionManager.getExtensionClassLoader(userGroupProviderClassName);
@@ -338,6 +339,8 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
 
             // call post construction lifecycle event
             instance.initialize(new StandardAuthorizerInitializationContext(identifier, this, this, this));
+
+            instance.onConfigured(configurationContext);
         }
 
         return instance;
