@@ -310,7 +310,9 @@ public class AuthorizerFactory implements UserGroupProviderLookup, AccessPolicyP
         return new StandardAuthorizerConfigurationContext(identifier, authorizerProperties);
     }
 
-    private UserGroupProvider createUserGroupProvider(final org.apache.nifi.registry.security.authorization.generated.UserGroupProvider userGroupProvider, final AuthorizerConfigurationContext configurationContext) throws Exception {
+    private UserGroupProvider createUserGroupProvider(
+            final org.apache.nifi.registry.security.authorization.generated.UserGroupProvider userGroupProvider,
+            final AuthorizerConfigurationContext configurationContext) throws Exception {
 
         final String identifier = userGroupProvider.getIdentifier();
         final String userGroupProviderClassName = userGroupProvider.getClazz();
