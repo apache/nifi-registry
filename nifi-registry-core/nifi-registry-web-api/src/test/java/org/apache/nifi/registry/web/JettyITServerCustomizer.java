@@ -105,14 +105,14 @@ public class JettyITServerCustomizer implements WebServerFactoryCustomizer<Jetty
         }
         final String keystorePassword = properties.getKeyStorePassword();
         final String keyPassword = properties.getKeyPassword();
-        if (StringUtils.isNotBlank(keystorePassword)) {
-            // if no key password was provided, then assume the keystore password is the same as the key password.
+
+        if (StringUtils.isEmpty(keystorePassword)) {
+            throw new IllegalArgumentException("The keystore password cannot be null or empty");
+        } else {
+            // if no key password was provided, then assume the key password is the same as the keystore password.
             final String defaultKeyPassword = (StringUtils.isBlank(keyPassword)) ? keystorePassword : keyPassword;
-            contextFactory.setKeyManagerPassword(keystorePassword);
-            contextFactory.setKeyStorePassword(defaultKeyPassword);
-        } else if (StringUtils.isNotBlank(keyPassword)) {
-            // since no keystore password was provided, there will be no keystore integrity check
-            contextFactory.setKeyStorePassword(keyPassword);
+            contextFactory.setKeyStorePassword(keystorePassword);
+            contextFactory.setKeyManagerPassword(defaultKeyPassword);
         }
 
         // truststore properties
