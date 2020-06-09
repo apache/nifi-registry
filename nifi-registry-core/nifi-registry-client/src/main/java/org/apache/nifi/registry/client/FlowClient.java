@@ -80,6 +80,17 @@ public interface FlowClient {
      *
      * @param bucketId a bucket id
      * @param flowId the id of the flow to delete
+     * @return the deleted flow
+     * @throws NiFiRegistryException if an error is encountered other than IOException
+     * @throws IOException if an I/O error is encountered
+     */
+    VersionedFlow delete(String bucketId, String flowId) throws NiFiRegistryException, IOException;
+
+    /**
+     *  Deletes the flow with the given id in the given bucket.
+     *
+     * @param bucketId a bucket id
+     * @param flowId the id of the flow to delete
      * @param revision the revision information for the entity being deleted
      * @return the deleted flow
      * @throws NiFiRegistryException if an error is encountered other than IOException

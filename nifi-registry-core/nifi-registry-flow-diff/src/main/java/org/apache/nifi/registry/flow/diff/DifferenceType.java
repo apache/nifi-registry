@@ -258,11 +258,21 @@ public enum DifferenceType {
     /**
      * The Process Group points to a different Versioned Flow in each of the flows
      */
-    VERSIONED_FLOW_COORDINATES_CHANGED("Versioned Flow Coordinates Changed");
+    VERSIONED_FLOW_COORDINATES_CHANGED("Versioned Flow Coordinates Changed"),
+
+    /**
+     * The Process Group's configured FlowFile Concurrency is different in each of the flows
+     */
+    FLOWFILE_CONCURRENCY_CHANGED("FlowFile Concurrency Changed"),
+
+    /**
+     * The Process Group's configured FlowFile Outbound Policy is different in each of the flows
+     */
+    FLOWFILE_OUTBOUND_POLICY_CHANGED("FlowFile Outbound Policy Changed");
 
     private final String description;
 
-    private DifferenceType(final String description) {
+    DifferenceType(final String description) {
         this.description = description;
     }
 

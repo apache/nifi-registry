@@ -139,6 +139,11 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
     }
 
     @Override
+    public VersionedFlow delete(final String bucketId, final String flowId) throws NiFiRegistryException, IOException {
+        return delete(bucketId, flowId, null);
+    }
+
+    @Override
     public VersionedFlow delete(final String bucketId, final String flowId, final RevisionInfo revision)
             throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
@@ -147,10 +152,6 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
 
         if (StringUtils.isBlank(flowId)) {
             throw new IllegalArgumentException("Flow Identifier cannot be blank");
-        }
-
-        if (revision == null) {
-            throw new IllegalArgumentException("RevisionInfo cannot be null");
         }
 
         return executeAction("Error deleting flow", () -> {
