@@ -56,6 +56,14 @@ public interface BucketClient {
      * Deletes the bucket with the given id.
      *
      * @param bucketId the id of the bucket to delete
+     * @return the deleted bucket
+     */
+    Bucket delete(String bucketId) throws NiFiRegistryException, IOException;
+
+    /**
+     * Deletes the bucket with the given id and revision
+     *
+     * @param bucketId the id of the bucket to delete
      * @param revision the revision info for the bucket being deleted
      * @return the deleted bucket
      */

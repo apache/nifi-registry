@@ -17,6 +17,8 @@
 
 package org.apache.nifi.registry.flow.diff;
 
+import org.apache.nifi.registry.flow.FlowFileConcurrency;
+import org.apache.nifi.registry.flow.FlowFileOutboundPolicy;
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedConnection;
 import org.apache.nifi.registry.flow.VersionedControllerService;
@@ -331,6 +333,10 @@ public class StandardFlowComparator implements FlowComparator {
         }
 
         addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, VersionedProcessGroup::getVersionedFlowCoordinates);
+        addIfDifferent(differences, DifferenceType.FLOWFILE_CONCURRENCY_CHANGED, groupA, groupB, VersionedProcessGroup::getFlowFileConcurrency,
+            true, FlowFileConcurrency.UNBOUNDED);
+        addIfDifferent(differences, DifferenceType.FLOWFILE_OUTBOUND_POLICY_CHANGED, groupA, groupB, VersionedProcessGroup::getFlowFileOutboundPolicy,
+            true, FlowFileOutboundPolicy.STREAM_WHEN_AVAILABLE);
 
         final VersionedFlowCoordinates groupACoordinates = groupA.getVersionedFlowCoordinates();
         final VersionedFlowCoordinates groupBCoordinates = groupB.getVersionedFlowCoordinates();
@@ -386,10 +392,22 @@ public class StandardFlowComparator implements FlowComparator {
     }
 
     private <T extends VersionedComponent> void addIfDifferent(final Set<FlowDifference> differences, final DifferenceType type, final T componentA, final T componentB,
-        final Function<T, Object> transform, final boolean differentiateNullAndEmptyString) {
+                                                               final Function<T, Object> transform, final boolean differentiateNullAndEmptyString) {
+        addIfDifferent(differences, type, componentA, componentB, transform, differentiateNullAndEmptyString, null);
+    }
 
-        final Object valueA = transform.apply(componentA);
-        final Object valueB = transform.apply(componentB);
+    private <T extends VersionedComponent> void addIfDifferent(final Set<FlowDifference> differences, final DifferenceType type, final T componentA, final T componentB,
+        final Function<T, Object> transform, final boolean differentiateNullAndEmptyString, final Object defaultValue) {
+
+        Object valueA = transform.apply(componentA);
+        if (valueA == null) {
+            valueA = defaultValue;
+        }
+
+        Object valueB = transform.apply(componentB);
+        if (valueB == null) {
+            valueB = defaultValue;
+        }
 
         if (Objects.equals(valueA, valueB)) {
             return;
