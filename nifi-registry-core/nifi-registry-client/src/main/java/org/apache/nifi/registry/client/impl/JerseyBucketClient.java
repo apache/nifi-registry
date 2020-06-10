@@ -106,13 +106,14 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
     }
 
     @Override
+    public Bucket delete(final String bucketId) throws NiFiRegistryException, IOException {
+        return delete(bucketId, null);
+    }
+
+    @Override
     public Bucket delete(final String bucketId, final RevisionInfo revision) throws NiFiRegistryException, IOException {
         if (StringUtils.isBlank(bucketId)) {
             throw new IllegalArgumentException("Bucket ID cannot be blank");
-        }
-
-        if (revision == null) {
-            throw new IllegalArgumentException("RevisionInfo cannot be null");
         }
 
         return executeAction("Error deleting bucket", () -> {
