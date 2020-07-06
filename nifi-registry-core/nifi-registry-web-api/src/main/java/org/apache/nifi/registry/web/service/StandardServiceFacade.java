@@ -1191,7 +1191,11 @@ public class StandardServiceFacade implements ServiceFacade {
 
         // skip using the entity service if revision feature is disabled
         if (!revisionFeature.isEnabled()) {
-            return createEntity.get();
+            final T entity = createEntity.get();
+            if (entity.getRevision() == null) {
+                entity.setRevision(new RevisionInfo(null, 0L));
+            }
+            return entity;
         } else {
             try {
                 return entityService.create(requestEntity, creatorIdentity, createEntity);
@@ -1207,7 +1211,11 @@ public class StandardServiceFacade implements ServiceFacade {
 
         // skip using the entity service if revision feature is disabled
         if (!revisionFeature.isEnabled()) {
-            return updateEntity.get();
+            final T entity = updateEntity.get();
+            if (entity.getRevision() == null) {
+                entity.setRevision(new RevisionInfo(null, 0L));
+            }
+            return entity;
         } else {
             try {
                 return entityService.update(requestEntity, updaterIdentity, updateEntity);
@@ -1222,7 +1230,11 @@ public class StandardServiceFacade implements ServiceFacade {
                                                  final RevisionInfo revisionInfo, final Supplier<T> deleteEntity) {
         // skip using the entity service if revision feature is disabled
         if (!revisionFeature.isEnabled()) {
-            return deleteEntity.get();
+            final T entity = deleteEntity.get();
+            if (entity.getRevision() == null) {
+                entity.setRevision(new RevisionInfo(null, 0L));
+            }
+            return entity;
         } else {
             try {
                 return entityService.delete(entityIdentifier, revisionInfo, deleteEntity);
