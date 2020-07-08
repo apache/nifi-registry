@@ -44,7 +44,6 @@ ARG GID=1000
 ENV NIFI_REGISTRY_BASE_DIR /opt/nifi-registry
 ENV NIFI_REGISTRY_HOME ${NIFI_REGISTRY_BASE_DIR}/nifi-registry-current
 
-COPY --chown=${UID}:${GID} --from=artifactbase $NIFI_REGISTRY_BASE_DIR $NIFI_REGISTRY_BASE_DIR
 
 # Setup NiFi user and create necessary directories
 RUN groupadd -g ${GID} nifi || groupmod -n nifi `getent group ${GID} | cut -d: -f1` \
@@ -53,6 +52,7 @@ RUN groupadd -g ${GID} nifi || groupmod -n nifi `getent group ${GID} | cut -d: -
     && apt-get update \
     && apt-get install -y jq xmlstarlet procps
 
+COPY --chown=nifi:nifi --from=artifactbase $NIFI_REGISTRY_BASE_DIR $NIFI_REGISTRY_BASE_DIR
 
 USER nifi
 
