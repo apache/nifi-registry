@@ -17,7 +17,6 @@
 
 package org.apache.nifi.registry.flow.diff;
 
-import org.apache.nifi.registry.flow.FlowFileConcurrency;
 import org.apache.nifi.registry.flow.FlowFileOutboundPolicy;
 import org.apache.nifi.registry.flow.VersionedComponent;
 import org.apache.nifi.registry.flow.VersionedConnection;
@@ -46,6 +45,7 @@ public class StandardFlowComparator implements FlowComparator {
     private static final String DEFAULT_LOAD_BALANCE_STRATEGY = "DO_NOT_LOAD_BALANCE";
     private static final String DEFAULT_PARTITIONING_ATTRIBUTE = "";
     private static final String DEFAULT_LOAD_BALANCE_COMPRESSION = "DO_NOT_COMPRESS";
+    private static final String DEFAULT_FLOW_FILE_CONCURRENCY = "UNBOUNDED";
 
     private static final Pattern PARAMETER_REFERENCE_PATTERN = Pattern.compile("#\\{[A-Za-z0-9\\-_. ]+}");
 
@@ -334,7 +334,7 @@ public class StandardFlowComparator implements FlowComparator {
 
         addIfDifferent(differences, DifferenceType.VERSIONED_FLOW_COORDINATES_CHANGED, groupA, groupB, VersionedProcessGroup::getVersionedFlowCoordinates);
         addIfDifferent(differences, DifferenceType.FLOWFILE_CONCURRENCY_CHANGED, groupA, groupB, VersionedProcessGroup::getFlowFileConcurrency,
-            true, FlowFileConcurrency.UNBOUNDED);
+            true, DEFAULT_FLOW_FILE_CONCURRENCY);
         addIfDifferent(differences, DifferenceType.FLOWFILE_OUTBOUND_POLICY_CHANGED, groupA, groupB, VersionedProcessGroup::getFlowFileOutboundPolicy,
             true, FlowFileOutboundPolicy.STREAM_WHEN_AVAILABLE);
 
