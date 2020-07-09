@@ -43,7 +43,7 @@ public class VersionedProcessGroup extends VersionedComponent {
 
     private String parameterContextName;
     private String flowfileConcurrency;
-    private FlowFileOutboundPolicy flowfileOutboundPolicy;
+    private String flowfileOutboundPolicy;
 
     @ApiModelProperty("The child Process Groups")
     public Set<VersionedProcessGroup> getProcessGroups() {
@@ -168,11 +168,11 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     @ApiModelProperty(value = "The FlowFile Outbound Policy for the Process Group")
-    public FlowFileOutboundPolicy getFlowFileOutboundPolicy() {
+    public String getFlowFileOutboundPolicy() {
         return flowfileOutboundPolicy;
     }
 
-    public void setFlowFileOutboundPolicy(final FlowFileOutboundPolicy outboundPolicy) {
+    public void setFlowFileOutboundPolicy(final String outboundPolicy) {
         this.flowfileOutboundPolicy = outboundPolicy;
     }
 }
