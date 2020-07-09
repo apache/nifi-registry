@@ -42,8 +42,8 @@ public class VersionedProcessGroup extends VersionedComponent {
     private Map<String, String> variables = new HashMap<>();
 
     private String parameterContextName;
-    private FlowFileConcurrency flowfileConcurrency;
-    private FlowFileOutboundPolicy flowfileOutboundPolicy;
+    private String flowfileConcurrency;
+    private String flowfileOutboundPolicy;
 
     @ApiModelProperty("The child Process Groups")
     public Set<VersionedProcessGroup> getProcessGroups() {
@@ -159,20 +159,20 @@ public class VersionedProcessGroup extends VersionedComponent {
     }
 
     @ApiModelProperty(value = "The configured FlowFile Concurrency for the Process Group")
-    public FlowFileConcurrency getFlowFileConcurrency() {
+    public String getFlowFileConcurrency() {
         return flowfileConcurrency;
     }
 
-    public void setFlowFileConcurrency(final FlowFileConcurrency flowfileConcurrency) {
+    public void setFlowFileConcurrency(final String flowfileConcurrency) {
         this.flowfileConcurrency = flowfileConcurrency;
     }
 
     @ApiModelProperty(value = "The FlowFile Outbound Policy for the Process Group")
-    public FlowFileOutboundPolicy getFlowFileOutboundPolicy() {
+    public String getFlowFileOutboundPolicy() {
         return flowfileOutboundPolicy;
     }
 
-    public void setFlowFileOutboundPolicy(final FlowFileOutboundPolicy outboundPolicy) {
+    public void setFlowFileOutboundPolicy(final String outboundPolicy) {
         this.flowfileOutboundPolicy = outboundPolicy;
     }
 }
