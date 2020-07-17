@@ -16,8 +16,6 @@
 
 This submodule is a landing zone for command line utilities that can be used for maintenance/automation of registry actions.
 
-It currently only contains a migration tool for changing flow persistence providers.
-
 ## Build
 
 ```
@@ -33,3 +31,28 @@ mvn clean install
 1. In registry home as working directory, run persistence-toolkit.sh -t providers-to.xml
 1. Rename providers-to.xml -> providers.xml
 1. Start registry back up
+
+
+## Registry rebase (EXPERIMENTAL)
+
+Initial support for rebasing a branched registry's changes on top of the upstream.
+
+### Workflow:
+
+#### Generate diff:
+1. "Branch" the upstream registry by shutting it down, copying directory to new location.
+1. Start upstream registry back up
+1. Configure branched registry with new hostname, registry-aliases.xml to account for new url
+1. Point NiFi at the branched registry, make some changes, decide you want to push them upstream
+1. Configure conf/branch-nifi-registry-client.properties and conf/upstream-nifi-registry-client.properties to point at the branched, upstream registries
+1. Generate a rebase diff
+```
+bin/rebase-toolkit.sh diff --upstreamPropertiesFile conf/upstream-nifi-registry-client.properties --branchPropertiesFile conf/branch-nifi-registry-client.properties --bucketId BUCKET_UUID --flowId FLOW_UUID --output output.yaml
+```
+
+#### Apply upstream:
+1. Review output.yaml, opportunity for peer review as well
+1. Apply rebase diff
+```
+bin/rebase-toolkit.sh apply --upstreamPropertiesFile conf/upstream-nifi-registry-client.properties --branchPropertiesFile conf/branch-nifi-registry-client.properties --input output.yaml
+```

@@ -26,6 +26,7 @@
     <description>Command line tooling for setup and maintenance tasks of the NiFi Registry.</description>
     <modules>
         <module>nifi-registry-toolkit-persistence</module>
+        <module>nifi-registry-toolkit-rebase</module>
         <module>nifi-registry-toolkit-assembly</module>
     </modules>
 </project>
