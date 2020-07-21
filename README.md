@@ -13,8 +13,8 @@
   limitations under the License.
 -->
 # Apache NiFi Registry 
-[![Build Status](https://travis-ci.org/apache/nifi-registry.svg?branch=master)](https://travis-ci.org/apache/nifi-registry)
-![ci-workflow](https://github.com/apache/nifi-registry/workflows/ci-workflow/badge.svg?branch=master)
+[![Build Status](https://travis-ci.org/apache/nifi-registry.svg?branch=main)](https://travis-ci.org/apache/nifi-registry)
+![ci-workflow](https://github.com/apache/nifi-registry/workflows/ci-workflow/badge.svg?branch=main)
 
 Registry—a subproject of Apache NiFi—is a complementary application that provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.
 
@@ -34,7 +34,7 @@ Registry—a subproject of Apache NiFi—is a complementary application that pro
 1) Clone the repo
 
         git clone https://git-wip-us.apache.org/repos/asf/nifi-registry.git
-        git checkout master
+        git checkout main
 
 2) Build the project
 
