@@ -33,6 +33,8 @@ import org.apache.nifi.registry.client.FlowSnapshotClient;
 import org.apache.nifi.registry.client.ItemsClient;
 import org.apache.nifi.registry.client.NiFiRegistryClient;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
+import org.apache.nifi.registry.client.PoliciesClient;
+import org.apache.nifi.registry.client.TenantsClient;
 import org.apache.nifi.registry.client.UserClient;
 import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
 import org.glassfish.jersey.client.ClientConfig;
@@ -225,6 +227,28 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     public ExtensionRepoClient getExtensionRepoClient(String... proxiedEntity) {
         final Map<String,String> headers = getHeaders(proxiedEntity);
         return new JerseyExtensionRepoClient(baseTarget, headers);
+    }
+
+    @Override
+    public TenantsClient getTenantsClient() {
+        return new JerseyTenantsClient(baseTarget);
+    }
+
+    @Override
+    public TenantsClient getTenantsClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyTenantsClient(baseTarget, headers);
+    }
+
+    @Override
+    public PoliciesClient getPoliciesClient() {
+        return new JerseyPoliciesClient(baseTarget);
+    }
+
+    @Override
+    public PoliciesClient getPoliciesClient(String... proxiedEntity) {
+        final Map<String,String> headers = getHeaders(proxiedEntity);
+        return new JerseyPoliciesClient(baseTarget, headers);
     }
 
     private Map<String,String> getHeaders(String[] proxiedEntities) {

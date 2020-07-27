@@ -33,6 +33,8 @@ public interface NiFiRegistryClient extends Closeable {
      */
     BucketClient getBucketClient(String ... proxiedEntity);
 
+    //-------------------------------------------------------------------------------------------
+
     /**
      * @return the client for interacting with flows
      */
@@ -42,6 +44,8 @@ public interface NiFiRegistryClient extends Closeable {
      * @return the client for interacting with flows on behalf of the given proxied entities
      */
     FlowClient getFlowClient(String ... proxiedEntity);
+
+    //-------------------------------------------------------------------------------------------
 
     /**
      * @return the client for interacting with flows/snapshots
@@ -53,6 +57,8 @@ public interface NiFiRegistryClient extends Closeable {
      */
     FlowSnapshotClient getFlowSnapshotClient(String ... proxiedEntity);
 
+    //-------------------------------------------------------------------------------------------
+
     /**
      * @return the client for interacting with bucket items
      */
@@ -62,6 +68,8 @@ public interface NiFiRegistryClient extends Closeable {
      * @return the client for interacting with bucket items on behalf of the given proxied entities
      */
     ItemsClient getItemsClient(String ... proxiedEntity);
+
+    //-------------------------------------------------------------------------------------------
 
     /**
      * @return the client for obtaining information about the current user
@@ -73,6 +81,8 @@ public interface NiFiRegistryClient extends Closeable {
      */
     UserClient getUserClient(String ... proxiedEntity);
 
+    //-------------------------------------------------------------------------------------------
+
     /**
      * @return the client for interacting with extension bundles
      */
@@ -82,6 +92,8 @@ public interface NiFiRegistryClient extends Closeable {
      * @return the client for interacting with extension bundles on behalf of the given proxied entities
      */
     BundleClient getBundleClient(String ... proxiedEntity);
+
+    //-------------------------------------------------------------------------------------------
 
     /**
      * @return the client for interacting with extension bundle versions
@@ -93,6 +105,8 @@ public interface NiFiRegistryClient extends Closeable {
      */
     BundleVersionClient getBundleVersionClient(String ... proxiedEntity);
 
+    //-------------------------------------------------------------------------------------------
+
     /**
      * @return the client for interacting with the extension repository
      */
@@ -103,6 +117,8 @@ public interface NiFiRegistryClient extends Closeable {
      */
     ExtensionRepoClient getExtensionRepoClient(String ... proxiedEntity);
 
+    //-------------------------------------------------------------------------------------------
+
     /**
      * @return the client for interacting with extensions
      */
@@ -112,6 +128,44 @@ public interface NiFiRegistryClient extends Closeable {
      * @return the client for interacting with extensions on behalf of the given proxied entities
      */
     ExtensionClient getExtensionClient(String ... proxiedEntity);
+
+    //-------------------------------------------------------------------------------------------
+
+    /**
+     * Returns client for interacting with tenants.
+     *
+     * @return the client for interacting with tenants
+     */
+    TenantsClient getTenantsClient();
+
+    /**
+     * Returns client for interacting with tenants.
+     *
+     * @param proxiedEntity The given proxied entities.
+     *
+     * @return the client for interacting with tenants on behalf of the given proxied entities.
+     */
+    TenantsClient getTenantsClient(String ... proxiedEntity);
+
+    //-------------------------------------------------------------------------------------------
+
+    /**
+     * Returns client for interacting with access policies.
+     *
+     * @return the client for interacting with access policies
+     */
+    PoliciesClient getPoliciesClient();
+
+    /**
+     * Returns client for interacting with access policies.
+     *
+     * @param proxiedEntity The given proxied entities.
+     *
+     * @return the client for interacting with access policies on behalf of the given proxied entities.
+     */
+    PoliciesClient getPoliciesClient(String ... proxiedEntity);
+
+    //-------------------------------------------------------------------------------------------
 
     /**
      * The builder interface that implementations should provide for obtaining the client.
