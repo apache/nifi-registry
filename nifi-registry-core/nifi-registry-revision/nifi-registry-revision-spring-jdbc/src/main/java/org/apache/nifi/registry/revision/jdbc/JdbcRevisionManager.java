@@ -17,14 +17,17 @@
 package org.apache.nifi.registry.revision.jdbc;
 
 import org.apache.nifi.registry.revision.api.DeleteRevisionTask;
+import org.apache.nifi.registry.revision.api.EntityModification;
 import org.apache.nifi.registry.revision.api.ExpiredRevisionClaimException;
 import org.apache.nifi.registry.revision.api.InvalidRevisionException;
 import org.apache.nifi.registry.revision.api.Revision;
 import org.apache.nifi.registry.revision.api.RevisionClaim;
 import org.apache.nifi.registry.revision.api.RevisionManager;
 import org.apache.nifi.registry.revision.api.RevisionUpdate;
+import org.apache.nifi.registry.revision.api.UpdateResult;
 import org.apache.nifi.registry.revision.api.UpdateRevisionTask;
 import org.apache.nifi.registry.revision.standard.RevisionComparator;
+import org.apache.nifi.registry.revision.standard.StandardRevisionUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -33,9 +36,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A database implementation of {@link RevisionManager} that use's Spring's {@link JdbcTemplate}.
@@ -105,20 +110,35 @@ public class JdbcRevisionManager implements RevisionManager {
         // Since we are in transaction these changes won't be committed unless the entire task completes successfully.
         // It is important this happens first so that the task won't execute unless the revision can be updated.
         // This prevents any other changes from happening that might not be part of the database transaction.
+        final Set<Revision> incrementedRevisions = new HashSet<>();
         for (final Revision incomingRevision : revisionList) {
+            final String entityId = incomingRevision.getEntityId();
+
             // calling getRevision here will lazily create an initial revision
-            getRevision(incomingRevision.getEntityId());
+            getRevision(entityId);
             updateRevision(incomingRevision);
+
+            // retrieve the updated revision since the incoming revision may have matched on the client id
+            // and may not have the latest version which we want to return with the result
+            final Revision incrementedRevision = getRevision(entityId);
+            incrementedRevisions.add(incrementedRevision);
         }
 
         // We successfully verified all revisions.
         LOGGER.debug("Successfully verified Revision Claim for all revisions");
 
         // Perform the update
-        final RevisionUpdate<T> updatedEntity = task.update();
+        final UpdateResult<T> updateResult = task.update();
         LOGGER.debug("Update task completed");
 
-        return updatedEntity;
+        // Create the result with the updated entity and updated revisions
+        final T updatedEntity = updateResult.getEntity();
+        final String updaterIdentity = updateResult.updaterIdentity();
+
+        final Revision updatedEntityRevision = getRevision(updateResult.getEntityId());
+        final EntityModification entityModification = new EntityModification(updatedEntityRevision, updaterIdentity);
+
+        return new StandardRevisionUpdate<>(updatedEntity, entityModification, incrementedRevisions);
     }
 
     /*
