@@ -18,17 +18,27 @@ package org.apache.nifi.registry.revision.api;
 
 /**
  * <p>
- * A task that is responsible for updating an entity.
+ * The result of an update task.
  * </p>
  *
  * NOTE: This API is considered a framework level API for the NiFi ecosystem and may evolve as
  * the NiFi PMC and committers deem necessary. It is not considered a public extension point.
  */
-public interface UpdateRevisionTask<T> {
+public interface UpdateResult<T> {
+
     /**
-     * Updates an entity and returns the resulting entity.
-     *
-     * @return the update result containing the updated entity
+     * @return the entity that was updated
      */
-    UpdateResult<T> update();
+    T getEntity();
+
+    /**
+     * @return the id of the entity that was updated
+     */
+    String getEntityId();
+
+    /**
+     * @return the identity of the user that updated the entity
+     */
+    String updaterIdentity();
+
 }

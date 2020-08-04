@@ -26,7 +26,7 @@ import org.apache.nifi.registry.revision.api.RevisionManager;
 import org.apache.nifi.registry.revision.api.RevisionUpdate;
 import org.apache.nifi.registry.revision.api.UpdateRevisionTask;
 import org.apache.nifi.registry.revision.standard.StandardRevisionClaim;
-import org.apache.nifi.registry.revision.standard.StandardRevisionUpdate;
+import org.apache.nifi.registry.revision.standard.StandardUpdateResult;
 import org.flywaydb.core.internal.jdbc.DatabaseType;
 import org.junit.Assert;
 import org.junit.Before;
@@ -350,12 +350,7 @@ public class TestJdbcRevisionManager {
             final RevisableEntity entity = new RevisableEntity();
             entity.setId(entityId);
 
-            // get the latest revision which has already been incremented
-            final Revision updatedRevision = revisionManager.getRevision(entity.getId());
-            entity.setRevision(updatedRevision);
-
-            final EntityModification entityModification = new EntityModification(updatedRevision, "user1");
-            return new StandardRevisionUpdate<>(entity, entityModification);
+            return new StandardUpdateResult<>(entity, entityId,"user1");
         };
     }
 
@@ -366,18 +361,17 @@ public class TestJdbcRevisionManager {
         assertNotNull(updatedEntity);
         assertEquals(entityId, updatedEntity.getId());
 
-        // verify the revision in the entity is set and is the updated revision (i.e. version of 100, not 99)
-        final Revision updatedRevision = updatedEntity.getRevision();
-        assertNotNull(updatedRevision);
-        assertEquals(entityId, updatedRevision.getEntityId());
-        assertEquals(expectedVersion, updatedRevision.getVersion());
-        assertEquals(expectedClientId, updatedRevision.getClientId());
-
         // verify the entity modification is correctly populated
         final EntityModification entityModification = revisionUpdate.getLastModification();
         assertNotNull(entityModification);
         Assert.assertEquals("user1", entityModification.getLastModifier());
-        assertEquals(updatedRevision, entityModification.getRevision());
+
+        // verify the revision in the entity modification is set and is the updated revision (i.e. version of 100, not 99)
+        final Revision updatedRevision = entityModification.getRevision();
+        assertNotNull(updatedRevision);
+        assertEquals(entityId, updatedRevision.getEntityId());
+        assertEquals(expectedVersion, updatedRevision.getVersion());
+        assertEquals(expectedClientId, updatedRevision.getClientId());
 
         // verify the updated revisions is correctly populated and matches the updated entity revision
         final Set<Revision> updatedRevisions = revisionUpdate.getUpdatedRevisions();

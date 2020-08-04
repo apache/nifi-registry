@@ -17,22 +17,27 @@
 package org.apache.nifi.registry.revision.naive;
 
 import org.apache.nifi.registry.revision.api.DeleteRevisionTask;
+import org.apache.nifi.registry.revision.api.EntityModification;
 import org.apache.nifi.registry.revision.api.ExpiredRevisionClaimException;
 import org.apache.nifi.registry.revision.api.InvalidRevisionException;
 import org.apache.nifi.registry.revision.api.Revision;
 import org.apache.nifi.registry.revision.api.RevisionClaim;
 import org.apache.nifi.registry.revision.api.RevisionManager;
 import org.apache.nifi.registry.revision.api.RevisionUpdate;
+import org.apache.nifi.registry.revision.api.UpdateResult;
 import org.apache.nifi.registry.revision.api.UpdateRevisionTask;
 import org.apache.nifi.registry.revision.standard.RevisionComparator;
+import org.apache.nifi.registry.revision.standard.StandardRevisionUpdate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -103,7 +108,8 @@ public class NaiveRevisionManager implements RevisionManager {
     }
 
     @Override
-    public <T> RevisionUpdate<T> updateRevision(final RevisionClaim originalClaim, final UpdateRevisionTask<T> task) throws ExpiredRevisionClaimException {
+    public <T> RevisionUpdate<T> updateRevision(final RevisionClaim originalClaim, final UpdateRevisionTask<T> task)
+            throws ExpiredRevisionClaimException {
         logger.debug("Attempting to update revision using {}", originalClaim);
 
         final List<Revision> revisionList = new ArrayList<>(originalClaim.getRevisions());
@@ -123,17 +129,35 @@ public class NaiveRevisionManager implements RevisionManager {
         logger.debug("Successfully verified Revision Claim for all revisions");
 
         // Perform the update
-        final RevisionUpdate<T> updatedComponent = task.update();
-
-        // If the update succeeded then put the updated revisions into the revisionMap
-        // If an exception is thrown during the update we don't want to update revision so it is ok to bounce out of this method
-        if (updatedComponent != null) {
-            for (final Revision updatedRevision : updatedComponent.getUpdatedRevisions()) {
-                revisionMap.put(updatedRevision.getEntityId(), updatedRevision);
-            }
+        // If an exception is thrown we don't want to update revision so it is ok to bounce out of this method
+        final UpdateResult<T> updateResult = task.update();
+        if (updateResult == null) {
+            return null;
         }
 
-        return updatedComponent;
+        // The update succeeded so increment the revisions
+        final Set<Revision> incrementedRevisions = new HashSet<>();
+        for (final Revision incomingRevision : revisionList) {
+            final String entityId = incomingRevision.getEntityId();
+            final String clientId = incomingRevision.getClientId();
+
+            // retrieve the revision from the map here because the incoming revision may have been
+            // verified based on the client id and may not contain the latest version
+            final Revision existingRevision = revisionMap.get(entityId);
+            final Revision incrementedRevision = existingRevision.incrementRevision(clientId);
+            incrementedRevisions.add(incrementedRevision);
+
+            revisionMap.put(entityId, incrementedRevision);
+        }
+
+        // Create the result with the updated entity and updated revisions
+        final T updatedEntity = updateResult.getEntity();
+        final String updaterIdentity = updateResult.updaterIdentity();
+
+        final Revision updatedEntityRevision = revisionMap.get(updateResult.getEntityId());
+        final EntityModification entityModification = new EntityModification(updatedEntityRevision, updaterIdentity);
+
+        return new StandardRevisionUpdate<>(updatedEntity, entityModification, incrementedRevisions);
     }
 
 }
