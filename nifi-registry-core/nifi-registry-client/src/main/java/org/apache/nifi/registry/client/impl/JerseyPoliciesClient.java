@@ -20,11 +20,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.authorization.AccessPolicy;
 import org.apache.nifi.registry.client.NiFiRegistryException;
 import org.apache.nifi.registry.client.PoliciesClient;
+import org.apache.nifi.registry.client.RequestConfig;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 public class JerseyPoliciesClient extends AbstractCRUDJerseyClient implements PoliciesClient {
 
@@ -32,11 +31,11 @@ public class JerseyPoliciesClient extends AbstractCRUDJerseyClient implements Po
     public static final String POLICIES_PATH = "policies";
 
     public JerseyPoliciesClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyPoliciesClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(baseTarget, headers);
+    public JerseyPoliciesClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(baseTarget, requestConfig);
     }
 
     @Override

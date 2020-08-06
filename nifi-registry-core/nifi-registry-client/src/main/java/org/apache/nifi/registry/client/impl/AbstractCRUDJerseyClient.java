@@ -18,20 +18,20 @@ package org.apache.nifi.registry.client.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.util.Map;
 
 public class AbstractCRUDJerseyClient extends AbstractJerseyClient {
 
     protected final WebTarget baseTarget;
 
-    public AbstractCRUDJerseyClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(headers);
+    public AbstractCRUDJerseyClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.baseTarget = baseTarget;
     }
 

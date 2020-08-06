@@ -16,25 +16,24 @@
  */
 package org.apache.nifi.registry.client.impl;
 
-import org.apache.nifi.registry.client.NiFiRegistryException;
-import org.apache.nifi.registry.client.UserClient;
 import org.apache.nifi.registry.authorization.CurrentUser;
+import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
+import org.apache.nifi.registry.client.UserClient;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
 
 public class JerseyUserClient extends AbstractJerseyClient implements UserClient {
 
     private final WebTarget accessTarget;
 
     public JerseyUserClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyUserClient(final WebTarget baseTarget, final Map<String,String> headers) {
-        super(headers);
+    public JerseyUserClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.accessTarget = baseTarget.path("/access");
     }
 

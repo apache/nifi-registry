@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.ExtensionRepoClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoArtifact;
 import org.apache.nifi.registry.extension.repo.ExtensionRepoBucket;
@@ -37,7 +38,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public class JerseyExtensionRepoClient extends AbstractJerseyClient implements ExtensionRepoClient {
@@ -45,11 +45,11 @@ public class JerseyExtensionRepoClient extends AbstractJerseyClient implements E
     private WebTarget extensionRepoTarget;
 
     public JerseyExtensionRepoClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyExtensionRepoClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(headers);
+    public JerseyExtensionRepoClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.extensionRepoTarget = baseTarget.path("extension-repository");
     }
 

@@ -19,15 +19,14 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.nifi.registry.authorization.User;
 import org.apache.nifi.registry.authorization.UserGroup;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.client.TenantsClient;
 import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class JerseyTenantsClient extends AbstractCRUDJerseyClient implements TenantsClient {
     public static final String USER = "User";
@@ -37,11 +36,11 @@ public class JerseyTenantsClient extends AbstractCRUDJerseyClient implements Ten
     public static final String USER_GROUPS_PATH = "user-groups";
 
     public JerseyTenantsClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyTenantsClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(baseTarget.path("/tenants"), headers);
+    public JerseyTenantsClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(baseTarget.path("/tenants"), requestConfig);
     }
 
     @Override

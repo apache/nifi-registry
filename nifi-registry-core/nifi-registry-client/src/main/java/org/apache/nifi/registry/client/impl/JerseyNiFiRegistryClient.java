@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jaxb.JaxbAnnotationIntrospector;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
+import org.apache.nifi.registry.client.AccessClient;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.BundleClient;
 import org.apache.nifi.registry.client.BundleVersionClient;
@@ -34,9 +35,10 @@ import org.apache.nifi.registry.client.ItemsClient;
 import org.apache.nifi.registry.client.NiFiRegistryClient;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.client.PoliciesClient;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.client.TenantsClient;
 import org.apache.nifi.registry.client.UserClient;
-import org.apache.nifi.registry.security.util.ProxiedEntitiesUtils;
+import org.apache.nifi.registry.client.impl.request.ProxiedEntityRequestConfig;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
@@ -50,11 +52,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * A NiFiRegistryClient that uses Jersey Client.
@@ -136,8 +133,30 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     }
 
     @Override
+    public BucketClient getBucketClient(String... proxiedEntity) {
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyBucketClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public BucketClient getBucketClient(RequestConfig requestConfig) {
+        return new JerseyBucketClient(baseTarget, requestConfig);
+    }
+
+    @Override
     public FlowClient getFlowClient() {
         return this.flowClient;
+    }
+
+    @Override
+    public FlowClient getFlowClient(String... proxiedEntity) {
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyFlowClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public FlowClient getFlowClient(RequestConfig requestConfig) {
+        return new JerseyFlowClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -146,32 +165,30 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
     }
 
     @Override
+    public FlowSnapshotClient getFlowSnapshotClient(String... proxiedEntity) {
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyFlowSnapshotClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public FlowSnapshotClient getFlowSnapshotClient(RequestConfig requestConfig) {
+        return new JerseyFlowSnapshotClient(baseTarget, requestConfig);
+    }
+
+    @Override
     public ItemsClient getItemsClient() {
         return this.itemsClient;
     }
 
     @Override
-    public BucketClient getBucketClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyBucketClient(baseTarget, headers);
-    }
-
-    @Override
-    public FlowClient getFlowClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyFlowClient(baseTarget, headers);
-    }
-
-    @Override
-    public FlowSnapshotClient getFlowSnapshotClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyFlowSnapshotClient(baseTarget, headers);
-    }
-
-    @Override
     public ItemsClient getItemsClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyItemsClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyItemsClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public ItemsClient getItemsClient(RequestConfig requestConfig) {
+        return new JerseyItemsClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -181,8 +198,13 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
     @Override
     public UserClient getUserClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyUserClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyUserClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public UserClient getUserClient(RequestConfig requestConfig) {
+        return new JerseyUserClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -192,8 +214,13 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
     @Override
     public BundleClient getBundleClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyBundleClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyBundleClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public BundleClient getBundleClient(RequestConfig requestConfig) {
+        return new JerseyBundleClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -203,13 +230,29 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
     @Override
     public BundleVersionClient getBundleVersionClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyBundleVersionClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyBundleVersionClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public BundleVersionClient getBundleVersionClient(RequestConfig requestConfig) {
+        return new JerseyBundleVersionClient(baseTarget, requestConfig);
     }
 
     @Override
     public ExtensionRepoClient getExtensionRepoClient() {
         return new JerseyExtensionRepoClient(baseTarget);
+    }
+
+    @Override
+    public ExtensionRepoClient getExtensionRepoClient(String... proxiedEntity) {
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyExtensionRepoClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public ExtensionRepoClient getExtensionRepoClient(RequestConfig requestConfig) {
+        return new JerseyExtensionRepoClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -219,14 +262,13 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
     @Override
     public ExtensionClient getExtensionClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyExtensionClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyExtensionClient(baseTarget, requestConfig);
     }
 
     @Override
-    public ExtensionRepoClient getExtensionRepoClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyExtensionRepoClient(baseTarget, headers);
+    public ExtensionClient getExtensionClient(RequestConfig requestConfig) {
+        return new JerseyExtensionClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -236,8 +278,13 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
     @Override
     public TenantsClient getTenantsClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyTenantsClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyTenantsClient(baseTarget, requestConfig);
+    }
+
+    @Override
+    public TenantsClient getTenantsClient(RequestConfig requestConfig) {
+        return new JerseyTenantsClient(baseTarget, requestConfig);
     }
 
     @Override
@@ -247,27 +294,18 @@ public class JerseyNiFiRegistryClient implements NiFiRegistryClient {
 
     @Override
     public PoliciesClient getPoliciesClient(String... proxiedEntity) {
-        final Map<String,String> headers = getHeaders(proxiedEntity);
-        return new JerseyPoliciesClient(baseTarget, headers);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        return new JerseyPoliciesClient(baseTarget, requestConfig);
     }
 
-    private Map<String,String> getHeaders(String[] proxiedEntities) {
-        final String proxiedEntitiesValue = getProxiedEntitesValue(proxiedEntities);
-
-        final Map<String,String> headers = new HashMap<>();
-        if (proxiedEntitiesValue != null) {
-            headers.put(ProxiedEntitiesUtils.PROXY_ENTITIES_CHAIN, proxiedEntitiesValue);
-        }
-        return headers;
+    @Override
+    public PoliciesClient getPoliciesClient(RequestConfig requestConfig) {
+        return new JerseyPoliciesClient(baseTarget, requestConfig);
     }
 
-    private String getProxiedEntitesValue(String[] proxiedEntities) {
-        if (proxiedEntities == null) {
-            return null;
-        }
-
-        final List<String> proxiedEntityChain = Arrays.stream(proxiedEntities).map(ProxiedEntitiesUtils::formatProxyDn).collect(Collectors.toList());
-        return StringUtils.join(proxiedEntityChain, "");
+    @Override
+    public AccessClient getAccessClient() {
+        return new JerseyAccessClient(baseTarget);
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.FlowSnapshotClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
 
@@ -29,7 +30,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Jersey implementation of FlowSnapshotClient.
@@ -40,11 +40,11 @@ public class JerseyFlowSnapshotClient extends AbstractJerseyClient implements Fl
     final WebTarget flowsFlowSnapshotTarget;
 
     public JerseyFlowSnapshotClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyFlowSnapshotClient(final WebTarget baseTarget, final Map<String,String> headers) {
-        super(headers);
+    public JerseyFlowSnapshotClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.bucketFlowSnapshotTarget = baseTarget.path("/buckets/{bucketId}/flows/{flowId}/versions");
         this.flowsFlowSnapshotTarget = baseTarget.path("/flows/{flowId}/versions");
     }

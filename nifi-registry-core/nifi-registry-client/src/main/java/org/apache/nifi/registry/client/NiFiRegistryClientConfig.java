@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.client;
 
+import org.apache.nifi.registry.security.util.CertificateUtils;
 import org.apache.nifi.registry.security.util.KeyStoreUtils;
 import org.apache.nifi.registry.security.util.KeystoreType;
 
@@ -36,6 +37,8 @@ import java.security.SecureRandom;
  */
 public class NiFiRegistryClientConfig {
 
+    public static final String DEFAULT_PROTOCOL = CertificateUtils.getHighestCurrentSupportedTlsProtocolVersion();
+
     private final String baseUrl;
     private final SSLContext sslContext;
     private final String keystoreFilename;
@@ -45,6 +48,7 @@ public class NiFiRegistryClientConfig {
     private final String truststoreFilename;
     private final String truststorePass;
     private final KeystoreType truststoreType;
+    private final String protocol;
     private final HostnameVerifier hostnameVerifier;
     private final Integer readTimeout;
     private final Integer connectTimeout;
@@ -60,6 +64,7 @@ public class NiFiRegistryClientConfig {
         this.truststoreFilename = builder.truststoreFilename;
         this.truststorePass = builder.truststorePass;
         this.truststoreType = builder.truststoreType;
+        this.protocol = builder.protocol == null ? DEFAULT_PROTOCOL : builder.protocol;
         this.hostnameVerifier = builder.hostnameVerifier;
         this.readTimeout = builder.readTimeout;
         this.connectTimeout = builder.connectTimeout;
@@ -118,7 +123,7 @@ public class NiFiRegistryClientConfig {
                 // initialize the ssl context
                 KeyManager[] keyManagers = keyManagerFactory != null ? keyManagerFactory.getKeyManagers() : null;
                 TrustManager[] trustManagers = trustManagerFactory != null ? trustManagerFactory.getTrustManagers() : null;
-                final SSLContext sslContext = SSLContext.getInstance("TLS");
+                final SSLContext sslContext = SSLContext.getInstance(getProtocol());
                 sslContext.init(keyManagers, trustManagers, new SecureRandom());
                 sslContext.getDefaultSSLParameters().setNeedClientAuth(true);
 
@@ -159,6 +164,10 @@ public class NiFiRegistryClientConfig {
         return truststoreType;
     }
 
+    public String getProtocol() {
+        return protocol;
+    }
+
     public HostnameVerifier getHostnameVerifier() {
         return hostnameVerifier;
     }
@@ -185,6 +194,7 @@ public class NiFiRegistryClientConfig {
         private String truststoreFilename;
         private String truststorePass;
         private KeystoreType truststoreType;
+        private String protocol;
         private HostnameVerifier hostnameVerifier;
         private Integer readTimeout;
         private Integer connectTimeout;
@@ -231,6 +241,11 @@ public class NiFiRegistryClientConfig {
 
         public Builder truststoreType(final KeystoreType truststoreType) {
             this.truststoreType = truststoreType;
+            return this;
+        }
+
+        public Builder protocol(final String protocol) {
+            this.protocol = protocol;
             return this;
         }
 

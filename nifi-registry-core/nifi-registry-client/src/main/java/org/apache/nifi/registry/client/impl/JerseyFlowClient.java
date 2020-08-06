@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.FlowClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.flow.VersionedFlow;
@@ -31,7 +32,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Jersey implementation of FlowClient.
@@ -42,11 +42,11 @@ public class JerseyFlowClient extends AbstractJerseyClient  implements FlowClien
     private final WebTarget bucketFlowsTarget;
 
     public JerseyFlowClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyFlowClient(final WebTarget baseTarget, final Map<String,String> headers) {
-        super(headers);
+    public JerseyFlowClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.flowsTarget = baseTarget.path("/flows");
         this.bucketFlowsTarget = baseTarget.path("/buckets/{bucketId}/flows");
     }

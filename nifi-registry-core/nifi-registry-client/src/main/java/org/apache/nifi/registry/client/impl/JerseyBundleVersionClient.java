@@ -19,12 +19,13 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.BundleVersionClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.extension.bundle.BundleType;
 import org.apache.nifi.registry.extension.bundle.BundleVersion;
 import org.apache.nifi.registry.extension.bundle.BundleVersionFilterParams;
 import org.apache.nifi.registry.extension.bundle.BundleVersionMetadata;
-import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.apache.nifi.registry.extension.component.ExtensionMetadata;
+import org.apache.nifi.registry.extension.component.manifest.Extension;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
@@ -39,7 +40,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Jersey implementation of BundleVersionClient.
@@ -50,11 +50,11 @@ public class JerseyBundleVersionClient extends AbstractJerseyClient implements B
     private final WebTarget extensionBundlesTarget;
 
     public JerseyBundleVersionClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyBundleVersionClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(headers);
+    public JerseyBundleVersionClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.bucketExtensionBundlesTarget = baseTarget.path("buckets/{bucketId}/bundles");
         this.extensionBundlesTarget = baseTarget.path("bundles");
     }
