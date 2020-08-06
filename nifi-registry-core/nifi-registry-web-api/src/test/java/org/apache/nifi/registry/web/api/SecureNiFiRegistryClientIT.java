@@ -234,7 +234,7 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     }
 
     @Test
-    public void testTenantsClient() throws Exception {
+    public void testTenantsClientUsers() throws Exception {
         final TenantsClient tenantsClient = client.getTenantsClient();
 
         // get all users
@@ -271,6 +271,11 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         final User deletedUser = tenantsClient.deleteUser(updatedUser.getIdentifier(), updatedUser.getRevision());
         assertNotNull(deletedUser);
         assertEquals(updatedUser.getIdentifier(), deletedUser.getIdentifier());
+    }
+
+    @Test
+    public void testTenantsClientGroups() throws Exception {
+        final TenantsClient tenantsClient = client.getTenantsClient();
 
         // get all groups
         final List<UserGroup> groups = tenantsClient.getUserGroups();
@@ -285,18 +290,18 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         assertNotNull(createdGroup);
         assertEquals(userGroup.getIdentity(), createdGroup.getIdentity());
 
-        // update group
-        createdGroup.setIdentity(createdGroup.getIdentity() + "-updated");
-        final UserGroup updatedGroup = tenantsClient.updateUserGroup(createdGroup);
-        assertEquals(createdGroup.getIdentity(), updatedGroup.getIdentity());
-
         // get group by id
         final UserGroup retrievedGroup = tenantsClient.getUserGroup(createdGroup.getIdentifier());
         assertNotNull(retrievedGroup);
         assertEquals(createdGroup.getIdentifier(), retrievedGroup.getIdentifier());
 
+        // update group
+        retrievedGroup.setIdentity(retrievedGroup.getIdentity() + "-updated");
+        final UserGroup updatedGroup = tenantsClient.updateUserGroup(retrievedGroup);
+        assertEquals(retrievedGroup.getIdentity(), updatedGroup.getIdentity());
+
         // delete group
-        final UserGroup deletedGroup = tenantsClient.deleteUserGroup(retrievedGroup.getIdentifier(), retrievedGroup.getRevision());
+        final UserGroup deletedGroup = tenantsClient.deleteUserGroup(updatedGroup.getIdentifier(), updatedGroup.getRevision());
         assertNotNull(deletedGroup);
         assertEquals(retrievedGroup.getIdentifier(), deletedGroup.getIdentifier());
 
