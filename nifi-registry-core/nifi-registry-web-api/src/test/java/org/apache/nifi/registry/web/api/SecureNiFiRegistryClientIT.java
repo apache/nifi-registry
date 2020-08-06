@@ -28,9 +28,11 @@ import org.apache.nifi.registry.client.FlowSnapshotClient;
 import org.apache.nifi.registry.client.NiFiRegistryClient;
 import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.client.TenantsClient;
 import org.apache.nifi.registry.client.UserClient;
 import org.apache.nifi.registry.client.impl.JerseyNiFiRegistryClient;
+import org.apache.nifi.registry.client.impl.request.ProxiedEntityRequestConfig;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -164,7 +166,8 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     @Test
     public void testGetAccessStatusWithProxiedEntity() throws IOException, NiFiRegistryException {
         final String proxiedEntity = "user2";
-        final UserClient userClient = client.getUserClient(proxiedEntity);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        final UserClient userClient = client.getUserClient(requestConfig);
         final CurrentUser status = userClient.getAccessStatus();
         assertEquals("user2", status.getIdentity());
         assertFalse(status.isAnonymous());
@@ -173,7 +176,8 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
     @Test
     public void testCreatedBucketWithProxiedEntity() throws IOException, NiFiRegistryException {
         final String proxiedEntity = "user2";
-        final BucketClient bucketClient = client.getBucketClient(proxiedEntity);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        final BucketClient bucketClient = client.getBucketClient(requestConfig);
 
         final Bucket bucket = new Bucket();
         bucket.setName("Bucket 1");
@@ -193,8 +197,9 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         // this user shouldn't have access to anything
         final String proxiedEntity = NO_ACCESS_IDENTITY;
 
-        final FlowClient proxiedFlowClient = client.getFlowClient(proxiedEntity);
-        final FlowSnapshotClient proxiedFlowSnapshotClient = client.getFlowSnapshotClient(proxiedEntity);
+        final RequestConfig requestConfig = new ProxiedEntityRequestConfig(proxiedEntity);
+        final FlowClient proxiedFlowClient = client.getFlowClient(requestConfig);
+        final FlowSnapshotClient proxiedFlowSnapshotClient = client.getFlowSnapshotClient(requestConfig);
 
         try {
             proxiedFlowClient.get("1");

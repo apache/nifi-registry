@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.ExtensionClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.extension.bundle.BundleType;
 import org.apache.nifi.registry.extension.component.ExtensionFilterParams;
 import org.apache.nifi.registry.extension.component.ExtensionMetadataContainer;
@@ -31,7 +32,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class JerseyExtensionClient extends AbstractJerseyClient implements ExtensionClient {
@@ -39,11 +39,11 @@ public class JerseyExtensionClient extends AbstractJerseyClient implements Exten
     private final WebTarget extensionsTarget;
 
     public JerseyExtensionClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyExtensionClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(headers);
+    public JerseyExtensionClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.extensionsTarget = baseTarget.path("extensions");
     }
 

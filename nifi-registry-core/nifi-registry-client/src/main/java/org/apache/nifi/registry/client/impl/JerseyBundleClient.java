@@ -19,6 +19,7 @@ package org.apache.nifi.registry.client.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.client.BundleClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.extension.bundle.Bundle;
 import org.apache.nifi.registry.extension.bundle.BundleFilterParams;
 
@@ -27,7 +28,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Jersey implementation of BundleClient.
@@ -38,11 +38,11 @@ public class JerseyBundleClient extends AbstractJerseyClient implements BundleCl
     private final WebTarget extensionBundlesTarget;
 
     public JerseyBundleClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyBundleClient(final WebTarget baseTarget, final Map<String, String> headers) {
-        super(headers);
+    public JerseyBundleClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.bucketExtensionBundlesTarget = baseTarget.path("buckets/{bucketId}/bundles");
         this.extensionBundlesTarget = baseTarget.path("bundles");
     }

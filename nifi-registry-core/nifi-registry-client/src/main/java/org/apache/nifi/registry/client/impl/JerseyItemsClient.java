@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.client.ItemsClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.field.Fields;
 
 import javax.ws.rs.client.WebTarget;
@@ -27,7 +28,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Jersey implementation of ItemsClient.
@@ -37,11 +37,11 @@ public class JerseyItemsClient extends AbstractJerseyClient implements ItemsClie
     private final WebTarget itemsTarget;
 
     public JerseyItemsClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyItemsClient(final WebTarget baseTarget, final Map<String,String> headers) {
-        super(headers);
+    public JerseyItemsClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.itemsTarget = baseTarget.path("/items");
     }
 

@@ -24,6 +24,14 @@ import org.apache.nifi.registry.authorization.CurrentUser;
 import org.apache.nifi.registry.authorization.Permissions;
 import org.apache.nifi.registry.authorization.Tenant;
 import org.apache.nifi.registry.bucket.Bucket;
+import org.apache.nifi.registry.client.AccessClient;
+import org.apache.nifi.registry.client.NiFiRegistryClient;
+import org.apache.nifi.registry.client.NiFiRegistryClientConfig;
+import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
+import org.apache.nifi.registry.client.UserClient;
+import org.apache.nifi.registry.client.impl.JerseyNiFiRegistryClient;
+import org.apache.nifi.registry.client.impl.request.BearerTokenRequestConfig;
 import org.apache.nifi.registry.extension.ExtensionManager;
 import org.apache.nifi.registry.properties.AESSensitivePropertyProvider;
 import org.apache.nifi.registry.properties.NiFiRegistryProperties;
@@ -36,6 +44,7 @@ import org.apache.nifi.registry.security.crypto.CryptoKeyProvider;
 import org.apache.nifi.registry.security.identity.IdentityMapper;
 import org.apache.nifi.registry.service.RegistryService;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,9 +64,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.sql.DataSource;
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -614,6 +623,51 @@ public class SecureLdapIT extends IntegrationTestBase {
 
     }
 
+    @Test
+    public void testAccessClient() throws IOException, NiFiRegistryException {
+        final String baseUrl = createBaseURL();
+        LOGGER.info("Using base url = " + baseUrl);
+
+        final NiFiRegistryClientConfig clientConfig = createClientConfig(baseUrl);
+        Assert.assertNotNull(clientConfig);
+
+        final NiFiRegistryClient client = new JerseyNiFiRegistryClient.Builder()
+                .config(clientConfig)
+                .build();
+
+        final String username = "pasteur";
+        final String password = "password";
+
+        // authenticate with the username and password to obtain a token
+        final AccessClient accessClient = client.getAccessClient();
+        final String token = accessClient.getToken(username, password);
+        assertNotNull(token);
+
+        // use the token to check the status of the current user
+        final RequestConfig requestConfig = new BearerTokenRequestConfig(token);
+        final UserClient userClient = client.getUserClient(requestConfig);
+        assertEquals(username, userClient.getAccessStatus().getIdentity());
+
+        // use the token to logout
+        accessClient.logout(token);
+
+        // check the status of the current user again and should be unauthorized
+        try {
+            userClient.getAccessStatus();
+            Assert.fail("Should have failed with an unauthorized exception");
+        } catch (Exception e) {
+            //LOGGER.error(e.getMessage(), e);
+        }
+
+        // try to get a token with an invalid username and password
+        try {
+            accessClient.getToken("user-does-not-exist", "bad-password");
+            Assert.fail("Should have failed with an unauthorized exception");
+        } catch (Exception e) {
+
+        }
+    }
+
     /** A helper method to lookup identifiers for tenant identities using the REST API
      *
      * @param tenantIdentity - the identity to lookup
@@ -744,12 +798,6 @@ public class SecureLdapIT extends IntegrationTestBase {
             }
         }
 
-    }
-
-    private static Form encodeCredentialsForURLFormParams(String username, String password) {
-        return new Form()
-                .param("username", username)
-                .param("password", password);
     }
 
     private static String encodeCredentialsForBasicAuth(String username, String password) {

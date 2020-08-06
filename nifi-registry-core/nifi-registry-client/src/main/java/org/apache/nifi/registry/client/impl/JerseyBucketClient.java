@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.Bucket;
 import org.apache.nifi.registry.client.BucketClient;
 import org.apache.nifi.registry.client.NiFiRegistryException;
+import org.apache.nifi.registry.client.RequestConfig;
 import org.apache.nifi.registry.field.Fields;
 import org.apache.nifi.registry.revision.entity.RevisionInfo;
 
@@ -30,7 +31,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Jersey implementation of BucketClient.
@@ -41,11 +41,11 @@ public class JerseyBucketClient extends AbstractJerseyClient implements BucketCl
 
 
     public JerseyBucketClient(final WebTarget baseTarget) {
-        this(baseTarget, Collections.emptyMap());
+        this(baseTarget, null);
     }
 
-    public JerseyBucketClient(final WebTarget baseTarget, final Map<String,String> headers) {
-        super(headers);
+    public JerseyBucketClient(final WebTarget baseTarget, final RequestConfig requestConfig) {
+        super(requestConfig);
         this.bucketsTarget = baseTarget.path("/buckets");
     }
 
