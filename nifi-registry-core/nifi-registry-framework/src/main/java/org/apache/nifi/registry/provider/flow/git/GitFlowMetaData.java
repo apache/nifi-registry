@@ -480,6 +480,7 @@ class GitFlowMetaData {
                     : format("%s\n\nBy NiFi Registry user: %s", message, author);
             final RevCommit commit = git.commit()
                     .setMessage(commitMessage)
+                    .setSign(false)
                     .call();
 
             if (flowPointer != null) {

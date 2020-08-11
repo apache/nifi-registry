@@ -242,7 +242,13 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.61</version>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+        <!-- JGit depends on bcpg so declare a consistent version with our other bouncy castle deps -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpg-jdk15on</artifactId>
+            <version>${bouncycastle.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -300,7 +306,17 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>4.11.9.201909030838-r</version>
+            <version>${jgit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.gpg.bc</artifactId>
+            <version>${jgit.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit.ssh.apache</artifactId>
+            <version>${jgit.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-codec</groupId>
@@ -390,12 +406,7 @@
             <version>2.0.0-M24</version>
             <scope>test</scope>
 	    </dependency>
-	    <dependency>
-            <groupId>org.apache.nifi.registry</groupId>
-            <artifactId>nifi-registry-flow-diff</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
-        </dependency>
-        </dependencies>
+    </dependencies>
 
     <profiles>
         <profile>

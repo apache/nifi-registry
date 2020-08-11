@@ -107,12 +107,14 @@
         <groovy.version>2.5.4</groovy.version>
         <groovy.eclipse.compiler.version>3.4.0-01</groovy.eclipse.compiler.version>
         <jaxb.version>2.3.2</jaxb.version>
+        <jgit.version>5.8.1.202007141445-r</jgit.version>
+        <bouncycastle.version>1.66</bouncycastle.version>
     </properties>
 
     <repositories>
         <repository>
             <id>central</id>
-            <!-- This should be at top, it makes maven try the central repo 
+            <!-- This should be at top, it makes maven try the central repo
                 first and then others and hence faster dep resolution -->
             <name>Maven Repository</name>
             <url>https://repo1.maven.org/maven2</url>
@@ -622,11 +624,11 @@
 
     <profiles>
         <profile>
-            <!-- Checks style and licensing requirements. This is a good idea to run 
-            for contributions and for the release process. While it would be nice to 
-            run always these plugins can considerably slow the build and have proven 
-            to create unstable builds in our multi-module project and when building using 
-            multiple threads. The stability issues seen with Checkstyle in multi-module 
+            <!-- Checks style and licensing requirements. This is a good idea to run
+            for contributions and for the release process. While it would be nice to
+            run always these plugins can considerably slow the build and have proven
+            to create unstable builds in our multi-module project and when building using
+            multiple threads. The stability issues seen with Checkstyle in multi-module
             builds include false-positives and false negatives. -->
             <id>contrib-check</id>
             <build>
@@ -681,7 +683,7 @@
             </build>
         </profile>
         <profile>
-            <!-- This profile will disable DocLint which performs strict 
+            <!-- This profile will disable DocLint which performs strict
                 JavaDoc processing which was introduced in JDK 8, which is required to build nifi-registry.
                 These are technically errors in the JavaDoc, which we need to eventually address.
                 However, without this, artifact generation currently fails. -->
