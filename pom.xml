@@ -107,6 +107,8 @@
         <groovy.version>2.5.4</groovy.version>
         <groovy.eclipse.compiler.version>3.4.0-01</groovy.eclipse.compiler.version>
         <jaxb.version>2.3.2</jaxb.version>
+        <jgit.version>5.8.1.202007141445-r</jgit.version>
+        <bouncycastle.version>1.66</bouncycastle.version>
     </properties>
 
     <repositories>
