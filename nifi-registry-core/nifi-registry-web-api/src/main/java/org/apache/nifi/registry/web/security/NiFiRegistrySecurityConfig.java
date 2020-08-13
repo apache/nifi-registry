@@ -97,7 +97,7 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .rememberMe().disable()
                 .authorizeRequests()
-                    .anyRequest().fullyAuthenticated() // requests must be authenticated
+                    .anyRequest().fullyAuthenticated()
                     .and()
                 .exceptionHandling()
                     .authenticationEntryPoint(http401AuthenticationEntryPoint())
@@ -111,7 +111,6 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().httpStrictTransportSecurity().maxAgeInSeconds(31540000);
         http.headers().frameOptions().sameOrigin();
 
-        //request can be authenticated using these two mechanisms
         // x509
         http.addFilterBefore(x509AuthenticationFilter(), AnonymousAuthenticationFilter.class);
 
@@ -133,7 +132,6 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // does the order matter here?
         auth
                 .authenticationProvider(x509AuthenticationProvider())
                 .authenticationProvider(jwtAuthenticationProvider());
