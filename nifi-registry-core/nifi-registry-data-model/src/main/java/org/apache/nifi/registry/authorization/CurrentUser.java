@@ -53,7 +53,7 @@ public class CurrentUser {
 
     @ApiModelProperty(value = "Indicates if the NiFi Registry instance supports logging in with an OIDC provider")
     public boolean isOIDCLoginSupported() { 
-        return oidcLoginSupported; 
+        return oidcLoginSupported;
     }
 
     public void setLoginSupported(boolean loginSupported) {
