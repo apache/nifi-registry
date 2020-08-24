@@ -99,8 +99,8 @@
         <jackson.version>2.10.3</jackson.version>
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
         <spring.security.version>5.1.9.RELEASE</spring.security.version>
-        <flyway.version>5.2.4</flyway.version>
-        <flyway.tests.version>5.1.0</flyway.tests.version>
+        <flyway.version>6.0.8</flyway.version>
+        <flyway.tests.version>6.0.0</flyway.tests.version>
         <swagger.ui.version>3.12.0</swagger.ui.version>
         <testcontainers.version>1.11.2</testcontainers.version>
 	    <h2.version>1.4.199</h2.version>
@@ -112,7 +112,7 @@
     <repositories>
         <repository>
             <id>central</id>
-            <!-- This should be at top, it makes maven try the central repo 
+            <!-- This should be at top, it makes maven try the central repo
                 first and then others and hence faster dep resolution -->
             <name>Maven Repository</name>
             <url>https://repo1.maven.org/maven2</url>
@@ -622,11 +622,11 @@
 
     <profiles>
         <profile>
-            <!-- Checks style and licensing requirements. This is a good idea to run 
-            for contributions and for the release process. While it would be nice to 
-            run always these plugins can considerably slow the build and have proven 
-            to create unstable builds in our multi-module project and when building using 
-            multiple threads. The stability issues seen with Checkstyle in multi-module 
+            <!-- Checks style and licensing requirements. This is a good idea to run
+            for contributions and for the release process. While it would be nice to
+            run always these plugins can considerably slow the build and have proven
+            to create unstable builds in our multi-module project and when building using
+            multiple threads. The stability issues seen with Checkstyle in multi-module
             builds include false-positives and false negatives. -->
             <id>contrib-check</id>
             <build>
@@ -681,7 +681,7 @@
             </build>
         </profile>
         <profile>
-            <!-- This profile will disable DocLint which performs strict 
+            <!-- This profile will disable DocLint which performs strict
                 JavaDoc processing which was introduced in JDK 8, which is required to build nifi-registry.
                 These are technically errors in the JavaDoc, which we need to eventually address.
                 However, without this, artifact generation currently fails. -->
