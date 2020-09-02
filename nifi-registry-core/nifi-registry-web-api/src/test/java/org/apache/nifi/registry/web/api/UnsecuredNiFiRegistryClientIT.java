@@ -588,6 +588,12 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
                 BundleVersionFilterParams.of("org.apache.nifi", null, null));
         assertEquals(4, filteredVersions2.size());
 
+        filteredVersions2.forEach(bvm -> {
+            assertNotNull(bvm.getGroupId());
+            assertNotNull(bvm.getArtifactId());
+            assertNotNull(bvm.getVersion());
+        });
+
         // ---------------------- TEST EXTENSION REPO ----------------------//
 
         final ExtensionRepoClient extensionRepoClient = client.getExtensionRepoClient();

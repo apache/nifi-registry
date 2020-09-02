@@ -663,6 +663,11 @@ public class TestDatabaseMetadataService extends DatabaseBaseTest {
                 bucketIds, BundleVersionFilterParams.of("org.apache.nifi", null, null));
         assertEquals(2, versionEntities.size());
 
+        versionEntities.forEach(bve -> {
+            assertNotNull(bve.getGroupId());
+            assertNotNull(bve.getArtifactId());
+        });
+
         final List<BundleVersionEntity> versionEntities2 = metadataService.getBundleVersions(
                 bucketIds, BundleVersionFilterParams.of("org.apache.%", null, null));
         assertEquals(2, versionEntities2.size());

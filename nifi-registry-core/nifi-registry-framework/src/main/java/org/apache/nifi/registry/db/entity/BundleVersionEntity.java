@@ -29,6 +29,10 @@ public class BundleVersionEntity {
     // The bucket id where the bundle is located
     private String bucketId;
 
+    // The group and artifact id for the bundle this version belongs to
+    private String groupId;
+    private String artifactId;
+
     // The version of this bundle
     private String version;
 
@@ -83,6 +87,22 @@ public class BundleVersionEntity {
 
     public void setBucketId(String bucketId) {
         this.bucketId = bucketId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     public String getVersion() {

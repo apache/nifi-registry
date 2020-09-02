@@ -701,7 +701,9 @@ public class DatabaseMetadataService implements MetadataService {
                 "ebv.build_revision AS BUILD_REVISION, " +
                 "ebv.built AS BUILT, " +
                 "ebv.built_by AS BUILT_BY, " +
-                "eb.bucket_id AS BUCKET_ID " +
+                "eb.bucket_id AS BUCKET_ID, " +
+                "eb.group_id AS GROUP_ID, " +
+                "eb.artifact_id AS ARTIFACT_ID " +
             "FROM BUNDLE eb, BUNDLE_VERSION ebv " +
             "WHERE eb.id = ebv.bundle_id ";
 
