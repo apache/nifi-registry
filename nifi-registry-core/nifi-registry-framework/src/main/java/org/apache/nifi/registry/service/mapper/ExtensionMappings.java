@@ -125,6 +125,8 @@ public class ExtensionMappings {
         bundleVersionMetadata.setId(bundleVersionEntity.getId());
         bundleVersionMetadata.setBundleId(bundleVersionEntity.getBundleId());
         bundleVersionMetadata.setBucketId(bundleVersionEntity.getBucketId());
+        bundleVersionMetadata.setGroupId(bundleVersionEntity.getGroupId());
+        bundleVersionMetadata.setArtifactId(bundleVersionEntity.getArtifactId());
         bundleVersionMetadata.setVersion(bundleVersionEntity.getVersion());
         bundleVersionMetadata.setTimestamp(bundleVersionEntity.getCreated().getTime());
         bundleVersionMetadata.setAuthor(bundleVersionEntity.getCreatedBy());

@@ -40,6 +40,12 @@ public class BundleVersionMetadata extends LinkableEntity implements Comparable<
     @NotBlank
     private String bucketId;
 
+    // read-only, populated on response
+    private String groupId;
+
+    // read-only, populated on response
+    private String artifactId;
+
     @NotBlank
     private String version;
 
@@ -94,6 +100,22 @@ public class BundleVersionMetadata extends LinkableEntity implements Comparable<
 
     public void setBucketId(String bucketId) {
         this.bucketId = bucketId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
     }
 
     @ApiModelProperty(value = "The version of the extension bundle")
