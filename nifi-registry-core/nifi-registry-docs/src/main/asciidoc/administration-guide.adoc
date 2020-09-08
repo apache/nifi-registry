@@ -1520,14 +1520,12 @@ by the NiFi Registry instance that the provider is configured for.
 
 ....
 <eventHookProvider>
-    <class>
-      org.apache.nifi.registry.provider.hook.ScriptEventHookProvider
-    </class>
+    <class>org.apache.nifi.registry.provider.hook.ScriptEventHookProvider</class>
     <property name="Script Path"></property>
     <property name="Working Directory"></property>
     <!-- optional -->
-        <property name="Whitelisted Event Type 1">CREATE_FLOW</property>
-        <property name="Whitelisted Event Type 2">UPDATE_FLOW</property>
+    <property name="Whitelisted Event Type 1">CREATE_FLOW</property>
+    <property name="Whitelisted Event Type 2">UPDATE_FLOW</property>
 </eventHookProvider>
 ....
 
@@ -1544,9 +1542,7 @@ via NiFi Registry’s _logback.xml_, which by default contains an appender that 
 
 ....
 <eventHookProvider>
-    <class>
-      org.apache.nifi.registry.provider.hook.LoggingEventHookProvider
-    </class>
+    <class>org.apache.nifi.registry.provider.hook.LoggingEventHookProvider</class>
 </eventHookProvider>
 ....
 
