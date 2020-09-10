@@ -36,6 +36,7 @@ import org.apache.nifi.registry.security.authorization.exception.AuthorizationAc
 import org.apache.nifi.registry.security.authorization.exception.UninheritableAuthorizationsException;
 import org.apache.nifi.registry.security.exception.SecurityProviderCreationException;
 import org.apache.nifi.registry.util.StandardPropertyValue;
+import org.apache.ranger.authorization.hadoop.config.RangerPluginConfig;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequest;
 import org.apache.ranger.plugin.policyengine.RangerAccessRequestImpl;
 import org.apache.ranger.plugin.policyengine.RangerAccessResourceImpl;
@@ -113,6 +114,10 @@ public class TestRangerAuthorizer {
         UserGroupInformation.setConfiguration(securityConf);
 
         rangerBasePlugin = mock(RangerBasePluginWithPolicies.class);
+
+        final RangerPluginConfig pluginConfig = new RangerPluginConfig(serviceType, null, appId, null, null, null);
+        when(rangerBasePlugin.getConfig()).thenReturn(pluginConfig);
+
         authorizer = new MockRangerAuthorizer(rangerBasePlugin);
 
         final UserGroupProviderLookup userGroupProviderLookup = mock(UserGroupProviderLookup.class);
