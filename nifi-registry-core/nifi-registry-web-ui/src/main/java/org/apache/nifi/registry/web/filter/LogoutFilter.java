@@ -43,10 +43,11 @@ public class LogoutFilter implements Filter {
         final boolean supportsOidc = Boolean.parseBoolean(servletContext.getInitParameter("oidc-supported"));
 
         if (supportsOidc) {
-            final ServletContext apiContext = servletContext.getContext("/nifi-api");
+            final ServletContext apiContext = servletContext.getContext("/nifi-registry-api");
             apiContext.getRequestDispatcher("/access/oidc/logout").forward(request, response);
         } else {
-            ((HttpServletResponse) response).sendRedirect("login");
+            final ServletContext apiContext = servletContext.getContext("/nifi-registry-api");
+            apiContext.getRequestDispatcher("/access/logout").forward(request, response);
         }
     }
 

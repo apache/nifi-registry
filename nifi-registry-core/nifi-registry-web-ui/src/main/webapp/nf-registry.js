@@ -72,7 +72,7 @@ NfRegistry.prototype = {
      */
     logout: function () {
         var self = this;
-        self.nfRegistryApi.deleteToLogout().subscribe(
+        self.nfRegistryApi.deleteToLogout('../nifi-registry/logout').subscribe(
             function () {
                 // next call
             },

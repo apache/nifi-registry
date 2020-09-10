@@ -149,6 +149,6 @@ public class OidcServiceTest {
     }
 
     private AuthorizationCodeGrant getAuthorizationCodeGrant() {
-        return new AuthorizationCodeGrant(new AuthorizationCode("code"), URI.create("http://localhost:8080/nifi"));
+        return new AuthorizationCodeGrant(new AuthorizationCode("code"), URI.create("http://localhost:8080/nifi-registry"));
     }
 }

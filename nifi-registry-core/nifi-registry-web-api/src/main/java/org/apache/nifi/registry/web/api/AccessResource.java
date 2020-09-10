@@ -524,7 +524,7 @@ public class AccessResource extends ApplicationResource {
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.WILDCARD)
-    @Path("oidc/request")
+    @Path("/oidc/request")
     @ApiOperation(
             value = "Initiates a request to authenticate through the configured OpenId Connect provider.",
             notes = NON_GUARANTEED_ENDPOINT
@@ -571,7 +571,7 @@ public class AccessResource extends ApplicationResource {
     @GET
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.WILDCARD)
-    @Path("oidc/callback")
+    @Path("/oidc/callback")
     @ApiOperation(
             value = "Redirect/callback URI for processing the result of the OpenId Connect login sequence.",
             notes = NON_GUARANTEED_ENDPOINT
@@ -591,7 +591,6 @@ public class AccessResource extends ApplicationResource {
 
         final String oidcRequestIdentifier = getCookieValue(httpServletRequest.getCookies(), OIDC_REQUEST_IDENTIFIER);
         if (oidcRequestIdentifier == null) {
-            //forwardToMessagePage(httpServletRequest, httpServletResponse, "The login request identifier was not found in the request. Unable to continue.");
             throw new IllegalStateException("The login request identifier was not found in the request. Unable to continue.");
         }
 
@@ -653,7 +652,7 @@ public class AccessResource extends ApplicationResource {
     @POST
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.TEXT_PLAIN)
-    @Path("oidc/exchange")
+    @Path("/oidc/exchange")
     @ApiOperation(
             value = "Retrieves a JWT following a successful login sequence using the configured OpenId Connect provider.",
             response = String.class,
@@ -688,10 +687,10 @@ public class AccessResource extends ApplicationResource {
         return generateOkResponse(jwt).build();
     }
 
-    @GET
+    @DELETE
     @Consumes(MediaType.WILDCARD)
     @Produces(MediaType.WILDCARD)
-    @Path("oidc/logout")
+    @Path("/oidc/logout")
     @ApiOperation(
             value = "Performs a logout in the OpenId Provider.",
             notes = NON_GUARANTEED_ENDPOINT
@@ -705,23 +704,15 @@ public class AccessResource extends ApplicationResource {
             throw new IllegalStateException("OpenId Connect is not configured.");
         }
 
-        String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
-
-        if(userIdentity != null && !userIdentity.isEmpty()) {
-            try {
-                logger.info("Logging out user " + userIdentity);
-                jwtService.logOut(userIdentity);
-            } catch (final JwtException e) {
-                logger.error("Logout of user " + userIdentity + " failed due to: " + e.getMessage());
-            }
-        }
+        final String tokenHeader = httpServletRequest.getHeader(JwtService.AUTHORIZATION);
+        jwtService.logOutUsingAuthHeader(tokenHeader);
 
         URI endSessionEndpoint = oidcService.getEndSessionEndpoint();
-        String postLogoutRedirectUri = generateResourceUri("..", "nifi");
+        String postLogoutRedirectUri = generateResourceUri("..", "nifi-registry");
 
         if (endSessionEndpoint == null) {
             // handle the case, where the OpenID Provider does not have an end session endpoint
-            httpServletResponse.sendRedirect(postLogoutRedirectUri);
+            //httpServletResponse.sendRedirect(postLogoutRedirectUri);
         } else {
             URI logoutUri = UriBuilder.fromUri(endSessionEndpoint)
                     .queryParam("post_logout_redirect_uri", postLogoutRedirectUri)

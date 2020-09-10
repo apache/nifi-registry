@@ -102,9 +102,6 @@ public class NiFiRegistryProperties extends Properties {
     public static final String SECURITY_USER_OIDC_ADDITIONAL_SCOPES = "nifi.registry.security.user.oidc.additional.scopes";
     public static final String SECURITY_USER_OIDC_CLAIM_IDENTIFYING_USER = "nifi.registry.security.user.oidc.claim.identifying.user";
 
-    // Apache Knox
-    public static final String SECURITY_USER_KNOX_URL = "nifi.registry.security.user.knox.url";
-
     // Revision Management Properties
     public static final String REVISIONS_ENABLED = "nifi.registry.revisions.enabled";
 
@@ -380,24 +377,6 @@ public class NiFiRegistryProperties extends Properties {
      */
     public boolean isOidcEnabled() {
         return !StringUtils.isBlank(getOidcDiscoveryUrl());
-    }
-
-    /**
-     * Returns whether Knox SSO is enabled.
-     *
-     * @return whether Knox SSO is enabled
-     */
-    public boolean isKnoxSsoEnabled() {
-        return !StringUtils.isBlank(getKnoxUrl());
-    }
-
-    /**
-     * Returns the Knox URL.
-     *
-     * @return Knox URL
-     */
-    public String getKnoxUrl() {
-        return getProperty(SECURITY_USER_KNOX_URL);
     }
 
     /**

@@ -191,7 +191,7 @@ public class StandardOidcIdentityProvider implements OidcIdentityProvider {
      * Loads the initial configuration values relating to the OIDC provider from the class {@link NiFiRegistryProperties} and populates the individual fields.
      */
     private void validateOIDCConfiguration() {
-        if (properties.isLoginIdentityProviderEnabled() || properties.isKnoxSsoEnabled()) {
+        if (properties.isLoginIdentityProviderEnabled()) {
             throw new RuntimeException("OpenId Connect support cannot be enabled if the Login Identity Provider or Apache Knox SSO is configured.");
         }
 

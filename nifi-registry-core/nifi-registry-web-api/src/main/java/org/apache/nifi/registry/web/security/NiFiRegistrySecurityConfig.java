@@ -88,8 +88,8 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         // allow any client to access the endpoint for logging in to generate an access token
-        webSecurity.ignoring().antMatchers("/access/config", "/access/token", "/access/kerberos",
-                "/access/oidc/exchange", "/access/oidc/callback", "/access/oidc/request", "/access/token/identity-provider");
+        webSecurity.ignoring().antMatchers( "/access/token", "/access/token/kerberos",
+                "/access/oidc/exchange", "/access/oidc/callback", "/access/oidc/request", "/access/token/identity-provider" );
     }
 
     @Override
