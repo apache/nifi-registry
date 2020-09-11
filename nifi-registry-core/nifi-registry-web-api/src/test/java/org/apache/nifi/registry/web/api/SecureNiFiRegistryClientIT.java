@@ -107,12 +107,12 @@ public class SecureNiFiRegistryClientIT extends IntegrationTestBase {
         assertEquals(INITIAL_ADMIN_IDENTITY, currentUser.getIdentity());
         assertFalse(currentUser.isAnonymous());
         assertNotNull(currentUser.getResourcePermissions());
-        Permissions fullAccess = new Permissions().withCanRead(true).withCanWrite(true).withCanDelete(true);
+        final Permissions fullAccess = new Permissions().withCanRead(true).withCanWrite(true).withCanDelete(true);
         assertEquals(fullAccess, currentUser.getResourcePermissions().getAnyTopLevelResource());
         assertEquals(fullAccess, currentUser.getResourcePermissions().getBuckets());
         assertEquals(fullAccess, currentUser.getResourcePermissions().getTenants());
         assertEquals(fullAccess, currentUser.getResourcePermissions().getPolicies());
-        assertEquals(new Permissions().withCanWrite(true).withCanRead(true).withCanDelete(true), currentUser.getResourcePermissions().getProxy());
+        assertEquals(fullAccess, currentUser.getResourcePermissions().getProxy());
     }
 
     @Test

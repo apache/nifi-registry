@@ -346,6 +346,8 @@ public class SecureLdapIT extends IntegrationTestBase {
         assertEquals(200, logout_response.getStatus());
 
         // Then: the /access endpoint is queried using the logged out JWT
+        LOGGER.info("*** THE FOLLOWING JwtException IS EXPECTED ***");
+        LOGGER.info("*** We are validating the access token no longer works following logout ***");
         final Response retryResponse = client
                 .target(createURL("/access"))
                 .request()
@@ -365,6 +367,7 @@ public class SecureLdapIT extends IntegrationTestBase {
     public void testLogoutWithJWTSignedByWrongKey() throws Exception {
 
         // Given: use the /access/logout endpoint with the JWT for the nifiadmin LDAP user to log out
+        LOGGER.info("*** THE FOLLOWING JwtException IS EXPECTED ***");
         final Response logoutResponse = client
                 .target(createURL("/access"))
                 .request()
@@ -652,6 +655,8 @@ public class SecureLdapIT extends IntegrationTestBase {
         accessClient.logout(token);
 
         // check the status of the current user again and should be unauthorized
+        LOGGER.info("*** THE FOLLOWING JwtException IS EXPECTED ***");
+        LOGGER.info("*** We are validating the access token no longer works following logout ***");
         try {
             userClient.getAccessStatus();
             Assert.fail("Should have failed with an unauthorized exception");
