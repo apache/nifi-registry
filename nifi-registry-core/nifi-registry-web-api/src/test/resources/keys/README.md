@@ -41,6 +41,10 @@ The CA and private keys (including their protection passwords) have been publish
 | registry, localhost | registry-key.pem | NiFi Registry server private key | PEM | password |
 | registry, localhost | registry-ks.jks | NiFi Registry server key/cert keystore | JKS | password |
 | registry, localhost | registry-ks.p12 | NiFi Registry server key/cert keystore | PKCS12 | password |
+| proxy, localhost | proxy-cert.pem | Proxy server public cert | PEM (unencrypted) | N/A |
+| proxy, localhost | proxy-key.pem | Proxy server private key | PEM | password |
+| proxy, localhost | proxy-ks.jks | Proxy server key/cert keystore | JKS | password |
+| proxy, localhost | proxy-ks.p12 | Proxy server key/cert keystore | PKCS12 | password |
 | CN=user1, OU=nifi | user1-cert.pem | client (user="user1") public cert | PEM (unencrypted) | N/A |
 | CN=user1, OU=nifi | user1-key.pem | client (user="user1") private key | PEM | password |
 | CN=user1, OU=nifi | user1-ks.jks | client (user="user1") key/cert keystore | JKS | password |
