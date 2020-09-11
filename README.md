@@ -12,9 +12,12 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-# Apache NiFi Registry 
-[![Build Status](https://travis-ci.org/apache/nifi-registry.svg?branch=main)](https://travis-ci.org/apache/nifi-registry)
-![ci-workflow](https://github.com/apache/nifi-registry/workflows/ci-workflow/badge.svg?branch=main)
+[<img src="https://nifi.apache.org/assets/images/registry-logo.png" width="360" height="126" alt="Apache NiFi Registry" />][nifi-registry]
+
+[![ci-workflow](https://github.com/apache/nifi-registry/workflows/ci-workflow/badge.svg)](https://github.com/apache/nifi-registry/actions)
+[![Docker pulls](https://img.shields.io/docker/pulls/apache/nifi-registry.svg)](https://hub.docker.com/r/apache/nifi-registry/)
+[![Version](https://img.shields.io/maven-central/v/org.apache.nifi.registry/nifi-registry-framework.svg)](https://nifi.apache.org/registry)
+[![Slack](https://img.shields.io/badge/chat-on%20Slack-brightgreen.svg)](https://s.apache.org/nifi-community-slack)
 
 Registry—a subproject of Apache NiFi—is a complementary application that provides a central location for storage and management of shared resources across one or more instances of NiFi and/or MiNiFi.
 
@@ -120,3 +123,4 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+[nifi-registry]: https://nifi.apache.org/registry
