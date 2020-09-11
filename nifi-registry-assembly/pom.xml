@@ -197,6 +197,14 @@
         <nifi.registry.kerberos.spnego.keytab.location />
         <nifi.registry.kerberos.spnego.authentication.expiration>12 hours</nifi.registry.kerberos.spnego.authentication.expiration>
 
+        <!-- nifi-registry.properties: OIDC properties -->
+        <nifi.registry.security.user.oidc.discovery.url />
+        <nifi.registry.security.user.oidc.connect.timeout />
+        <nifi.registry.security.user.oidc.read.timeout />
+        <nifi.registry.security.user.oidc.client.id />
+        <nifi.registry.security.user.oidc.client.secret />
+        <nifi.registry.security.user.oidc.preferred.jwsalgorithm />
+
         <!-- nifi.registry.properties: revision management properties -->
         <nifi.registry.revisions.enabled>false</nifi.registry.revisions.enabled>
 
