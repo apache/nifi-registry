@@ -70,7 +70,6 @@ class StandardOidcIdentityProviderGroovyTest extends GroovyTestCase {
     private static final Map<String, String> DEFAULT_NIFI_PROPERTIES = [
             (NiFiRegistryProperties.SECURITY_USER_OIDC_DISCOVERY_URL)         : "https://localhost/oidc",
             (NiFiRegistryProperties.SECURITY_IDENTITY_PROVIDER)               : "", // Makes isLoginIdentityProviderEnabled => false
-            (NiFiRegistryProperties.SECURITY_USER_KNOX_URL)                   : "", // Makes isKnoxSsoEnabled => false
             (NiFiRegistryProperties.SECURITY_USER_OIDC_CONNECT_TIMEOUT)       : "1000",
             (NiFiRegistryProperties.SECURITY_USER_OIDC_READ_TIMEOUT)          : "1000",
             (NiFiRegistryProperties.SECURITY_USER_OIDC_CLIENT_ID)             : "expected_client_id",
