@@ -72,7 +72,7 @@ NfRegistry.prototype = {
      */
     logout: function () {
         var self = this;
-        self.nfRegistryApi.deleteToLogout().subscribe(
+        self.nfRegistryApi.deleteToLogout('../nifi-registry/logout').subscribe(
             function () {
                 // next call
             },
@@ -93,7 +93,12 @@ NfRegistry.prototype = {
      * Navigate to login route.
      */
     login: function () {
-        this.router.navigateByUrl('login');
+        var self = this;
+        if (self.nfRegistryService.currentUser.oidcloginSupported === true) {
+            window.location.href = location.origin + '/nifi-registry/login';
+        } else {
+            self.router.navigateByUrl('login');
+        }
     }
 };
 

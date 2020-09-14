@@ -21,6 +21,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import static org.mockito.Mockito.mock
+import static org.mockito.Mockito.when
 
 @RunWith(JUnit4.class)
 class NiFiRegistryPropertiesGroovyTest extends GroovyTestCase {
@@ -118,4 +120,29 @@ class NiFiRegistryPropertiesGroovyTest extends GroovyTestCase {
         assert emptyProperties.getPropertyKeys() == [] as Set
     }
 
+    @Test
+    void testAdditionalOidcScopesAreTrimmed() {
+        final String scope = "abc"
+        final String scopeLeadingWhitespace = " def"
+        final String scopeTrailingWhitespace = "ghi "
+        final String scopeLeadingTrailingWhitespace = " jkl "
+
+        String additionalScopes = String.join(",", scope, scopeLeadingWhitespace,
+                scopeTrailingWhitespace, scopeLeadingTrailingWhitespace)
+
+        NiFiRegistryProperties properties = mock(NiFiRegistryProperties.class)
+        when(properties.getProperty(NiFiRegistryProperties.SECURITY_USER_OIDC_ADDITIONAL_SCOPES, ""))
+                .thenReturn(additionalScopes)
+        when(properties.getOidcAdditionalScopes()).thenCallRealMethod()
+
+        List<String> scopes = properties.getOidcAdditionalScopes()
+
+        assertTrue(scopes.contains(scope));
+        assertFalse(scopes.contains(scopeLeadingWhitespace));
+        assertTrue(scopes.contains(scopeLeadingWhitespace.trim()));
+        assertFalse(scopes.contains(scopeTrailingWhitespace));
+        assertTrue(scopes.contains(scopeTrailingWhitespace.trim()));
+        assertFalse(scopes.contains(scopeLeadingTrailingWhitespace));
+        assertTrue(scopes.contains(scopeLeadingTrailingWhitespace.trim()));
+    }
 }

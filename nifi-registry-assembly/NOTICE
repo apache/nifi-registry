@@ -250,6 +250,15 @@ The following binary components are provided under the Apache Software License v
     The following NOTICE information applies:
       Copyright 2017 SmartBear Software
 
+  (ASLv2) Nimbus OAuth 2.0 SDK with OpenID Connect extensions
+    The following NOTICE information applies:
+      Nimbus OAuth 2.0 SDK with OpenID Connect extensions
+      Copyright 2012-2020, Connect2id Ltd and contributors.
+
+  (ASLv2) Guava
+    The following NOTICE information applies:
+      Guava
+      Copyright 2015 The Guava Authors
 
 ************************
 Common Development and Distribution License 1.1

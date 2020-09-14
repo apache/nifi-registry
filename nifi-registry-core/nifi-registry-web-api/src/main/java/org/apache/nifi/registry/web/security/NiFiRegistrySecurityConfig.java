@@ -88,7 +88,8 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         // allow any client to access the endpoint for logging in to generate an access token
-        webSecurity.ignoring().antMatchers( "/access/token/**");
+        webSecurity.ignoring().antMatchers( "/access/token", "/access/token/kerberos",
+                "/access/oidc/exchange", "/access/oidc/callback", "/access/oidc/request", "/access/token/identity-provider" );
     }
 
     @Override
@@ -127,7 +128,6 @@ public class NiFiRegistrySecurityConfig extends WebSecurityConfigurerAdapter {
         // but before the Jersey application endpoints get the request,
         // insert the ResourceAuthorizationFilter to do its authorization checks
         http.addFilterAfter(resourceAuthorizationFilter(), FilterSecurityInterceptor.class);
-
     }
 
     @Override

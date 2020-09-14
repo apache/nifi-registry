@@ -63,7 +63,7 @@ NfRegistryUsersAdministrationAuthGuard.prototype = {
             // Store the attempted URL for redirecting
             this.nfRegistryService.redirectUrl = url;
 
-            // attempt kerberos authentication
+            // attempt Kerberos or OIDC authentication
             this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
                 self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
                     // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
@@ -186,7 +186,7 @@ NfRegistryWorkflowsAdministrationAuthGuard.prototype = {
             // Store the attempted URL for redirecting
             this.nfRegistryService.redirectUrl = url;
 
-            // attempt kerberos authentication
+            // attempt Kerberos or OIDC authentication
             this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
                 self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
                     // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc
@@ -296,7 +296,7 @@ NfRegistryLoginAuthGuard.prototype = {
                 resolve(true);
                 return;
             }
-            // attempt kerberos authentication
+            // attempt Kerberos or OIDC authentication
             this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
                 self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
                     self.nfRegistryService.currentUser = currentUser;
@@ -367,7 +367,7 @@ NfRegistryResourcesAuthGuard.prototype = {
             // Store the attempted URL for redirecting
             this.nfRegistryService.redirectUrl = url;
 
-            // attempt kerberos authentication
+            // attempt Kerberos or OIDC authentication
             this.nfRegistryApi.ticketExchange().subscribe(function (jwt) {
                 self.nfRegistryApi.loadCurrentUser().subscribe(function (currentUser) {
                     // there is no anonymous access and we don't know this user - open the login page which handles login/registration/etc

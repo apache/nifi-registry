@@ -49,5 +49,25 @@
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
+
+    <!-- login filter -->
+    <filter>
+        <filter-name>LoginFilter</filter-name>
+        <filter-class>org.apache.nifi.registry.web.filter.LoginFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>LoginFilter</filter-name>
+        <url-pattern>/login</url-pattern>
+    </filter-mapping>
+
+    <!-- logout filter -->
+    <filter>
+        <filter-name>LogoutFilter</filter-name>
+        <filter-class>org.apache.nifi.registry.web.filter.LogoutFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>LogoutFilter</filter-name>
+        <url-pattern>/logout</url-pattern>
+    </filter-mapping>
 </web-app>
 

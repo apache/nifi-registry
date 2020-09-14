@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.security.authentication.AuthenticationResponse;
 import org.apache.nifi.registry.security.key.Key;
 import org.apache.nifi.registry.security.key.KeyService;
+import org.apache.nifi.registry.web.security.authentication.exception.InvalidAuthenticationException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // TODO, look into replacing this JwtService service with Apache Licensed JJWT library
 @Service
@@ -49,6 +52,8 @@ public class JwtService {
     private static final SignatureAlgorithm SIGNATURE_ALGORITHM = SignatureAlgorithm.HS256;
     private static final String KEY_ID_CLAIM = "kid";
     private static final String USERNAME_CLAIM = "preferred_username";
+    private static final Pattern tokenPattern = Pattern.compile("^Bearer (\\S*\\.\\S*\\.\\S*)$");
+    public static final String AUTHORIZATION = "Authorization";
 
     private final KeyService keyService;
 
@@ -222,5 +227,19 @@ public class JwtService {
                 .append(remainingTime)
                 .append(" ms remaining]")
                 .toString();
+    }
+
+    public void logOutUsingAuthHeader(String authorizationHeader) {
+        String base64EncodedToken = getTokenFromHeader(authorizationHeader);
+        logOut(getAuthenticationFromToken(base64EncodedToken));
+    }
+
+    public static String getTokenFromHeader(String authenticationHeader) {
+        Matcher matcher = tokenPattern.matcher(authenticationHeader);
+        if(matcher.matches()) {
+            return matcher.group(1);
+        } else {
+            throw new InvalidAuthenticationException("JWT did not match expected pattern.");
+        }
     }
 }
