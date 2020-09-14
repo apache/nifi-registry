@@ -39,7 +39,6 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.crypto.tls.TlsException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -51,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSocket;
 import java.io.ByteArrayInputStream;
@@ -606,26 +604,6 @@ public final class CertificateUtils {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns {@code true} if this exception is due to a TLS problem (either directly or because of its cause, if present). Traverses the cause chain recursively.
-     *
-     * @param e the exception to evaluate
-     * @return true if the direct or indirect cause of this exception was TLS-related
-     */
-    public static boolean isTlsError(Throwable e) {
-        if (e == null) {
-            return false;
-        } else {
-            if (e instanceof CertificateException || e instanceof TlsException || e instanceof SSLException) {
-                return true;
-            } else if (e.getCause() != null) {
-                return isTlsError(e.getCause());
-            } else {
-                return false;
-            }
-        }
     }
 
     /**
