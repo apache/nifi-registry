@@ -40,6 +40,7 @@ public class ProxiedEntitiesUtils {
     private static final String ESCAPED_LT = "\\\\<";
 
     private static final String ANONYMOUS_CHAIN = "<>";
+    private static final String ANONYMOUS_IDENTITY = "";
 
     /**
      * Formats a list of DN/usernames to be set as a HTTP header using well known conventions.
@@ -47,12 +48,22 @@ public class ProxiedEntitiesUtils {
      * @param proxiedEntities the raw identities (usernames and DNs) to be formatted as a chain
      * @return the value to use in the X-ProxiedEntitiesChain header
      */
-    public static String getProxiedEntitiesChain(final String[] proxiedEntities) {
+    public static String getProxiedEntitiesChain(final String... proxiedEntities) {
+        return getProxiedEntitiesChain(Arrays.asList(proxiedEntities));
+    }
+
+    /**
+     * Formats a list of DN/usernames to be set as a HTTP header using well known conventions.
+     *
+     * @param proxiedEntities the raw identities (usernames and DNs) to be formatted as a chain
+     * @return the value to use in the X-ProxiedEntitiesChain header
+     */
+    public static String getProxiedEntitiesChain(final List<String> proxiedEntities) {
         if (proxiedEntities == null) {
             return null;
         }
 
-        final List<String> proxiedEntityChain = Arrays.stream(proxiedEntities)
+        final List<String> proxiedEntityChain = proxiedEntities.stream()
                 .map(ProxiedEntitiesUtils::formatProxyDn)
                 .collect(Collectors.toList());
         return StringUtils.join(proxiedEntityChain, "");
@@ -67,26 +78,23 @@ public class ProxiedEntitiesUtils {
     public static List<String> tokenizeProxiedEntitiesChain(final String rawProxyChain) {
         final List<String> proxyChain = new ArrayList<>();
         if (!StringUtils.isEmpty(rawProxyChain)) {
-            // Split the String on the >< token
-            rawProxyChain.split("><");
-            List<String> elements = Arrays.asList(StringUtils.splitByWholeSeparatorPreserveAllTokens(rawProxyChain, "><"));
 
-            // Remove the leading < from the first element
-            elements.set(0, elements.get(0).replaceFirst(LT, ""));
-
-            // Remove the trailing > from the last element
-            final int last = elements.size() - 1;
-            final String lastElement = elements.get(last);
-            if (lastElement.endsWith(GT)) {
-                elements.set(last, lastElement.substring(0, lastElement.length() - 1));
+            if (!isValidChainFormat(rawProxyChain)) {
+                throw new IllegalArgumentException("Proxy chain format is not recognized and can not safely be converted to a list.");
             }
 
-            // Unsanitize each DN and collect back
-            elements = elements.stream().map(ProxiedEntitiesUtils::unsanitizeDn).collect(Collectors.toList());
-
-            proxyChain.addAll(elements);
+            if (rawProxyChain.equals(ANONYMOUS_CHAIN)) {
+                proxyChain.add(ANONYMOUS_IDENTITY);
+            } else {
+                // Split the String on the `><` token, use substring to remove leading `<` and trailing `>`
+                final String[] elements = StringUtils.splitByWholeSeparatorPreserveAllTokens(
+                        rawProxyChain.substring(1, rawProxyChain.length() - 1), "><");
+                // Unsanitize each DN and add it to the proxy chain list
+                Arrays.stream(elements)
+                        .map(ProxiedEntitiesUtils::unsanitizeDn)
+                        .forEach(proxyChain::add);
+            }
         }
-
         return proxyChain;
     }
 
@@ -96,7 +104,7 @@ public class ProxiedEntitiesUtils {
      * @param dn raw dn
      * @return the dn formatted as an HTTP header
      */
-    public static String formatProxyDn(String dn) {
+    public static String formatProxyDn(final String dn) {
         return LT + sanitizeDn(dn) + GT;
     }
 
@@ -119,7 +127,7 @@ public class ProxiedEntitiesUtils {
      * @param rawDn the unsanitized DN
      * @return the sanitized DN
      */
-    private static String sanitizeDn(String rawDn) {
+    private static String sanitizeDn(final String rawDn) {
         if (StringUtils.isEmpty(rawDn)) {
             return rawDn;
         } else {
@@ -207,13 +215,33 @@ public class ProxiedEntitiesUtils {
     }
 
     /**
+     * Check if a String is in the expected format and can be safely tokenized.
+     *
+     * @param rawProxiedEntitiesChain the value to check
+     * @return true if the value is in the valid format to tokenize, false otherwise.
+     */
+    private static boolean isValidChainFormat(final String rawProxiedEntitiesChain) {
+        return isWrappedInAngleBrackets(rawProxiedEntitiesChain);
+    }
+
+    /**
      * Check if a value has been encoded by ${@link #base64Encode(String)}, and therefore needs to be decoded.
      *
      * @param token the value to check
      * @return true if the value is encoded, false otherwise.
      */
     private static boolean isBase64Encoded(final String token) {
-        return token.startsWith(LT) && token.endsWith(GT);
+        return isWrappedInAngleBrackets(token);
+    }
+
+    /**
+     * Check if a string is wrapped with  &lt;angle brackets&gt;.
+     *
+     * @param string the value to check
+     * @return true if the value starts with &lt; and ends with &gt; - false otherwise
+     */
+    private static boolean isWrappedInAngleBrackets(final String string) {
+        return string.startsWith(LT) && string.endsWith(GT);
     }
 
     private static boolean isPureAscii(final String stringWithUnknownCharacters) {

@@ -224,6 +224,51 @@ class ProxiedEntitiesUtilsTest {
     }
 
     @Test
+    void testShouldTokenizeAnonymous() throws Exception {
+        // Arrange
+        final List NAMES = [""]
+        final String RAW_PROXY_CHAIN = "<>"
+        logger.info(" Provided proxy chain: ${RAW_PROXY_CHAIN}")
+
+        // Act
+        def tokenizedNames = ProxiedEntitiesUtils.tokenizeProxiedEntitiesChain(RAW_PROXY_CHAIN)
+        logger.info("Tokenized proxy chain: ${tokenizedNames}")
+
+        // Assert
+        assert tokenizedNames == NAMES
+    }
+
+    @Test
+    void testShouldTokenizeDoubleAnonymous() throws Exception {
+        // Arrange
+        final List NAMES = ["", ""]
+        final String RAW_PROXY_CHAIN = "<><>"
+        logger.info(" Provided proxy chain: ${RAW_PROXY_CHAIN}")
+
+        // Act
+        def tokenizedNames = ProxiedEntitiesUtils.tokenizeProxiedEntitiesChain(RAW_PROXY_CHAIN)
+        logger.info("Tokenized proxy chain: ${tokenizedNames}")
+
+        // Assert
+        assert tokenizedNames == NAMES
+    }
+
+    @Test
+    void testShouldTokenizeNestedAnonymous() throws Exception {
+        // Arrange
+        final List NAMES = [SAFE_USER_DN_PROXY_1, "", SAFE_USER_DN_PROXY_2]
+        final String RAW_PROXY_CHAIN = "<${SAFE_USER_DN_PROXY_1}><><${SAFE_USER_DN_PROXY_2}>"
+        logger.info(" Provided proxy chain: ${RAW_PROXY_CHAIN}")
+
+        // Act
+        def tokenizedNames = ProxiedEntitiesUtils.tokenizeProxiedEntitiesChain(RAW_PROXY_CHAIN)
+        logger.info("Tokenized proxy chain: ${tokenizedNames}")
+
+        // Assert
+        assert tokenizedNames == NAMES
+    }
+
+    @Test
     void testShouldTokenizeProxiedEntitiesChainWithDNs() throws Exception {
         // Arrange
         final List DNS = [SAFE_USER_DN_JOHN, SAFE_USER_DN_PROXY_1, SAFE_USER_DN_PROXY_2]
