@@ -28,6 +28,7 @@
         <ranger.version>2.1.0</ranger.version>
         <ranger.hadoop.version>3.1.1</ranger.hadoop.version>
         <ranger.ozone.version>1.0.0</ranger.ozone.version>
+        <ranger.gcs.version>2.1.5</ranger.gcs.version>
     </properties>
 
     <dependencies>
@@ -293,6 +294,35 @@
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-ozone-filesystem</artifactId>
                     <version>${ranger.ozone.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+	<!-- Includes hadoop-gcp for accessing HDFS with an gcs:// filesystem -->
+        <profile>
+            <id>include-hadoop-gcp</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.google.cloud.bigdataoss</groupId>
+                    <artifactId>gcs-connector</artifactId>
+                    <version>hadoop3-${ranger.gcs.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.cloud.bigdataoss</groupId>
+                    <artifactId>util</artifactId>
+                    <version>${ranger.gcs.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.cloud.bigdataoss</groupId>
+                    <artifactId>util-hadoop</artifactId>
+                    <version>hadoop3-${ranger.gcs.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.cloud.bigdataoss</groupId>
+                    <artifactId>gcsio</artifactId>
+                    <version>${ranger.gcs.version}</version>
                 </dependency>
             </dependencies>
         </profile>
