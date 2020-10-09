@@ -27,6 +27,7 @@
     <properties>
         <ranger.version>2.1.0</ranger.version>
         <ranger.hadoop.version>3.1.1</ranger.hadoop.version>
+        <ranger.ozone.version>1.0.0</ranger.ozone.version>
     </properties>
 
     <dependencies>
@@ -273,6 +274,25 @@
                     <groupId>org.apache.hadoop</groupId>
                     <artifactId>hadoop-cloud-storage</artifactId>
                     <version>${ranger.hadoop.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- Includes hadoop-ozone for o3fs:// file system -->
+        <profile>
+            <id>include-hadoop-ozone</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-ozone-client</artifactId>
+                    <version>${ranger.ozone.version}</version>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.hadoop</groupId>
+                    <artifactId>hadoop-ozone-filesystem</artifactId>
+                    <version>${ranger.ozone.version}</version>
                 </dependency>
             </dependencies>
         </profile>
