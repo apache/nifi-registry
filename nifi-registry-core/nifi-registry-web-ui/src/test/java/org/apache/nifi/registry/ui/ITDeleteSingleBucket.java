@@ -54,7 +54,7 @@ public class ITDeleteSingleBucket {
     @Test
     public void testDeleteSingleBucket() throws Exception {
         // go directly to settings by URL
-        driver.get(baseUrl + "/administration/workflow");
+        driver.get(baseUrl + "/#/administration/workflow");
 
         // wait for administration route to load
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-automation-id='no-buckets-message']")));
