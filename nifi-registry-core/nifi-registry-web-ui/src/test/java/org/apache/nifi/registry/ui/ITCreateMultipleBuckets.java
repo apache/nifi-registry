@@ -55,7 +55,7 @@ public class ITCreateMultipleBuckets {
     @Test
     public void testCreateMultipleBuckets() throws Exception {
         // go directly to settings by URL
-        driver.get(baseUrl + "/administration/workflow");
+        driver.get(baseUrl + "/#/administration/workflow");
 
         // wait for administration route to load
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-automation-id='no-buckets-message']")));
@@ -84,7 +84,7 @@ public class ITCreateMultipleBuckets {
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#mat-checkbox-2 > label.mat-checkbox-layout > div.mat-checkbox-inner-container")));
 
         // select keep dialog open checkbox
-        WebElement keepOpenCheckbox = driver.findElement(By.cssSelector("#mat-checkbox-2 > label.mat-checkbox-layout > div.mat-checkbox-inner-container"));
+        WebElement keepOpenCheckbox = driver.findElement(By.cssSelector("#mat-checkbox-3 > label.mat-checkbox-layout > div.mat-checkbox-inner-container"));
         keepOpenCheckbox.click();
 
         // confirm create bucket button exists
@@ -105,10 +105,10 @@ public class ITCreateMultipleBuckets {
         bucketNameInput.sendKeys("DEF");
 
         // confirm keep dialog open checkbox exists
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#mat-checkbox-2 > label.mat-checkbox-layout > div.mat-checkbox-inner-container")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#mat-checkbox-3 > label.mat-checkbox-layout > div.mat-checkbox-inner-container")));
 
         // select keep dialog open checkbox
-        keepOpenCheckbox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#mat-checkbox-2 > label.mat-checkbox-layout > div.mat-checkbox-inner-container")));
+        keepOpenCheckbox = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#mat-checkbox-3 > label.mat-checkbox-layout > div.mat-checkbox-inner-container")));
         keepOpenCheckbox.click();
 
         // confirm create bucket button exists
