@@ -172,19 +172,6 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>mysql5.6-test</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                                <configuration>
-                                    <systemPropertyVariables>
-                                        <spring.profiles.active>mysql-56</spring.profiles.active>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-                            <execution>
                                 <id>mysql5.7-test</id>
                                 <phase>verify</phase>
                                 <goals>
