@@ -37,9 +37,10 @@ set LIB_DIR=%NIFI_REGISTRY_ROOT%\lib
 set SHARED_DIR=%NIFI_REGISTRY_ROOT%\lib\shared
 set BOOTSTRAP_DIR=%NIFI_REGISTRY_ROOT%\lib\bootstrap
 set CONF_DIR=conf
+set NIFI_REGISTRY_LOG_DIR=%NIFI_REGISTRY_ROOT%\logs
 
 set BOOTSTRAP_CONF_FILE=%CONF_DIR%\bootstrap.conf
-set JAVA_ARGS=-Dorg.apache.nifi.registry.bootstrap.config.file=%BOOTSTRAP_CONF_FILE%
+set JAVA_ARGS=-Dorg.apache.nifi.registry.bootstrap.config.file=%BOOTSTRAP_CONF_FILE% -Dorg.apache.nifi.registry.bootstrap.config.log.dir=%NIFI_REGISTRY_LOG_DIR%
 
 set JAVA_PARAMS=-cp %LIB_DIR%\*;%SHARED_DIR%\*;%BOOTSTRAP_DIR%\* -Xms12m -Xmx24m %JAVA_ARGS% org.apache.nifi.registry.NiFiRegistry
 set BOOTSTRAP_ACTION=status
