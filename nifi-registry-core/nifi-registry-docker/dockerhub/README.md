@@ -151,6 +151,7 @@ The following, optional environment variables may be added to configure flow per
 | NIFI_REGISTRY_GIT_REMOTE       | Remote to Push                       |
 | NIFI_REGISTRY_GIT_USER         | Remote Access User                   |
 | NIFI_REGISTRY_GIT_PASSWORD     | Remote Access Password               |
+| NIFI_REGISTRY_GIT_REPO         | Remote Clone Repository              |
 
 #### Extension Bundle Persistence Configuration
 
