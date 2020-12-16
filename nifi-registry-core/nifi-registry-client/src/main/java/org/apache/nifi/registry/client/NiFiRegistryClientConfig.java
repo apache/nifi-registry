@@ -105,7 +105,7 @@ public class NiFiRegistryClientConfig {
         if (truststoreFilename != null && truststorePass != null && truststoreType != null) {
             try {
                 // prepare the truststore
-                final KeyStore trustStore = KeyStoreUtils.getTrustStore(truststoreType.name());
+                final KeyStore trustStore = KeyStoreUtils.getKeyStore(truststoreType.name());
                 try (final InputStream trustStoreStream = new FileInputStream(new File(truststoreFilename))) {
                     trustStore.load(trustStoreStream, truststorePass.toCharArray());
                 }

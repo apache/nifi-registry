@@ -25,12 +25,22 @@ import org.slf4j.LoggerFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.Security;
+import java.util.HashMap;
+import java.util.Map;
 
 public class KeyStoreUtils {
     private static final Logger logger = LoggerFactory.getLogger(KeyStoreUtils.class);
 
+    private static final String SUN_SECURITY_PROVIDER = "SUN";
+
+    private static final Map<String, String> KEY_STORE_TYPE_PROVIDERS = new HashMap<>();
+
     static {
         Security.addProvider(new BouncyCastleProvider());
+
+        KEY_STORE_TYPE_PROVIDERS.put(KeystoreType.JKS.toString(), SUN_SECURITY_PROVIDER);
+        KEY_STORE_TYPE_PROVIDERS.put(KeystoreType.PKCS12.toString(), BouncyCastleProvider.PROVIDER_NAME);
+        KEY_STORE_TYPE_PROVIDERS.put(KeystoreType.BCFKS.toString(), BouncyCastleProvider.PROVIDER_NAME);
     }
 
     /**
@@ -39,11 +49,9 @@ public class KeyStoreUtils {
      * @param keyStoreType the keyStoreType
      * @return the provider that will be used
      */
-    public static String getKeyStoreProvider(String keyStoreType) {
-        if (KeystoreType.PKCS12.toString().equalsIgnoreCase(keyStoreType)) {
-            return BouncyCastleProvider.PROVIDER_NAME;
-        }
-        return null;
+    public static String getKeyStoreProvider(final String keyStoreType) {
+        final String storeType = StringUtils.upperCase(keyStoreType);
+        return KEY_STORE_TYPE_PROVIDERS.get(storeType);
     }
 
     /**
@@ -53,8 +61,8 @@ public class KeyStoreUtils {
      * @return an empty KeyStore
      * @throws KeyStoreException if a KeyStore of the given type cannot be instantiated
      */
-    public static KeyStore getKeyStore(String keyStoreType) throws KeyStoreException {
-        String keyStoreProvider = getKeyStoreProvider(keyStoreType);
+    public static KeyStore getKeyStore(final String keyStoreType) throws KeyStoreException {
+        final String keyStoreProvider = getKeyStoreProvider(keyStoreType);
         if (StringUtils.isNotEmpty(keyStoreProvider)) {
             try {
                 return KeyStore.getInstance(keyStoreType, keyStoreProvider);
@@ -64,19 +72,5 @@ public class KeyStoreUtils {
             }
         }
         return KeyStore.getInstance(keyStoreType);
-    }
-
-    /**
-     * Returns an empty KeyStore intended for use as a TrustStore backed by the appropriate provider
-     *
-     * @param trustStoreType the trustStoreType
-     * @return an empty KeyStore
-     * @throws KeyStoreException if a KeyStore of the given type cannot be instantiated
-     */
-    public static KeyStore getTrustStore(String trustStoreType) throws KeyStoreException {
-        if (KeystoreType.PKCS12.toString().equalsIgnoreCase(trustStoreType)) {
-            logger.warn(trustStoreType + " truststores are deprecated.  " + KeystoreType.JKS.toString() + " is preferred.");
-        }
-        return getKeyStore(trustStoreType);
     }
 }

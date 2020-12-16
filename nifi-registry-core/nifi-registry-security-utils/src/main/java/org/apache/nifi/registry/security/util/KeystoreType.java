@@ -20,6 +20,7 @@ package org.apache.nifi.registry.security.util;
  * Keystore types.
  */
 public enum KeystoreType {
+    BCFKS,
     PKCS12,
-    JKS;
+    JKS
 }
