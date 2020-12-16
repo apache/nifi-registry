@@ -119,7 +119,7 @@ public final class SslContextFactory {
         }
 
         // prepare the truststore
-        final KeyStore trustStore = KeyStoreUtils.getTrustStore(truststoreType);
+        final KeyStore trustStore = KeyStoreUtils.getKeyStore(truststoreType);
         try (final InputStream trustStoreStream = new FileInputStream(truststore)) {
             trustStore.load(trustStoreStream, truststorePasswd);
         }
@@ -231,7 +231,7 @@ public final class SslContextFactory {
             UnrecoverableKeyException, KeyManagementException {
 
         // prepare the truststore
-        final KeyStore trustStore = KeyStoreUtils.getTrustStore(truststoreType);
+        final KeyStore trustStore = KeyStoreUtils.getKeyStore(truststoreType);
         try (final InputStream trustStoreStream = new FileInputStream(truststore)) {
             trustStore.load(trustStoreStream, truststorePasswd);
         }
