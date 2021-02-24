@@ -279,6 +279,24 @@ The default UserGroupProvider is the FileUserGroupProvider, however, you can dev
 
 NOTE: Initial User Identities are only created if the specified Users File is missing or empty during NiFi Registry startup. Changes to the configured Initial Users Identities will not take effect if the Users File is populated.
 
+===== DatabaseUserGroupProvider
+
+If you are using database for storing buckets and flows (likes described in the 'Database Properties' section above), you can store the users, groups and policies in the same database either. 
+
+**Note:** This UserGroupProvider is available from version 0.8.0.
+
+
+The DatabaseUserGroupProvider takes the DB-connection information from `nifi-registry.properties` file, so in the `authorizers.xml` you don't need to give any addition information about the DB, you can specify initial users if you want (in the same way described did it in the `FileUserGroupProvider`):
+
+[options="header,footer"]
+|==================================================================================================================================================
+| Property Name | Description
+|`Initial User Identity`| The identity of a user or system to seed an empty Users File.
+  Multiple Initial User Identity properties can be specified, but the name of each property must be unique, for example: ``"Initial User Identity A"``, ``"Initial User Identity B"``, ``"Initial User Identity C"`` or ``"Initial User Identity 1"``, ``"Initial User Identity 2"``, ``"Initial User Identity 3"``.
+|==================================================================================================================================================
+
+NOTE: Initial User Identities are only created if the specified Users File is missing or empty during NiFi Registry startup. Changes to the configured Initial Users Identities will not take effect if the Users File is populated.
+
 ===== LdapUserGroupProvider
 
 Another option for the UserGroupProvider is the LdapUserGroupProvider. By default, this option is commented out but can be configured in lieu of the FileUserGroupProvider.
