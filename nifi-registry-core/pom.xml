@@ -236,6 +236,32 @@
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>postgres12-test</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <spring.profiles.active>postgres-12</spring.profiles.active>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>postgres13-test</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <spring.profiles.active>postgres-13</spring.profiles.active>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
