@@ -281,12 +281,18 @@ NOTE: Initial User Identities are only created if the specified Users File is mi
 
 ===== DatabaseUserGroupProvider
 
-If you are using database for storing buckets and flows (likes described in the 'Database Properties' section above), you can store the users, groups and policies in the same database either. 
+If you are using database for storing buckets and flows (like described in the 'Database Properties' section above), you can store the users, groups and policies in the same database either. 
 
 **Note:** This UserGroupProvider is available from version 0.8.0.
 
 
-The DatabaseUserGroupProvider takes the DB-connection information from `nifi-registry.properties` file, so in the `authorizers.xml` you don't need to give any addition information about the DB, you can specify initial users if you want (in the same way described did it in the `FileUserGroupProvider`):
+The DatabaseUserGroupProvider takes the DB-connection information from `nifi-registry.properties` file, so in the `authorizers.xml` you don't need to give any addition information about the DB, you only need to specify the initial users (in the same way described in the `FileUserGroupProvider`).
+
+The users and groups are stored in the DB in the tables:
+
+* **UGP_USER -** Stores all the users by: user-ID (IDENTIFIER) and user-name (IDENTITY).
+* **UGP_GROUP -** Stores all the groups by: group-ID (IDENTIFIER) and group-name (IDENTITY).
+* **UGP_USER_GROUP -** Stores all the matching between users and their groups, so each row contains the fields: USER_IDENTIFIER and GROUP_IDENTIFIER.
 
 [options="header,footer"]
 |==================================================================================================================================================
