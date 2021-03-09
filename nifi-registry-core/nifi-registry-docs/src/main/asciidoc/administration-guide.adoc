@@ -301,7 +301,7 @@ The users and groups are stored in the DB in the tables:
   Multiple Initial User Identity properties can be specified, but the name of each property must be unique, for example: ``"Initial User Identity A"``, ``"Initial User Identity B"``, ``"Initial User Identity C"`` or ``"Initial User Identity 1"``, ``"Initial User Identity 2"``, ``"Initial User Identity 3"``.
 |==================================================================================================================================================
 
-NOTE: Initial User Identities are only created if the specified Users File is missing or empty during NiFi Registry startup. Changes to the configured Initial Users Identities will not take effect if the Users File is populated.
+NOTE: Initial User Identities are only created if there are no users in the users tables in the DB or if the table is empty during NiFi Registry startup. Changes to the configured Initial Users Identities will not take effect if the DB's table is populated.
 
 ===== LdapUserGroupProvider
 
