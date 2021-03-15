@@ -92,11 +92,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <inceptionYear>2017</inceptionYear>
         <org.slf4j.version>1.7.30</org.slf4j.version>
-        <jetty.version>9.4.19.v20190610</jetty.version>
+        <jetty.version>9.4.38.v20210224</jetty.version>
         <jax.rs.api.version>2.1</jax.rs.api.version>
         <jersey.server.version>2.29.1</jersey.server.version>
         <jersey.client.version>2.28</jersey.client.version>
-        <jackson.version>2.10.3</jackson.version>
+        <jackson.version>2.12.2</jackson.version>
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
         <spring.security.version>5.1.9.RELEASE</spring.security.version>
         <flyway.version>6.5.7</flyway.version>
@@ -108,7 +108,7 @@
         <groovy.eclipse.compiler.version>3.4.0-01</groovy.eclipse.compiler.version>
         <jaxb.version>2.3.2</jaxb.version>
         <jgit.version>5.8.1.202007141445-r</jgit.version>
-        <bouncycastle.version>1.66</bouncycastle.version>
+        <bouncycastle.version>1.68</bouncycastle.version>
     </properties>
 
     <repositories>
