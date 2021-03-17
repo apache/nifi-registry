@@ -96,8 +96,7 @@
         <jax.rs.api.version>2.1</jax.rs.api.version>
         <jersey.server.version>2.29.1</jersey.server.version>
         <jersey.client.version>2.28</jersey.client.version>
-        <jackson.version>2.10.3</jackson.version>
-        <jackson-databind.version>2.9.10.8</jackson-databind.version>
+        <jackson.version>2.12.2</jackson.version>
         <spring.boot.version>2.2.6.RELEASE</spring.boot.version>
         <spring.security.version>5.1.9.RELEASE</spring.security.version>
         <flyway.version>6.5.7</flyway.version>
