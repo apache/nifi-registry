@@ -16,6 +16,7 @@
  */
 package org.apache.nifi.registry.web.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -24,6 +25,10 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
@@ -36,7 +41,9 @@ import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.apache.nifi.registry.revision.web.ClientIdParameter;
 import org.apache.nifi.registry.revision.web.LongParameter;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
+import org.apache.nifi.registry.serialization.jackson.ObjectMapperProvider;
 import org.apache.nifi.registry.web.service.ServiceFacade;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,6 +63,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.SortedSet;
+import org.springframework.web.util.UriUtils;
 
 @Component
 @Path("/buckets/{bucketId}/flows")
@@ -66,10 +74,14 @@ import java.util.SortedSet;
 )
 public class BucketFlowResource extends ApplicationResource {
 
+    public static final String INVALID_JSON_MESSAGE = "Deserialization of uploaded JSON failed";
+
     @Autowired
     public BucketFlowResource(final ServiceFacade serviceFacade, final EventService eventService) {
         super(serviceFacade, eventService);
     }
+
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperProvider.getMapper();
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -99,8 +111,8 @@ public class BucketFlowResource extends ApplicationResource {
 
         verifyPathParamsMatchBody(bucketId, flow);
 
-        final VersionedFlow createdFlow = serviceFacade.createFlow(bucketId, flow);
-        publish(EventFactory.flowCreated(createdFlow));
+        final VersionedFlow createdFlow = createAndPublishVersionedFlow(bucketId, flow);
+
         return Response.status(Response.Status.OK).entity(createdFlow).build();
     }
 
@@ -291,6 +303,129 @@ public class BucketFlowResource extends ApplicationResource {
         return Response.status(Response.Status.OK).entity(createdSnapshot).build();
     }
 
+    @POST
+    @Path("{flowId}/versions/import")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Upload flow version",
+            notes = "Uploads the next version of a flow. The version number of the object being created must be the " +
+                    "next available version integer. Flow versions are immutable after they are created.",
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}") })
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409) })
+    public Response importVersionedFlow(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier")
+            final String bucketId,
+            @PathParam("flowId")
+            @ApiParam(value = "The flow identifier")
+            final String flowId,
+            @FormDataParam("file") final InputStream in,
+            @FormDataParam("comments") final String comments) {
+
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalArgumentException("The bucket identifier is required.");
+        }
+
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("The flow identifier is required.");
+        }
+
+        // deserialize InputStream to a VersionedFlowSnapshot
+        VersionedFlowSnapshot versionedFlowSnapshot;
+
+        versionedFlowSnapshot = deserializeVersionedFlowSnapshot(in);
+
+        // clear or set the necessary snapShotMetadata
+        if (versionedFlowSnapshot.getSnapshotMetadata() != null) {
+            versionedFlowSnapshot.getSnapshotMetadata().setBucketIdentifier(null);
+            versionedFlowSnapshot.getSnapshotMetadata().setFlowIdentifier(null);
+            versionedFlowSnapshot.getSnapshotMetadata().setLink(null);
+            versionedFlowSnapshot.getSnapshotMetadata().setVersion(-1);
+            versionedFlowSnapshot.getSnapshotMetadata().setVersion(-1);
+            // if there are new comments, then set it
+            // otherwise, keep the original comments
+            if (!StringUtils.isBlank(comments)) {
+                versionedFlowSnapshot.getSnapshotMetadata().setComments(comments);
+            }
+        }
+
+        return createFlowVersion(bucketId, flowId, versionedFlowSnapshot);
+    }
+
+    @POST
+    @Path("import")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Create flow",
+            notes = "Creates a flow in the given bucket. The flow id is created by the server and populated in the returned entity.",
+            response = VersionedFlow.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "write"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}")})
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409)})
+    public Response importFlow(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier") final String bucketId,
+            @FormDataParam("file") final InputStream in,
+            @FormDataParam("name") final String name,
+            @FormDataParam("description") final String description) {
+
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalArgumentException("The bucket identifier is required.");
+        }
+
+        if (StringUtils.isBlank(name)) {
+            throw new IllegalArgumentException("The flow name is required.");
+        }
+
+        // create VersionedFlow
+        final VersionedFlow versionedFlow = new VersionedFlow();
+
+        versionedFlow.setName(name);
+        versionedFlow.setRevision(new RevisionInfo(null, 0L));
+        if (!StringUtils.isBlank(description)) {
+            versionedFlow.setDescription(description);
+        }
+
+        final VersionedFlow createdFlow = createAndPublishVersionedFlow(bucketId, versionedFlow);
+
+        // deserialize InputStream and create new VersionedFlowSnapshot
+        final VersionedFlowSnapshot versionedFlowSnapshot = deserializeVersionedFlowSnapshot(in);
+
+        setSnaphotMetadataIfMissing(bucketId, createdFlow.getIdentifier(), versionedFlowSnapshot);
+
+        // set remaining snapshot metadata
+        final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
+        versionedFlowSnapshot.getSnapshotMetadata().setAuthor(userIdentity);
+        versionedFlowSnapshot.getSnapshotMetadata().setVersion(-1);
+
+        final VersionedFlowSnapshot createdSnapshot = serviceFacade.createFlowSnapshot(versionedFlowSnapshot);
+        publish(EventFactory.flowVersionCreated(createdSnapshot));
+
+        return Response.status(Response.Status.OK).entity(createdSnapshot).build();
+    }
+
     @GET
     @Path("{flowId}/versions")
     @Consumes(MediaType.WILDCARD)
@@ -383,6 +518,64 @@ public class BucketFlowResource extends ApplicationResource {
 
         final VersionedFlowSnapshotMetadata latest = serviceFacade.getLatestFlowSnapshotMetadata(bucketId, flowId);
         return Response.status(Response.Status.OK).entity(latest).build();
+    }
+
+    @GET
+    @Path("{flowId}/versions/{versionNumber: \\d+}/export")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(
+            value = "Exports specified bucket flow version content",
+            notes = "Exports the specified version of a flow, including the metadata and content of the flow.",
+            response = VersionedFlowSnapshot.class,
+            extensions = {
+                    @Extension(name = "access-policy", properties = {
+                            @ExtensionProperty(name = "action", value = "read"),
+                            @ExtensionProperty(name = "resource", value = "/buckets/{bucketId}")})
+            }
+    )
+    @ApiResponses({
+            @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
+            @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
+            @ApiResponse(code = 404, message = HttpStatusMessages.MESSAGE_404),
+            @ApiResponse(code = 409, message = HttpStatusMessages.MESSAGE_409)})
+    public Response exportVersionedFlow(
+            @PathParam("bucketId")
+            @ApiParam("The bucket identifier") final String bucketId,
+            @PathParam("flowId")
+            @ApiParam("The flow identifier") final String flowId,
+            @PathParam("versionNumber")
+            @ApiParam("The version number") final Integer versionNumber) {
+
+        if (StringUtils.isBlank(bucketId)) {
+            throw new IllegalArgumentException("The bucket identifier is required.");
+        }
+
+        if (StringUtils.isBlank(flowId)) {
+            throw new IllegalArgumentException("The flow identifier is required.");
+        }
+
+        if (versionNumber == null) {
+            throw new IllegalArgumentException("The version number is required.");
+        }
+
+        final VersionedFlowSnapshot versionedFlowSnapshot = serviceFacade.getFlowSnapshot(bucketId, flowId, versionNumber);
+
+        versionedFlowSnapshot.setFlow(null);
+        versionedFlowSnapshot.setBucket(null);
+        versionedFlowSnapshot.getSnapshotMetadata().setBucketIdentifier(null);
+        versionedFlowSnapshot.getSnapshotMetadata().setFlowIdentifier(null);
+        versionedFlowSnapshot.getSnapshotMetadata().setLink(null);
+
+        String attachmentName = "flow-version-" + versionNumber;
+
+        UriUtils.encodePath(attachmentName, StandardCharsets.UTF_8);
+
+        String filename = attachmentName + ".json";
+
+        final String versionedFlowSnapshotJsonString = serializeToJson(versionedFlowSnapshot);
+
+        return generateOkResponse(versionedFlowSnapshotJsonString).header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename)).build();
     }
 
     @GET
@@ -538,5 +731,31 @@ public class BucketFlowResource extends ApplicationResource {
         }
 
         flowSnapshot.setSnapshotMetadata(metadata);
+    }
+
+    private String serializeToJson(final VersionedFlowSnapshot dto) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(dto);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Deserialization of selected flow failed", e);
+        }
+    }
+
+    private static VersionedFlowSnapshot deserializeVersionedFlowSnapshot(@NotNull InputStream in) {
+        try {
+            return OBJECT_MAPPER.readValue(in, VersionedFlowSnapshot.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(INVALID_JSON_MESSAGE, e);
+        }
+    }
+
+    private VersionedFlow createAndPublishVersionedFlow(
+            @NotNull String bucketIdentifier,
+            @NotNull VersionedFlow versionedFlow) {
+
+        final VersionedFlow createdFlow = serviceFacade.createFlow(bucketIdentifier, versionedFlow);
+        publish(EventFactory.flowCreated(createdFlow));
+
+        return createdFlow;
     }
 }

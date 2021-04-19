@@ -76,6 +76,113 @@ NfRegistryApi.prototype = {
     },
 
     /**
+     * Retrieves the specified versioned flow snapshot for an existing droplet the registry has stored.
+     *
+     * @param {string}  dropletUri      The uri of the droplet to request.
+     * @param {number}  versionNumber   The version of the flow to request.
+     * @returns {*}
+     */
+    exportDropletVersionedSnapshot: function (dropletUri, versionNumber) {
+        var self = this;
+        var url = '../nifi-registry-api/' + dropletUri;
+        url += '/versions/' + versionNumber + '/export';
+
+        return this.http.get(url, headers).pipe(
+            map(function (response) {
+                // export the VersionedFlowSnapshot
+                var element = document.createElement('a');
+                element.setAttribute('href', url);
+                element.setAttribute('download', 'versionedFlow');
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+                document.body.removeChild(element);
+
+                return response;
+            }),
+            catchError(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return of(error);
+            })
+        );
+    },
+
+    /**
+     * Uploads a new versioned flow snapshot to the existing droplet the registry has stored.
+     *
+     * @param {string} dropletUri      The uri of the droplet to request.
+     * @param file                     The file to be uploaded.
+     * @param {string} comments        The optional comments.
+     * @returns {*}
+     */
+    uploadVersionedFlowSnapshot: function (dropletUri, file, comments) {
+        var self = this;
+        var url = '../nifi-registry-api/' + dropletUri;
+        url += '/versions/import';
+
+        var formData = new FormData();
+        formData.append('file', file, 'fileToUpload');
+        formData.append('comments', comments);
+
+        return this.http.post(url, formData, headers).pipe(
+            map(function (response) {
+                return response;
+            }),
+            catchError(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return of(error);
+            })
+        );
+    },
+
+    /**
+     * Uploads a new flow to the existing droplet the registry has stored.
+     *
+     * @param {string} bucketUri      The uri of the droplet to request.
+     * @param file                     The file to be uploaded.
+     * @param {string} name            The flow name.
+     * @param {string} description     The optional description.
+     * @returns {*}
+     */
+    uploadFlow: function (bucketUri, file, name, description) {
+        var self = this;
+        var url = '../nifi-registry-api/' + bucketUri;
+        url += '/flows/import';
+
+        var formData = new FormData();
+        formData.append('file', file, 'fileToUpload');
+        formData.append('name', name);
+        formData.append('description', description);
+
+        return this.http.post(url, formData, headers).pipe(
+            map(function (response) {
+                return response;
+            }),
+            catchError(function (error) {
+                self.dialogService.openConfirm({
+                    title: 'Error',
+                    message: error.error,
+                    acceptButton: 'Ok',
+                    acceptButtonColor: 'fds-warn'
+                });
+                return of(error);
+            })
+        );
+    },
+
+    /**
      * Retrieves the given droplet with or without snapshot metadata.
      *
      * @param {string}  bucketId        The id of the bucket to request.

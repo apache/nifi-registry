@@ -716,7 +716,7 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         });
 
         // The function to test
-        nfRegistryService.executeDropletAction({name: 'delete'}, {
+        nfRegistryService.executeDropletAction({name: 'delete data flow'}, {
             identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             type: 'testTYPE',
             link: {href: 'testhref'}
