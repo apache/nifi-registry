@@ -361,6 +361,19 @@ public class StandardServiceFacade implements ServiceFacade {
     }
 
     @Override
+    public VersionedFlowSnapshot exportFlowSnapshot(String bucketIdentifier, String flowIdentifier, Integer versionNumber) {
+        final VersionedFlowSnapshot versionedFlowSnapshot = getFlowSnapshot(bucketIdentifier, flowIdentifier, versionNumber);
+
+        versionedFlowSnapshot.setFlow(null);
+        versionedFlowSnapshot.setBucket(null);
+        versionedFlowSnapshot.getSnapshotMetadata().setBucketIdentifier(null);
+        versionedFlowSnapshot.getSnapshotMetadata().setFlowIdentifier(null);
+        versionedFlowSnapshot.getSnapshotMetadata().setLink(null);
+
+        return versionedFlowSnapshot;
+    }
+
+    @Override
     public SortedSet<VersionedFlowSnapshotMetadata> getFlowSnapshots(final String bucketIdentifier, final String flowIdentifier) {
         authorizeBucketAccess(RequestAction.READ, bucketIdentifier);
 

@@ -27,7 +27,6 @@ import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.registry.bucket.BucketItem;
@@ -63,7 +62,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.SortedSet;
-import org.springframework.web.util.UriUtils;
 
 @Component
 @Path("/buckets/{bucketId}/flows")
@@ -75,6 +73,7 @@ import org.springframework.web.util.UriUtils;
 public class BucketFlowResource extends ApplicationResource {
 
     public static final String INVALID_JSON_MESSAGE = "Deserialization of uploaded JSON failed";
+    public static final int INITIAL_VERSION = -1;
 
     @Autowired
     public BucketFlowResource(final ServiceFacade serviceFacade, final EventService eventService) {
@@ -343,23 +342,21 @@ public class BucketFlowResource extends ApplicationResource {
         }
 
         // deserialize InputStream to a VersionedFlowSnapshot
-        VersionedFlowSnapshot versionedFlowSnapshot;
+        final VersionedFlowSnapshot versionedFlowSnapshot = deserializeVersionedFlowSnapshot(in);
 
-        versionedFlowSnapshot = deserializeVersionedFlowSnapshot(in);
+        // set new snapShotMetadata
+        final VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
+        metadata.setVersion(INITIAL_VERSION);
 
-        // clear or set the necessary snapShotMetadata
-        if (versionedFlowSnapshot.getSnapshotMetadata() != null) {
-            versionedFlowSnapshot.getSnapshotMetadata().setBucketIdentifier(null);
-            versionedFlowSnapshot.getSnapshotMetadata().setFlowIdentifier(null);
-            versionedFlowSnapshot.getSnapshotMetadata().setLink(null);
-            versionedFlowSnapshot.getSnapshotMetadata().setVersion(-1);
-            versionedFlowSnapshot.getSnapshotMetadata().setVersion(-1);
-            // if there are new comments, then set it
-            // otherwise, keep the original comments
-            if (!StringUtils.isBlank(comments)) {
-                versionedFlowSnapshot.getSnapshotMetadata().setComments(comments);
-            }
+        // if there are new comments, then set it
+        // otherwise, keep the original comments
+        if (!StringUtils.isBlank(comments)) {
+            metadata.setComments(comments);
+        } else if (versionedFlowSnapshot.getSnapshotMetadata() != null && versionedFlowSnapshot.getSnapshotMetadata().getComments() != null) {
+            metadata.setComments(versionedFlowSnapshot.getSnapshotMetadata().getComments());
         }
+
+        versionedFlowSnapshot.setSnapshotMetadata(metadata);
 
         return createFlowVersion(bucketId, flowId, versionedFlowSnapshot);
     }
@@ -371,7 +368,7 @@ public class BucketFlowResource extends ApplicationResource {
     @ApiOperation(
             value = "Create flow",
             notes = "Creates a flow in the given bucket. The flow id is created by the server and populated in the returned entity.",
-            response = VersionedFlow.class,
+            response = VersionedFlowSnapshot.class,
             extensions = {
                     @Extension(name = "access-policy", properties = {
                             @ExtensionProperty(name = "action", value = "write"),
@@ -413,17 +410,15 @@ public class BucketFlowResource extends ApplicationResource {
         // deserialize InputStream and create new VersionedFlowSnapshot
         final VersionedFlowSnapshot versionedFlowSnapshot = deserializeVersionedFlowSnapshot(in);
 
-        setSnaphotMetadataIfMissing(bucketId, createdFlow.getIdentifier(), versionedFlowSnapshot);
+        // set new snapshotMetadata
+        final VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
+        metadata.setBucketIdentifier(bucketId);
+        metadata.setFlowIdentifier(createdFlow.getIdentifier());
+        metadata.setVersion(INITIAL_VERSION);
 
-        // set remaining snapshot metadata
-        final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
-        versionedFlowSnapshot.getSnapshotMetadata().setAuthor(userIdentity);
-        versionedFlowSnapshot.getSnapshotMetadata().setVersion(-1);
+        versionedFlowSnapshot.setSnapshotMetadata(metadata);
 
-        final VersionedFlowSnapshot createdSnapshot = serviceFacade.createFlowSnapshot(versionedFlowSnapshot);
-        publish(EventFactory.flowVersionCreated(createdSnapshot));
-
-        return Response.status(Response.Status.OK).entity(createdSnapshot).build();
+        return createFlowVersion(bucketId, versionedFlowSnapshot.getSnapshotMetadata().getFlowIdentifier(), versionedFlowSnapshot);
     }
 
     @GET
@@ -559,23 +554,13 @@ public class BucketFlowResource extends ApplicationResource {
             throw new IllegalArgumentException("The version number is required.");
         }
 
-        final VersionedFlowSnapshot versionedFlowSnapshot = serviceFacade.getFlowSnapshot(bucketId, flowId, versionNumber);
-
-        versionedFlowSnapshot.setFlow(null);
-        versionedFlowSnapshot.setBucket(null);
-        versionedFlowSnapshot.getSnapshotMetadata().setBucketIdentifier(null);
-        versionedFlowSnapshot.getSnapshotMetadata().setFlowIdentifier(null);
-        versionedFlowSnapshot.getSnapshotMetadata().setLink(null);
-
-        String attachmentName = "flow-version-" + versionNumber;
-
-        UriUtils.encodePath(attachmentName, StandardCharsets.UTF_8);
-
-        String filename = attachmentName + ".json";
+        final VersionedFlowSnapshot versionedFlowSnapshot = serviceFacade.exportFlowSnapshot(bucketId, flowId, versionNumber);
 
         final String versionedFlowSnapshotJsonString = serializeToJson(versionedFlowSnapshot);
 
-        return generateOkResponse(versionedFlowSnapshotJsonString).header(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=\"%s\"", filename)).build();
+        final String contentDisposition = String.format("attachment; filename=\"flow-version-%d.json\"", versionNumber);
+
+        return generateOkResponse(versionedFlowSnapshotJsonString).header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition).build();
     }
 
     @GET

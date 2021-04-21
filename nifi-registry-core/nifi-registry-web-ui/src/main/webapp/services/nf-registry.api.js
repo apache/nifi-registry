@@ -84,15 +84,16 @@ NfRegistryApi.prototype = {
      */
     exportDropletVersionedSnapshot: function (dropletUri, versionNumber) {
         var self = this;
-        var url = '../nifi-registry-api/' + dropletUri;
-        url += '/versions/' + versionNumber + '/export';
+        var url = '../nifi-registry-api/' + dropletUri + '/versions/' + versionNumber + '/export';
 
         return this.http.get(url, headers).pipe(
             map(function (response) {
                 // export the VersionedFlowSnapshot
+                var data = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(response, null, 2));
+
                 var element = document.createElement('a');
-                element.setAttribute('href', url);
-                element.setAttribute('download', 'versionedFlow');
+                element.setAttribute('href', data);
+                element.setAttribute('download', 'flow-version-' + response.snapshotMetadata.version);
 
                 element.style.display = 'none';
                 document.body.appendChild(element);
@@ -124,8 +125,7 @@ NfRegistryApi.prototype = {
      */
     uploadVersionedFlowSnapshot: function (dropletUri, file, comments) {
         var self = this;
-        var url = '../nifi-registry-api/' + dropletUri;
-        url += '/versions/import';
+        var url = '../nifi-registry-api/' + dropletUri + '/versions/import';
 
         var formData = new FormData();
         formData.append('file', file, 'fileToUpload');
@@ -158,8 +158,7 @@ NfRegistryApi.prototype = {
      */
     uploadFlow: function (bucketUri, file, name, description) {
         var self = this;
-        var url = '../nifi-registry-api/' + bucketUri;
-        url += '/flows/import';
+        var url = '../nifi-registry-api/' + bucketUri + '/flows/import';
 
         var formData = new FormData();
         formData.append('file', file, 'fileToUpload');

@@ -102,6 +102,8 @@ public interface ServiceFacade {
 
     VersionedFlowSnapshot getLatestFlowSnapshot(String flowIdentifier);
 
+    VersionedFlowSnapshot exportFlowSnapshot(String bucketIdentifier, String flowIdentifier, Integer versionNumber);
+
     SortedSet<VersionedFlowSnapshotMetadata> getFlowSnapshots(String bucketIdentifier, String flowIdentifier);
 
     SortedSet<VersionedFlowSnapshotMetadata> getFlowSnapshots(String flowIdentifier);
