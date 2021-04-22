@@ -18,16 +18,16 @@ limitations under the License.
 <div id="nifi-registry-import-versioned-flow-dialog"
      xmlns:width="http://www.w3.org/1999/xhtml">
     <div class="pad-bottom-md" fxLayout="row" fxLayoutAlign="space-between center">
-        <mat-card-title class="ellipsis">
+        <mat-card-title>
             Import New Version
         </mat-card-title>
         <button mat-icon-button (click)="cancel()">
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div id="data-flow-version-container" class="pad-bottom-md">
+    <div id="data-flow-version-container">
         <div class="fill-available-width">
-            <div class="pad-bottom-sm">
+            <div class="pad-bottom-sm label-name">
                 <label>Data Flow Name</label>
             </div>
             <div id="data-flow-version-name" fxLayout="row" fxLayoutAlign="space-between center" class="push-bottom-md">
@@ -46,7 +46,9 @@ limitations under the License.
             </div>
         </div>
         <div id="versioned-flow-file-upload-message-container" fxLayout="row" fxLayoutAlign="space-between center">
-            <label>Flow Definition</label>
+            <div class="pad-bottom-xs label-name">
+                <label>Flow Definition</label>
+            </div>
             <ng-container *ngIf="fileToUpload != null && !hoverValidity || hoverValidity === 'valid'">
                 <span class="file-upload-message">
                     Looks good!
@@ -62,21 +64,21 @@ limitations under the License.
             </ng-container>
         </div>
         <div id="new-flow-version-definition"
-             class="fill-available-width push-bottom-md"
+             class="fill-available-width"
              fxLayout="row"
              fxLayoutAlign="space-between center"
-             matTooltip="Click to browse"
              (click)="selectFile()"
              (dragenter)="fileDragHandler($event, extensions)"
              (dragover)="fileDragHandler($event, extensions)"
              (dragend)="fileDragEndHandler()"
              (dragleave)="fileDragEndHandler()"
              (drop)="fileDropHandler($event)">
-            <mat-form-field flex>
+            <mat-form-field floatLabel="never" flex>
                 <input matInput
                        id="new-flow-version-definition-input"
                        type="text"
                        [value]="fileName"
+                       placeholder="Drop file or select..."
                        autocomplete="off"
                        [ngClass]="{'file-hover-valid': (hoverValidity === 'valid'),
                        'file-hover-error': (hoverValidity === 'invalid'),
@@ -98,10 +100,10 @@ limitations under the License.
             </mat-form-field>
         </div>
         <div class="pad-bottom-sm">
-            <label class="pad-bottom-sm">Change Log Comment</label>
+            <label class="pad-bottom-sm label-name">Change Log Comment</label>
         </div>
-        <div id="new-data-flow-version-comments" fxLayout="row" class="pad-bottom-sm fill-available-width">
-            <textarea class="push-bottom-md" [(ngModel)]="comments"></textarea>
+        <div id="new-data-flow-version-comments" fxLayout="row" class="fill-available-width">
+            <textarea [(ngModel)]="comments"></textarea>
         </div>
     </div>
 </div>

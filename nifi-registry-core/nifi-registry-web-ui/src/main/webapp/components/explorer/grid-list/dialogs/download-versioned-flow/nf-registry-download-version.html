@@ -24,11 +24,11 @@ limitations under the License.
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-md">
-        <div class="pad-bottom-sm">
+    <div fxLayout="column" fxLayoutAlign="space-between start" class="pad-bottom-sm">
+        <div class="pad-bottom-sm label-name">
             <label>Choose Version</label>
         </div>
-        <div class="fill-available-width">
+        <div class="fill-available-width bucket-dropdown-field">
             <mat-form-field appearance="fill" fxFlex>
                 <mat-select [(value)]="selectedVersion">
                     <mat-option *ngFor="let snapshotMeta of droplet.snapshotMetadata" [value]="snapshotMeta.version">

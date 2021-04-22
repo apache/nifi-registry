@@ -17,15 +17,12 @@
 
 $gray: #666;
 $light-gray: #999;
+$dark-gray: #ced3d7;
+$teal-gray: #6b8791;
 
-#nifi-registry-import-versioned-flow-dialog,
-#nifi-registry-import-new-flow-dialog {
-    .label-name {
-        font-family: Roboto, sans-serif;
-        font-size: 14px;
-        font-weight: 500;
-        color: $gray;
-    }
+.label-name {
+    font-weight: 500;
+    color: $gray;
 }
 
 .version-count {
@@ -37,31 +34,9 @@ $light-gray: #999;
     color: $gray;
 }
 
-#new-flow-version-definition,
-#new-flow-definition {
-    max-width: 515px;
-    border-radius: 2px;
-}
-
-body[fds] input.mat-input-element {
-    &.file-hover-error {
-        border: solid 1px #d9150c !important;
-        background-color: #fff2f2 !important;
-    }
-
-    &.file-hover-valid {
-        border: solid 1px #3a870e !important;
-    }
-}
-
 input[type=text]#new-flow-version-definition-input,
 input[type=text]#new-flow-definition-input {
     cursor: pointer;
-}
-
-input[type=file]#new-flow-definition {
-    overflow: hidden;
-    margin-top: 7px;
 }
 
 #new-data-flow-version-name {
@@ -91,6 +66,10 @@ input[type=file]#new-flow-definition {
     }
 }
 
+#new-data-flow-name-input-field {
+    font-weight: 300;
+}
+
 #new-data-flow-version-placeholder {
     border: none;
     outline: 0;
@@ -110,14 +89,14 @@ input[type=file]#new-flow-definition {
     cursor: pointer;
 
     i {
-        color: #6b8791;
+        color: $teal-gray;
         padding: 9px 5px;
         outline: none;
     }
 
     span {
         text-transform: uppercase;
-        color: #6b8791;
+        color: $teal-gray;
     }
 }
 
@@ -127,9 +106,11 @@ input#upload-versioned-flow-file-field {
 }
 
 #new-data-flow-version-comments {
+    padding-bottom: 26px;
+
     textarea {
         width: 515px;
-        height: 68px;
+        height: 48px;
         border: solid 1px #cfd3d7;
         border-radius: 2px;
         padding: 9px 16px 9px 12px;
@@ -141,11 +122,20 @@ input#upload-versioned-flow-file-field {
 #new-data-flow-description {
     textarea {
         width: 515px;
-        height: 68px;
+        height: 48px;
         border: solid 1px #cfd3d7;
         border-radius: 2px;
         padding: 9px 16px 9px 12px;
+        font-weight: 300;
         color: $gray;
+    }
+}
+
+#new-data-flow-version-comments,
+#new-data-flow-description {
+    textarea:focus {
+        outline: 0;
+        border-color: $teal-gray;
     }
 }
 
@@ -159,4 +149,52 @@ input#upload-versioned-flow-file-field {
     i {
         font-size: 15px;
     }
+}
+
+#nifi-registry-download-versioned-flow-dialog .bucket-dropdown-field .mat-select-value {
+    color: $gray;
+}
+
+.bucket-dropdown-field .mat-form-field-appearance-fill {
+    .mat-form-field-infix {
+        border: 0;
+        padding: 0.68em 0;
+    }
+
+    .mat-select-arrow-wrapper {
+        transform: none;
+    }
+
+    .mat-form-field-flex {
+        border: 1px solid $dark-gray;
+        background-color: transparent;
+        border-radius: 2px;
+        padding-top: 0;
+    }
+}
+
+#new-flow-definition,
+#new-flow-version-definition {
+    mat-form-field {
+        line-height: 28px;
+    }
+
+    .mat-form-field-infix {
+        border-top: 0;
+    }
+
+    input.mat-input-element {
+        &.file-hover-error {
+            border: solid 1px #ef6162;
+        }
+
+        &.file-hover-valid {
+            border: solid 1px #2ab377;
+        }
+    }
+}
+
+#new-data-flow-container .mat-form-field-appearance-fill .mat-form-field-infix {
+    font-weight: 300;
+    color: $light-gray;
 }
