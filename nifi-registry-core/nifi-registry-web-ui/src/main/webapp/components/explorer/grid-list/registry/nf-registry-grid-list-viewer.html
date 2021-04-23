@@ -38,12 +38,15 @@ limitations under the License.
             </div>
         </mat-menu>
         <button [disabled]="nfRegistryService.buckets.length === 0 || (nfRegistryService.filterWritableBuckets(nfRegistryService.buckets)).length === 0"
-                (click)="nfRegistryService.openImportNewFlowDialog(nfRegistryService.buckets)"
+                (click)="nfRegistryService.openImportNewFlowDialog(nfRegistryService.buckets, nfRegistryService.bucket)"
                 class="push-left-sm push-top-sm" data-automation-id="import-new-flow-button"
                 color="fds-primary" mat-raised-button i18n="Import new flow button|A button for importing a new flow in the registry.">
             Import New Flow
         </button>
     </div>
+</div>
+<div id="import-new-flow-disabled-message" flex fxLayout="row" fxLayoutAlign="end center" class="pad-right-xxl pad-bottom-sm" *ngIf="(nfRegistryService.filterWritableBuckets(nfRegistryService.buckets)).length === 0 && nfRegistryService.buckets.length != 0">
+    <span>You are not authorized to import flows.</span>
 </div>
 <div id="nifi-registry-explorer-grid-list-viewer-droplet-container" class="pad-right-xxl pad-left-xxl"
      *ngIf="nfRegistryService.filteredDroplets.length > 0">
@@ -126,7 +129,10 @@ limitations under the License.
         <div class="pad-bottom-sm"></div>
     </div>
 </div>
-<div class="pad-right-xxl pad-left-xxl" *ngIf="nfRegistryService.filteredDroplets.length === 0 && !nfRegistryService.inProgress">
+<div class="pad-right-xxl pad-left-xxl" *ngIf="nfRegistryService.filteredDroplets.length === 0 && nfRegistryService.buckets.length != 0 && !nfRegistryService.inProgress">
     <p class="text-center">No results match this query.</p>
+</div>
+<div class="pad-right-xxl pad-left-xxl" *ngIf="nfRegistryService.filteredDroplets.length === 0 && nfRegistryService.buckets.length === 0 && !nfRegistryService.inProgress">
+    <p class="text-center">There are no buckets to display.</p>
 </div>
 <router-outlet></router-outlet>

@@ -558,7 +558,11 @@ public class BucketFlowResource extends ApplicationResource {
 
         final String versionedFlowSnapshotJsonString = serializeToJson(versionedFlowSnapshot);
 
-        final String contentDisposition = String.format("attachment; filename=\"flow-version-%d.json\"", versionNumber);
+        final String flowName = versionedFlowSnapshot.getFlowContents().getName();
+        final String dashFlowName = flowName.replaceAll("\\s", "-");
+        final String filename = String.format("%s-version-%d.json", dashFlowName, versionedFlowSnapshot.getSnapshotMetadata().getVersion());
+
+        final String contentDisposition = String.format("attachment; filename=\"%s\"", filename);
 
         return generateOkResponse(versionedFlowSnapshotJsonString).header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition).build();
     }

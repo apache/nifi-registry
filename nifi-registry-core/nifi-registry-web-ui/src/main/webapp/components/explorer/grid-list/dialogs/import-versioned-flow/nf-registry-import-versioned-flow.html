@@ -25,15 +25,15 @@ limitations under the License.
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div id="data-flow-version-container">
+    <div id="flow-version-container">
         <div class="fill-available-width">
             <div class="pad-bottom-sm label-name">
-                <label>Data Flow Name</label>
+                <label>Flow Name</label>
             </div>
-            <div id="data-flow-version-name" fxLayout="row" fxLayoutAlign="space-between center" class="push-bottom-md">
-                <div id="new-data-version-flow-name-input" class="fill-available-width">
+            <div id="flow-version-name" fxLayout="row" fxLayoutAlign="space-between center" class="push-bottom-md">
+                <div id="version-flow-name-input" class="fill-available-width">
                     <input
-                        id="new-data-version-flow-name-input-field"
+                        id="version-flow-name-input-field"
                         class="pad-bottom-md fill-available-width"
                         matInput
                         [disabled]="true"
@@ -63,7 +63,7 @@ limitations under the License.
                        style="color: #ef6162;"></i></span>
             </ng-container>
         </div>
-        <div id="new-flow-version-definition"
+        <div id="flow-version-definition"
              class="fill-available-width"
              fxLayout="row"
              fxLayoutAlign="space-between center"
@@ -75,7 +75,7 @@ limitations under the License.
              (drop)="fileDropHandler($event)">
             <mat-form-field floatLabel="never" flex>
                 <input matInput
-                       id="new-flow-version-definition-input"
+                       id="flow-version-definition-input"
                        type="text"
                        [value]="fileName"
                        placeholder="Drop file or select..."
@@ -100,9 +100,9 @@ limitations under the License.
             </mat-form-field>
         </div>
         <div class="pad-bottom-sm">
-            <label class="pad-bottom-sm label-name">Change Log Comment</label>
+            <label class="pad-bottom-sm label-name">Version Comments</label>
         </div>
-        <div id="new-data-flow-version-comments" fxLayout="row" class="fill-available-width">
+        <div id="flow-version-comments" fxLayout="row" class="fill-available-width">
             <textarea [(ngModel)]="comments"></textarea>
         </div>
     </div>

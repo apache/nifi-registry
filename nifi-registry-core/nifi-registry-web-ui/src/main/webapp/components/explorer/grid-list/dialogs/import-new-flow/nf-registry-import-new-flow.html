@@ -25,16 +25,16 @@ limitations under the License.
             <mat-icon color="primary">close</mat-icon>
         </button>
     </div>
-    <div id="new-data-flow-container">
+    <div id="new-flow-container">
         <div class="fill-available-width">
             <div class="pad-bottom-sm label-name">
-                <label>Data Flow Name</label>
+                <label>Flow Name</label>
             </div>
-            <div id="data-flow-name" fxLayout="row" fxLayoutAlign="space-between center" class="push-bottom-md">
-                <div id="new-data-flow-name-input" class="fill-available-width">
+            <div id="flow-name" fxLayout="row" fxLayoutAlign="space-between center" class="push-bottom-md">
+                <div id="new-flow-name-input" class="fill-available-width">
                     <input
                         #flowName
-                        id="new-data-flow-name-input-field"
+                        id="new-flow-name-input-field"
                         class="pad-bottom-md fill-available-width"
                         matInput
                         type="text"
@@ -49,7 +49,7 @@ limitations under the License.
         <div class="pad-bottom-sm label-name">
             <label class="pad-bottom-sm">Flow Description</label>
         </div>
-        <div id="new-data-flow-description" fxLayout="row" class="pad-bottom-xs fill-available-width">
+        <div id="new-flow-description" fxLayout="row" class="pad-bottom-xs fill-available-width">
             <textarea class="push-bottom-md" [(ngModel)]="description"></textarea>
         </div>
         <div class="pad-bottom-sm label-name">
@@ -57,8 +57,8 @@ limitations under the License.
         </div>
         <div class="fill-available-width bucket-dropdown-field pad-bottom-xs">
             <mat-form-field appearance="fill" floatLabel="always" fxFlex>
-                <mat-select #bucketSelect placeholder="Choose a location" [(value)]="selectedBucket">
-                    <mat-option *ngFor="let bucket of writableBuckets" [value]="bucket">
+                <mat-select #bucketSelect placeholder="Choose a location" [(value)]="activeBucket">
+                    <mat-option *ngFor="let bucket of writableBuckets" [value]="bucket.identifier">
                         {{bucket.name}}
                     </mat-option>
                 </mat-select>
@@ -123,13 +123,13 @@ limitations under the License.
 <div fxLayout="row">
     <span fxFlex></span>
     <button (click)="cancel()" color="fds-regular" mat-raised-button
-            i18n="Cancel new flow definition import|A button for cancelling the new data flow definition to import in the registry.">
+            i18n="Cancel new flow definition import|A button for cancelling the new flow definition to import in the registry.">
         Cancel
     </button>
     <button [disabled]="!fileToUpload || !flowName.value || !bucketSelect.value" class="push-left-sm" data-automation-id="import-new-flow-button"
             (click)="importNewFlow()"
             color="fds-primary" mat-raised-button
-            i18n="Cancel new data flow definition import|A button for cancelling the new data flow definition to import in the registry.">
+            i18n="Cancel new flow definition import|A button for cancelling the new flow definition to import in the registry.">
         Import
     </button>
 </div>

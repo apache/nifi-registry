@@ -39,12 +39,13 @@ function NfRegistryImportNewFlow(nfRegistryApi, fdsSnackBarService, matDialogRef
     this.keepDialogOpen = false;
     this.protocol = location.protocol;
     this.buckets = data.buckets;
+    this.activeBucket = data.activeBucket.identifier;
     this.writableBuckets = [];
     this.fileToUpload = null;
     this.fileName = null;
     this.name = '';
     this.description = '';
-    this.selectedBucket = '';
+    this.selectedBucket = {};
     this.hoverValidity = '';
     this.extensions = 'application/json';
     this.multiple = false;
@@ -54,12 +55,18 @@ NfRegistryImportNewFlow.prototype = {
     constructor: NfRegistryImportNewFlow,
 
     ngOnInit: function () {
-        // only show buckets the user can write
-        var self = this;
-        self.writableBuckets = self.filterWritableBuckets(self.buckets);
+        this.writableBuckets = this.filterWritableBuckets(this.buckets);
+
+        // if there's only 1 writable bucket, always set as the initial value in the bucket dropdown
+        // if opening the dialog from the explorer/grid-list, there is no active bucket
+        if (typeof this.activeBucket === 'undefined') {
+            if (this.writableBuckets.length === 1) {
+                // set the active bucket
+                this.activeBucket = this.writableBuckets[0].identifier;
+            }
+        }
     },
 
-    //TODO: get from the service instead
     filterWritableBuckets: function (buckets) {
         var self = this;
         self.writableBuckets = this.writableBuckets;
@@ -129,7 +136,11 @@ NfRegistryImportNewFlow.prototype = {
         var self = this;
         self.name = this.name;
         self.description = this.description;
-        self.selectedBucket = this.selectedBucket;
+        self.activeBucket = this.activeBucket;
+
+        self.selectedBucket = this.writableBuckets.find(function (b) {
+            return b.identifier === self.activeBucket;
+        });
 
         this.nfRegistryApi.uploadFlow(self.selectedBucket.link.href, self.fileToUpload, self.name, self.description).subscribe(function (response) {
             if (!response.status || response.status === 200) {

@@ -155,7 +155,7 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             }
         },
         {
-            name: 'Delete data flow',
+            name: 'Delete flow',
             icon: 'fa fa-trash',
             tooltip: 'Delete',
             disabled: function (droplet) {
@@ -426,7 +426,7 @@ NfRegistryService.prototype = {
     deleteDroplet: function (droplet) {
         var self = this;
         this.dialogService.openConfirm({
-            title: 'Delete ' + droplet.type.toLowerCase(),
+            title: 'Delete Flow',
             message: 'All versions of this ' + droplet.type.toLowerCase() + ' will be deleted.',
             cancelButton: 'Cancel',
             acceptButton: 'Delete',
@@ -480,15 +480,16 @@ NfRegistryService.prototype = {
      * Opens the import new flow dialog.
      *
      * @param buckets       The buckets object.
+     * @param activeBucket  The active bucket object.
      */
-    openImportNewFlowDialog: function (buckets) {
+    openImportNewFlowDialog: function (buckets, activeBucket) {
         var self = this;
-
         this.matDialog.open(NfRegistryImportNewFlow, {
             disableClose: true,
             width: '550px',
             data: {
-                buckets: buckets
+                buckets: buckets,
+                activeBucket: activeBucket
             }
         }).afterClosed().subscribe(function (flowUri) {
             if (flowUri != null) {
@@ -532,7 +533,7 @@ NfRegistryService.prototype = {
             // Opens the download flow version dialog
             this.openDownloadVersionedFlowDialog(droplet);
             break;
-        case 'delete data flow':
+        case 'delete flow':
             // Deletes the entire data flow
             this.deleteDroplet(droplet);
             break;

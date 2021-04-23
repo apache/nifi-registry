@@ -93,7 +93,10 @@ NfRegistryApi.prototype = {
 
                 var element = document.createElement('a');
                 element.setAttribute('href', data);
-                element.setAttribute('download', 'flow-version-' + response.snapshotMetadata.version);
+
+                var flowName = response.flowContents.name;
+                var dashFlowName = flowName.replaceAll(/\s/g, '-');
+                element.setAttribute('download', dashFlowName + '-version-' + response.snapshotMetadata.version);
 
                 element.style.display = 'none';
                 document.body.appendChild(element);

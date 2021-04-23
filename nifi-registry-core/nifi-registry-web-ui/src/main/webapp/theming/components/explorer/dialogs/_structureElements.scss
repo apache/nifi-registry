@@ -34,26 +34,7 @@ $teal-gray: #6b8791;
     color: $gray;
 }
 
-input[type=text]#new-flow-version-definition-input,
-input[type=text]#new-flow-definition-input {
-    cursor: pointer;
-}
-
-#new-data-flow-version-name {
-    border: none;
-    height: 34px;
-    outline: 0;
-    font-family: Roboto, sans-serif;
-    max-width: 75%;
-    font-size: 14px;
-    color: $gray;
-
-    span {
-        overflow: hidden;
-    }
-}
-
-#data-flow-name {
+#flow-version-name {
     border: none;
     height: 34px;
     outline: 0;
@@ -66,7 +47,20 @@ input[type=text]#new-flow-definition-input {
     }
 }
 
-#new-data-flow-name-input-field {
+#flow-name {
+    border: none;
+    height: 34px;
+    outline: 0;
+    font-family: Roboto, sans-serif;
+    font-size: 14px;
+    color: $gray;
+
+    span {
+        overflow: hidden;
+    }
+}
+
+#new-flow-name-input-field {
     font-weight: 300;
 }
 
@@ -105,7 +99,7 @@ input#upload-versioned-flow-file-field {
     display: none;
 }
 
-#new-data-flow-version-comments {
+#flow-version-comments {
     padding-bottom: 26px;
 
     textarea {
@@ -119,7 +113,7 @@ input#upload-versioned-flow-file-field {
     }
 }
 
-#new-data-flow-description {
+#new-flow-description {
     textarea {
         width: 515px;
         height: 48px;
@@ -131,8 +125,8 @@ input#upload-versioned-flow-file-field {
     }
 }
 
-#new-data-flow-version-comments,
-#new-data-flow-description {
+#flow-version-comments,
+#new-flow-description {
     textarea:focus {
         outline: 0;
         border-color: $teal-gray;
@@ -174,7 +168,7 @@ input#upload-versioned-flow-file-field {
 }
 
 #new-flow-definition,
-#new-flow-version-definition {
+#flow-version-definition {
     mat-form-field {
         line-height: 28px;
     }
@@ -194,7 +188,15 @@ input#upload-versioned-flow-file-field {
     }
 }
 
-#new-data-flow-container .mat-form-field-appearance-fill .mat-form-field-infix {
+#new-flow-container .mat-form-field-appearance-fill .mat-form-field-infix {
     font-weight: 300;
     color: $light-gray;
+}
+
+input[type=text]#flow-version-definition-input,
+input[type=text]#new-flow-definition-input {
+    padding-right: 125px;
+    width: 373px;
+    text-overflow: ellipsis;
+    cursor: pointer;
 }
