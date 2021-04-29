@@ -143,7 +143,7 @@ NfRegistryImportNewFlow.prototype = {
         });
 
         this.nfRegistryApi.uploadFlow(self.selectedBucket.link.href, self.fileToUpload, self.name, self.description).subscribe(function (response) {
-            if (!response.status || response.status === 200) {
+            if (!response.status || response.status === 201) {
                 self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'Successfully imported ' + response.flow.name + ' to the ' + response.bucket.name + ' bucket.',
@@ -173,8 +173,7 @@ NfRegistryImportNewFlow.prototype = {
      */
     cancel: function () {
         this.dialogRef.close();
-    },
-
+    }
 };
 
 NfRegistryImportNewFlow.annotations = [

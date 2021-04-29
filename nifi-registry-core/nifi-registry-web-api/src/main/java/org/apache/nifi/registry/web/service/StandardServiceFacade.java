@@ -99,6 +99,7 @@ public class StandardServiceFacade implements ServiceFacade {
     public static final String ACCESS_POLICY_ENTITY_TYPE = "Access Policy";
     public static final String VERSIONED_FLOW_ENTITY_TYPE = "Versioned Flow";
     public static final String BUCKET_ENTITY_TYPE = "Bucket";
+    public static final int INITIAL_VERSION = -1;
 
     private final RegistryService registryService;
     private final ExtensionService extensionService;
@@ -358,6 +359,31 @@ public class StandardServiceFacade implements ServiceFacade {
         final VersionedFlowSnapshot lastSnapshot = registryService.getFlowSnapshot(bucketIdentifier, flowIdentifier, latestVersion);
         populateLinksAndPermissions(lastSnapshot);
         return lastSnapshot;
+    }
+
+    @Override
+    public VersionedFlowSnapshot importVersionedFlowSnapshot(VersionedFlowSnapshot versionedFlowSnapshot, String bucketIdentifier,
+                                                             String flowIdentifier, String comments) {
+        // set new snapshotMetadata
+        final VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
+        metadata.setBucketIdentifier(bucketIdentifier);
+        metadata.setFlowIdentifier(flowIdentifier);
+        metadata.setVersion(INITIAL_VERSION);
+
+        // if there are new comments, then set it
+        // otherwise, keep the original comments
+        if (!StringUtils.isBlank(comments)) {
+            metadata.setComments(comments);
+        } else if (versionedFlowSnapshot.getSnapshotMetadata() != null && versionedFlowSnapshot.getSnapshotMetadata().getComments() != null) {
+            metadata.setComments(versionedFlowSnapshot.getSnapshotMetadata().getComments());
+        }
+
+        versionedFlowSnapshot.setSnapshotMetadata(metadata);
+
+        final String userIdentity = NiFiUserUtils.getNiFiUserIdentity();
+        versionedFlowSnapshot.getSnapshotMetadata().setAuthor(userIdentity);
+
+        return createFlowSnapshot(versionedFlowSnapshot);
     }
 
     @Override

@@ -19,7 +19,7 @@ import NfStorage from 'services/nf-storage.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FdsDialogService } from '@nifi-fds/core';
 import { of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, mergeMap, take } from 'rxjs/operators';
 
 var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
@@ -129,12 +129,11 @@ NfRegistryApi.prototype = {
     uploadVersionedFlowSnapshot: function (dropletUri, file, comments) {
         var self = this;
         var url = '../nifi-registry-api/' + dropletUri + '/versions/import';
+        var versionHeaders = new HttpHeaders()
+            .set('Content-Type', 'application/json')
+            .set('comments', comments);
 
-        var formData = new FormData();
-        formData.append('file', file, 'fileToUpload');
-        formData.append('comments', comments);
-
-        return this.http.post(url, formData, headers).pipe(
+        return self.http.post(url, file, { 'headers': versionHeaders }).pipe(
             map(function (response) {
                 return response;
             }),
@@ -161,16 +160,42 @@ NfRegistryApi.prototype = {
      */
     uploadFlow: function (bucketUri, file, name, description) {
         var self = this;
-        var url = '../nifi-registry-api/' + bucketUri + '/flows/import';
 
-        var formData = new FormData();
-        formData.append('file', file, 'fileToUpload');
-        formData.append('name', name);
-        formData.append('description', description);
+        var url = '../nifi-registry-api/' + bucketUri + '/flows';
+        var flow = { 'name': name, 'description': description };
+        var versionHeaders = new HttpHeaders()
+            .set('Content-Type', 'application/json')
+            .set('comments', '');
 
-        return this.http.post(url, formData, headers).pipe(
-            map(function (response) {
-                return response;
+        return this.http.post(url, flow, headers).pipe(
+            take(1),
+            // create Flow version 0
+            mergeMap(function (response) {
+                var flowUri = response.link.href;
+                var importVersionUrl = '../nifi-registry-api/' + flowUri + '/versions/import';
+
+                // import file as Flow version 1
+                return self.http.post(importVersionUrl, file, { 'headers': versionHeaders }).pipe(
+                    take(1),
+                    map(function (snapshot) {
+                        return snapshot;
+                    }),
+                    catchError(function (error) {
+                        // delete flow version 0
+                        var deleteUri = flowUri + '?versions=0';
+                        self.deleteDroplet(deleteUri).subscribe(function (response) {
+                            return response;
+                        });
+
+                        self.dialogService.openConfirm({
+                            title: 'Error',
+                            message: error.error,
+                            acceptButton: 'Ok',
+                            acceptButtonColor: 'fds-warn'
+                        });
+                        return of(error);
+                    })
+                );
             }),
             catchError(function (error) {
                 self.dialogService.openConfirm({

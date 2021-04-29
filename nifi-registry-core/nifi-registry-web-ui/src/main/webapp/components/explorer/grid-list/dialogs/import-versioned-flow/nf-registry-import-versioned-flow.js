@@ -106,7 +106,7 @@ NfRegistryImportVersionedFlow.prototype = {
         var comments = this.comments;
 
         this.nfRegistryApi.uploadVersionedFlowSnapshot(this.droplet.link.href, this.fileToUpload, comments).subscribe(function (response) {
-            if (!response.status || response.status === 200) {
+            if (!response.status || response.status === 201) {
                 self.snackBarService.openCoaster({
                     title: 'Success',
                     message: 'Successfully imported version ' + response.snapshotMetadata.version + ' of ' + response.flow.name + '.',
@@ -135,8 +135,7 @@ NfRegistryImportVersionedFlow.prototype = {
      */
     cancel: function () {
         this.dialogRef.close();
-    },
-
+    }
 };
 
 NfRegistryImportVersionedFlow.annotations = [
