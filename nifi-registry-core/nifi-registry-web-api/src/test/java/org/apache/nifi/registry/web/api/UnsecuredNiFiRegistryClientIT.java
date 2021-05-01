@@ -870,8 +870,14 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         context1.setName("Parameter Context 1");
         context1.setParameters(new HashSet<>(Arrays.asList(param1, param2)));
 
+        final VersionedParameterContext context2 = new VersionedParameterContext();
+        context2.setName("Parameter Context 2");
+        context2.setParameters(new HashSet<>(Arrays.asList(param1, param2)));
+        context2.setParameterContexts(Arrays.asList(context1.getName()));
+
         final Map<String,VersionedParameterContext> contexts = new HashMap<>();
         contexts.put(context1.getName(), context1);
+        contexts.put(context2.getName(), context2);
 
         // Create an external controller service reference
         final ExternalControllerServiceReference serviceReference = new ExternalControllerServiceReference();
@@ -893,7 +899,8 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         assertNotNull(createdSnapshot.getParameterContexts());
         assertNotNull(createdSnapshot.getExternalControllerServices());
         assertEquals(snapshot.getFlowEncodingVersion(), createdSnapshot.getFlowEncodingVersion());
-        assertEquals(1, createdSnapshot.getParameterContexts().size());
+        assertEquals(2, createdSnapshot.getParameterContexts().size());
+        assertEquals(1, createdSnapshot.getParameterContexts().get(context2.getName()).getParameterContexts().size());
         assertEquals(1, createdSnapshot.getExternalControllerServices().size());
 
         // Retrieve the snapshot
@@ -905,7 +912,8 @@ public class UnsecuredNiFiRegistryClientIT extends UnsecuredITBase {
         assertNotNull(retrievedSnapshot.getParameterContexts());
         assertNotNull(retrievedSnapshot.getExternalControllerServices());
         assertEquals(snapshot.getFlowEncodingVersion(), retrievedSnapshot.getFlowEncodingVersion());
-        assertEquals(1, retrievedSnapshot.getParameterContexts().size());
+        assertEquals(2, retrievedSnapshot.getParameterContexts().size());
+        assertEquals(1, retrievedSnapshot.getParameterContexts().get(context2.getName()).getParameterContexts().size());
         assertEquals(1, retrievedSnapshot.getExternalControllerServices().size());
     }
 
