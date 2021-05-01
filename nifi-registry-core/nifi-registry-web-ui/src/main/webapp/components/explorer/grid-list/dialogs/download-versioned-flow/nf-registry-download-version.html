@@ -30,7 +30,7 @@ limitations under the License.
         </div>
         <div class="fill-available-width bucket-dropdown-field">
             <mat-form-field appearance="fill" fxFlex>
-                <mat-select [(value)]="selectedVersion">
+                <mat-select panelClass="bucket-dropdown-select" [(value)]="selectedVersion">
                     <mat-option *ngFor="let snapshotMeta of droplet.snapshotMetadata" [value]="snapshotMeta.version">
                         <span *ngIf="snapshotMeta === droplet.snapshotMetadata[0]">Latest version (v.{{snapshotMeta.version}})</span>
                         <span *ngIf="snapshotMeta != droplet.snapshotMetadata[0]">Version {{snapshotMeta.version}}</span>

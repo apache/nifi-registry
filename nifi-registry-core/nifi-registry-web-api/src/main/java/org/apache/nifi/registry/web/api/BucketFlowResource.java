@@ -16,7 +16,6 @@
  */
 package org.apache.nifi.registry.web.api;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -25,7 +24,6 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
-import java.io.IOException;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +31,7 @@ import org.apache.nifi.registry.bucket.BucketItem;
 import org.apache.nifi.registry.diff.VersionedFlowDifference;
 import org.apache.nifi.registry.event.EventFactory;
 import org.apache.nifi.registry.event.EventService;
+import org.apache.nifi.registry.web.service.ExportedVersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlow;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshot;
 import org.apache.nifi.registry.flow.VersionedFlowSnapshotMetadata;
@@ -40,7 +39,6 @@ import org.apache.nifi.registry.revision.entity.RevisionInfo;
 import org.apache.nifi.registry.revision.web.ClientIdParameter;
 import org.apache.nifi.registry.revision.web.LongParameter;
 import org.apache.nifi.registry.security.authorization.user.NiFiUserUtils;
-import org.apache.nifi.registry.serialization.jackson.ObjectMapperProvider;
 import org.apache.nifi.registry.web.service.ServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -75,8 +73,6 @@ public class BucketFlowResource extends ApplicationResource {
     public BucketFlowResource(final ServiceFacade serviceFacade, final EventService eventService) {
         super(serviceFacade, eventService);
     }
-
-    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperProvider.getMapper();
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -455,29 +451,18 @@ public class BucketFlowResource extends ApplicationResource {
             @PathParam("versionNumber")
             @ApiParam("The version number") final Integer versionNumber) {
 
-        if (StringUtils.isBlank(bucketId)) {
-            throw new IllegalArgumentException("The bucket identifier is required.");
-        }
+        final ExportedVersionedFlowSnapshot exportedVersionedFlowSnapshot = serviceFacade.exportFlowSnapshot(bucketId, flowId, versionNumber);
 
-        if (StringUtils.isBlank(flowId)) {
-            throw new IllegalArgumentException("The flow identifier is required.");
-        }
+        final VersionedFlowSnapshot versionedFlowSnapshot = exportedVersionedFlowSnapshot.getVersionedFlowSnapshot();
 
-        if (versionNumber == null) {
-            throw new IllegalArgumentException("The version number is required.");
-        }
+        final String contentDisposition = String.format(
+                "attachment; filename=\"%s\"",
+                exportedVersionedFlowSnapshot.getFilename());
 
-        final VersionedFlowSnapshot versionedFlowSnapshot = serviceFacade.exportFlowSnapshot(bucketId, flowId, versionNumber);
-
-        final String versionedFlowSnapshotJsonString = serializeToJson(versionedFlowSnapshot);
-
-        final String flowName = versionedFlowSnapshot.getFlowContents().getName();
-        final String dashFlowName = flowName.replaceAll("\\s", "-");
-        final String filename = String.format("%s-version-%d.json", dashFlowName, versionedFlowSnapshot.getSnapshotMetadata().getVersion());
-
-        final String contentDisposition = String.format("attachment; filename=\"%s\"", filename);
-
-        return generateOkResponse(versionedFlowSnapshotJsonString).header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition).build();
+        return generateOkResponse(versionedFlowSnapshot)
+                .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
+                .header("Filename", exportedVersionedFlowSnapshot.getFilename())
+                .build();
     }
 
     @GET
@@ -633,13 +618,5 @@ public class BucketFlowResource extends ApplicationResource {
         }
 
         flowSnapshot.setSnapshotMetadata(metadata);
-    }
-
-    private String serializeToJson(final VersionedFlowSnapshot dto) {
-        try {
-            return OBJECT_MAPPER.writeValueAsString(dto);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Deserialization of selected flow failed", e);
-        }
     }
 }

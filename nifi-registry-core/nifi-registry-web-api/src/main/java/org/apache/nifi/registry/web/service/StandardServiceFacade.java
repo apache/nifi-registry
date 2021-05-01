@@ -99,7 +99,6 @@ public class StandardServiceFacade implements ServiceFacade {
     public static final String ACCESS_POLICY_ENTITY_TYPE = "Access Policy";
     public static final String VERSIONED_FLOW_ENTITY_TYPE = "Versioned Flow";
     public static final String BUCKET_ENTITY_TYPE = "Bucket";
-    public static final int INITIAL_VERSION = -1;
 
     private final RegistryService registryService;
     private final ExtensionService extensionService;
@@ -109,6 +108,8 @@ public class StandardServiceFacade implements ServiceFacade {
     private final RevisionFeature revisionFeature;
     private final PermissionsService permissionsService;
     private final LinkService linkService;
+
+    private static final int LATEST_VERSION = -1;
 
     @Autowired
     public StandardServiceFacade(final RegistryService registryService,
@@ -368,7 +369,7 @@ public class StandardServiceFacade implements ServiceFacade {
         final VersionedFlowSnapshotMetadata metadata = new VersionedFlowSnapshotMetadata();
         metadata.setBucketIdentifier(bucketIdentifier);
         metadata.setFlowIdentifier(flowIdentifier);
-        metadata.setVersion(INITIAL_VERSION);
+        metadata.setVersion(LATEST_VERSION);
 
         // if there are new comments, then set it
         // otherwise, keep the original comments
@@ -387,8 +388,12 @@ public class StandardServiceFacade implements ServiceFacade {
     }
 
     @Override
-    public VersionedFlowSnapshot exportFlowSnapshot(String bucketIdentifier, String flowIdentifier, Integer versionNumber) {
+    public ExportedVersionedFlowSnapshot exportFlowSnapshot(String bucketIdentifier, String flowIdentifier, Integer versionNumber) {
         final VersionedFlowSnapshot versionedFlowSnapshot = getFlowSnapshot(bucketIdentifier, flowIdentifier, versionNumber);
+
+        String flowName = versionedFlowSnapshot.getFlow().getName();
+        final String dashFlowName = flowName.replaceAll("\\s", "-");
+        final String filename = String.format("%s-version-%d.json", dashFlowName, versionedFlowSnapshot.getSnapshotMetadata().getVersion());
 
         versionedFlowSnapshot.setFlow(null);
         versionedFlowSnapshot.setBucket(null);
@@ -396,7 +401,7 @@ public class StandardServiceFacade implements ServiceFacade {
         versionedFlowSnapshot.getSnapshotMetadata().setFlowIdentifier(null);
         versionedFlowSnapshot.getSnapshotMetadata().setLink(null);
 
-        return versionedFlowSnapshot;
+        return new ExportedVersionedFlowSnapshot(versionedFlowSnapshot, filename);
     }
 
     @Override

@@ -19,7 +19,7 @@ import NfStorage from 'services/nf-storage.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FdsDialogService } from '@nifi-fds/core';
 import { of } from 'rxjs';
-import { map, catchError, mergeMap, take } from 'rxjs/operators';
+import { map, catchError, take, switchMap } from 'rxjs/operators';
 
 var MILLIS_PER_SECOND = 1000;
 var headers = new Headers({'Content-Type': 'application/json'});
@@ -85,24 +85,25 @@ NfRegistryApi.prototype = {
     exportDropletVersionedSnapshot: function (dropletUri, versionNumber) {
         var self = this;
         var url = '../nifi-registry-api/' + dropletUri + '/versions/' + versionNumber + '/export';
+        var options = {
+            headers: headers,
+            observe: 'response'
+        };
 
-        return this.http.get(url, headers).pipe(
+        return this.http.get(url, options).pipe(
             map(function (response) {
-                // export the VersionedFlowSnapshot
-                var data = 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(response, null, 2));
+                // export the VersionedFlowSnapshot by creating a hidden anchor element
+                var stringSnapshot = encodeURIComponent(JSON.stringify(response.body, null, 2));
+                var filename = response.headers.get('Filename');
 
-                var element = document.createElement('a');
-                element.setAttribute('href', data);
+                var anchorElement = document.createElement('a');
+                anchorElement.href = 'data:application/json;charset=utf-8,' + stringSnapshot;
+                anchorElement.download = filename;
+                anchorElement.style = 'display: none;';
 
-                var flowName = response.flowContents.name;
-                var dashFlowName = flowName.replaceAll(/\s/g, '-');
-                element.setAttribute('download', dashFlowName + '-version-' + response.snapshotMetadata.version);
-
-                element.style.display = 'none';
-                document.body.appendChild(element);
-
-                element.click();
-                document.body.removeChild(element);
+                document.body.appendChild(anchorElement);
+                anchorElement.click();
+                document.body.removeChild(anchorElement);
 
                 return response;
             }),
@@ -163,20 +164,16 @@ NfRegistryApi.prototype = {
 
         var url = '../nifi-registry-api/' + bucketUri + '/flows';
         var flow = { 'name': name, 'description': description };
-        var versionHeaders = new HttpHeaders()
-            .set('Content-Type', 'application/json')
-            .set('comments', '');
 
         return this.http.post(url, flow, headers).pipe(
             take(1),
             // create Flow version 0
-            mergeMap(function (response) {
+            switchMap(function (response) {
                 var flowUri = response.link.href;
                 var importVersionUrl = '../nifi-registry-api/' + flowUri + '/versions/import';
 
                 // import file as Flow version 1
-                return self.http.post(importVersionUrl, file, { 'headers': versionHeaders }).pipe(
-                    take(1),
+                return self.http.post(importVersionUrl, file, headers).pipe(
                     map(function (snapshot) {
                         return snapshot;
                     }),

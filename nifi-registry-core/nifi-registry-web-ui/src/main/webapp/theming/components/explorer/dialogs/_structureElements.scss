@@ -60,10 +60,6 @@ $teal-gray: #6b8791;
     }
 }
 
-#new-flow-name-input-field {
-    font-weight: 300;
-}
-
 #new-data-flow-version-placeholder {
     border: none;
     outline: 0;
@@ -120,7 +116,6 @@ input#upload-versioned-flow-file-field {
         border: solid 1px #cfd3d7;
         border-radius: 2px;
         padding: 9px 16px 9px 12px;
-        font-weight: 300;
         color: $gray;
     }
 }
@@ -153,6 +148,14 @@ input#upload-versioned-flow-file-field {
     .mat-form-field-infix {
         border: 0;
         padding: 0.68em 0;
+
+        .mat-select-value-text {
+            color: $gray;
+        }
+
+        .mat-select-placeholder {
+            font-weight: 300;
+        }
     }
 
     .mat-select-arrow-wrapper {
@@ -164,6 +167,12 @@ input#upload-versioned-flow-file-field {
         background-color: transparent;
         border-radius: 2px;
         padding-top: 0;
+    }
+}
+
+.bucket-dropdown-select {
+    .mat-select-panel {
+        color: $gray;
     }
 }
 
@@ -189,7 +198,6 @@ input#upload-versioned-flow-file-field {
 }
 
 #new-flow-container .mat-form-field-appearance-fill .mat-form-field-infix {
-    font-weight: 300;
     color: $light-gray;
 }
 

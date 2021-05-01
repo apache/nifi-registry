@@ -57,7 +57,7 @@ limitations under the License.
         </div>
         <div class="fill-available-width bucket-dropdown-field pad-bottom-xs">
             <mat-form-field appearance="fill" floatLabel="always" fxFlex>
-                <mat-select #bucketSelect placeholder="Choose a location" [(value)]="activeBucket">
+                <mat-select #bucketSelect panelClass="bucket-dropdown-select" placeholder="Choose a location" [(value)]="activeBucket">
                     <mat-option *ngFor="let bucket of writableBuckets" [value]="bucket.identifier">
                         {{bucket.name}}
                     </mat-option>
