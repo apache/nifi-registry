@@ -47,6 +47,8 @@ import static org.junit.Assert.assertTrue;
 @Sql(executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, scripts = {"classpath:db/clearDB.sql", "classpath:db/FlowsIT.sql"})
 public class FlowsIT extends UnsecuredITBase {
 
+    private static final int LATEST_VERSION = -1;
+
     @Test
     public void testGetFlowsEmpty() throws Exception {
 
@@ -576,7 +578,7 @@ public class FlowsIT extends UnsecuredITBase {
         flowSnapshot.setSnapshotMetadata(flowSnapshotMetadata);
         flowSnapshot.setFlowContents(new VersionedProcessGroup()); // an empty root process group
         flowSnapshot.getFlowContents().setName("Test Flow name");
-        flowSnapshot.getSnapshotMetadata().setVersion(-1);
+        flowSnapshot.getSnapshotMetadata().setVersion(LATEST_VERSION);
 
         final VersionedFlowSnapshot createdFlowSnapshot = client
                 .target(createURL("buckets/{bucketId}/flows/{flowId}/versions"))
@@ -678,7 +680,7 @@ public class FlowsIT extends UnsecuredITBase {
         flowSnapshot.setSnapshotMetadata(flowSnapshotMetadata);
         flowSnapshot.setFlowContents(new VersionedProcessGroup()); // an empty root process group
         flowSnapshot.getFlowContents().setName("Test Flow name");
-        flowSnapshot.getSnapshotMetadata().setVersion(-1);
+        flowSnapshot.getSnapshotMetadata().setVersion(LATEST_VERSION);
 
         final VersionedFlowSnapshot createdFlowSnapshot = client
                 .target(createURL("buckets/{bucketId}/flows/{flowId}/versions"))

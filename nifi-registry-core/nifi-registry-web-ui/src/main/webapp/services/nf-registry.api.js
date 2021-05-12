@@ -90,7 +90,7 @@ NfRegistryApi.prototype = {
             observe: 'response'
         };
 
-        return this.http.get(url, options).pipe(
+        return self.http.get(url, options).pipe(
             map(function (response) {
                 // export the VersionedFlowSnapshot by creating a hidden anchor element
                 var stringSnapshot = encodeURIComponent(JSON.stringify(response.body, null, 2));
@@ -165,20 +165,20 @@ NfRegistryApi.prototype = {
         var url = '../nifi-registry-api/' + bucketUri + '/flows';
         var flow = { 'name': name, 'description': description };
 
-        return this.http.post(url, flow, headers).pipe(
+        // first, create Flow version 0
+        return self.http.post(url, flow, headers).pipe(
             take(1),
-            // create Flow version 0
             switchMap(function (response) {
                 var flowUri = response.link.href;
                 var importVersionUrl = '../nifi-registry-api/' + flowUri + '/versions/import';
 
-                // import file as Flow version 1
+                // then, import file as Flow version 1
                 return self.http.post(importVersionUrl, file, headers).pipe(
                     map(function (snapshot) {
                         return snapshot;
                     }),
                     catchError(function (error) {
-                        // delete flow version 0
+                        // delete Flow version 0
                         var deleteUri = flowUri + '?versions=0';
                         self.deleteDroplet(deleteUri).subscribe(function (response) {
                             return response;

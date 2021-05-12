@@ -21,7 +21,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { FdsSnackBarService } from '@nifi-fds/core';
 
 /**
- * NfRegistryDownloadVersionedFlow constructor.
+ * NfRegistryExportVersionedFlow constructor.
  *
  * @param nfRegistryApi         The api service.
  * @param fdsSnackBarService    The FDS snack bar service module.
@@ -29,7 +29,7 @@ import { FdsSnackBarService } from '@nifi-fds/core';
  * @param data                  The data passed into this component.
  * @constructor
  */
-function NfRegistryDownloadVersionedFlow(nfRegistryApi, fdsSnackBarService, matDialogRef, data) {
+function NfRegistryExportVersionedFlow(nfRegistryApi, fdsSnackBarService, matDialogRef, data) {
     // Services
     this.snackBarService = fdsSnackBarService;
     this.nfRegistryApi = nfRegistryApi;
@@ -41,13 +41,13 @@ function NfRegistryDownloadVersionedFlow(nfRegistryApi, fdsSnackBarService, matD
     this.selectedVersion = this.droplet.snapshotMetadata[0].version;
 }
 
-NfRegistryDownloadVersionedFlow.prototype = {
-    constructor: NfRegistryDownloadVersionedFlow,
+NfRegistryExportVersionedFlow.prototype = {
+    constructor: NfRegistryExportVersionedFlow,
 
     /**
-     * Download specified versioned flow snapshot.
+     * Export specified versioned flow snapshot.
      */
-    downloadVersion: function () {
+    exportVersion: function () {
         var self = this;
         var version = this.selectedVersion;
 
@@ -73,24 +73,24 @@ NfRegistryDownloadVersionedFlow.prototype = {
     },
 
     /**
-     * Cancel creation of a download version and close dialog.
+     * Cancel an export of a version and close dialog.
      */
     cancel: function () {
         this.dialogRef.close();
     }
 };
 
-NfRegistryDownloadVersionedFlow.annotations = [
+NfRegistryExportVersionedFlow.annotations = [
     new Component({
-        templateUrl: './nf-registry-download-version.html'
+        templateUrl: './nf-registry-export-version.html'
     })
 ];
 
-NfRegistryDownloadVersionedFlow.parameters = [
+NfRegistryExportVersionedFlow.parameters = [
     NfRegistryApi,
     FdsSnackBarService,
     MatDialogRef,
     MAT_DIALOG_DATA
 ];
 
-export default NfRegistryDownloadVersionedFlow;
+export default NfRegistryExportVersionedFlow;

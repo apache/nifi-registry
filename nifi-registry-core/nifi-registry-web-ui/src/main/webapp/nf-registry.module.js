@@ -54,7 +54,7 @@ import {
 } from 'services/nf-registry.auth-guard.service';
 import NfRegistryImportVersionedFlow from './components/explorer/grid-list/dialogs/import-versioned-flow/nf-registry-import-versioned-flow';
 import NfRegistryImportNewFlow from './components/explorer/grid-list/dialogs/import-new-flow/nf-registry-import-new-flow';
-import NfRegistryDownloadVersionedFlow from './components/explorer/grid-list/dialogs/download-versioned-flow/nf-registry-download-versioned-flow';
+import NfRegistryExportVersionedFlow from './components/explorer/grid-list/dialogs/export-versioned-flow/nf-registry-export-versioned-flow';
 
 function NfRegistryModule() {
 }
@@ -93,7 +93,7 @@ NfRegistryModule.annotations = [
             NfPageNotFoundComponent,
             NfLoginComponent,
             NfUserLoginComponent,
-            NfRegistryDownloadVersionedFlow,
+            NfRegistryExportVersionedFlow,
             NfRegistryImportVersionedFlow,
             NfRegistryImportNewFlow
         ],
@@ -106,7 +106,7 @@ NfRegistryModule.annotations = [
             NfRegistryAddPolicyToBucket,
             NfRegistryEditBucketPolicy,
             NfUserLoginComponent,
-            NfRegistryDownloadVersionedFlow,
+            NfRegistryExportVersionedFlow,
             NfRegistryImportVersionedFlow,
             NfRegistryImportNewFlow
         ],

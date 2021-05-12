@@ -373,9 +373,9 @@ public class StandardServiceFacade implements ServiceFacade {
 
         // if there are new comments, then set it
         // otherwise, keep the original comments
-        if (!StringUtils.isBlank(comments)) {
+        if (StringUtils.isNotBlank(comments)) {
             metadata.setComments(comments);
-        } else if (versionedFlowSnapshot.getSnapshotMetadata() != null && versionedFlowSnapshot.getSnapshotMetadata().getComments() != null) {
+        } else if (versionedFlowSnapshot.getSnapshotMetadata() != null && StringUtils.isNotBlank(versionedFlowSnapshot.getSnapshotMetadata().getComments())) {
             metadata.setComments(versionedFlowSnapshot.getSnapshotMetadata().getComments());
         }
 

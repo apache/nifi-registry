@@ -15,10 +15,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="nifi-registry-download-versioned-flow-dialog">
+<div id="nifi-registry-export-versioned-flow-dialog">
     <div class="pad-bottom-md" fxLayout="row" fxLayoutAlign="space-between center">
         <mat-card-title>
-            Download Version
+            Export Version
         </mat-card-title>
         <button mat-icon-button (click)="cancel()">
             <mat-icon color="primary">close</mat-icon>
@@ -32,7 +32,7 @@ limitations under the License.
             <mat-form-field appearance="fill" fxFlex>
                 <mat-select panelClass="bucket-dropdown-select" [(value)]="selectedVersion">
                     <mat-option *ngFor="let snapshotMeta of droplet.snapshotMetadata" [value]="snapshotMeta.version">
-                        <span *ngIf="snapshotMeta === droplet.snapshotMetadata[0]">Latest version (v.{{snapshotMeta.version}})</span>
+                        <span *ngIf="snapshotMeta === droplet.snapshotMetadata[0]">Version {{snapshotMeta.version}} (Latest)</span>
                         <span *ngIf="snapshotMeta != droplet.snapshotMetadata[0]">Version {{snapshotMeta.version}}</span>
                     </mat-option>
                 </mat-select>
@@ -42,12 +42,12 @@ limitations under the License.
     <div fxLayout="row">
         <span fxFlex></span>
         <button (click)="cancel()" color="fds-regular" mat-raised-button
-                i18n="Cancel download of versioned flow selection|A button for cancelling the versioned flow selection to download in the registry.">
+                i18n="Cancel export of versioned flow selection|A button for cancelling the versioned flow selection to export in the registry.">
             Cancel
         </button>
-        <button class="push-left-sm" data-automation-id="download-versioned-flow-button" (click)="downloadVersion()"
-                color="fds-primary" mat-raised-button i18n="Cancel download of versioned flow selection|A button for cancelling the versioned flow selection to download in the registry.">
-            Download
+        <button class="push-left-sm" data-automation-id="export-versioned-flow-button" (click)="exportVersion()"
+                color="fds-primary" mat-raised-button i18n="Cancel export of versioned flow selection|A button for cancelling the versioned flow selection to export in the registry.">
+            Export
         </button>
     </div>
 </div>

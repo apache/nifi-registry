@@ -22,8 +22,8 @@ import NfRegistryApi from 'services/nf-registry.api';
 import NfRegistryService from 'services/nf-registry.service';
 import { Router } from '@angular/router';
 import { FdsDialogService } from '@nifi-fds/core';
-import NfRegistryDownloadVersionedFlow
-    from '../components/explorer/grid-list/dialogs/download-versioned-flow/nf-registry-download-versioned-flow';
+import NfRegistryExportVersionedFlow
+    from '../components/explorer/grid-list/dialogs/export-versioned-flow/nf-registry-export-versioned-flow';
 import NfRegistryImportVersionedFlow
     from '../components/explorer/grid-list/dialogs/import-versioned-flow/nf-registry-import-versioned-flow';
 import NfRegistryImportNewFlow
@@ -708,7 +708,12 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
 
     it('should execute the `delete` droplet action.', function () {
         //Setup the nfRegistryService state for this test
-        nfRegistryService.droplets = [{identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc'}];
+        nfRegistryService.droplets = [
+            {
+                identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
+                permissions: {canDelete: true, canRead: true, canWrite: true}
+            }
+        ];
 
         //Spy
         spyOn(nfRegistryService.dialogService, 'openConfirm').and.returnValue({
@@ -725,7 +730,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         nfRegistryService.executeDropletAction({name: 'delete flow'}, {
             identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             type: 'testTYPE',
-            link: {href: 'testhref'}
+            link: {href: 'testhref'},
+            permissions: {canDelete: true, canRead: true, canWrite: true}
         });
 
         //assertions
@@ -1098,19 +1104,20 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         expect(nfRegistryService.users[0].identifier).toBe(12);
     });
 
-    it('should open the Download Version dialog.', function () {
+    it('should open the Export Version dialog.', function () {
         //Setup the nfRegistryService state for this test
         var droplet = {
             identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             type: 'testTYPE',
-            link: {href: 'testhref'}
+            link: {href: 'testhref'},
+            permissions: {canDelete: true, canRead: true, canWrite: true}
         };
 
         //Spy
         spyOn(nfRegistryService.matDialog, 'open');
 
-        nfRegistryService.executeDropletAction({name: 'download version'}, droplet);
-        expect(nfRegistryService.matDialog.open).toHaveBeenCalledWith(NfRegistryDownloadVersionedFlow, {
+        nfRegistryService.executeDropletAction({name: 'export version'}, droplet);
+        expect(nfRegistryService.matDialog.open).toHaveBeenCalledWith(NfRegistryExportVersionedFlow, {
             disableClose: true,
             width: '400px',
             data: {
@@ -1124,7 +1131,8 @@ describe('NfRegistry Service w/ Angular testing utils', function () {
         var droplet = {
             identifier: '2e04b4fb-9513-47bb-aa74-1ae34616bfdc',
             type: 'testTYPE',
-            link: {href: 'testhref'}
+            link: {href: 'testhref'},
+            permissions: {canDelete: true, canRead: true, canWrite: true}
         };
 
         //Spy

@@ -21,7 +21,7 @@ import { MatDialog } from '@angular/material';
 import { FdsDialogService, FdsSnackBarService } from '@nifi-fds/core';
 import NfRegistryApi from 'services/nf-registry.api.js';
 import NfStorage from 'services/nf-storage.service.js';
-import NfRegistryDownloadVersionedFlow from '../components/explorer/grid-list/dialogs/download-versioned-flow/nf-registry-download-versioned-flow';
+import NfRegistryExportVersionedFlow from '../components/explorer/grid-list/dialogs/export-versioned-flow/nf-registry-export-versioned-flow';
 import NfRegistryImportVersionedFlow from '../components/explorer/grid-list/dialogs/import-versioned-flow/nf-registry-import-versioned-flow';
 import NfRegistryImportNewFlow from '../components/explorer/grid-list/dialogs/import-new-flow/nf-registry-import-new-flow';
 
@@ -147,11 +147,11 @@ function NfRegistryService(nfRegistryApi, nfStorage, tdDataTableService, router,
             }
         },
         {
-            name: 'Download version',
+            name: 'Export version',
             icon: 'fa fa-download',
-            tooltip: 'Download flow version',
+            tooltip: 'Export flow version',
             disabled: function (droplet) {
-                return false;
+                return !droplet.permissions.canRead;
             }
         },
         {
@@ -462,12 +462,12 @@ NfRegistryService.prototype = {
     },
 
     /**
-     * Opens the download version dialog.
+     * Opens the export version dialog.
      *
      * @param droplet       The droplet object.
      */
-    openDownloadVersionedFlowDialog: function (droplet) {
-        this.matDialog.open(NfRegistryDownloadVersionedFlow, {
+    openExportVersionedFlowDialog: function (droplet) {
+        this.matDialog.open(NfRegistryExportVersionedFlow, {
             disableClose: true,
             width: '400px',
             data: {
@@ -529,9 +529,9 @@ NfRegistryService.prototype = {
             // Opens the import versioned flow dialog
             this.openImportVersionedFlowDialog(droplet);
             break;
-        case 'download version':
-            // Opens the download flow version dialog
-            this.openDownloadVersionedFlowDialog(droplet);
+        case 'export version':
+            // Opens the export flow version dialog
+            this.openExportVersionedFlowDialog(droplet);
             break;
         case 'delete flow':
             // Deletes the entire data flow

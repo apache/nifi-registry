@@ -36,7 +36,6 @@ function NfRegistryImportVersionedFlow(nfRegistryApi, fdsSnackBarService, matDia
     this.dialogRef = matDialogRef;
     // local state
     this.keepDialogOpen = false;
-    this.protocol = location.protocol;
     this.droplet = data.droplet;
     this.fileToUpload = null;
     this.fileName = null;

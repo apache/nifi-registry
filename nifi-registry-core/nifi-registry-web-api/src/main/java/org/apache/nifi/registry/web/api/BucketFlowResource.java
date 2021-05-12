@@ -299,8 +299,8 @@ public class BucketFlowResource extends ApplicationResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(
-            value = "Upload flow version",
-            notes = "Uploads the next version of a flow. The version number of the object being created must be the " +
+            value = "Import flow version",
+            notes = "Import the next version of a flow. The version number of the object being created will be the " +
                     "next available version integer. Flow versions are immutable after they are created.",
             response = VersionedFlowSnapshot.class,
             extensions = {
@@ -323,7 +323,7 @@ public class BucketFlowResource extends ApplicationResource {
             @ApiParam(value = "The flow identifier")
             final String flowId,
             @ApiParam("file") final VersionedFlowSnapshot versionedFlowSnapshot,
-            @HeaderParam("comments") final String comments) {
+            @HeaderParam("Comments") final String comments) {
 
         final VersionedFlowSnapshot createdSnapshot = serviceFacade.importVersionedFlowSnapshot(versionedFlowSnapshot, bucketId, flowId, comments);
         publish(EventFactory.flowVersionCreated(createdSnapshot));

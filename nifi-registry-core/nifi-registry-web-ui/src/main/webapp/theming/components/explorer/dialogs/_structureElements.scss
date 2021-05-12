@@ -140,7 +140,7 @@ input#upload-versioned-flow-file-field {
     }
 }
 
-#nifi-registry-download-versioned-flow-dialog .bucket-dropdown-field .mat-select-value {
+#nifi-registry-export-versioned-flow-dialog .bucket-dropdown-field .mat-select-value {
     color: $gray;
 }
 
@@ -207,4 +207,14 @@ input[type=text]#new-flow-definition-input {
     width: 373px;
     text-overflow: ellipsis;
     cursor: pointer;
+}
+
+body[fds] .fds-primary-dropdown-button-menu.fds-primary-dropdown-button-menu .mat-menu-item:focus:not([disabled]) {
+    color: rgba(0, 0, 0, 0.87);
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+body[fds] .fds-primary-dropdown-button-menu.fds-primary-dropdown-button-menu .mat-menu-item:hover:not([disabled]) {
+    color: #fff;
+    background-color: #915d69;
 }

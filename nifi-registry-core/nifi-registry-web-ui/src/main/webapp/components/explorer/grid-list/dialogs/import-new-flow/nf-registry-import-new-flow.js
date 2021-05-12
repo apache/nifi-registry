@@ -37,7 +37,6 @@ function NfRegistryImportNewFlow(nfRegistryApi, fdsSnackBarService, matDialogRef
     this.dialogRef = matDialogRef;
     // local state
     this.keepDialogOpen = false;
-    this.protocol = location.protocol;
     this.buckets = data.buckets;
     this.activeBucket = data.activeBucket.identifier;
     this.writableBuckets = [];
@@ -59,7 +58,7 @@ NfRegistryImportNewFlow.prototype = {
 
         // if there's only 1 writable bucket, always set as the initial value in the bucket dropdown
         // if opening the dialog from the explorer/grid-list, there is no active bucket
-        if (typeof this.activeBucket === 'undefined') {
+        if (this.activeBucket === undefined) {
             if (this.writableBuckets.length === 1) {
                 // set the active bucket
                 this.activeBucket = this.writableBuckets[0].identifier;
