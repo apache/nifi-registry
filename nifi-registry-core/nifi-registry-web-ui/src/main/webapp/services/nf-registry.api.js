@@ -87,13 +87,14 @@ NfRegistryApi.prototype = {
         var url = '../nifi-registry-api/' + dropletUri + '/versions/' + versionNumber + '/export';
         var options = {
             headers: headers,
-            observe: 'response'
+            observe: 'response',
+            responseType: 'text'
         };
 
         return self.http.get(url, options).pipe(
             map(function (response) {
                 // export the VersionedFlowSnapshot by creating a hidden anchor element
-                var stringSnapshot = encodeURIComponent(JSON.stringify(response.body, null, 2));
+                var stringSnapshot = encodeURIComponent(response.body);
                 var filename = response.headers.get('Filename');
 
                 var anchorElement = document.createElement('a');
