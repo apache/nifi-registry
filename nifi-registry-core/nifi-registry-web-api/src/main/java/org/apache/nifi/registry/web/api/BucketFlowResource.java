@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
+import java.net.URI;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.core.HttpHeaders;
 import org.apache.commons.lang3.StringUtils;
@@ -310,6 +311,7 @@ public class BucketFlowResource extends ApplicationResource {
             }
     )
     @ApiResponses({
+            @ApiResponse(code = 201, message = HttpStatusMessages.MESSAGE_201),
             @ApiResponse(code = 400, message = HttpStatusMessages.MESSAGE_400),
             @ApiResponse(code = 401, message = HttpStatusMessages.MESSAGE_401),
             @ApiResponse(code = 403, message = HttpStatusMessages.MESSAGE_403),
@@ -327,7 +329,8 @@ public class BucketFlowResource extends ApplicationResource {
 
         final VersionedFlowSnapshot createdSnapshot = serviceFacade.importVersionedFlowSnapshot(versionedFlowSnapshot, bucketId, flowId, comments);
         publish(EventFactory.flowVersionCreated(createdSnapshot));
-        return Response.status(Response.Status.CREATED).entity(createdSnapshot).build();
+        String locationUri = createdSnapshot.getSnapshotMetadata().getLink().getUri().getPath();
+        return generateCreatedResponse(URI.create(locationUri), createdSnapshot).build();
     }
 
     @GET

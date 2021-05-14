@@ -133,7 +133,7 @@ NfRegistryApi.prototype = {
         var url = '../nifi-registry-api/' + dropletUri + '/versions/import';
         var versionHeaders = new HttpHeaders()
             .set('Content-Type', 'application/json')
-            .set('comments', comments);
+            .set('Comments', comments);
 
         return self.http.post(url, file, { 'headers': versionHeaders }).pipe(
             map(function (response) {
