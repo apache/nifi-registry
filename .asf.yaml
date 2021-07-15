@@ -19,15 +19,15 @@ github:
   labels:
     - nifi
     - java
-    - hacktoberfest
+    - nifi-registry
   features:
     wiki: false
     issues: false
     projects: false
   enabled_merge_buttons:
-    squash:  true
-    merge:   true
-    rebase:  true
+    squash:  false
+    merge:   false
+    rebase:  false
 notifications:
     commits:      commits@nifi.apache.org
     issues:       issues@nifi.apache.org
